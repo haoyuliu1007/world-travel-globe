@@ -1458,34 +1458,47 @@
     if (btn) btn.classList.remove('active');
   }
 
-  /* View Mode (3D Map vs Aesthetic Gallery) */
+  /* View Mode (3D Map / Aesthetic Gallery / Trip Planner / Private Archive) */
   function setViewMode(mode, skipUrl) {
-    state.mode = mode === 'gallery' ? 'gallery' : 'map';
-    const isGallery = state.mode === 'gallery';
+    const valid = ['map', 'gallery', 'planner', 'archive'];
+    state.mode = valid.includes(mode) ? mode : 'map';
 
     const mapBtn = document.getElementById('mode-map-btn');
     const galBtn = document.getElementById('mode-gallery-btn');
+    const planBtn = document.getElementById('mode-planner-btn');
+    const archBtn = document.getElementById('mode-archive-btn');
     const galView = document.getElementById('gallery-view');
+    const planView = document.getElementById('planner-view');
+    const archView = document.getElementById('archive-view');
 
-    if (mapBtn) {
-      mapBtn.classList.toggle('active', !isGallery);
-      mapBtn.setAttribute('aria-selected', !isGallery ? 'true' : 'false');
-    }
-    if (galBtn) {
-      galBtn.classList.toggle('active', isGallery);
-      galBtn.setAttribute('aria-selected', isGallery ? 'true' : 'false');
-    }
-    if (galView) {
-      galView.classList.toggle('is-hidden', !isGallery);
-    }
+    [
+      [mapBtn, 'map'],
+      [galBtn, 'gallery'],
+      [planBtn, 'planner'],
+      [archBtn, 'archive']
+    ].forEach(([btn, mName]) => {
+      if (!btn) return;
+      const active = state.mode === mName;
+      btn.classList.toggle('active', active);
+      btn.setAttribute('aria-selected', active ? 'true' : 'false');
+    });
 
-    if (isGallery && global.AestheticGallery) {
-      stopSpin();
+    if (galView) galView.classList.toggle('is-hidden', state.mode !== 'gallery');
+    if (planView) planView.classList.toggle('is-hidden', state.mode !== 'planner');
+    if (archView) archView.classList.toggle('is-hidden', state.mode !== 'archive');
+
+    if (state.mode !== 'map') stopSpin();
+    if (state.mode === 'gallery' && global.AestheticGallery) {
       global.AestheticGallery.render();
+    } else if (state.mode === 'planner' && global.TripPlanner) {
+      global.TripPlanner.renderWorkspace();
+    } else if (state.mode === 'archive' && global.TravelArchive) {
+      global.TravelArchive.renderWorkspace();
     }
     scheduleLabelLayout();
     if (!skipUrl) syncUrlState(false);
   }
+  global.setAppViewMode = setViewMode;
 
   /* Favorites Toggle & Sync */
   function toggleFavorite(id) {
@@ -1579,6 +1592,10 @@
     // Mode switch
     document.getElementById('mode-map-btn').addEventListener('click', () => setViewMode('map'));
     document.getElementById('mode-gallery-btn').addEventListener('click', () => setViewMode('gallery'));
+    const planModeBtn = document.getElementById('mode-planner-btn');
+    if (planModeBtn) planModeBtn.addEventListener('click', () => setViewMode('planner'));
+    const archModeBtn = document.getElementById('mode-archive-btn');
+    if (archModeBtn) archModeBtn.addEventListener('click', () => setViewMode('archive'));
 
     // Popovers: Filter, Appearance Studio, Language Selector
     const popBtn = document.getElementById('filter-popover-btn');
@@ -1879,7 +1896,7 @@
           cancelActiveFlight();
           return;
         }
-        if (state.mode === 'gallery') {
+        if (state.mode !== 'map') {
           setViewMode('map');
           return;
         }
@@ -2327,7 +2344,13 @@
     global.getGlobeMap = function () { return map; };
 
     if (global.StorageDB) {
-      global.StorageDB.init().catch(() => {});
+      global.StorageDB.init().then(() => {
+        if (global.TripPlanner) {
+          global.TripPlanner.restoreFromUrlIfPresent().then((restored) => {
+            if (restored) setViewMode('planner', true);
+          });
+        }
+      }).catch(() => {});
     }
     if (global.navigator && 'serviceWorker' in global.navigator && global.location && (global.location.protocol === 'https:' || global.location.hostname === '127.0.0.1' || global.location.hostname === 'localhost')) {
       global.navigator.serviceWorker.register('sw.js').catch(() => {});

@@ -85,6 +85,9 @@
         }).join('');
         return `
           <button class="gallery-card" data-id="${escapeHtml(d.id)}" type="button">
+            <div class="gallery-card-thumb" data-thumb-id="${escapeHtml(d.id)}">
+              <span>${escapeHtml(tx(d.shortName || d.name))}</span>
+            </div>
             <div class="gallery-card-top">
               <span class="gallery-card-country">${escapeHtml(tx(d.country))} · ${escapeHtml(tx(d.region))}</span>
               <span class="gallery-card-coords mono-num">${formatCoords(d.coords)}</span>
@@ -120,6 +123,10 @@
         visibleLimit += PAGE_SIZE;
         render();
       });
+    }
+
+    if (global.MediaGallery && typeof global.MediaGallery.observeGalleryThumbs === 'function') {
+      global.MediaGallery.observeGalleryThumbs(grid, slice);
     }
   }
 

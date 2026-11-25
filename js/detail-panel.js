@@ -261,6 +261,19 @@
       ].filter(Boolean);
       metaStrip.textContent = parts.join('  ·  ');
 
+      let statusBar = document.getElementById('drawer-status-bar');
+      if (!statusBar && metaStrip && metaStrip.parentNode) {
+        statusBar = document.createElement('div');
+        statusBar.id = 'drawer-status-bar';
+        statusBar.className = 'drawer-status-bar';
+        metaStrip.parentNode.insertBefore(statusBar, metaStrip.nextSibling);
+      }
+      if (statusBar && global.TravelArchive && typeof global.TravelArchive.renderDrawerStatusBar === 'function') {
+        global.TravelArchive.renderDrawerStatusBar(dest, statusBar);
+      } else if (statusBar) {
+        statusBar.innerHTML = '';
+      }
+
       document.getElementById('drawer-hero-summary').textContent = tx(dest.heroSummary);
       document.getElementById('tab-spots-count').textContent = dest.spots ? dest.spots.length : (dest.spotCount || 0);
 
@@ -282,28 +295,61 @@
 
       let contentHtml = '';
       if (this.activeTab === 'spots') {
-        contentHtml = this.buildSpotsHtml(dest);
+        contentHtml = `<div id="drawer-media-hero" class="media-hero-strip"></div>${this.buildSpotsHtml(dest)}`;
+      } else if (this.activeTab === 'photo') {
+        contentHtml = `<div id="photo-simulator-mount"></div>`;
       } else if (this.activeTab === 'months') {
-        contentHtml = this.buildMonthsHtml(dest);
+        contentHtml = `${this.buildMonthsHtml(dest)}<div id="aesthetic-index-mount"></div>`;
       } else if (this.activeTab === 'weather') {
-        contentHtml = this.buildWeatherHtml(dest);
+        contentHtml = `<div id="live-weather-mount"></div>${this.buildWeatherHtml(dest)}`;
       } else if (this.activeTab === 'budget') {
         contentHtml = this.buildBudgetHtml(dest);
       } else if (this.activeTab === 'itinerary') {
         contentHtml = this.buildItineraryHtml(dest);
       }
 
-      const provenanceHtml = this.buildProvenanceHtml(dest);
+      const provenanceHtml = `${this.buildProvenanceHtml(dest)}<div id="wikidata-verify-mount"></div>`;
       body.innerHTML = `<div class="drawer-body-inner">${contentHtml}${provenanceHtml}</div>`;
 
+      if (global.MediaGallery) {
+        const heroEl = body.querySelector('#drawer-media-hero');
+        if (heroEl && this.activeTab === 'spots') {
+          global.MediaGallery.loadDestinationMedia(dest, heroEl);
+        }
+        const wdEl = body.querySelector('#wikidata-verify-mount');
+        if (wdEl) {
+          global.MediaGallery.loadWikidataBadge(dest, wdEl);
+        }
+      }
+
+      if (this.activeTab === 'photo' && global.PhotoSimulator) {
+        global.PhotoSimulator.mount(dest, body.querySelector('#photo-simulator-mount'), this.expandedSpotIndex);
+      }
+      if (this.activeTab === 'weather' && global.WeatherPanel) {
+        global.WeatherPanel.mount(dest, body.querySelector('#live-weather-mount'));
+      }
+      if (this.activeTab === 'months' && global.AestheticIndex) {
+        global.AestheticIndex.mountDrawerBreakdown(dest, this.selectedMonth, body.querySelector('#aesthetic-index-mount'));
+      }
+
       if (this.activeTab === 'spots') {
+        if (global.MediaGallery && Array.isArray(dest.spots) && this.expandedSpotIndex >= 0 && dest.spots[this.expandedSpotIndex]) {
+          const initPhotoBox = body.querySelector(`.spot-card[data-spot-idx="${this.expandedSpotIndex}"] .spot-photo-box`);
+          if (initPhotoBox) global.MediaGallery.loadSpotPhoto(dest, dest.spots[this.expandedSpotIndex], this.expandedSpotIndex, initPhotoBox);
+        }
         body.querySelectorAll('.spot-accordion-head').forEach((btn) => {
           btn.addEventListener('click', () => {
             const idx = Number(btn.dataset.idx);
             this.expandedSpotIndex = this.expandedSpotIndex === idx ? -1 : idx;
             this.syncAccordionDOM();
-            if (this.expandedSpotIndex >= 0 && typeof global.focusSubSpotMarkerOnly === 'function') {
-              global.focusSubSpotMarkerOnly(idx);
+            if (this.expandedSpotIndex >= 0) {
+              if (typeof global.focusSubSpotMarkerOnly === 'function') {
+                global.focusSubSpotMarkerOnly(idx);
+              }
+              if (global.MediaGallery && Array.isArray(dest.spots) && dest.spots[idx]) {
+                const pBox = body.querySelector(`.spot-card[data-spot-idx="${idx}"] .spot-photo-box`);
+                if (pBox) global.MediaGallery.loadSpotPhoto(dest, dest.spots[idx], idx, pBox);
+              }
             }
           });
         });
@@ -321,6 +367,32 @@
         };
         body.querySelectorAll('.spot-locate-btn').forEach(flyHandler);
         body.querySelectorAll('.spot-chip').forEach(flyHandler);
+
+        body.querySelectorAll('.spot-sim-btn').forEach((btn) => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.expandedSpotIndex = Number(btn.dataset.idx);
+            this.setTab('photo');
+          });
+        });
+        body.querySelectorAll('.spot-sv-btn').forEach((btn) => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const idx = Number(btn.dataset.idx);
+            if (global.StreetViewModule && Array.isArray(dest.spots) && dest.spots[idx]) {
+              global.StreetViewModule.open(dest, dest.spots[idx], idx);
+            }
+          });
+        });
+        body.querySelectorAll('.spot-plan-btn').forEach((btn) => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const idx = Number(btn.dataset.idx);
+            if (global.TripPlanner && Array.isArray(dest.spots) && dest.spots[idx]) {
+              global.TripPlanner.addSpotToActiveTrip(dest, dest.spots[idx]);
+            }
+          });
+        });
       } else if (this.activeTab === 'months') {
         body.querySelectorAll('.month-cell').forEach((cell) => {
           cell.addEventListener('click', () => {
@@ -391,10 +463,16 @@
                       <span class="mono-num" style="font-size:11px;color:var(--text-muted)">${formatCoords(sp.coords, 4)} · ${escapeHtml(tx(sp.elevation))}</span>
                       <button class="spot-locate-btn" data-idx="${i}" type="button">${icon('target', 12)} ${t('flyToSpot')}</button>
                     </div>
+                    <div class="spot-photo-box" data-spot-photo-idx="${i}"></div>
                     <div class="spot-coords-row">${linkifyHtml(tx(sp.access))}</div>
                     <div class="spot-field"><strong>${t('goldenHour')}</strong>${escapeHtml(tx(sp.bestTime))}</div>
                     <div class="spot-field"><strong>${t('realScene')}</strong>${escapeHtml(tx(sp.scene))}</div>
                     <div class="spot-tips">${linkifyHtml(tx(sp.tips))}</div>
+                    <div class="spot-actions-row">
+                      <button class="mini-action-pill spot-sim-btn" data-idx="${i}" type="button">${icon('sun', 12)} 光影模拟</button>
+                      <button class="mini-action-pill spot-sv-btn" data-idx="${i}" type="button">${icon('eye', 12)} 街景/实景</button>
+                      <button class="mini-action-pill spot-plan-btn" data-idx="${i}" type="button">${icon('route', 12)} 加入行程</button>
+                    </div>
                   </div>
                 </div>
               </div>

@@ -42,35 +42,47 @@
           settings: 'key'
         });
         await db.open();
-        await migrateLegacyFavorites();
       } catch (err) {
         usingFallback = true;
         db = null;
-        await migrateLegacyFavorites();
       }
+      await migrateLegacyFavoritesInternal();
       return !usingFallback;
     })();
     return readyPromise;
   }
 
-  async function migrateLegacyFavorites() {
+  async function migrateLegacyFavoritesInternal() {
     try {
-      const migrated = await getSetting('legacyFavMigrated');
+      let migrated = false;
+      if (db) {
+        const row = await db.settings.get('legacyFavMigrated');
+        migrated = Boolean(row && row.value);
+      } else {
+        migrated = Boolean(MEMORY_FALLBACK.settings.get('legacyFavMigrated'));
+      }
       if (migrated) return;
+
       const raw = global.localStorage && global.localStorage.getItem(FAVORITES_LS_KEY);
       if (raw) {
         const ids = JSON.parse(raw);
         if (Array.isArray(ids)) {
           for (const id of ids) {
             if (!id) continue;
-            const cur = await getTravelStatus(id);
-            if (!cur) {
-              await setTravelStatus(id, { status: 'wishlist', notes: '', updatedAt: Date.now() });
+            if (db) {
+              const cur = await db.travelStatus.get(id);
+              if (!cur) await db.travelStatus.put({ destId: id, status: 'wishlist', notes: '', rating: 0, updatedAt: Date.now() });
+            } else if (!MEMORY_FALLBACK.travelStatus.has(id)) {
+              MEMORY_FALLBACK.travelStatus.set(id, { destId: id, status: 'wishlist', notes: '', rating: 0, updatedAt: Date.now() });
             }
           }
         }
       }
-      await setSetting('legacyFavMigrated', true);
+      if (db) {
+        await db.settings.put({ key: 'legacyFavMigrated', value: true });
+      } else {
+        MEMORY_FALLBACK.settings.set('legacyFavMigrated', true);
+      }
     } catch (e) {
       // ignore storage restrictions
     }

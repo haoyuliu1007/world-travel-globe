@@ -184,7 +184,7 @@
     const curY = midY - (sim.sunPos.altitude / 90) * 42;
 
     return `
-      <svg width="100%" viewBox="0 0 ${w} ${h}" style="display:block;margin-top:6px;" aria-label="24小时太阳高度角曲线">
+      <svg width="100%" height="${h}" viewBox="0 0 ${w} ${h}" style="display:block;width:100%;height:${h}px;margin-top:6px;" aria-label="24小时太阳高度角曲线">
         <rect x="0" y="${midY}" width="${w}" height="${h - midY}" fill="rgba(15,23,42,0.28)" />
         <line x1="0" y1="${midY}" x2="${w}" y2="${midY}" stroke="rgba(255,255,255,0.2)" stroke-width="1" />
         <polyline fill="none" stroke="#FBBF24" stroke-width="1.8" points="${pts}" />

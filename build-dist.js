@@ -92,7 +92,7 @@ function main() {
   }
   const distHtml = indexHtml.replace(
     blockRe,
-    '\n  <script src="data/atlas-bundle.min.js?v=20"></script>\n'
+    '\n  <script src="data/atlas-bundle.min.js?v=33"></script>\n'
   );
   fs.writeFileSync(path.join(distDir, 'index.html'), distHtml, 'utf8');
 

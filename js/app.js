@@ -46,7 +46,7 @@
     query: '',
     skin: 'satellite',
     mode: 'map',
-    showLabels: true,
+    showLabels: false,
     forceAllLabels: false,
     isGlobe: true,
     isSpinning: false,
@@ -72,11 +72,13 @@
   let atlasIndex = [];
   let indexById = new Map();
   let lastMatchedIds = new Set();
+  const expandedRegions = new Set();
 
-  // Label DOM pool (renders only visible non-overlapping labels in viewport)
-  let labelOverlayEl = null;
-  const labelPool = [];
-  const MAX_POOL_LABELS = 96;
+  // Zero-DOM-churn HiDPI Canvas 2D label layer
+  let labelCanvas = null;
+  let labelCtx = null;
+  let drawnLabelBoxes = [];
+  const labelWidthCache = new Map();
 
   function prefersReducedMotion() {
     return Boolean(global.matchMedia && global.matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -138,34 +140,48 @@
   function buildAtlasIndex() {
     const all = ATLAS.getAll();
     atlasIndex = all.map((dest, idx) => {
-      const monthScores = new Uint8Array(12);
-      (dest.months || []).forEach((m) => {
-        if (m.m >= 1 && m.m <= 12) monthScores[m.m - 1] = Number(m.score) || 0;
-      });
-      const haystack = [
-        dest.id || '',
-        dest.country || '',
-        dest.name || '',
-        dest.shortName || '',
-        dest.subtitle || '',
-        dest.province || '',
-        dest.region || '',
-        dest.heroSummary || '',
-        (dest.badges || []).join(' '),
-        (dest.spots || []).map((s) => `${s.name} ${s.category || ''} ${s.scene || ''}`).join(' ')
-      ]
-        .join(' ')
-        .toLowerCase();
+      let monthScores;
+      if (Array.isArray(dest.monthScores) && dest.monthScores.length === 12) {
+        monthScores = Uint8Array.from(dest.monthScores);
+      } else {
+        monthScores = new Uint8Array(12);
+        (dest.months || []).forEach((m) => {
+          if (m.m >= 1 && m.m <= 12) monthScores[m.m - 1] = Number(m.score) || 0;
+        });
+      }
 
       const entry = {
         numId: idx + 1,
         dest,
         monthScores,
-        haystack
+        haystack: null
       };
       indexById.set(dest.id, entry);
       return entry;
     });
+  }
+
+  function getEntryHaystack(entry) {
+    if (entry.haystack !== null) return entry.haystack;
+    const dest = entry.dest;
+    const spotStr = dest.spots
+      ? dest.spots.map((s) => `${s.name} ${s.category || ''} ${s.scene || ''}`).join(' ')
+      : (dest.spotNames || []).join(' ');
+    entry.haystack = [
+      dest.id || '',
+      dest.country || '',
+      dest.name || '',
+      dest.shortName || '',
+      dest.subtitle || '',
+      dest.province || '',
+      dest.region || '',
+      dest.heroSummary || '',
+      (dest.badges || []).join(' '),
+      spotStr
+    ]
+      .join(' ')
+      .toLowerCase();
+    return entry.haystack;
   }
 
   function countCountries(list) {
@@ -278,8 +294,8 @@
           id: 'layer-labels',
           type: 'raster',
           source: 'labels',
-          layout: { visibility: 'visible' },
-          paint: { 'raster-opacity': 0.88, 'raster-fade-duration': 260 }
+          layout: { visibility: 'none' },
+          paint: { 'raster-opacity': 0.85, 'raster-fade-duration': 140 }
         },
         {
           id: 'atlas-glow',
@@ -453,9 +469,10 @@
       return false;
     }
     if (state.query.trim()) {
+      const hay = getEntryHaystack(entry);
       const tokens = state.query.trim().toLowerCase().split(/\s+/).filter(Boolean);
       for (let i = 0; i < tokens.length; i++) {
-        if (!entry.haystack.includes(tokens[i])) return false;
+        if (!hay.includes(tokens[i])) return false;
       }
     }
     return true;
@@ -505,27 +522,29 @@
     map.getSource('atlas-points').setData({ type: 'FeatureCollection', features });
   }
 
-  /* Pooled Screen-Space Collision-Free Label Overlay (Borderless Halo Style) */
+  /* Zero-DOM-Churn HiDPI Canvas 2D Label Overlay */
   function ensureLabelOverlay() {
-    if (labelOverlayEl) return;
-    labelOverlayEl = document.createElement('div');
-    labelOverlayEl.id = 'globe-label-overlay';
-    labelOverlayEl.style.cssText = 'position:fixed;inset:0;z-index:5;pointer-events:none;overflow:hidden;';
-    document.body.insertBefore(labelOverlayEl, document.getElementById('topbar'));
+    if (labelCanvas) return;
+    labelCanvas = document.createElement('canvas');
+    labelCanvas.id = 'globe-label-canvas';
+    labelCanvas.style.cssText = 'position:fixed;inset:0;z-index:5;pointer-events:none;';
+    document.body.insertBefore(labelCanvas, document.getElementById('topbar'));
+    labelCtx = labelCanvas.getContext('2d');
+    resizeLabelCanvas();
+  }
 
-    for (let i = 0; i < MAX_POOL_LABELS; i++) {
-      const el = document.createElement('button');
-      el.type = 'button';
-      el.className = 'gl-city-label';
-      el.style.display = 'none';
-      el.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const id = el.dataset.destId;
-        if (id) selectDestination(id);
-      });
-      labelOverlayEl.appendChild(el);
-      labelPool.push(el);
+  function resizeLabelCanvas() {
+    if (!labelCanvas || !labelCtx) return;
+    const dpr = Math.min(global.devicePixelRatio || 1, 2);
+    const w = global.innerWidth;
+    const h = global.innerHeight;
+    if (labelCanvas.width !== Math.round(w * dpr) || labelCanvas.height !== Math.round(h * dpr)) {
+      labelCanvas.width = Math.round(w * dpr);
+      labelCanvas.height = Math.round(h * dpr);
+      labelCanvas.style.width = `${w}px`;
+      labelCanvas.style.height = `${h}px`;
     }
+    labelCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
 
   function isPointOnFrontHemisphere(coords, centerLng, centerLat) {
@@ -546,19 +565,20 @@
   }
 
   function layoutVisibleLabels() {
-    if (!map || !labelOverlayEl) return;
-    if (state.mode === 'gallery') {
-      for (let i = 0; i < labelPool.length; i++) labelPool[i].style.display = 'none';
-      return;
-    }
-
-    const zoom = map.getZoom();
+    if (!map || !labelCanvas || !labelCtx) return;
+    resizeLabelCanvas();
     const w = global.innerWidth;
     const h = global.innerHeight;
+    labelCtx.clearRect(0, 0, w, h);
+    drawnLabelBoxes = [];
+
+    if (state.mode === 'gallery') return;
+
+    const zoom = map.getZoom();
     const center = map.getCenter();
     const isFiltering = isAnyFilterActive();
     const showTier2 = state.forceAllLabels || zoom >= 3.9 || isFiltering;
-    const maxLabels = state.forceAllLabels ? MAX_POOL_LABELS : isMobileViewport() ? 22 : 42;
+    const maxLabels = state.forceAllLabels ? 80 : isMobileViewport() ? 18 : 34;
     const maxLatSpan = zoom >= 3.0 ? Math.min(90, 185 / Math.pow(2, zoom - 1.2)) : 180;
     const maxLngSpan = Math.min(180, maxLatSpan * 1.45);
 
@@ -567,14 +587,12 @@
       const d = atlasIndex[i].dest;
       if (!lastMatchedIds.has(d.id)) continue;
       const isSelected = d.id === state.selectedId;
-      // Hide main city label when zoomed closely into subspots
       if (isSelected && state.subSpotMarkers.length > 0 && zoom >= 7.5) continue;
       if (!showTier2 && d.priority !== 1 && !isSelected && !state.favorites.has(d.id)) continue;
 
       if (state.isGlobe && !isPointOnFrontHemisphere(d.coords, center.lng, center.lat)) {
         continue;
       }
-
       if (zoom >= 3.0) {
         if (Math.abs(d.coords[1] - center.lat) > maxLatSpan) continue;
         let dLng = Math.abs(d.coords[0] - center.lng);
@@ -591,22 +609,32 @@
 
     candidates.sort((a, b) => b.rank - a.rank);
 
-    const placedBoxes = [];
-    let used = 0;
+    const isLightMapSkin = document.body.classList.contains('light-map-skin');
+    const accentHex = (Theme && Theme.getState().accentHex) || '#E2C07D';
+    labelCtx.font = '500 11.5px "Inter", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif';
+    labelCtx.textBaseline = 'middle';
+    labelCtx.lineJoin = 'round';
+    labelCtx.lineWidth = 3.2;
+    labelCtx.strokeStyle = isLightMapSkin ? 'rgba(255,255,255,0.92)' : 'rgba(5,6,10,0.88)';
 
+    let used = 0;
     for (let i = 0; i < candidates.length && used < maxLabels; i++) {
       const c = candidates[i];
       const text = tx(c.dest.shortName || c.dest.name);
-      const estW = Math.min(130, text.length * 11 + 18);
-      const estH = 22;
-      const lx = Math.round(c.x + 10);
-      const ly = Math.round(c.y - 11);
+      let estW = labelWidthCache.get(text);
+      if (estW === undefined) {
+        estW = Math.ceil(labelCtx.measureText(text).width) + 4;
+        labelWidthCache.set(text, estW);
+      }
+      const estH = 18;
+      const lx = Math.round(c.x + 9);
+      const ly = Math.round(c.y);
 
       if (!state.forceAllLabels && !c.isSelected) {
         let collides = false;
-        for (let j = 0; j < placedBoxes.length; j++) {
-          const b = placedBoxes[j];
-          if (lx < b.x + b.w + 6 && lx + estW + 6 > b.x && ly < b.y + b.h + 4 && ly + estH + 4 > b.y) {
+        for (let j = 0; j < drawnLabelBoxes.length; j++) {
+          const b = drawnLabelBoxes[j];
+          if (lx < b.x + b.w + 8 && lx + estW + 8 > b.x && ly - 9 < b.y + 9 + 4 && ly + 9 + 4 > b.y - 9) {
             collides = true;
             break;
           }
@@ -614,19 +642,28 @@
         if (collides) continue;
       }
 
-      placedBoxes.push({ x: lx, y: ly, w: estW, h: estH });
-      const el = labelPool[used++];
-      el.dataset.destId = c.dest.id;
-      el.textContent = text;
-      el.style.display = 'block';
-      el.style.transform = `translate3d(${lx}px, ${ly}px, 0)`;
-      el.classList.toggle('is-selected', Boolean(c.isSelected));
-      el.classList.toggle('is-gold', Boolean(!c.isSelected && c.dest.allWeather));
-    }
+      drawnLabelBoxes.push({ id: c.dest.id, x: lx, y: ly, w: estW, h: estH });
+      used++;
 
-    for (let i = used; i < labelPool.length; i++) {
-      labelPool[i].style.display = 'none';
+      labelCtx.fillStyle = c.isSelected
+        ? '#FFFFFF'
+        : c.dest.allWeather
+          ? (isLightMapSkin ? '#8A5A10' : accentHex)
+          : (isLightMapSkin ? '#18181B' : '#F5F5F7');
+
+      labelCtx.strokeText(text, lx, ly);
+      labelCtx.fillText(text, lx, ly);
     }
+  }
+
+  function findLabelAtPoint(px, py) {
+    for (let i = drawnLabelBoxes.length - 1; i >= 0; i--) {
+      const b = drawnLabelBoxes[i];
+      if (px >= b.x - 6 && px <= b.x + b.w + 4 && py >= b.y - 12 && py <= b.y + 12) {
+        return b.id;
+      }
+    }
+    return null;
   }
 
   /* Active Pulsing Beacon (Single DOM marker for selected city only) */
@@ -894,13 +931,38 @@
     // Auto-collapse left sidebar when focusing destination to keep globe as hero
     setSidebarOpen(false);
 
-    renderSubSpots(dest);
     updateActiveBeacon(dest);
     Panel.open(dest, state.month);
+    const activeLang = I18n ? I18n.getLang() : 'zh-CN';
+    const needsDetail = !dest.spots && typeof ATLAS.ensureDetail === 'function';
+    const needsLangChunk = I18n && typeof I18n.ensureRegionLang === 'function' && activeLang !== 'zh-CN' && activeLang !== 'zh-TW';
 
-    if (typeof options.spotIdx === 'number' && options.spotIdx >= 0 && dest.spots && dest.spots[options.spotIdx]) {
-      Panel.highlightSpot(options.spotIdx);
-      focusSubSpotMarkerOnly(options.spotIdx);
+    if (dest.spots) {
+      renderSubSpots(dest);
+      if (typeof options.spotIdx === 'number' && options.spotIdx >= 0 && dest.spots[options.spotIdx]) {
+        Panel.highlightSpot(options.spotIdx);
+        focusSubSpotMarkerOnly(options.spotIdx);
+      }
+    } else {
+      clearSubSpots();
+    }
+
+    if (needsDetail || needsLangChunk) {
+      Promise.all([
+        needsDetail ? ATLAS.ensureDetail(id) : Promise.resolve(dest),
+        needsLangChunk ? I18n.ensureRegionLang(activeLang, dest) : Promise.resolve()
+      ]).then(([hydrated]) => {
+        const latest = hydrated || ATLAS.getById(id) || dest;
+        const entry = indexById.get(id);
+        if (entry && latest) entry.dest = latest;
+        if (state.selectedId !== id) return;
+        if (latest && latest.spots) renderSubSpots(latest);
+        if (latest) Panel.open(latest, state.month);
+        if (typeof options.spotIdx === 'number' && options.spotIdx >= 0 && latest && latest.spots && latest.spots[options.spotIdx]) {
+          Panel.highlightSpot(options.spotIdx);
+          focusSubSpotMarkerOnly(options.spotIdx);
+        }
+      });
     }
 
     syncGeoJsonSource();
@@ -1190,39 +1252,50 @@
       grouped.get(d.region).push(d);
     });
 
+    const filtering = isAnyFilterActive();
     let html = '';
+    let autoExpandedCount = 0;
+    const chevSvg = Icons ? Icons.svg('chevronDown', 13) : '▾';
+
     grouped.forEach((items, regionName) => {
       if (!items.length) return;
+      const isOpen = expandedRegions.has(regionName) || (filtering && autoExpandedCount < 6) || (!filtering && autoExpandedCount < 2);
+      if (isOpen) {
+        expandedRegions.add(regionName);
+        autoExpandedCount++;
+      }
+      const itemsHtml = isOpen
+        ? items
+            .map((d) => {
+              let rightBadge = `<span class="city-nav-prov mono-num">${tx(d.suggestedDays)}</span>`;
+              if (state.month !== 'all') {
+                const entry = indexById.get(d.id);
+                const scVal = entry ? entry.monthScores[Number(state.month) - 1] : 3;
+                const cls = scVal >= 5 ? 'score-5' : scVal === 4 ? 'score-4' : scVal === 3 ? 'score-3' : 'score-low';
+                rightBadge = `<span class="score-pill ${cls}">${scVal}★</span>`;
+              }
+              const dotCls = d.allWeather ? 'dot-gold' : 'dot-ice';
+              const activeCls = d.id === state.selectedId ? 'active' : '';
+              return `
+                <button class="city-nav-item ${activeCls}" data-id="${d.id}" type="button">
+                  <span class="city-nav-left">
+                    <span class="dot ${dotCls}"></span>
+                    <span class="city-nav-name">${tx(d.name)}</span>
+                  </span>
+                  <span class="city-nav-right">${rightBadge}</span>
+                </button>
+              `;
+            })
+            .join('')
+        : '';
+
       html += `
-        <div class="region-group">
-          <div class="region-header">
+        <div class="region-group ${isOpen ? 'is-open' : ''}" data-region="${regionName}">
+          <button class="region-header" type="button" aria-expanded="${isOpen ? 'true' : 'false'}">
             <span>${tx(regionName)}</span>
-            <span class="mono-num">${items.length}</span>
-          </div>
-          <div class="region-items">
-            ${items
-              .map((d) => {
-                let rightBadge = `<span class="city-nav-prov mono-num">${tx(d.suggestedDays)}</span>`;
-                if (state.month !== 'all') {
-                  const entry = indexById.get(d.id);
-                  const scVal = entry ? entry.monthScores[Number(state.month) - 1] : 3;
-                  const cls = scVal >= 5 ? 'score-5' : scVal === 4 ? 'score-4' : scVal === 3 ? 'score-3' : 'score-low';
-                  rightBadge = `<span class="score-pill ${cls}">${scVal}★</span>`;
-                }
-                const dotCls = d.allWeather ? 'dot-gold' : 'dot-ice';
-                const activeCls = d.id === state.selectedId ? 'active' : '';
-                return `
-                  <button class="city-nav-item ${activeCls}" data-id="${d.id}" type="button">
-                    <span class="city-nav-left">
-                      <span class="dot ${dotCls}"></span>
-                      <span class="city-nav-name">${tx(d.name)}</span>
-                    </span>
-                    <span class="city-nav-right">${rightBadge}</span>
-                  </button>
-                `;
-              })
-              .join('')}
-          </div>
+            <span class="region-header-right mono-num">${items.length} <span class="region-chevron">${chevSvg}</span></span>
+          </button>
+          <div class="region-items">${itemsHtml}</div>
         </div>
       `;
     });
@@ -1231,6 +1304,17 @@
       html = `<div style="padding:28px 14px;text-align:center;color:var(--text-secondary);font-size:12.5px;">${t('emptySidebar')}</div>`;
     }
     listEl.innerHTML = html;
+
+    listEl.querySelectorAll('.region-header').forEach((hdr) => {
+      hdr.addEventListener('click', () => {
+        const grp = hdr.parentElement;
+        const reg = grp && grp.dataset.region;
+        if (!reg) return;
+        if (expandedRegions.has(reg)) expandedRegions.delete(reg);
+        else expandedRegions.add(reg);
+        renderSidebar();
+      });
+    });
 
     listEl.querySelectorAll('.city-nav-item').forEach((btn) => {
       btn.addEventListener('click', () => selectDestination(btn.dataset.id));
@@ -1667,8 +1751,8 @@
         if (isCoarsePointer() && global.navigator && typeof global.navigator.share === 'function') {
           try {
             await global.navigator.share({
-              title: dest ? dest.name : 'World Travel Globe',
-              text: dest ? `${dest.country} · ${dest.subtitle}` : '全球旅行美学地球仪',
+              title: dest ? tx(dest.name) : t('appTitle'),
+              text: dest ? `${tx(dest.country)} · ${tx(dest.subtitle)}` : t('appTitle'),
               url: shareUrl
             });
             return;
@@ -1795,11 +1879,14 @@
     map.on('touchstart', () => { stopSpin(); cancelActiveFlight(); });
 
     map.on('move', scheduleLabelLayout);
-    map.on('zoom', () => {
+    map.on('zoomend', () => {
       scheduleLabelLayout();
       if (state.subSpotMarkers.length) applySpiderfyLayout();
     });
-    map.on('resize', scheduleLabelLayout);
+    map.on('resize', () => {
+      resizeLabelCanvas();
+      scheduleLabelLayout();
+    });
 
     // WebGL Context Loss & Restore Handling
     const canvas = map.getCanvas();
@@ -1847,7 +1934,7 @@
           <div style="font-weight:500;font-size:13px;margin-bottom:2px;color:${titleCol};">${tx(dest.name)}</div>
           <div style="color:${subCol};font-size:11px;margin-bottom:4px;">${locLabel} · ${badge}</div>
           <div style="color:${subCol};font-size:11.5px;line-height:1.45;">${tx(dest.subtitle)}</div>
-          <div style="color:${accentCol};font-size:11px;margin-top:5px;">${t('hoverAction', { n: (dest.spots || []).length })}</div>
+          <div style="color:${accentCol};font-size:11px;margin-top:5px;">${t('hoverAction', { n: dest.spotCount || (dest.spots ? dest.spots.length : 0) })}</div>
         `)
         .addTo(map);
     });
@@ -1861,11 +1948,19 @@
       if (hoverPopup) hoverPopup.remove();
     });
 
-    map.on('click', 'atlas-hit', (e) => {
-      if (!e.features || !e.features.length) return;
-      const id = e.features[0].properties.id;
-      if (hoverPopup) hoverPopup.remove();
-      if (id) selectDestination(id);
+    map.on('click', (e) => {
+      const hits = map.queryRenderedFeatures(e.point, { layers: ['atlas-hit'] });
+      if (hits && hits.length) {
+        const id = hits[0].properties.id;
+        if (hoverPopup) hoverPopup.remove();
+        if (id) selectDestination(id);
+        return;
+      }
+      const labelHitId = findLabelAtPoint(e.point.x, e.point.y);
+      if (labelHitId) {
+        if (hoverPopup) hoverPopup.remove();
+        selectDestination(labelHitId);
+      }
     });
   }
 
@@ -1938,20 +2033,44 @@
     });
   }
 
+  function invalidateSearchHaystack() {
+    for (let i = 0; i < atlasIndex.length; i++) {
+      atlasIndex[i].haystack = null;
+    }
+  }
+
   function switchLanguage(langId) {
     if (!I18n) return;
     I18n.setLang(langId);
+    invalidateSearchHaystack();
     renderLanguageGrid();
     refreshAllTexts();
     const langEl = document.getElementById('lang-popover');
     const langBtn = document.getElementById('lang-btn');
     if (langEl) langEl.classList.add('is-hidden');
     if (langBtn) langBtn.setAttribute('aria-expanded', 'false');
+
+    if (langId !== 'zh-CN' && langId !== 'zh-TW' && typeof I18n.ensureLangIndex === 'function') {
+      const curDest = state.selectedId ? ATLAS.getById(state.selectedId) : null;
+      Promise.all([
+        I18n.ensureLangIndex(langId),
+        curDest && typeof I18n.ensureRegionLang === 'function'
+          ? I18n.ensureRegionLang(langId, curDest)
+          : Promise.resolve()
+      ]).then(() => {
+        if (I18n.getLang() !== langId) return;
+        invalidateSearchHaystack();
+        refreshAllTexts();
+      });
+    }
   }
 
   function refreshAllTexts() {
     const all = ATLAS.getAll();
-    const totalSpots = all.reduce((sum, d) => sum + (d.spots ? d.spots.length : 0), 0);
+    const totalSpots = all.reduce(
+      (sum, d) => sum + (d.spotCount != null ? d.spotCount : (d.spots ? d.spots.length : 0)),
+      0
+    );
     const statsEl = document.getElementById('atlas-stats-line');
     if (statsEl) {
       statsEl.textContent = t('statsFmt', {
@@ -1972,7 +2091,7 @@
         if (toastText) {
           toastText.textContent = t('subspotToast', {
             name: tx(dest.shortName || dest.name),
-            n: (dest.spots || []).length
+            n: dest.spotCount != null ? dest.spotCount : (dest.spots ? dest.spots.length : 0)
           });
         }
       }
@@ -1984,7 +2103,17 @@
 
   function init() {
     hydrateIcons();
-    if (I18n) I18n.hydrateStaticDom();
+    if (I18n) {
+      I18n.hydrateStaticDom();
+      const bootLang = I18n.getLang();
+      if (bootLang !== 'zh-CN' && bootLang !== 'zh-TW' && typeof I18n.ensureLangIndex === 'function') {
+        I18n.ensureLangIndex(bootLang).then(() => {
+          if (I18n.getLang() !== bootLang) return;
+          invalidateSearchHaystack();
+          refreshAllTexts();
+        });
+      }
+    }
     if (Theme) {
       Theme.init((themeInfo) => {
         syncMapThemeAndAccent(themeInfo);
@@ -1995,7 +2124,10 @@
     buildAtlasIndex();
 
     const all = ATLAS.getAll();
-    const totalSpots = all.reduce((sum, d) => sum + (d.spots ? d.spots.length : 0), 0);
+    const totalSpots = all.reduce(
+      (sum, d) => sum + (d.spotCount != null ? d.spotCount : (d.spots ? d.spots.length : 0)),
+      0
+    );
     document.getElementById('atlas-stats-line').textContent = t('statsFmt', {
       cities: all.length,
       spots: totalSpots.toLocaleString('en-US')
@@ -2065,8 +2197,9 @@
       pitch: initPitch,
       minZoom: 1.1,
       maxZoom: SKIN_META[state.skin].maxZoom,
-      pixelRatio: Math.min(global.devicePixelRatio || 1, 2),
-      fadeDuration: 320,
+      pixelRatio: Math.min(global.devicePixelRatio || 1, 1.5),
+      fadeDuration: 120,
+      refreshExpiredTiles: false,
       maxTileCacheSize: 256,
       attributionControl: false
     });
@@ -2110,9 +2243,29 @@
 
           state.selectedId = focusDest.id;
           setSidebarOpen(false);
-          renderSubSpots(focusDest);
           updateActiveBeacon(focusDest);
           Panel.open(focusDest, state.month);
+          const fLang = I18n ? I18n.getLang() : 'zh-CN';
+          const needFocusDetail = !focusDest.spots && typeof ATLAS.ensureDetail === 'function';
+          const needFocusLang = I18n && typeof I18n.ensureRegionLang === 'function' && fLang !== 'zh-CN' && fLang !== 'zh-TW';
+          if (focusDest.spots) {
+            renderSubSpots(focusDest);
+          } else {
+            clearSubSpots();
+          }
+          if (needFocusDetail || needFocusLang) {
+            Promise.all([
+              needFocusDetail ? ATLAS.ensureDetail(focusDest.id) : Promise.resolve(focusDest),
+              needFocusLang ? I18n.ensureRegionLang(fLang, focusDest) : Promise.resolve()
+            ]).then(([hydrated]) => {
+              const latest = hydrated || ATLAS.getById(focusDest.id) || focusDest;
+              const entry = indexById.get(focusDest.id);
+              if (entry && latest) entry.dest = latest;
+              if (state.selectedId !== focusDest.id) return;
+              if (latest && latest.spots) renderSubSpots(latest);
+              if (latest) Panel.open(latest, state.month);
+            });
+          }
           syncGeoJsonSource();
           updateSelectionUI();
 

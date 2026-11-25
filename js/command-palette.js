@@ -37,23 +37,54 @@
     return safe.replace(re, '<mark>$1</mark>');
   }
 
+  function ensureHaystack(entry) {
+    if (entry.haystack) return entry.haystack;
+    const d = entry.dest;
+    const spotStr = d.spots
+      ? d.spots.map((s) => `${s.name} ${tx(s.name)} ${s.category || ''} ${tx(s.category || '')} ${s.scene || ''}`).join(' ')
+      : (d.spotNames || []).map((n) => `${n} ${tx(n)}`).join(' ');
+    entry.haystack = [
+      d.id || '',
+      d.country || '',
+      tx(d.country || ''),
+      d.name || '',
+      tx(d.name || ''),
+      d.shortName || '',
+      tx(d.shortName || ''),
+      d.subtitle || '',
+      tx(d.subtitle || ''),
+      d.province || '',
+      tx(d.province || ''),
+      d.region || '',
+      tx(d.region || ''),
+      d.heroSummary || '',
+      tx(d.heroSummary || ''),
+      (d.badges || []).map((b) => `${b} ${tx(b)}`).join(' '),
+      spotStr
+    ]
+      .join(' ')
+      .toLowerCase();
+    return entry.haystack;
+  }
+
   function scoreDestination(entry, qLower, tokens) {
     const d = entry.dest;
-    const nameL = (d.name || '').toLowerCase();
-    const shortL = (d.shortName || '').toLowerCase();
-    const countryL = (d.country || '').toLowerCase();
+    const hay = ensureHaystack(entry);
+    const nameL = `${d.name || ''} ${tx(d.name || '')}`.toLowerCase();
+    const shortL = `${d.shortName || ''} ${tx(d.shortName || '')}`.toLowerCase();
+    const countryL = `${d.country || ''} ${tx(d.country || '')}`.toLowerCase();
     const idL = (d.id || '').toLowerCase();
-    const subL = (d.subtitle || '').toLowerCase();
-    const provL = (d.province || '').toLowerCase();
-    const regL = (d.region || '').toLowerCase();
+    const subL = `${d.subtitle || ''} ${tx(d.subtitle || '')}`.toLowerCase();
+    const provL = `${d.province || ''} ${tx(d.province || '')}`.toLowerCase();
+    const regL = `${d.region || ''} ${tx(d.region || '')}`.toLowerCase();
 
     // Every token must exist somewhere in haystack
     for (let i = 0; i < tokens.length; i++) {
-      if (!entry.haystack.includes(tokens[i])) return 0;
+      if (!hay.includes(tokens[i])) return 0;
     }
 
     let score = 10;
-    if (shortL === qLower || nameL === qLower || idL === qLower) score += 200;
+    if (shortL === qLower || (d.name || '').toLowerCase() === qLower || tx(d.shortName || '').toLowerCase() === qLower || tx(d.name || '').toLowerCase() === qLower || idL === qLower) score += 200;
     else if (shortL.startsWith(qLower) || nameL.startsWith(qLower)) score += 120;
     else if (nameL.includes(qLower) || shortL.includes(qLower)) score += 80;
 
@@ -68,19 +99,29 @@
     // Find best matching spot if any
     let matchedSpot = null;
     let matchedSpotIdx = -1;
-    const spots = d.spots || [];
-    for (let i = 0; i < spots.length; i++) {
-      const sp = spots[i];
-      const spName = (sp.name || '').toLowerCase();
-      if (spName.includes(qLower)) {
-        score += 45;
-        matchedSpot = sp;
-        matchedSpotIdx = i;
-        break;
+    if (d.spots && d.spots.length) {
+      for (let i = 0; i < d.spots.length; i++) {
+        const sp = d.spots[i];
+        const spName = (sp.name || '').toLowerCase();
+        if (spName.includes(qLower)) {
+          score += 45;
+          matchedSpot = sp;
+          matchedSpotIdx = i;
+          break;
+        }
+        if (!matchedSpot && ((sp.scene || '').toLowerCase().includes(qLower) || (sp.category || '').toLowerCase().includes(qLower))) {
+          matchedSpot = sp;
+          matchedSpotIdx = i;
+        }
       }
-      if (!matchedSpot && ((sp.scene || '').toLowerCase().includes(qLower) || (sp.category || '').toLowerCase().includes(qLower))) {
-        matchedSpot = sp;
-        matchedSpotIdx = i;
+    } else if (d.spotNames && d.spotNames.length) {
+      for (let i = 0; i < d.spotNames.length; i++) {
+        if ((d.spotNames[i] || '').toLowerCase().includes(qLower)) {
+          score += 45;
+          matchedSpot = { name: d.spotNames[i] };
+          matchedSpotIdx = i;
+          break;
+        }
       }
     }
 
@@ -187,7 +228,7 @@
           <div class="palette-item-sub">${highlightMatch(subText, q)}</div>
         </div>
         <div class="palette-item-meta mono-num">
-          <span>${t('spotsCountFmt', { n: (d.spots || []).length })}</span>
+          <span>${t('spotsCountFmt', { n: d.spotCount || (d.spots ? d.spots.length : 0) })}</span>
           ${icon('arrowUpRight', 13)}
         </div>
       </button>

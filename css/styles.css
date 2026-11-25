@@ -1,8 +1,8 @@
 :root {
-  /* Apple / Linear Neutral Obsidian Surface System */
+  /* Apple / Linear Neutral Obsidian Surface System (Zero-ReadPixels-Stall Material) */
   --bg-space: #09090B;
-  --bg-material: rgba(22, 22, 26, 0.78);
-  --bg-material-strong: rgba(20, 20, 24, 0.92);
+  --bg-material: rgba(20, 20, 24, 0.90);
+  --bg-material-strong: rgba(18, 18, 22, 0.96);
   --bg-solid: #16161A;
   --bg-hover: rgba(255, 255, 255, 0.06);
   --bg-active: rgba(255, 255, 255, 0.11);
@@ -22,11 +22,11 @@
   --accent-ice: #8AB4F8;
   --accent-ice-soft: rgba(138, 180, 248, 0.14);
 
-  --bg-gallery-overlay: rgba(9, 9, 11, 0.94);
+  --bg-gallery-overlay: rgba(9, 9, 11, 0.97);
   --bg-gallery-card: #0D0D10;
   --bg-gallery-card-hover: #141418;
   --bg-palette-modal: #141418;
-  --bg-backdrop-dim: rgba(0, 0, 0, 0.56);
+  --bg-backdrop-dim: rgba(0, 0, 0, 0.62);
 
   --border-hairline: rgba(255, 255, 255, 0.08);
   --border-strong: rgba(255, 255, 255, 0.16);
@@ -43,23 +43,23 @@
   --radius-sm: 7px;
   --radius-pill: 999px;
 
-  --blur-glass: blur(24px) saturate(165%);
-  --shadow-float: 0 12px 36px rgba(0, 0, 0, 0.48), 0 0 0 0.5px rgba(255, 255, 255, 0.08);
-  --shadow-sheet: 0 24px 64px rgba(0, 0, 0, 0.65), 0 0 0 0.5px rgba(255, 255, 255, 0.09);
+  --blur-glass: none;
+  --shadow-float: 0 10px 30px rgba(0, 0, 0, 0.44), 0 0 0 0.5px rgba(255, 255, 255, 0.09);
+  --shadow-sheet: 0 22px 58px rgba(0, 0, 0, 0.62), 0 0 0 0.5px rgba(255, 255, 255, 0.10);
 
   /* Silky Motion */
   --ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --dur-fast: 160ms;
-  --dur-med: 280ms;
-  --dur-theme: 320ms;
+  --dur-med: 260ms;
+  --dur-theme: 280ms;
 }
 
 /* Apple Maps Daylight Mode Tokens */
 html[data-theme="light"] {
   --bg-space: #E7EEF6;
-  --bg-material: rgba(255, 255, 255, 0.80);
-  --bg-material-strong: rgba(255, 255, 255, 0.93);
+  --bg-material: rgba(255, 255, 255, 0.92);
+  --bg-material-strong: rgba(255, 255, 255, 0.97);
   --bg-solid: #FFFFFF;
   --bg-hover: rgba(15, 23, 42, 0.055);
   --bg-active: rgba(15, 23, 42, 0.10);
@@ -71,18 +71,18 @@ html[data-theme="light"] {
   --accent-ice: #2563EB;
   --accent-ice-soft: rgba(37, 99, 235, 0.12);
 
-  --bg-gallery-overlay: rgba(244, 246, 250, 0.94);
+  --bg-gallery-overlay: rgba(244, 246, 250, 0.97);
   --bg-gallery-card: #FFFFFF;
   --bg-gallery-card-hover: #F4F5F8;
   --bg-palette-modal: #FFFFFF;
-  --bg-backdrop-dim: rgba(15, 23, 42, 0.28);
+  --bg-backdrop-dim: rgba(15, 23, 42, 0.34);
 
   --border-hairline: rgba(15, 23, 42, 0.08);
   --border-strong: rgba(15, 23, 42, 0.18);
 
-  --blur-glass: blur(24px) saturate(180%);
-  --shadow-float: 0 10px 30px rgba(15, 23, 42, 0.10), 0 0 0 0.5px rgba(15, 23, 42, 0.09);
-  --shadow-sheet: 0 22px 56px rgba(15, 23, 42, 0.15), 0 0 0 0.5px rgba(15, 23, 42, 0.10);
+  --blur-glass: none;
+  --shadow-float: 0 10px 28px rgba(15, 23, 42, 0.11), 0 0 0 0.5px rgba(15, 23, 42, 0.09);
+  --shadow-sheet: 0 22px 54px rgba(15, 23, 42, 0.16), 0 0 0 0.5px rgba(15, 23, 42, 0.10);
 }
 
 *, *::before, *::after {
@@ -535,14 +535,14 @@ html[data-theme="light"] #space-backdrop::before {
   border-radius: 50%;
 }
 
-/* 8-Language Selector Grid */
+/* 3-Language Selector List */
 .lang-popover {
-  width: min(340px, calc(100vw - 32px));
+  width: min(230px, calc(100vw - 32px));
 }
 
 .lang-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: 1fr;
   gap: 6px;
 }
 
@@ -996,22 +996,50 @@ body.sidebar-collapsed .active-chips-bar {
 }
 
 .region-group {
-  margin-bottom: 10px;
+  margin-bottom: 4px;
 }
 
 .region-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 8px 4px;
-  font-size: 11px;
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 9px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
   font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  text-align: left;
+  transition: background var(--dur-fast) ease, color var(--dur-fast) ease;
+}
+
+.region-header:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.region-header-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   color: var(--text-muted);
+}
+
+.region-chevron {
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+.region-group.is-open .region-chevron {
+  transform: rotate(180deg);
 }
 
 .region-items {
   display: flex;
   flex-direction: column;
+  padding-bottom: 6px;
 }
 
 .city-nav-item {

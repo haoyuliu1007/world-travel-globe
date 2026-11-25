@@ -317,6 +317,7 @@
 
   const destinations = [];
   const byId = new Map();
+  const regionFetchCache = new Map();
 
   function registerDestinations(list) {
     if (!Array.isArray(list)) return;
@@ -332,11 +333,38 @@
     });
   }
 
+  function ensureDetail(id) {
+    const cur = byId.get(id);
+    if (!cur) return Promise.resolve(null);
+    if (Array.isArray(cur.spots)) {
+      return Promise.resolve(cur);
+    }
+    const rIdx = cur._r;
+    if (rIdx === undefined || rIdx === null) {
+      return Promise.resolve(cur);
+    }
+    if (!regionFetchCache.has(rIdx)) {
+      const p = fetch(`data/regions/r${rIdx}.json`)
+        .then((res) => {
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          return res.json();
+        })
+        .then((items) => {
+          registerDestinations(items);
+          return byId.get(id) || null;
+        })
+        .catch(() => byId.get(id) || null);
+      regionFetchCache.set(rIdx, p);
+    }
+    return regionFetchCache.get(rIdx).then(() => byId.get(id) || null);
+  }
+
   global.TRAVEL_ATLAS = {
     CONTINENTS: CONTINENTS,
     REGION_ORDER: REGION_ORDER,
     REGION_META: REGION_META,
     registerDestinations: registerDestinations,
+    ensureDetail: ensureDetail,
     getAll: function () {
       return destinations.slice();
     },

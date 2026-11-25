@@ -80,7 +80,7 @@
         const months = d.months || [];
         const byM = new Map(months.map((m) => [m.m, m.score]));
         const ribbon = Array.from({ length: 12 }, (_, idx) => {
-          const sc = byM.get(idx + 1) || 2;
+          const sc = (Array.isArray(d.monthScores) && d.monthScores[idx]) || byM.get(idx + 1) || 2;
           return `<span class="gallery-ribbon-seg" data-score="${sc}"></span>`;
         }).join('');
         return `
@@ -93,7 +93,7 @@
             <p class="gallery-card-sub">${escapeHtml(tx(d.subtitle || d.heroSummary))}</p>
             <div class="gallery-card-ribbon">${ribbon}</div>
             <div class="gallery-card-foot">
-              <span class="mono-num">${t('spotsCountFmt', { n: (d.spots || []).length })} · ${escapeHtml(tx(d.suggestedDays))}</span>
+              <span class="mono-num">${t('spotsCountFmt', { n: d.spotCount || (d.spots ? d.spots.length : 0) })} · ${escapeHtml(tx(d.suggestedDays))}</span>
               <span class="gallery-card-cta">${t('flyCoord')} ${icon('arrowUpRight', 13)}</span>
             </div>
           </button>

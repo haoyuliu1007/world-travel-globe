@@ -34,7 +34,7 @@ function main() {
 
   // Recreate dist/
   fs.rmSync(distDir, { recursive: true, force: true });
-  for (const sub of ['css', 'js', 'vendor', 'data']) {
+  for (const sub of ['css', 'js', 'vendor', 'data', path.join('data', 'regions')]) {
     ensureDir(path.join(distDir, sub));
   }
 
@@ -73,28 +73,94 @@ function main() {
     throw new Error(`Bundle sanity check failed: cities=${all.length}, spots=${totalSpots}, countries=${countryCount}`);
   }
 
-  // Build single minified data bundle
-  const bundleCode =
+  // Group full destination data into per-region JSON chunks + build lightweight index
+  const regionOrder = Array.isArray(sandbox.TRAVEL_ATLAS.REGION_ORDER)
+    ? sandbox.TRAVEL_ATLAS.REGION_ORDER
+    : [];
+  const regionBuckets = new Map();
+  const indexAll = all.map((d) => {
+    let rIdx = regionOrder.indexOf(d.region);
+    if (rIdx === -1) rIdx = regionOrder.length;
+    if (!regionBuckets.has(rIdx)) regionBuckets.set(rIdx, []);
+    regionBuckets.get(rIdx).push(d);
+
+    const monthScores = new Array(12).fill(0);
+    (d.months || []).forEach((m) => {
+      if (m && m.m >= 1 && m.m <= 12) monthScores[m.m - 1] = Number(m.score) || 0;
+    });
+
+    return {
+      id: d.id,
+      continent: d.continent,
+      country: d.country,
+      region: d.region,
+      province: d.province,
+      name: d.name,
+      shortName: d.shortName,
+      priority: d.priority,
+      themeTags: d.themeTags,
+      weatherTags: d.weatherTags,
+      subtitle: d.subtitle,
+      coords: d.coords,
+      zoom: d.zoom,
+      elevation: d.elevation,
+      suggestedDays: d.suggestedDays,
+      allWeather: d.allWeather,
+      badges: d.badges,
+      heroSummary: d.heroSummary,
+      spotCount: Array.isArray(d.spots) ? d.spots.length : 0,
+      spotNames: Array.isArray(d.spots) ? d.spots.map((s) => s.name) : [],
+      monthScores,
+      _r: rIdx
+    };
+  });
+
+  for (const [rIdx, items] of regionBuckets.entries()) {
+    const chunkPath = path.join(distDir, 'data', 'regions', `r${rIdx}.json`);
+    fs.writeFileSync(chunkPath, JSON.stringify(items), 'utf8');
+  }
+
+  // Build single lightweight index bundle
+  const indexCode =
     registrySrc.trimEnd() +
     '\nwindow.TRAVEL_ATLAS.registerDestinations(' +
-    JSON.stringify(all) +
+    JSON.stringify(indexAll) +
     ');\n';
-  const bundleOutPath = path.join(distDir, 'data', 'atlas-bundle.min.js');
-  fs.writeFileSync(bundleOutPath, bundleCode, 'utf8');
+  const indexOutPath = path.join(distDir, 'data', 'atlas-index.min.js');
+  fs.writeFileSync(indexOutPath, indexCode, 'utf8');
 
-  const rawBytes = Buffer.byteLength(bundleCode, 'utf8');
-  const gzBytes = zlib.gzipSync(Buffer.from(bundleCode, 'utf8'), { level: 9 }).length;
+  const rawBytes = Buffer.byteLength(indexCode, 'utf8');
+  const gzBytes = zlib.gzipSync(Buffer.from(indexCode, 'utf8'), { level: 9 }).length;
 
-  // Replace all 56 data/*.js script tags with single bundle tag in dist/index.html
+  // Replace all 56 data/*.js script tags with lightweight index bundle tag in dist/index.html
   const blockRe = /(?:\s*<script src="data\/[^"?]+(?:\?v=\d+)?"><\/script>\s*)+/;
   if (!blockRe.test(indexHtml)) {
     throw new Error('Could not locate data/*.js script block in index.html');
   }
   const distHtml = indexHtml.replace(
     blockRe,
-    '\n  <script src="data/atlas-bundle.min.js?v=33"></script>\n'
+    '\n  <script src="data/atlas-index.min.js?v=33"></script>\n'
   );
   fs.writeFileSync(path.join(distDir, 'index.html'), distHtml, 'utf8');
+
+  // Copy optional pre-translated i18n chunks if present (data/i18n/{lang}/index.json & r*.json)
+  const i18nSrcDir = path.join(rootDir, 'data', 'i18n');
+  let i18nCount = 0;
+  if (fs.existsSync(i18nSrcDir)) {
+    const copyTree = (src, dst) => {
+      ensureDir(dst);
+      for (const ent of fs.readdirSync(src, { withFileTypes: true })) {
+        const sPath = path.join(src, ent.name);
+        const dPath = path.join(dst, ent.name);
+        if (ent.isDirectory()) copyTree(sPath, dPath);
+        else {
+          fs.copyFileSync(sPath, dPath);
+          i18nCount++;
+        }
+      }
+    };
+    copyTree(i18nSrcDir, path.join(distDir, 'data', 'i18n'));
+  }
 
   // Hosting metadata files (.nojekyll for GitHub Pages, _headers for Cloudflare Pages / Netlify)
   fs.writeFileSync(path.join(distDir, '.nojekyll'), '', 'utf8');
@@ -127,7 +193,9 @@ function main() {
 
   console.log(`Built dist/ successfully!`);
   console.log(`  Destinations: ${all.length} cities, ${totalSpots} spots, ${countryCount} countries`);
-  console.log(`  atlas-bundle.min.js: ${(rawBytes / 1024 / 1024).toFixed(2)} MB raw (${rawBytes} bytes) -> ${(gzBytes / 1024 / 1024).toFixed(2)} MB gzip (${gzBytes} bytes)`);
+  console.log(`  atlas-index.min.js: ${(rawBytes / 1024).toFixed(1)} KB raw (${rawBytes} bytes) -> ${(gzBytes / 1024).toFixed(1)} KB gzip (${gzBytes} bytes)`);
+  console.log(`  Lazy region chunks: ${regionBuckets.size} files in data/regions/`);
+  if (i18nCount > 0) console.log(`  Lazy i18n chunks: ${i18nCount} files in data/i18n/`);
   console.log(`  Total dist/ files: ${fileCount}`);
 }
 

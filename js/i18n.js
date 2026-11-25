@@ -6,12 +6,7 @@
   const LANGUAGES = [
     { id: 'zh-CN', code: '简', name: '简体中文', sub: 'Simplified Chinese' },
     { id: 'zh-TW', code: '繁', name: '繁體中文', sub: 'Traditional Chinese' },
-    { id: 'en', code: 'EN', name: 'English', sub: '英语' },
-    { id: 'de', code: 'DE', name: 'Deutsch', sub: '德语' },
-    { id: 'ja', code: 'JA', name: '日本語', sub: '日语' },
-    { id: 'ko', code: 'KO', name: '한국어', sub: '韩语' },
-    { id: 'ru', code: 'RU', name: 'Русский', sub: '俄语' },
-    { id: 'fr', code: 'FR', name: 'Français', sub: '法语' }
+    { id: 'en', code: 'EN', name: 'English', sub: '英语' }
   ];
 
   // OS-verified 1-to-1 Simplified -> Traditional Chinese pairs covering all 722 destinations
@@ -330,510 +325,87 @@
         north_america: 'N. America', south_america: 'S. America', africa_antarctica: 'Africa/Ant.'
       },
       seasons: ['N.Winter', 'N.Spring', 'N.Summer', 'N.Autumn']
-    },
-    de: {
-      appTitle: 'World Travel Globe',
-      searchPlaceholderShort: '722 Orte & 5.414 Spots…',
-      palettePlaceholder: 'Land, Stadt, Fotospot oder ID suchen (z. B. Kyoto, Island, kerala)…',
-      modeMap: 'Globus',
-      modeGallery: 'Galerie',
-      statsFmt: '{cities} Orte · {spots} Spots',
-      filterTheme: 'Thema',
-      filterWeather: 'Wetter & Phänomene',
-      filterAll: 'Alle',
-      themeNature: 'Naturwunder',
-      themeArch: 'Architektur',
-      weatherAllWeather: 'Ganzjährig',
-      weatherSunny: 'Klar & Sterne',
-      weatherRain: 'Nebel & Regen',
-      weatherSnow: 'Schnee & Eis',
-      weatherSpecial: 'Extrem',
-      matchFmt: '{count} Treffer',
-      reset: 'Zurücksetzen',
-      clear: 'Leeren',
-      fitResults: 'Fokussieren',
-      sidebarTitle: 'Reiseziele',
-      legendAllWeather: 'Ganzjährig',
-      legendSeasonal: 'Saisonal',
-      allYear: 'Jahr',
-      monthFmt: 'M{m}',
-      citiesCountFmt: '{n}',
-      spotsCountFmt: '{n} Spots',
-      skinSatellite: 'Satellit',
-      skinNatgeo: 'NatGeo',
-      skinPhysical: 'Relief',
-      skinDark: 'Nacht',
-      flyChina: 'China',
-      flyGlobal: 'Welt',
-      panorama: 'Überblick',
-      skipIntro: 'Überspringen',
-      tabSpots: 'Spots',
-      tabMonths: 'Saison',
-      tabWeather: 'Wetter',
-      tabBudget: 'Budget',
-      tabItinerary: 'Route',
-      badgeAllWeather: 'Ganzjährig schön',
-      badgeSeasonal: 'Saisonales Highlight',
-      elevationPrefix: 'Höhe',
-      daysPrefix: 'Dauer',
-      flyToSpot: 'Anfliegen',
-      goldenHour: 'Goldene Stunde: ',
-      realScene: 'Szene: ',
-      weatherSunnyTitle: 'Klares Wetter',
-      weatherRainyTitle: 'Regen & Wolkenmeer',
-      weatherSnowyTitle: 'Schnee & Winter',
-      weatherSpecialTitle: 'Seltene Phänomene',
-      weatherTrigger: 'Auslöser: ',
-      weatherGear: 'Ausrüstung: ',
-      budgetLuxury: 'Luxus-Variante',
-      budgetComfort: 'Komfort-Variante',
-      approxUsd: 'ca. {usd} USD',
-      hemiNorth: 'Nordhalbkugel',
-      hemiSouth: 'Südhalbkugel',
-      monthArchiveFmt: 'Monat {m} ({hemi})',
-      recommendScore: 'Wertung',
-      tempRange: 'Temperatur',
-      climateFeature: 'Klima',
-      monthHighlight: 'Highlights: ',
-      provenanceTitle: 'Datenquelle · Atlas v2.0',
-      provenanceNote: 'Koordinaten & Wetterdaten aus Reise-Dossiers kuratiert.',
-      galleryKicker: 'WORLD ATLAS · 722 DESTINATIONS',
-      galleryTitle: 'Globale Reisegalerie',
-      galleryLead: '722 kuratierte Reiseziele nach Naturwundern, Architektur und Wetterphänomenen.',
-      backToGlobe: 'Zum Globus',
-      galAll: 'Alle',
-      galFav: 'Gemarkt',
-      destCountFmt: '{n} Ziele',
-      flyCoord: 'Anfliegen',
-      loadMore: 'Mehr laden ({n} verbleibend)',
-      emptyGallery: 'Keine passenden Reiseziele in dieser Sammlung.',
-      emptySidebar: 'Keine Treffer für die aktuellen Filter.',
-      appearanceTitle: 'Darstellung & Farbe',
-      modeNight: 'Nacht',
-      modeDay: 'Tag',
-      accentPaletteLabel: 'Akzentfarbe',
-      customColorLabel: 'Eigener Farbwert',
-      languageTitle: 'Sprache',
-      paletteSelect: 'Wählen',
-      paletteLocate: 'Öffnen',
-      paletteClose: 'Schließen',
-      paletteAllCount: 'Sofortsuche über {n} Reiseziele',
-      paletteHitsCount: '{n} Treffer',
-      paletteEmptyTitle: 'Keine passenden Orte oder Fotospots gefunden.',
-      paletteClearQuery: 'Suche leeren',
-      paletteRelaxFilters: 'Filter zurücksetzen',
-      hoverAction: '{n} Spots ansehen →',
-      subspotToast: '{name} · {n} Fotospots',
-      loaderText: 'Lade 722 Reiseziele…',
-      continents: {
-        global: 'Welt', asia: 'Asien', europe: 'Europa', oceania: 'Ozeanien',
-        north_america: 'Nordamerika', south_america: 'Südamerika', africa_antarctica: 'Afrika/Ant.'
-      },
-      seasons: ['N-Winter', 'N-Frühling', 'N-Sommer', 'N-Herbst']
-    },
-    ja: {
-      appTitle: 'World Travel Globe',
-      searchPlaceholderShort: '722都市・5,414絶景を検索…',
-      palettePlaceholder: '国・都市・撮影スポット・IDを検索（例：京都、アイスランド、kerala）…',
-      modeMap: '地球儀',
-      modeGallery: '図鑑',
-      statsFmt: '{cities} 都市 · {spots} 地点',
-      filterTheme: 'テーマ',
-      filterWeather: '気象・自然現象',
-      filterAll: 'すべて',
-      themeNature: '自然の絶景',
-      themeArch: '都市建築',
-      weatherAllWeather: '全天候',
-      weatherSunny: '晴天・星空',
-      weatherRain: '霧・雲海',
-      weatherSnow: '雪景・霧氷',
-      weatherSpecial: '極限現象',
-      matchFmt: '{count} 件一致',
-      reset: 'リセット',
-      clear: 'クリア',
-      fitResults: '範囲に合わせる',
-      sidebarTitle: '厳選目的地',
-      legendAllWeather: '通年おすすめ',
-      legendSeasonal: '季節・気象限定',
-      allYear: '通年',
-      monthFmt: '{m}月',
-      citiesCountFmt: '{n}',
-      spotsCountFmt: '{n} 地点',
-      skinSatellite: '衛星',
-      skinNatgeo: '地図帳',
-      skinPhysical: '地形',
-      skinDark: '夜間',
-      flyChina: '中国',
-      flyGlobal: '世界',
-      panorama: '全景',
-      skipIntro: 'スキップ',
-      tabSpots: '撮影地点',
-      tabMonths: '季節暦',
-      tabWeather: '気象',
-      tabBudget: '予算',
-      tabItinerary: '行程',
-      badgeAllWeather: '全天候・通年絶景',
-      badgeSeasonal: '季節・気象限定',
-      elevationPrefix: '標高',
-      daysPrefix: '目安',
-      flyToSpot: '地点へ飛ぶ',
-      goldenHour: 'ベスト時間帯：',
-      realScene: '景観：',
-      weatherSunnyTitle: '晴天の美学',
-      weatherRainyTitle: '雨・雨上がりの雲海',
-      weatherSnowyTitle: '雪景色・冬限定',
-      weatherSpecialTitle: '極限気象現象',
-      weatherTrigger: '発生条件：',
-      weatherGear: '装備提案：',
-      budgetLuxury: 'ラグジュアリー',
-      budgetComfort: 'スタンダード',
-      approxUsd: '約 {usd} USD',
-      hemiNorth: '北半球',
-      hemiSouth: '南半球',
-      monthArchiveFmt: '{m}月の気候アーカイブ（{hemi}）',
-      recommendScore: 'おすすめ度',
-      tempRange: '平均気温',
-      climateFeature: '気候特徴',
-      monthHighlight: '今月の見どころ：',
-      provenanceTitle: 'データ検証 · Atlas v2.0',
-      provenanceNote: '実地調査および公開地理データに基づく。渡航前に最新情報をご確認ください。',
-      galleryKicker: 'WORLD ATLAS · 722 DESTINATIONS',
-      galleryTitle: '世界地理美学図鑑',
-      galleryLead: '自然の絶景・建築美・全天候・極限気象で整理された722都市。クリックで3D座標へ飛びます。',
-      backToGlobe: '地球儀へ戻る',
-      galAll: 'すべて',
-      galFav: 'お気に入り',
-      destCountFmt: '{n} 都市',
-      flyCoord: '座標へ飛ぶ',
-      loadMore: 'さらに読み込む（残り {n} 件）',
-      emptyGallery: '該当する目的地がありません。',
-      emptySidebar: '条件に一致する目的地がありません。',
-      appearanceTitle: '外観・テーマカラー',
-      modeNight: 'ダーク',
-      modeDay: 'ライト',
-      accentPaletteLabel: 'カラーパレット',
-      customColorLabel: 'カスタム色',
-      languageTitle: '表示言語',
-      paletteSelect: '選択',
-      paletteLocate: '移動',
-      paletteClose: '閉じる',
-      paletteAllCount: '{n} 都市を即時検索',
-      paletteHitsCount: '{n} 件ヒット',
-      paletteEmptyTitle: '一致する都市・国・スポットが見つかりません。',
-      paletteClearQuery: '検索語をクリア',
-      paletteRelaxFilters: '絞り込みを解除',
-      hoverAction: '{n} 地点を見る →',
-      subspotToast: '{name} · {n} 撮影地点',
-      loaderText: '722都市の座標データを読み込み中…',
-      continents: {
-        global: '世界', asia: 'アジア', europe: '欧州', oceania: '大洋州',
-        north_america: '北米', south_america: '南米', africa_antarctica: 'アフリカ/南極'
-      },
-      seasons: ['北冬', '北春', '北夏', '北秋']
-    },
-    ko: {
-      appTitle: 'World Travel Globe',
-      searchPlaceholderShort: '722개 도시 · 5,414개 스팟 검색…',
-      palettePlaceholder: '국가, 도시, 촬영 스팟 또는 ID 검색 (예: 교토, 아이슬란드, kerala)…',
-      modeMap: '지구본',
-      modeGallery: '도감',
-      statsFmt: '{cities} 도시 · {spots} 스팟',
-      filterTheme: '테마',
-      filterWeather: '기상 및 현상',
-      filterAll: '전체',
-      themeNature: '자연 경관',
-      themeArch: '도시 건축',
-      weatherAllWeather: '사계절',
-      weatherSunny: '맑음/별밤',
-      weatherRain: '안개/운해',
-      weatherSnow: '설경/빙하',
-      weatherSpecial: '극한 현상',
-      matchFmt: '{count}곳 일치',
-      reset: '초기화',
-      clear: '지우기',
-      fitResults: '결과 맞추기',
-      sidebarTitle: '추천 여행지',
-      legendAllWeather: '사계절 추천',
-      legendSeasonal: '계절/기상 한정',
-      allYear: '연중',
-      monthFmt: '{m}월',
-      citiesCountFmt: '{n}',
-      spotsCountFmt: '{n} 스팟',
-      skinSatellite: '위성',
-      skinNatgeo: '내셔널지오',
-      skinPhysical: '지형',
-      skinDark: '야간',
-      flyChina: '중국',
-      flyGlobal: '세계',
-      panorama: '전경',
-      skipIntro: '건너뛰기',
-      tabSpots: '스팟',
-      tabMonths: '계절력',
-      tabWeather: '날씨',
-      tabBudget: '예산',
-      tabItinerary: '동선',
-      badgeAllWeather: '사계절 명소',
-      badgeSeasonal: '계절·기상 한정',
-      elevationPrefix: '고도',
-      daysPrefix: '추천',
-      flyToSpot: '위치 이동',
-      goldenHour: '골든아워: ',
-      realScene: '풍경: ',
-      weatherSunnyTitle: '맑은 날의 미학',
-      weatherRainyTitle: '비와 운해',
-      weatherSnowyTitle: '설경과 겨울',
-      weatherSpecialTitle: '극한 기상 경관',
-      weatherTrigger: '발생 조건: ',
-      weatherGear: '장비 팁: ',
-      budgetLuxury: '럭셔리 플랜',
-      budgetComfort: '컴포트 플랜',
-      approxUsd: '약 {usd} USD',
-      hemiNorth: '북반구',
-      hemiSouth: '남반구',
-      monthArchiveFmt: '{m}월 현장 아카이브 ({hemi})',
-      recommendScore: '추천도',
-      tempRange: '일교차',
-      climateFeature: '기후 특징',
-      monthHighlight: '이달의 하이라이트: ',
-      provenanceTitle: '데이터 검증 · Atlas v2.0',
-      provenanceNote: '현장 조사 및 공인 지리 데이터를 기반으로 구성되었습니다.',
-      galleryKicker: 'WORLD ATLAS · 722 DESTINATIONS',
-      galleryTitle: '글로벌 지리 미학 도감',
-      galleryLead: '자연 경관, 건축 미학, 사계절 명소 등 722개 도시를 탐색하고 3D 좌표로 바로 이동하세요.',
-      backToGlobe: '지구본으로',
-      galAll: '전체',
-      galFav: '저장됨',
-      destCountFmt: '{n}개 도시',
-      flyCoord: '좌표로 이동',
-      loadMore: '더 보기 ({n}개 남음)',
-      emptyGallery: '일치하는 여행지가 없습니다.',
-      emptySidebar: '현재 필터와 일치하는 도시가 없습니다.',
-      appearanceTitle: '화면 테마 & 색상',
-      modeNight: '다크',
-      modeDay: '라이트',
-      accentPaletteLabel: '테마 컬러 팔레트',
-      customColorLabel: '사용자 색상',
-      languageTitle: '언어 선택',
-      paletteSelect: '선택',
-      paletteLocate: '이동',
-      paletteClose: '닫기',
-      paletteAllCount: '{n}개 여행지 즉시 검색',
-      paletteHitsCount: '{n}건 검색됨',
-      paletteEmptyTitle: '일치하는 도시나 스팟이 없습니다.',
-      paletteClearQuery: '검색어 지우기',
-      paletteRelaxFilters: '필터 초기화',
-      hoverAction: '{n}개 스팟 보기 →',
-      subspotToast: '{name} · {n}개 정밀 스팟',
-      loaderText: '전 세계 722개 여행지 불러오는 중…',
-      continents: {
-        global: '세계', asia: '아시아', europe: '유럽', oceania: '오세아니아',
-        north_america: '북아메리카', south_america: '남아메리카', africa_antarctica: '아프리카/남극'
-      },
-      seasons: ['북반구 겨울', '북반구 봄', '북반구 여름', '북반구 가을']
-    },
-    ru: {
-      appTitle: 'World Travel Globe',
-      searchPlaceholderShort: 'Поиск: 722 города, 5 414 точек…',
-      palettePlaceholder: 'Страна, город, точка съёмки или ID (напр. Киото, Исландия, kerala)…',
-      modeMap: 'Глобус',
-      modeGallery: 'Атлас',
-      statsFmt: '{cities} гор. · {spots} точек',
-      filterTheme: 'Тематика',
-      filterWeather: 'Погода и явления',
-      filterAll: 'Все',
-      themeNature: 'Природа',
-      themeArch: 'Архитектура',
-      weatherAllWeather: 'Круглый год',
-      weatherSunny: 'Ясно и звёзды',
-      weatherRain: 'Туман и дождь',
-      weatherSnow: 'Снег и лёд',
-      weatherSpecial: 'Редкие',
-      matchFmt: 'Найдено: {count}',
-      reset: 'Сброс',
-      clear: 'Очистить',
-      fitResults: 'Показать все',
-      sidebarTitle: 'Направления',
-      legendAllWeather: 'Всесезонные',
-      legendSeasonal: 'Сезонные',
-      allYear: 'Год',
-      monthFmt: '{m}м',
-      citiesCountFmt: '{n}',
-      spotsCountFmt: '{n} точек',
-      skinSatellite: 'Спутник',
-      skinNatgeo: 'NatGeo',
-      skinPhysical: 'Рельеф',
-      skinDark: 'Ночь',
-      flyChina: 'Китай',
-      flyGlobal: 'Мир',
-      panorama: 'Обзор',
-      skipIntro: 'Пропустить',
-      tabSpots: 'Точки',
-      tabMonths: 'Сезоны',
-      tabWeather: 'Погода',
-      tabBudget: 'Бюджет',
-      tabItinerary: 'Маршрут',
-      badgeAllWeather: 'Всесезонно',
-      badgeSeasonal: 'Сезонный пик',
-      elevationPrefix: 'Высота',
-      daysPrefix: 'Срок',
-      flyToSpot: 'Перелететь',
-      goldenHour: 'Золотой час: ',
-      realScene: 'Пейзаж: ',
-      weatherSunnyTitle: 'Ясная погода',
-      weatherRainyTitle: 'Дождь и облака',
-      weatherSnowyTitle: 'Снег и зима',
-      weatherSpecialTitle: 'Редкие явления',
-      weatherTrigger: 'Условия: ',
-      weatherGear: 'Снаряжение: ',
-      budgetLuxury: 'Люкс-уровень',
-      budgetComfort: 'Комфорт-уровень',
-      approxUsd: '≈ {usd} USD',
-      hemiNorth: 'Северное полушарие',
-      hemiSouth: 'Южное полушарие',
-      monthArchiveFmt: 'Месяц {m} ({hemi})',
-      recommendScore: 'Рейтинг',
-      tempRange: 'Температура',
-      climateFeature: 'Климат',
-      monthHighlight: 'Особенности: ',
-      provenanceTitle: 'Верификация данных · Atlas v2.0',
-      provenanceNote: 'Координаты и прогнозы проверены по географическим базам.',
-      galleryKicker: 'WORLD ATLAS · 722 DESTINATIONS',
-      galleryTitle: 'Географическая галерея мира',
-      galleryLead: '722 направления по природным чудесам, архитектуре и погодным явлениям.',
-      backToGlobe: 'К глобусу',
-      galAll: 'Все',
-      galFav: 'Избранное',
-      destCountFmt: '{n} мест',
-      flyCoord: 'На глобус',
-      loadMore: 'Загрузить ещё (осталось {n})',
-      emptyGallery: 'Нет подходящих направлений.',
-      emptySidebar: 'По заданным фильтрам ничего не найдено.',
-      appearanceTitle: 'Тема и палитра',
-      modeNight: 'Ночь',
-      modeDay: 'День',
-      accentPaletteLabel: 'Акцентный цвет',
-      customColorLabel: 'Свой цвет',
-      languageTitle: 'Язык интерфейса',
-      paletteSelect: 'Выбор',
-      paletteLocate: 'Открыть',
-      paletteClose: 'Закрыть',
-      paletteAllCount: 'Мгновенный поиск по {n} городам',
-      paletteHitsCount: 'Найдено: {n}',
-      paletteEmptyTitle: 'Совпадения не найдены.',
-      paletteClearQuery: 'Очистить запрос',
-      paletteRelaxFilters: 'Сбросить фильтры',
-      hoverAction: 'Смотреть {n} точек →',
-      subspotToast: '{name} · {n} точек',
-      loaderText: 'Загрузка 722 направлений…',
-      continents: {
-        global: 'Мир', asia: 'Азия', europe: 'Европа', oceania: 'Океания',
-        north_america: 'С. Америка', south_america: 'Ю. Америка', africa_antarctica: 'Африка/Ант.'
-      },
-      seasons: ['Сев. зима', 'Сев. весна', 'Сев. лето', 'Сев. осень']
-    },
-    fr: {
-      appTitle: 'World Travel Globe',
-      searchPlaceholderShort: '722 villes & 5 414 spots…',
-      palettePlaceholder: 'Pays, ville, spot photo ou ID (ex. Kyoto, Islande, kerala)…',
-      modeMap: 'Globe',
-      modeGallery: 'Galerie',
-      statsFmt: '{cities} villes · {spots} spots',
-      filterTheme: 'Thème',
-      filterWeather: 'Météo & Phénomènes',
-      filterAll: 'Tout',
-      themeNature: 'Nature',
-      themeArch: 'Architecture',
-      weatherAllWeather: 'Toute saison',
-      weatherSunny: 'Ciel clair',
-      weatherRain: 'Brume & Pluie',
-      weatherSnow: 'Neige & Glace',
-      weatherSpecial: 'Extrême',
-      matchFmt: '{count} résultats',
-      reset: 'Réinitialiser',
-      clear: 'Effacer',
-      fitResults: 'Ajuster la vue',
-      sidebarTitle: 'Destinations',
-      legendAllWeather: 'Toute saison',
-      legendSeasonal: 'Saisonnier',
-      allYear: 'Année',
-      monthFmt: 'M{m}',
-      citiesCountFmt: '{n}',
-      spotsCountFmt: '{n} spots',
-      skinSatellite: 'Satellite',
-      skinNatgeo: 'NatGeo',
-      skinPhysical: 'Relief',
-      skinDark: 'Nuit',
-      flyChina: 'Chine',
-      flyGlobal: 'Monde',
-      panorama: 'Vue globale',
-      skipIntro: 'Passer',
-      tabSpots: 'Spots',
-      tabMonths: 'Saisons',
-      tabWeather: 'Météo',
-      tabBudget: 'Budget',
-      tabItinerary: 'Itinéraire',
-      badgeAllWeather: 'Toute saison',
-      badgeSeasonal: 'Pic saisonnier',
-      elevationPrefix: 'Alt.',
-      daysPrefix: 'Durée',
-      flyToSpot: 'Voler ici',
-      goldenHour: 'Heure dorée : ',
-      realScene: 'Scène : ',
-      weatherSunnyTitle: 'Ciel dégagé',
-      weatherRainyTitle: 'Pluie & Mer de nuages',
-      weatherSnowyTitle: 'Neige & Hiver',
-      weatherSpecialTitle: 'Phénomènes rares',
-      weatherTrigger: 'Condition : ',
-      weatherGear: 'Équipement : ',
-      budgetLuxury: 'Gamme Luxe',
-      budgetComfort: 'Gamme Confort',
-      approxUsd: '≈ {usd} USD',
-      hemiNorth: 'Hémisphère nord',
-      hemiSouth: 'Hémisphère sud',
-      monthArchiveFmt: 'Mois {m} ({hemi})',
-      recommendScore: 'Note',
-      tempRange: 'Température',
-      climateFeature: 'Climat',
-      monthHighlight: 'Points forts : ',
-      provenanceTitle: 'Source des données · Atlas v2.0',
-      provenanceNote: 'Coordonnées et données climatiques vérifiées.',
-      galleryKicker: 'WORLD ATLAS · 722 DESTINATIONS',
-      galleryTitle: 'Galerie Géographique Mondiale',
-      galleryLead: '722 destinations classées par merveilles naturelles, architecture et phénomènes climatiques.',
-      backToGlobe: 'Retour au globe',
-      galAll: 'Tout',
-      galFav: 'Favoris',
-      destCountFmt: '{n} lieux',
-      flyCoord: 'Survoler',
-      loadMore: 'Charger plus ({n} restants)',
-      emptyGallery: 'Aucune destination correspondante.',
-      emptySidebar: 'Aucun résultat pour les filtres actifs.',
-      appearanceTitle: 'Apparence & Couleur',
-      modeNight: 'Nuit',
-      modeDay: 'Jour',
-      accentPaletteLabel: 'Palette de thème',
-      customColorLabel: 'Couleur libre',
-      languageTitle: 'Langue',
-      paletteSelect: 'Choisir',
-      paletteLocate: 'Aller',
-      paletteClose: 'Fermer',
-      paletteAllCount: 'Recherche instantanée sur {n} villes',
-      paletteHitsCount: '{n} résultats',
-      paletteEmptyTitle: 'Aucune destination correspondante.',
-      paletteClearQuery: 'Effacer',
-      paletteRelaxFilters: 'Réinitialiser filtres',
-      hoverAction: 'Voir {n} spots →',
-      subspotToast: '{name} · {n} points de vue',
-      loaderText: 'Chargement des 722 destinations…',
-      continents: {
-        global: 'Monde', asia: 'Asie', europe: 'Europe', oceania: 'Océanie',
-        north_america: 'Am. Nord', south_america: 'Am. Sud', africa_antarctica: 'Afrique/Ant.'
-      },
-      seasons: ['Hiver N.', 'Printemps N.', 'Été N.', 'Automne N.']
     }
   };
 
   let currentLang = 'zh-CN';
+  const EXTRA_DICT = {
+    refLink: {
+      'zh-CN': '参考链接', 'zh-TW': '參考連結', en: 'Reference'
+    },
+    loadingDetail: {
+      'zh-CN': '正在载入机位实操详情…', 'zh-TW': '正在載入機位實操詳情…', en: 'Loading spot guide & practical tips…'
+    },
+    webglRecovery: {
+      'zh-CN': '图形上下文正在恢复，地球将自动重绘…', 'zh-TW': '圖形上下文正在恢復，地球將自動重繪…',
+      en: 'Restoring graphics context, globe will redraw automatically…'
+    }
+  };
+  const langMaps = new Map();
+  const indexPromises = new Map();
+  const regionPromises = new Map();
+
+  function getLangMap(langId) {
+    if (!langMaps.has(langId)) langMaps.set(langId, new Map());
+    return langMaps.get(langId);
+  }
+
+  function mergeDict(langId, obj) {
+    if (!obj || typeof obj !== 'object') return;
+    const m = getLangMap(langId);
+    const keys = Object.keys(obj);
+    for (let i = 0; i < keys.length; i++) {
+      const k = keys[i];
+      if (obj[k]) m.set(k, obj[k]);
+    }
+  }
+
+  function getRegionIdx(destOrIdx) {
+    if (typeof destOrIdx === 'number') return destOrIdx;
+    if (!destOrIdx || typeof destOrIdx !== 'object') return -1;
+    if (destOrIdx._r !== undefined && destOrIdx._r !== null) return Number(destOrIdx._r);
+    const order = global.TRAVEL_ATLAS && global.TRAVEL_ATLAS.REGION_ORDER;
+    if (Array.isArray(order)) {
+      const idx = order.indexOf(destOrIdx.region);
+      return idx >= 0 ? idx : order.length;
+    }
+    return -1;
+  }
+
+  function ensureLangIndex(langId) {
+    const lang = langId || currentLang;
+    if (!lang || lang === 'zh-CN' || lang === 'zh-TW') return Promise.resolve();
+    if (!indexPromises.has(lang)) {
+      const p = fetch(`data/i18n/${lang}/index.json`)
+        .then((res) => (res.ok ? res.json() : null))
+        .then((obj) => {
+          mergeDict(lang, obj);
+        })
+        .catch(() => {});
+      indexPromises.set(lang, p);
+    }
+    return indexPromises.get(lang);
+  }
+
+  function ensureRegionLang(langId, destOrIdx) {
+    const lang = langId || currentLang;
+    if (!lang || lang === 'zh-CN' || lang === 'zh-TW') return Promise.resolve();
+    const rIdx = getRegionIdx(destOrIdx);
+    if (rIdx < 0) return ensureLangIndex(lang);
+    const key = `${lang}:${rIdx}`;
+    if (!regionPromises.has(key)) {
+      const p = ensureLangIndex(lang).then(() =>
+        fetch(`data/i18n/${lang}/r${rIdx}.json`)
+          .then((res) => (res.ok ? res.json() : null))
+          .then((obj) => {
+            mergeDict(lang, obj);
+          })
+          .catch(() => {})
+      );
+      regionPromises.set(key, p);
+    }
+    return regionPromises.get(key);
+  }
 
   function loadInitialLang() {
     try {
@@ -876,6 +448,9 @@
   }
 
   function t(key, vars) {
+    if (EXTRA_DICT[key]) {
+      return EXTRA_DICT[key][currentLang] || EXTRA_DICT[key]['zh-CN'];
+    }
     const pack = DICT[currentLang] || DICT['zh-CN'];
     let val = pack[key];
     if (val === undefined) val = DICT['zh-CN'][key] || key;
@@ -888,8 +463,15 @@
   }
 
   function tx(str) {
+    if (!str) return '';
     if (currentLang === 'zh-TW') return toTraditional(str);
-    return str || '';
+    if (currentLang === 'zh-CN') return str;
+    const m = langMaps.get(currentLang);
+    if (m) {
+      const hit = m.get(str);
+      if (hit !== undefined) return hit;
+    }
+    return str;
   }
 
   function tContinent(id) {
@@ -931,6 +513,8 @@
     tContinent,
     tSeason,
     hydrateStaticDom,
-    toTraditional
+    toTraditional,
+    ensureLangIndex,
+    ensureRegionLang
   };
 })(window);

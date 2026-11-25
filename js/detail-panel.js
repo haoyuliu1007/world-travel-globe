@@ -62,7 +62,7 @@
       }
       out += escapeHtml(text.slice(lastIdx, match.index));
       let host = rawUrl.replace(/^https?:\/\//i, '').split(/[/?#]/)[0].replace(/^www\./i, '');
-      if (!host) host = '参考链接';
+      if (!host) host = t('refLink');
       const safeUrl = escapeHtml(rawUrl);
       out += `<a class="inline-ref-link" href="${safeUrl}" target="_blank" rel="noopener noreferrer" title="${safeUrl}">${icon('arrowUpRight', 11)}${escapeHtml(host)}</a>${escapeHtml(trailing)}`;
       lastIdx = match.index + match[0].length;
@@ -262,7 +262,7 @@
       metaStrip.textContent = parts.join('  ·  ');
 
       document.getElementById('drawer-hero-summary').textContent = tx(dest.heroSummary);
-      document.getElementById('tab-spots-count').textContent = (dest.spots || []).length;
+      document.getElementById('tab-spots-count').textContent = dest.spots ? dest.spots.length : (dest.spotCount || 0);
 
       document.querySelectorAll('#drawer-tabs .tab-btn').forEach((btn) => {
         const active = btn.dataset.tab === this.activeTab;
@@ -334,7 +334,10 @@
     },
 
     buildSpotsHtml: function (dest) {
-      const spots = dest.spots || [];
+      if (!Array.isArray(dest.spots)) {
+        return `<div style="padding:24px 4px;color:var(--text-muted);font-size:12.5px;">${t('loadingDetail')}</div>`;
+      }
+      const spots = dest.spots;
       return spots
         .map((sp, i) => {
           const isExpanded = this.expandedSpotIndex === i;

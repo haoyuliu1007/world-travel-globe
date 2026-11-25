@@ -3,6 +3,40 @@
 
   const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
   const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+  const DIRECT_BREAK_MS = 5 * 60 * 1000;
+
+  let directFailCount = 0;
+  let directBlockedUntil = 0;
+
+  function isDirectCircuitOpen() {
+    return Date.now() < directBlockedUntil;
+  }
+
+  function recordDirectResult(ok) {
+    if (ok) {
+      directFailCount = 0;
+      directBlockedUntil = 0;
+    } else {
+      directFailCount++;
+      if (directFailCount >= 2) {
+        directBlockedUntil = Date.now() + DIRECT_BREAK_MS;
+      }
+    }
+  }
+
+  function rewriteImageUrl(rawUrl, caps) {
+    if (
+      caps &&
+      caps.available &&
+      caps.features &&
+      caps.features.img &&
+      typeof rawUrl === 'string' &&
+      rawUrl.startsWith('https://upload.wikimedia.org/')
+    ) {
+      return `/api/img?url=${encodeURIComponent(rawUrl)}`;
+    }
+    return rawUrl;
+  }
 
   function haversineKm(a, b) {
     const r = Math.PI / 180;
@@ -26,7 +60,7 @@
       .trim();
   }
 
-  function parseCommonsPages(pagesObj) {
+  function parseCommonsPages(pagesObj, caps) {
     if (!pagesObj || typeof pagesObj !== 'object') return [];
     const list = [];
     for (const k of Object.keys(pagesObj)) {
@@ -50,8 +84,8 @@
         pageid: p.pageid,
         title: titleClean,
         description: desc.slice(0, 180),
-        thumbUrl: info.thumburl,
-        fullUrl: info.url || info.thumburl,
+        thumbUrl: rewriteImageUrl(info.thumburl, caps),
+        fullUrl: rewriteImageUrl(info.url || info.thumburl, caps),
         sourceUrl: info.descriptionurl || `https://commons.wikimedia.org/wiki/${encodeURIComponent(p.title || '')}`,
         author: author.slice(0, 80),
         license: license.slice(0, 50),
@@ -65,30 +99,47 @@
     return list;
   }
 
+  async function fetchWithDirectCircuit(url, cacheKey, ttlMs, source, useProxy) {
+    const Api = global.ApiClient;
+    if (!useProxy && isDirectCircuitOpen()) {
+      throw new Error('Wikimedia direct circuit open');
+    }
+    try {
+      let data;
+      if (Api) {
+        data = await Api.fetchJson(url, {
+          cacheKey,
+          ttlMs,
+          source,
+          timeoutMs: useProxy ? 9000 : 4200,
+          retries: useProxy ? 1 : 0
+        });
+      } else {
+        const res = await fetch(url);
+        data = await res.json();
+      }
+      if (!useProxy) recordDirectResult(true);
+      return data;
+    } catch (err) {
+      if (!useProxy) recordDirectResult(false);
+      throw err;
+    }
+  }
+
   async function queryCommonsApi(params) {
     const Api = global.ApiClient;
     const caps = Api ? await Api.detectWorkerCapabilities() : { available: false };
+    const useProxy = Boolean(caps && caps.available && caps.features && caps.features.commons);
     const qs = new URLSearchParams(Object.assign({ format: 'json', origin: '*' }, params)).toString();
-    const url =
-      caps && caps.available && caps.features && caps.features.commons
-        ? `/api/commons?${qs}`
-        : `https://commons.wikimedia.org/w/api.php?${qs}`;
-
-    if (Api) {
-      return Api.fetchJson(url, {
-        cacheKey: `commons:${qs}`,
-        ttlMs: SEVEN_DAYS_MS,
-        source: 'Wikimedia Commons',
-        timeoutMs: 9000
-      });
-    }
-    const res = await fetch(url);
-    return res.json();
+    const url = useProxy ? `/api/commons?${qs}` : `https://commons.wikimedia.org/w/api.php?${qs}`;
+    return fetchWithDirectCircuit(url, `commons:${qs}`, SEVEN_DAYS_MS, 'Wikimedia Commons', useProxy);
   }
 
   async function queryWikipediaSummarySearch(query, lang) {
     const Api = global.ApiClient;
-    const hostLang = lang || 'en';
+    const caps = Api ? await Api.detectWorkerCapabilities() : { available: false };
+    const useProxy = Boolean(caps && caps.available && caps.features && caps.features.wikipedia);
+    const hostLang = lang === 'zh' ? 'zh' : 'en';
     const qs = new URLSearchParams({
       action: 'query',
       format: 'json',
@@ -100,17 +151,10 @@
       pithumbsize: '960',
       piprop: 'thumbnail|name'
     }).toString();
-    const url = `https://${hostLang}.wikipedia.org/w/api.php?${qs}`;
-    if (Api) {
-      return Api.fetchJson(url, {
-        cacheKey: `wp:${hostLang}:${query}`,
-        ttlMs: SEVEN_DAYS_MS,
-        source: `Wikipedia (${hostLang})`,
-        timeoutMs: 8500
-      });
-    }
-    const res = await fetch(url);
-    return res.json();
+    const url = useProxy
+      ? `/api/wikipedia?lang=${hostLang}&${qs}`
+      : `https://${hostLang}.wikipedia.org/w/api.php?${qs}`;
+    return fetchWithDirectCircuit(url, `wp:${hostLang}:${query}`, SEVEN_DAYS_MS, `Wikipedia (${hostLang})`, useProxy);
   }
 
   async function fetchPlacePhotos(opts) {
@@ -119,7 +163,10 @@
     const lng = Number(o.lng);
     const limit = o.limit || 6;
     const radiusM = Math.min(10000, o.radiusM || 3500);
-    const cacheKey = `photos:v1:${o.id || ''}:${lat.toFixed(3)},${lng.toFixed(3)}:${cleanQueryName(o.name)}:${limit}`;
+    const Api = global.ApiClient;
+    const caps = Api ? await Api.detectWorkerCapabilities() : { available: false };
+    const cachePrefix = caps && caps.available && caps.features && caps.features.img ? 'photos:v2p' : 'photos:v1';
+    const cacheKey = `${cachePrefix}:${o.id || ''}:${lat.toFixed(3)},${lng.toFixed(3)}:${cleanQueryName(o.name)}:${limit}`;
 
     if (global.StorageDB) {
       const hit = await global.StorageDB.getCache(cacheKey);
@@ -141,7 +188,7 @@
           iiprop: 'url|extmetadata|size|mime',
           iiurlwidth: '960'
         });
-        photos = parseCommonsPages(geoRes && geoRes.query && geoRes.query.pages);
+        photos = parseCommonsPages(geoRes && geoRes.query && geoRes.query.pages, caps);
       }
     } catch (e) {
       // fall through to text search
@@ -160,7 +207,7 @@
           iiprop: 'url|extmetadata|size|mime',
           iiurlwidth: '960'
         });
-        const more = parseCommonsPages(searchRes && searchRes.query && searchRes.query.pages);
+        const more = parseCommonsPages(searchRes && searchRes.query && searchRes.query.pages, caps);
         const seen = new Set(photos.map((p) => p.thumbUrl));
         for (const m of more) {
           if (!seen.has(m.thumbUrl)) {
@@ -179,12 +226,13 @@
         const pages = wpRes && wpRes.query && wpRes.query.pages ? Object.values(wpRes.query.pages) : [];
         for (const p of pages) {
           if (p && p.thumbnail && p.thumbnail.source) {
+            const proxied = rewriteImageUrl(p.thumbnail.source, caps);
             photos.push({
               pageid: p.pageid,
               title: p.title,
               description: p.title,
-              thumbUrl: p.thumbnail.source,
-              fullUrl: p.thumbnail.source,
+              thumbUrl: proxied,
+              fullUrl: proxied,
               sourceUrl: `https://commons.wikimedia.org/wiki/File:${encodeURIComponent(p.pageimage || '')}`,
               author: 'Wikimedia / Wikipedia',
               license: 'Wikimedia License',
@@ -232,22 +280,10 @@
   async function queryWikidataApi(params) {
     const Api = global.ApiClient;
     const caps = Api ? await Api.detectWorkerCapabilities() : { available: false };
+    const useProxy = Boolean(caps && caps.available && caps.features && caps.features.wikidata);
     const qs = new URLSearchParams(Object.assign({ format: 'json', origin: '*' }, params)).toString();
-    const url =
-      caps && caps.available && caps.features && caps.features.wikidata
-        ? `/api/wikidata?${qs}`
-        : `https://www.wikidata.org/w/api.php?${qs}`;
-
-    if (Api) {
-      return Api.fetchJson(url, {
-        cacheKey: `wd:${qs}`,
-        ttlMs: THIRTY_DAYS_MS,
-        source: 'Wikidata',
-        timeoutMs: 9000
-      });
-    }
-    const res = await fetch(url);
-    return res.json();
+    const url = useProxy ? `/api/wikidata?${qs}` : `https://www.wikidata.org/w/api.php?${qs}`;
+    return fetchWithDirectCircuit(url, `wd:${qs}`, THIRTY_DAYS_MS, 'Wikidata', useProxy);
   }
 
   async function verifyWithWikidata(dest) {

@@ -78,6 +78,9 @@ async function handleApi(request, env) {
         weather: true,
         commons: true,
         wikidata: true,
+        wikipedia: true,
+        img: true,
+        tile: true,
         route: true,
         streetview: Boolean(env && env.MAPILLARY_TOKEN),
         pois: Boolean(env && env.OTM_API_KEY),
@@ -110,6 +113,107 @@ async function handleApi(request, env) {
     return cachedUpstreamJson(request.url, upstream, 86400, {
       headers: { 'User-Agent': 'WorldTravelGlobe/3.0 (https://world-travel-globe.globe-app.workers.dev)' }
     });
+  }
+
+  if (p === '/api/wikipedia') {
+    const lang = url.searchParams.get('lang') || 'en';
+    if (lang !== 'zh' && lang !== 'en') {
+      return jsonResponse({ ok: false, error: 'Unsupported Wikipedia language' }, 400);
+    }
+    const qs = new URLSearchParams(url.searchParams);
+    qs.delete('lang');
+    const upstream = `https://${lang}.wikipedia.org/w/api.php?${qs.toString()}`;
+    return cachedUpstreamJson(request.url, upstream, 86400, {
+      headers: { 'User-Agent': 'WorldTravelGlobe/3.0 (https://world-travel-globe.globe-app.workers.dev)' }
+    });
+  }
+
+  if (p === '/api/img') {
+    const target = url.searchParams.get('url') || '';
+    let parsed;
+    try {
+      parsed = new URL(target);
+    } catch (e) {
+      return jsonResponse({ ok: false, error: 'Invalid image URL' }, 400);
+    }
+    if (parsed.protocol !== 'https:' || parsed.hostname !== 'upload.wikimedia.org') {
+      return jsonResponse({ ok: false, error: 'Disallowed image host' }, 400);
+    }
+    const cache = typeof caches !== 'undefined' ? caches.default : null;
+    const cacheReq = new Request(request.url, { method: 'GET' });
+    if (cache) {
+      const hit = await cache.match(cacheReq);
+      if (hit) return hit;
+    }
+    const res = await fetch(parsed.toString(), {
+      headers: {
+        'User-Agent': 'WorldTravelGlobe/3.0 (https://world-travel-globe.globe-app.workers.dev)',
+        Accept: 'image/*'
+      }
+    });
+    const ct = res.headers.get('content-type') || '';
+    if (!ct.startsWith('image/')) {
+      return jsonResponse({ ok: false, error: 'Upstream did not return an image' }, res.ok ? 400 : res.status);
+    }
+    const body = await res.arrayBuffer();
+    const out = new Response(body, {
+      status: res.status,
+      headers: corsHeaders({
+        'Content-Type': ct,
+        'Cache-Control': 'public, max-age=604800, immutable'
+      })
+    });
+    if (cache && res.ok) {
+      await cache.put(cacheReq, out.clone());
+    }
+    return out;
+  }
+
+  const tileMatch = p.match(/^\/api\/tile\/([a-z]+)\/(\d{1,2})\/(\d+)\/(\d+)$/);
+  if (tileMatch) {
+    const skin = tileMatch[1];
+    const z = Number(tileMatch[2]);
+    const y = tileMatch[3];
+    const x = tileMatch[4];
+    if (!Number.isFinite(z) || z > 19) {
+      return jsonResponse({ ok: false, error: 'Invalid zoom level' }, 400);
+    }
+    const tileTemplates = {
+      satellite: `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${z}/${y}/${x}`,
+      natgeo: `https://services.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/${z}/${y}/${x}`,
+      physical: `https://services.arcgisonline.com/ArcGIS/rest/services/World_Physical_Map/MapServer/tile/${z}/${y}/${x}`,
+      labels: `https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/${z}/${y}/${x}`,
+      dark: `https://a.basemaps.cartocdn.com/dark_all/${z}/${x}/${y}.png`
+    };
+    const upstream = tileTemplates[skin];
+    if (!upstream) {
+      return jsonResponse({ ok: false, error: 'Unsupported tile skin' }, 400);
+    }
+    const cache = typeof caches !== 'undefined' ? caches.default : null;
+    const cacheReq = new Request(request.url, { method: 'GET' });
+    if (cache) {
+      const hit = await cache.match(cacheReq);
+      if (hit) return hit;
+    }
+    const res = await fetch(upstream, {
+      headers: {
+        'User-Agent': 'WorldTravelGlobe/3.0 (https://world-travel-globe.globe-app.workers.dev)',
+        Accept: 'image/*'
+      }
+    });
+    const ct = res.headers.get('content-type') || 'image/jpeg';
+    const body = await res.arrayBuffer();
+    const out = new Response(body, {
+      status: res.status,
+      headers: corsHeaders({
+        'Content-Type': ct,
+        'Cache-Control': 'public, max-age=604800'
+      })
+    });
+    if (cache && res.ok) {
+      await cache.put(cacheReq, out.clone());
+    }
+    return out;
   }
 
   if (p === '/api/streetview') {

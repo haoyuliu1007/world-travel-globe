@@ -16,6 +16,145 @@
   }
 
   const FAVORITES_KEY = 'wtg_favorites_v1';
+  const TILE_MODE_KEY = 'wtg_tile_mode_v1';
+
+  const GLOBAL_TILE_URLS = {
+    satellite: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
+    natgeo: ['https://services.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}'],
+    physical: ['https://services.arcgisonline.com/ArcGIS/rest/services/World_Physical_Map/MapServer/tile/{z}/{y}/{x}'],
+    dark: ['https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'],
+    labels: ['https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}']
+  };
+
+  const CN_TILE_URLS = {
+    satellite: [
+      'https://webst01.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}',
+      'https://webst02.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}',
+      'https://webst03.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}',
+      'https://webst04.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}'
+    ],
+    natgeo: [
+      'https://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}',
+      'https://webrd02.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}',
+      'https://webrd03.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}',
+      'https://webrd04.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}'
+    ],
+    physical: GLOBAL_TILE_URLS.physical,
+    dark: GLOBAL_TILE_URLS.dark,
+    labels: [
+      'https://wprd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&style=8&x={x}&y={y}&z={z}&scl=1&ltype=4',
+      'https://wprd02.is.autonavi.com/appmaptile?lang=zh_cn&size=1&style=8&x={x}&y={y}&z={z}&scl=1&ltype=4',
+      'https://wprd03.is.autonavi.com/appmaptile?lang=zh_cn&size=1&style=8&x={x}&y={y}&z={z}&scl=1&ltype=4',
+      'https://wprd04.is.autonavi.com/appmaptile?lang=zh_cn&size=1&style=8&x={x}&y={y}&z={z}&scl=1&ltype=4'
+    ]
+  };
+
+  let activeTileRoute = 'global';
+  let workerTileAvailable = false;
+
+  function loadSavedTileMode() {
+    try {
+      const val = global.localStorage.getItem(TILE_MODE_KEY);
+      if (val === 'cn' || val === 'global' || val === 'worker') return val;
+    } catch (e) {
+      // ignore
+    }
+    return 'auto';
+  }
+
+  function saveTileMode(mode) {
+    try {
+      if (mode === 'auto') global.localStorage.removeItem(TILE_MODE_KEY);
+      else global.localStorage.setItem(TILE_MODE_KEY, mode);
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  function getTileUrls(skinKey, effectiveMode) {
+    if (effectiveMode === 'worker') {
+      return [`/api/tile/${skinKey}/{z}/{y}/{x}`];
+    }
+    if (effectiveMode === 'cn') {
+      return CN_TILE_URLS[skinKey] || GLOBAL_TILE_URLS[skinKey];
+    }
+    return GLOBAL_TILE_URLS[skinKey];
+  }
+
+  function updateTileRouteButton(effectiveMode) {
+    const btn = document.getElementById('toggle-tile-cdn-btn');
+    if (!btn) return;
+    const keyMap = {
+      cn: 'tileRouteCn',
+      worker: 'tileRouteWorker',
+      global: 'tileRouteGlobal'
+    };
+    const key = keyMap[effectiveMode] || 'tileRouteAuto';
+    btn.setAttribute('data-i18n', key);
+    btn.textContent = t(key);
+    btn.classList.toggle('active', effectiveMode === 'cn' || effectiveMode === 'worker');
+  }
+
+  function applyTileSourceMode(effectiveMode) {
+    activeTileRoute = effectiveMode;
+    updateTileRouteButton(effectiveMode);
+    if (!map || !map.isStyleLoaded || !map.isStyleLoaded()) return;
+    ['satellite', 'natgeo', 'physical', 'dark', 'labels'].forEach((skinKey) => {
+      const src = map.getSource(skinKey);
+      if (src && typeof src.setTiles === 'function') {
+        src.setTiles(getTileUrls(skinKey, effectiveMode));
+      }
+    });
+  }
+
+  function probeImageLoad(url, timeoutMs) {
+    return new Promise((resolve) => {
+      if (typeof Image === 'undefined') {
+        resolve({ ok: false, ms: timeoutMs });
+        return;
+      }
+      const start = Date.now();
+      const img = new Image();
+      let done = false;
+      const finish = (ok) => {
+        if (done) return;
+        done = true;
+        clearTimeout(timer);
+        img.onload = null;
+        img.onerror = null;
+        resolve({ ok, ms: Date.now() - start });
+      };
+      const timer = setTimeout(() => finish(false), timeoutMs || 3500);
+      img.onload = () => finish(true);
+      img.onerror = () => finish(false);
+      img.src = url;
+    });
+  }
+
+  async function initAutoTileRoute() {
+    const saved = loadSavedTileMode();
+    if (global.ApiClient) {
+      const caps = await global.ApiClient.detectWorkerCapabilities().catch(() => null);
+      workerTileAvailable = Boolean(caps && caps.available && caps.features && caps.features.tile);
+    }
+    if (saved === 'cn' || saved === 'global' || (saved === 'worker' && workerTileAvailable)) {
+      applyTileSourceMode(saved);
+      return;
+    }
+    if (workerTileAvailable) {
+      applyTileSourceMode('worker');
+      return;
+    }
+    const [esriRes, cnRes] = await Promise.all([
+      probeImageLoad('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/2/1/3', 3500),
+      probeImageLoad('https://webst01.is.autonavi.com/appmaptile?style=6&x=3&y=1&z=2', 3500)
+    ]);
+    if ((!esriRes.ok || esriRes.ms >= 3500) && cnRes.ok) {
+      applyTileSourceMode('cn');
+    } else {
+      applyTileSourceMode('global');
+    }
+  }
 
   const SKIN_META = {
     satellite: { maxZoom: 17.5, label: '卫星' },
@@ -215,35 +354,35 @@
       sources: {
         satellite: {
           type: 'raster',
-          tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
+          tiles: getTileUrls('satellite', activeTileRoute),
           tileSize: 256,
           maxzoom: 18,
           attribution: 'Esri World Imagery'
         },
         natgeo: {
           type: 'raster',
-          tiles: ['https://services.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}'],
+          tiles: getTileUrls('natgeo', activeTileRoute),
           tileSize: 256,
           maxzoom: 16,
           attribution: 'National Geographic & Esri'
         },
         physical: {
           type: 'raster',
-          tiles: ['https://services.arcgisonline.com/ArcGIS/rest/services/World_Physical_Map/MapServer/tile/{z}/{y}/{x}'],
+          tiles: getTileUrls('physical', activeTileRoute),
           tileSize: 256,
           maxzoom: 10,
           attribution: 'Esri World Physical'
         },
         dark: {
           type: 'raster',
-          tiles: ['https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'],
+          tiles: getTileUrls('dark', activeTileRoute),
           tileSize: 256,
           maxzoom: 18,
           attribution: 'CartoDB Dark Matter'
         },
         labels: {
           type: 'raster',
-          tiles: ['https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}'],
+          tiles: getTileUrls('labels', activeTileRoute),
           tileSize: 256,
           maxzoom: 18
         },
@@ -1807,6 +1946,20 @@
       }
     });
 
+    const tileCdnBtn = document.getElementById('toggle-tile-cdn-btn');
+    if (tileCdnBtn) {
+      tileCdnBtn.addEventListener('click', () => {
+        let nextMode;
+        if (workerTileAvailable) {
+          nextMode = activeTileRoute === 'worker' ? 'cn' : activeTileRoute === 'cn' ? 'global' : 'worker';
+        } else {
+          nextMode = activeTileRoute === 'cn' ? 'global' : 'cn';
+        }
+        saveTileMode(nextMode);
+        applyTileSourceMode(nextMode);
+      });
+    }
+
     document.getElementById('toggle-all-labels-btn').addEventListener('click', (e) => {
       state.forceAllLabels = !state.forceAllLabels;
       e.currentTarget.classList.toggle('active', state.forceAllLabels);
@@ -2429,6 +2582,11 @@
       }
     }
 
+    const initialSavedTileMode = loadSavedTileMode();
+    if (initialSavedTileMode === 'cn' || initialSavedTileMode === 'global') {
+      activeTileRoute = initialSavedTileMode;
+    }
+
     map = new maplibregl.Map({
       container: 'map',
       style: buildStyle(),
@@ -2471,6 +2629,7 @@
       if (state.skin !== 'satellite') switchSkin(state.skin, true);
       if (state.mode === 'gallery') setViewMode('gallery', true);
       scheduleLabelLayout();
+      initAutoTileRoute();
 
       if (focusDest) {
         if (initialParams.instant || prefersReducedMotion()) {

@@ -3,26 +3,74 @@
 
   const ATLAS = global.TRAVEL_ATLAS;
   const Panel = global.DetailPanel;
+  const Icons = global.AppIcons;
+
+  const FAVORITES_KEY = 'wtg_favorites_v1';
+
+  const SKIN_META = {
+    satellite: { maxZoom: 17.5, label: '卫星' },
+    natgeo: { maxZoom: 15.8, label: '国家地理' },
+    physical: { maxZoom: 10.2, label: '地形' },
+    dark: { maxZoom: 17.5, label: '暗夜' }
+  };
+
+  const WEATHER_LABELS = {
+    allWeather: '四季皆美',
+    sunny: '晴天星空',
+    rain: '烟雨云海',
+    snow: '雪景蓝冰',
+    special: '极限奇观'
+  };
+
+  const THEME_LABELS = {
+    nature: '自然奇观',
+    architecture: '城市建筑'
+  };
 
   const state = {
     continent: 'global',
     month: 'all',
     theme: 'all',
     weather: 'all',
+    onlyFavorites: false,
     query: '',
     skin: 'satellite',
+    mode: 'map',
     showLabels: true,
     forceAllLabels: false,
     isGlobe: true,
     isSpinning: false,
     selectedId: null,
+    activeSpotIdx: -1,
+    favorites: new Set(),
     subSpotMarkers: [],
-    mainMarkers: new Map()
+    activeBeaconMarker: null
   };
 
   let map = null;
   let hoverPopup = null;
+  let hoveredFeatureId = null;
   let spinRaf = null;
+  let lastSpinTime = 0;
+  let labelRaf = null;
+  let skinFadeTimer = null;
+  let introTimer = null;
+  let isIntroFlight = false;
+  let suppressPopState = false;
+
+  // Pre-built index for sub-millisecond filtering & phenology counts
+  let atlasIndex = [];
+  let indexById = new Map();
+  let lastMatchedIds = new Set();
+
+  // Label DOM pool (renders only visible non-overlapping labels in viewport)
+  let labelOverlayEl = null;
+  const labelPool = [];
+  const MAX_POOL_LABELS = 96;
+
+  function prefersReducedMotion() {
+    return Boolean(global.matchMedia && global.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  }
 
   function isMobileViewport() {
     return global.innerWidth <= 768;
@@ -32,15 +80,107 @@
     return Boolean(global.matchMedia && global.matchMedia('(hover: none), (pointer: coarse)').matches);
   }
 
+  function easeInOutCubic(t) {
+    return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  }
+
+  function haversineKm(a, b) {
+    const toRad = Math.PI / 180;
+    const dLat = (b[1] - a[1]) * toRad;
+    const dLng = (b[0] - a[0]) * toRad;
+    const lat1 = a[1] * toRad;
+    const lat2 = b[1] * toRad;
+    const s = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
+    return 6371 * 2 * Math.asin(Math.min(1, Math.sqrt(s)));
+  }
+
+  function loadFavorites() {
+    try {
+      const raw = global.localStorage.getItem(FAVORITES_KEY);
+      if (raw) {
+        const arr = JSON.parse(raw);
+        if (Array.isArray(arr)) {
+          state.favorites = new Set(arr.filter((id) => ATLAS.getById(id)));
+        }
+      }
+    } catch (e) {
+      // ignore storage access errors
+    }
+  }
+
+  function saveFavorites() {
+    try {
+      global.localStorage.setItem(FAVORITES_KEY, JSON.stringify([...state.favorites]));
+    } catch (e) {
+      // ignore storage access errors
+    }
+  }
+
+  function hydrateIcons() {
+    if (!Icons) return;
+    document.querySelectorAll('[data-icon]').forEach((el) => {
+      const name = el.getAttribute('data-icon');
+      const size = Number(el.getAttribute('data-size') || 15);
+      el.innerHTML = Icons.svg(name, size);
+    });
+  }
+
+  function buildAtlasIndex() {
+    const all = ATLAS.getAll();
+    atlasIndex = all.map((dest, idx) => {
+      const monthScores = new Uint8Array(12);
+      (dest.months || []).forEach((m) => {
+        if (m.m >= 1 && m.m <= 12) monthScores[m.m - 1] = Number(m.score) || 0;
+      });
+      const haystack = [
+        dest.id || '',
+        dest.country || '',
+        dest.name || '',
+        dest.shortName || '',
+        dest.subtitle || '',
+        dest.province || '',
+        dest.region || '',
+        dest.heroSummary || '',
+        (dest.badges || []).join(' '),
+        (dest.spots || []).map((s) => `${s.name} ${s.category || ''} ${s.scene || ''}`).join(' ')
+      ]
+        .join(' ')
+        .toLowerCase();
+
+      const entry = {
+        numId: idx + 1,
+        dest,
+        monthScores,
+        haystack
+      };
+      indexById.set(dest.id, entry);
+      return entry;
+    });
+  }
+
+  function countCountries(list) {
+    const set = new Set();
+    (list || []).forEach((d) => {
+      String(d.country || '')
+        .split('/')
+        .map((s) => s.trim())
+        .filter(Boolean)
+        .forEach((c) => set.add(c));
+    });
+    return set.size;
+  }
+
   function buildStyle() {
     return {
       version: 8,
       projection: { type: 'globe' },
       sky: {
-        'sky-color': '#0b1838',
-        'horizon-color': '#3f84d1',
-        'sky-horizon-blend': 0.52,
-        'atmosphere-blend': ['interpolate', ['linear'], ['zoom'], 0, 1, 5, 0.72, 7, 0]
+        'sky-color': '#081122',
+        'horizon-color': '#2E66A8',
+        'fog-color': '#13284A',
+        'sky-horizon-blend': 0.54,
+        'horizon-fog-blend': 0.68,
+        'atmosphere-blend': ['interpolate', ['linear'], ['zoom'], 0, 1, 4.5, 0.78, 7, 0]
       },
       sources: {
         satellite: {
@@ -77,53 +217,192 @@
           tileSize: 256,
           maxzoom: 18
         },
+        'atlas-points': {
+          type: 'geojson',
+          data: { type: 'FeatureCollection', features: [] }
+        },
         subroute: {
+          type: 'geojson',
+          data: { type: 'FeatureCollection', features: [] }
+        },
+        'spider-legs': {
           type: 'geojson',
           data: { type: 'FeatureCollection', features: [] }
         }
       },
       layers: [
-        { id: 'layer-satellite', type: 'raster', source: 'satellite', layout: { visibility: 'visible' } },
-        { id: 'layer-natgeo', type: 'raster', source: 'natgeo', layout: { visibility: 'none' } },
-        { id: 'layer-physical', type: 'raster', source: 'physical', layout: { visibility: 'none' } },
-        { id: 'layer-dark', type: 'raster', source: 'dark', layout: { visibility: 'none' } },
-        { id: 'layer-labels', type: 'raster', source: 'labels', layout: { visibility: 'visible' }, paint: { 'raster-opacity': 0.9 } },
+        {
+          id: 'layer-satellite',
+          type: 'raster',
+          source: 'satellite',
+          layout: { visibility: 'visible' },
+          paint: { 'raster-opacity': 1, 'raster-opacity-transition': { duration: 360, delay: 0 }, 'raster-fade-duration': 300 }
+        },
+        {
+          id: 'layer-natgeo',
+          type: 'raster',
+          source: 'natgeo',
+          layout: { visibility: 'none' },
+          paint: { 'raster-opacity': 0, 'raster-opacity-transition': { duration: 360, delay: 0 }, 'raster-fade-duration': 300 }
+        },
+        {
+          id: 'layer-physical',
+          type: 'raster',
+          source: 'physical',
+          layout: { visibility: 'none' },
+          paint: { 'raster-opacity': 0, 'raster-opacity-transition': { duration: 360, delay: 0 }, 'raster-fade-duration': 300 }
+        },
+        {
+          id: 'layer-dark',
+          type: 'raster',
+          source: 'dark',
+          layout: { visibility: 'none' },
+          paint: { 'raster-opacity': 0, 'raster-opacity-transition': { duration: 360, delay: 0 }, 'raster-fade-duration': 300 }
+        },
+        {
+          id: 'layer-labels',
+          type: 'raster',
+          source: 'labels',
+          layout: { visibility: 'visible' },
+          paint: { 'raster-opacity': 0.88, 'raster-fade-duration': 260 }
+        },
+        {
+          id: 'atlas-glow',
+          type: 'circle',
+          source: 'atlas-points',
+          paint: {
+            'circle-radius': [
+              'interpolate', ['linear'], ['zoom'],
+              1, [
+                'case',
+                ['==', ['get', 'selected'], 1], 16,
+                ['boolean', ['feature-state', 'hover'], false], 14,
+                ['==', ['get', 'matched'], 0], 4,
+                7.5
+              ],
+              5, [
+                'case',
+                ['==', ['get', 'selected'], 1], 17,
+                ['boolean', ['feature-state', 'hover'], false], 15,
+                ['==', ['get', 'matched'], 0], 4.5,
+                10
+              ],
+              10, [
+                'case',
+                ['==', ['get', 'selected'], 1], 18,
+                ['boolean', ['feature-state', 'hover'], false], 16,
+                ['==', ['get', 'matched'], 0], 5,
+                13
+              ]
+            ],
+            'circle-color': [
+              'case',
+              ['==', ['get', 'allWeather'], 1], '#D6B77A',
+              '#56B8A9'
+            ],
+            'circle-opacity': [
+              'case',
+              ['==', ['get', 'selected'], 1], 0.34,
+              ['boolean', ['feature-state', 'hover'], false], 0.38,
+              ['==', ['get', 'matched'], 0], 0.05,
+              0.22
+            ],
+            'circle-blur': 0.72,
+            'circle-opacity-transition': { duration: 260, delay: 0 },
+            'circle-radius-transition': { duration: 220, delay: 0 }
+          }
+        },
+        {
+          id: 'atlas-core',
+          type: 'circle',
+          source: 'atlas-points',
+          paint: {
+            'circle-radius': [
+              'interpolate', ['linear'], ['zoom'],
+              1, [
+                'case',
+                ['==', ['get', 'selected'], 1], 6.5,
+                ['boolean', ['feature-state', 'hover'], false], 6.2,
+                ['==', ['get', 'matched'], 0], 2.5,
+                ['==', ['get', 'priority'], 1], 4.4,
+                3.2
+              ],
+              5, [
+                'case',
+                ['==', ['get', 'selected'], 1], 7.0,
+                ['boolean', ['feature-state', 'hover'], false], 6.6,
+                ['==', ['get', 'matched'], 0], 2.8,
+                ['==', ['get', 'priority'], 1], 5.5,
+                4.4
+              ],
+              10, [
+                'case',
+                ['==', ['get', 'selected'], 1], 7.5,
+                ['boolean', ['feature-state', 'hover'], false], 7.0,
+                ['==', ['get', 'matched'], 0], 3.2,
+                ['==', ['get', 'priority'], 1], 6.2,
+                5.4
+              ]
+            ],
+            'circle-color': [
+              'case',
+              ['==', ['get', 'selected'], 1], '#FFFFFF',
+              ['==', ['get', 'allWeather'], 1], '#D6B77A',
+              '#56B8A9'
+            ],
+            'circle-stroke-width': [
+              'case',
+              ['==', ['get', 'selected'], 1], 2.4,
+              ['==', ['get', 'matched'], 0], 0.5,
+              1.4
+            ],
+            'circle-stroke-color': [
+              'case',
+              ['==', ['get', 'selected'], 1], '#D6B77A',
+              '#080C14'
+            ],
+            'circle-opacity': [
+              'case',
+              ['==', ['get', 'matched'], 0], 0.18,
+              0.96
+            ],
+            'circle-opacity-transition': { duration: 260, delay: 0 },
+            'circle-radius-transition': { duration: 200, delay: 0 }
+          }
+        },
+        {
+          id: 'atlas-hit',
+          type: 'circle',
+          source: 'atlas-points',
+          paint: {
+            'circle-radius': isCoarsePointer() ? 22 : 14,
+            'circle-opacity': 0
+          }
+        },
         {
           id: 'subroute-line',
           type: 'line',
           source: 'subroute',
           paint: {
-            'line-color': '#fbbf24',
-            'line-width': 2.5,
+            'line-color': '#D6B77A',
+            'line-width': 2.2,
             'line-dasharray': [2, 2],
-            'line-opacity': 0.88
+            'line-opacity': 0.85
+          }
+        },
+        {
+          id: 'spider-legs-line',
+          type: 'line',
+          source: 'spider-legs',
+          paint: {
+            'line-color': '#9FB4C8',
+            'line-width': 1.25,
+            'line-opacity': 0.72
           }
         }
       ]
     };
   }
-
-  function countCountries(list) {
-    const set = new Set();
-    (list || []).forEach((d) => {
-      String(d.country || '')
-        .split('/')
-        .map((s) => s.trim())
-        .filter(Boolean)
-        .forEach((c) => set.add(c));
-    });
-    return set.size;
-  }
-
-  const SIDEBAR_TITLES = {
-    global: '🌍 全球精选目的地',
-    asia: '🏯 亚洲精选目的地',
-    europe: '🏰 欧洲精选目的地',
-    oceania: '🦘 大洋洲精选目的地',
-    north_america: '🦅 北美洲精选目的地',
-    south_america: '🦙 南美洲精选目的地',
-    africa_antarctica: '🦁 非洲 / 南极精选目的地'
-  };
 
   function getActiveScopeContinent() {
     if (state.query.trim()) return 'global';
@@ -134,66 +413,324 @@
     return 'global';
   }
 
-  function matchesFilter(dest) {
+  function matchesEntry(entry, ignoreMonth) {
+    const d = entry.dest;
     const scopeCont = getActiveScopeContinent();
-    if (scopeCont !== 'global' && dest.continent !== scopeCont) {
-      return false;
-    }
-    if (state.month !== 'all') {
-      const mNum = Number(state.month);
-      const mo = (dest.months || []).find((x) => x.m === mNum);
-      if (!mo || mo.score < 4) return false;
+    if (scopeCont !== 'global' && d.continent !== scopeCont) return false;
+
+    if (!ignoreMonth && state.month !== 'all') {
+      const mIdx = Number(state.month) - 1;
+      if (entry.monthScores[mIdx] < 4) return false;
     }
     if (state.theme !== 'all') {
-      const themes = dest.themeTags || [];
+      const themes = d.themeTags || [];
       if (!themes.includes(state.theme)) return false;
     }
     if (state.weather !== 'all') {
       if (state.weather === 'allWeather') {
-        if (!dest.allWeather) return false;
+        if (!d.allWeather) return false;
       } else {
-        const tags = dest.weatherTags || [];
+        const tags = d.weatherTags || [];
         if (!tags.includes(state.weather)) return false;
       }
     }
+    if (state.onlyFavorites && !state.favorites.has(d.id)) {
+      return false;
+    }
     if (state.query.trim()) {
-      const q = state.query.trim().toLowerCase();
-      const hay = [
-        dest.country || '',
-        dest.name,
-        dest.shortName || '',
-        dest.subtitle,
-        dest.province,
-        dest.region,
-        dest.heroSummary,
-        (dest.badges || []).join(' '),
-        (dest.spots || []).map((s) => `${s.name} ${s.category || ''} ${s.scene || ''}`).join(' ')
-      ]
-        .join(' ')
-        .toLowerCase();
-      if (!hay.includes(q)) return false;
+      const tokens = state.query.trim().toLowerCase().split(/\s+/).filter(Boolean);
+      for (let i = 0; i < tokens.length; i++) {
+        if (!entry.haystack.includes(tokens[i])) return false;
+      }
     }
     return true;
   }
 
-  function getFilteredIds() {
-    const set = new Set();
-    ATLAS.getAll().forEach((d) => {
-      if (matchesFilter(d)) set.add(d.id);
-    });
-    return set;
+  function getFilteredDestinations() {
+    const out = [];
+    for (let i = 0; i < atlasIndex.length; i++) {
+      if (matchesEntry(atlasIndex[i], false)) {
+        out.push(atlasIndex[i].dest);
+      }
+    }
+    return out;
   }
 
-  function clearSubSpots() {
-    state.subSpotMarkers.forEach((m) => m.remove());
-    state.subSpotMarkers = [];
-    state.mainMarkers.forEach((marker) => {
-      marker.getElement().classList.remove('has-subspots');
+  function recomputeMatchedSet() {
+    const next = new Set();
+    for (let i = 0; i < atlasIndex.length; i++) {
+      if (matchesEntry(atlasIndex[i], false)) {
+        next.add(atlasIndex[i].dest.id);
+      }
+    }
+    lastMatchedIds = next;
+    return next;
+  }
+
+  /* Update WebGL GeoJSON source (only called when filters/selection change, never on zoom!) */
+  function syncGeoJsonSource() {
+    if (!map || !map.getSource('atlas-points')) return;
+    const features = atlasIndex.map((entry) => {
+      const d = entry.dest;
+      return {
+        type: 'Feature',
+        id: entry.numId,
+        geometry: { type: 'Point', coordinates: d.coords },
+        properties: {
+          id: d.id,
+          label: d.shortName || d.name,
+          allWeather: d.allWeather ? 1 : 0,
+          priority: d.priority === 1 ? 1 : 2,
+          matched: lastMatchedIds.has(d.id) ? 1 : 0,
+          selected: d.id === state.selectedId ? 1 : 0,
+          favorite: state.favorites.has(d.id) ? 1 : 0
+        }
+      };
     });
+    map.getSource('atlas-points').setData({ type: 'FeatureCollection', features });
+  }
+
+  /* Pooled Screen-Space Collision-Free Label Overlay */
+  function ensureLabelOverlay() {
+    if (labelOverlayEl) return;
+    labelOverlayEl = document.createElement('div');
+    labelOverlayEl.id = 'globe-label-overlay';
+    labelOverlayEl.style.cssText = 'position:fixed;inset:0;z-index:5;pointer-events:none;overflow:hidden;';
+    document.body.insertBefore(labelOverlayEl, document.getElementById('topbar'));
+
+    for (let i = 0; i < MAX_POOL_LABELS; i++) {
+      const el = document.createElement('button');
+      el.type = 'button';
+      el.className = 'gl-city-label';
+      el.style.cssText = [
+        'position:absolute',
+        'top:0',
+        'left:0',
+        'pointer-events:auto',
+        'display:none',
+        'padding:2px 7px',
+        'border-radius:6px',
+        'border:1px solid rgba(159,180,200,0.22)',
+        'background:rgba(8,12,20,0.82)',
+        'color:#DCE5EF',
+        'font-size:11px',
+        'font-weight:500',
+        'white-space:nowrap',
+        'cursor:pointer',
+        'box-shadow:0 4px 12px rgba(0,0,0,0.45)',
+        'transition:opacity 0.16s ease, border-color 0.15s ease, background 0.15s ease',
+        'will-change:transform'
+      ].join(';');
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const id = el.dataset.destId;
+        if (id) selectDestination(id);
+      });
+      labelOverlayEl.appendChild(el);
+      labelPool.push(el);
+    }
+  }
+
+  function isPointOnFrontHemisphere(coords, centerLng, centerLat) {
+    const toRad = Math.PI / 180;
+    const lat1 = centerLat * toRad;
+    const lat2 = coords[1] * toRad;
+    const dLng = (coords[0] - centerLng) * toRad;
+    const cosA = Math.sin(lat1) * Math.sin(lat2) + Math.cos(lat1) * Math.cos(lat2) * Math.cos(dLng);
+    return cosA > 0.08;
+  }
+
+  function scheduleLabelLayout() {
+    if (labelRaf) return;
+    labelRaf = requestAnimationFrame(() => {
+      labelRaf = null;
+      layoutVisibleLabels();
+    });
+  }
+
+  function layoutVisibleLabels() {
+    if (!map || !labelOverlayEl) return;
+    if (state.mode === 'gallery') {
+      for (let i = 0; i < labelPool.length; i++) labelPool[i].style.display = 'none';
+      return;
+    }
+
+    const zoom = map.getZoom();
+    const w = global.innerWidth;
+    const h = global.innerHeight;
+    const center = map.getCenter();
+    const isFiltering = isAnyFilterActive();
+    const showTier2 = state.forceAllLabels || zoom >= 3.9 || isFiltering;
+    const maxLabels = state.forceAllLabels ? MAX_POOL_LABELS : isMobileViewport() ? 22 : 42;
+    const maxLatSpan = zoom >= 3.0 ? Math.min(90, 185 / Math.pow(2, zoom - 1.2)) : 180;
+    const maxLngSpan = Math.min(180, maxLatSpan * 1.45);
+
+    const candidates = [];
+    for (let i = 0; i < atlasIndex.length; i++) {
+      const d = atlasIndex[i].dest;
+      if (!lastMatchedIds.has(d.id)) continue;
+      const isSelected = d.id === state.selectedId;
+      // Hide main city label when zoomed closely into subspots
+      if (isSelected && state.subSpotMarkers.length > 0 && zoom >= 7.5) continue;
+      if (!showTier2 && d.priority !== 1 && !isSelected && !state.favorites.has(d.id)) continue;
+
+      if (state.isGlobe && !isPointOnFrontHemisphere(d.coords, center.lng, center.lat)) {
+        continue;
+      }
+
+      if (zoom >= 3.0) {
+        if (Math.abs(d.coords[1] - center.lat) > maxLatSpan) continue;
+        let dLng = Math.abs(d.coords[0] - center.lng);
+        if (dLng > 180) dLng = 360 - dLng;
+        if (dLng > maxLngSpan) continue;
+      }
+
+      const pt = map.project(d.coords);
+      if (pt.x < 16 || pt.x > w - 16 || pt.y < 64 || pt.y > h - 68) continue;
+
+      const rank = (isSelected ? 1000 : 0) + (state.favorites.has(d.id) ? 200 : 0) + (d.priority === 1 ? 80 : 0) + (d.allWeather ? 20 : 0);
+      candidates.push({ dest: d, x: pt.x, y: pt.y, rank, isSelected });
+    }
+
+    candidates.sort((a, b) => b.rank - a.rank);
+
+    const placedBoxes = [];
+    let used = 0;
+
+    for (let i = 0; i < candidates.length && used < maxLabels; i++) {
+      const c = candidates[i];
+      const text = c.dest.shortName || c.dest.name;
+      const estW = Math.min(130, text.length * 11 + 18);
+      const estH = 22;
+      const lx = Math.round(c.x + 10);
+      const ly = Math.round(c.y - 11);
+
+      if (!state.forceAllLabels && !c.isSelected) {
+        let collides = false;
+        for (let j = 0; j < placedBoxes.length; j++) {
+          const b = placedBoxes[j];
+          if (lx < b.x + b.w + 6 && lx + estW + 6 > b.x && ly < b.y + b.h + 4 && ly + estH + 4 > b.y) {
+            collides = true;
+            break;
+          }
+        }
+        if (collides) continue;
+      }
+
+      placedBoxes.push({ x: lx, y: ly, w: estW, h: estH });
+      const el = labelPool[used++];
+      el.dataset.destId = c.dest.id;
+      el.textContent = text;
+      el.style.display = 'block';
+      el.style.transform = `translate3d(${lx}px, ${ly}px, 0)`;
+      if (c.isSelected) {
+        el.style.borderColor = '#D6B77A';
+        el.style.background = 'rgba(21, 30, 44, 0.94)';
+        el.style.color = '#D6B77A';
+      } else {
+        el.style.borderColor = c.dest.allWeather ? 'rgba(214,183,122,0.34)' : 'rgba(159,180,200,0.22)';
+        el.style.background = 'rgba(8,12,20,0.82)';
+        el.style.color = '#DCE5EF';
+      }
+    }
+
+    for (let i = used; i < labelPool.length; i++) {
+      labelPool[i].style.display = 'none';
+    }
+  }
+
+  /* Active Pulsing Beacon (Single DOM marker for selected city only) */
+  function updateActiveBeacon(dest) {
+    if (state.activeBeaconMarker) {
+      state.activeBeaconMarker.remove();
+      state.activeBeaconMarker = null;
+    }
+    if (!dest || !map) return;
+    const root = document.createElement('div');
+    root.className = 'active-beacon-root';
+    root.innerHTML = '<div class="active-beacon-ring"></div>';
+    state.activeBeaconMarker = new maplibregl.Marker({
+      element: root,
+      anchor: 'center',
+      subpixelPositioning: true
+    })
+      .setLngLat(dest.coords)
+      .addTo(map);
+  }
+
+  /* L3 Sub-spot Markers with Screen-Space Spiderfy */
+  function clearSubSpots() {
+    state.subSpotMarkers.forEach((m) => m.marker.remove());
+    state.subSpotMarkers = [];
     if (map && map.getSource('subroute')) {
       map.getSource('subroute').setData({ type: 'FeatureCollection', features: [] });
     }
-    document.getElementById('subspot-toast').classList.add('hidden');
+    if (map && map.getSource('spider-legs')) {
+      map.getSource('spider-legs').setData({ type: 'FeatureCollection', features: [] });
+    }
+    const toast = document.getElementById('subspot-toast');
+    if (toast) toast.classList.add('is-hidden');
+  }
+
+  function applySpiderfyLayout() {
+    if (!map || !state.subSpotMarkers.length) return;
+    const pts = state.subSpotMarkers.map((item) => ({
+      item,
+      pt: map.project(item.coords),
+      dx: 0,
+      dy: 0
+    }));
+
+    // Simple cluster detection within 34px radius in screen coordinates
+    const visited = new Array(pts.length).fill(false);
+    const legFeatures = [];
+
+    for (let i = 0; i < pts.length; i++) {
+      if (visited[i]) continue;
+      const cluster = [pts[i]];
+      visited[i] = true;
+      for (let j = i + 1; j < pts.length; j++) {
+        if (visited[j]) continue;
+        const dist = Math.hypot(pts[j].pt.x - pts[i].pt.x, pts[j].pt.y - pts[i].pt.y);
+        if (dist < 34) {
+          visited[j] = true;
+          cluster.push(pts[j]);
+        }
+      }
+      if (cluster.length > 1) {
+        const radius = Math.min(48, 24 + cluster.length * 4);
+        const cx = cluster.reduce((s, c) => s + c.pt.x, 0) / cluster.length;
+        const cy = cluster.reduce((s, c) => s + c.pt.y, 0) / cluster.length;
+        cluster.forEach((c, k) => {
+          const angle = (Math.PI * 2 * k) / cluster.length - Math.PI / 2;
+          const tx = cx + Math.cos(angle) * radius;
+          const ty = cy + Math.sin(angle) * radius;
+          c.dx = Math.round(tx - c.pt.x);
+          c.dy = Math.round(ty - c.pt.y);
+          const unproj = map.unproject([tx, ty]);
+          legFeatures.push({
+            type: 'Feature',
+            geometry: { type: 'LineString', coordinates: [c.item.coords, [unproj.lng, unproj.lat]] }
+          });
+        });
+      }
+    }
+
+    pts.forEach(({ item, dx, dy }) => {
+      if (item.innerEl) {
+        item.innerEl.style.transform = (dx || dy) ? `translate3d(${dx}px, ${dy}px, 0)` : '';
+      }
+      const tag = item.innerEl && item.innerEl.querySelector('.subspot-tag');
+      if (tag) {
+        // Hide overlapping subspot tag on spiderfied cluster unless active/hovered, to keep labels crisp
+        const isCrowded = Boolean(dx || dy);
+        tag.style.opacity = isCrowded && !item.rootEl.classList.contains('active') ? '0' : '1';
+      }
+    });
+
+    if (map.getSource('spider-legs')) {
+      map.getSource('spider-legs').setData({ type: 'FeatureCollection', features: legFeatures });
+    }
   }
 
   function renderSubSpots(dest) {
@@ -204,25 +741,31 @@
     if (map.getSource('subroute') && lineCoords.length >= 2) {
       map.getSource('subroute').setData({
         type: 'FeatureCollection',
-        features: [
-          {
-            type: 'Feature',
-            geometry: { type: 'LineString', coordinates: lineCoords }
-          }
-        ]
+        features: [{ type: 'Feature', geometry: { type: 'LineString', coordinates: lineCoords } }]
       });
     }
 
     dest.spots.forEach((sp, idx) => {
       const root = document.createElement('div');
       root.className = 'subspot-pin-root';
+      const inner = document.createElement('div');
+      inner.className = 'subspot-pin-inner';
+      inner.style.animationDelay = `${Math.min(idx * 35, 240)}ms`;
       const baseTag = sp.name.split(/[·&（(/]/)[0].trim();
       const shortTag = baseTag.length > 8 ? baseTag.slice(0, 7) + '…' : baseTag;
-      root.innerHTML = `<div class="subspot-pin-inner" title="${sp.name}"><span class="subspot-num">${idx + 1}</span><span class="subspot-tag">${shortTag}</span></div>`;
+      inner.innerHTML = `
+        <div class="subspot-hitbox" title="${sp.name}">
+          <span class="subspot-num">${idx + 1}</span>
+        </div>
+        <span class="subspot-tag">${shortTag}</span>
+      `;
+      root.appendChild(inner);
+
       root.addEventListener('click', (e) => {
         e.stopPropagation();
         flyToSubSpot(idx);
       });
+
       const marker = new maplibregl.Marker({
         element: root,
         anchor: 'center',
@@ -230,207 +773,431 @@
       })
         .setLngLat(sp.coords)
         .addTo(map);
-      state.subSpotMarkers.push(marker);
+
+      state.subSpotMarkers.push({ marker, rootEl: root, innerEl: inner, coords: sp.coords });
     });
 
+    applySpiderfyLayout();
+
     const toast = document.getElementById('subspot-toast');
-    document.getElementById('subspot-toast-text').textContent =
-      `已标注「${dest.name}」${dest.spots.length} 个精准子机位（点击编号直接俯冲实景）`;
-    toast.classList.remove('hidden');
+    const toastText = document.getElementById('subspot-toast-text');
+    if (toast && toastText) {
+      toastText.textContent = `${dest.shortName || dest.name} · ${dest.spots.length} 个精准机位（点击编号俯冲）`;
+      toast.classList.remove('is-hidden');
+    }
   }
 
   function getDrawerViewportPadding() {
     const sidebar = document.getElementById('left-sidebar');
     const drawer = document.getElementById('detail-drawer');
-    const drawerOpen = Boolean(drawer && !drawer.classList.contains('hidden'));
+    const drawerOpen = Boolean(drawer && !drawer.classList.contains('is-hidden'));
     if (isMobileViewport()) {
       return {
-        top: 112,
-        bottom: drawerOpen ? Math.round(global.innerHeight * 0.66) : 68,
+        top: 76,
+        bottom: drawerOpen ? Math.round(global.innerHeight * 0.56) : 136,
         left: 16,
         right: 16
       };
     }
-    const leftPad = (sidebar && !sidebar.classList.contains('hidden')) ? 305 : 24;
-    const rightPad = drawerOpen ? Math.min(580, Math.round(global.innerWidth * 0.45)) : 24;
-    return { top: 112, bottom: 68, left: leftPad, right: rightPad };
+    const leftPad = (sidebar && !sidebar.classList.contains('is-hidden')) ? 310 : 28;
+    const rightPad = drawerOpen ? 430 : 28;
+    return { top: 82, bottom: 84, left: leftPad, right: rightPad };
   }
+
+  /* Silky Cinematic Camera System */
+  function cancelActiveFlight() {
+    if (introTimer) {
+      clearTimeout(introTimer);
+      introTimer = null;
+    }
+    if (isIntroFlight) {
+      isIntroFlight = false;
+      const skipBtn = document.getElementById('skip-intro-btn');
+      if (skipBtn) skipBtn.classList.add('is-hidden');
+    }
+    if (map && map.isMoving()) {
+      map.stop();
+    }
+  }
+
+  function cinematicFlyTo(opts) {
+    if (!map) return;
+    stopSpin();
+    const reduced = prefersReducedMotion();
+    const maxSkinZoom = (SKIN_META[state.skin] && SKIN_META[state.skin].maxZoom) || 17.5;
+    const targetZoom = Math.min(opts.zoom || 9.0, maxSkinZoom);
+
+    const camOpts = {
+      center: opts.center,
+      zoom: targetZoom,
+      pitch: opts.pitch !== undefined ? opts.pitch : 42,
+      bearing: opts.bearing !== undefined ? opts.bearing : 0,
+      padding: opts.padding || getDrawerViewportPadding()
+    };
+
+    if (opts.instant || reduced) {
+      map.jumpTo(camOpts);
+      return;
+    }
+
+    const cur = map.getCenter();
+    const distKm = haversineKm([cur.lng, cur.lat], opts.center);
+    const duration = opts.duration || Math.round(Math.min(2200, Math.max(900, 950 + distKm * 0.06)));
+    const curve = distKm > 2500 ? 1.52 : distKm > 500 ? 1.32 : 1.15;
+
+    map.flyTo(
+      Object.assign({}, camOpts, {
+        duration,
+        curve,
+        easing: easeInOutCubic,
+        essential: true
+      })
+    );
+  }
+
+  function focusSubSpotMarkerOnly(idx) {
+    state.activeSpotIdx = idx;
+    state.subSpotMarkers.forEach((m, i) => {
+      m.rootEl.classList.toggle('active', i === idx);
+    });
+  }
+  global.focusSubSpotMarkerOnly = focusSubSpotMarkerOnly;
 
   function flyToSubSpot(idx) {
     const dest = ATLAS.getById(state.selectedId);
     if (!dest || !dest.spots || !dest.spots[idx]) return;
-    stopSpin();
+    focusSubSpotMarkerOnly(idx);
     const sp = dest.spots[idx];
-    state.subSpotMarkers.forEach((m, i) => {
-      m.getElement().classList.toggle('active', i === idx);
-    });
-    map.flyTo({
+    cinematicFlyTo({
       center: sp.coords,
       zoom: 12.6,
       pitch: 52,
-      bearing: (idx % 2 === 0 ? 18 : -18),
-      padding: getDrawerViewportPadding(),
-      duration: 1450,
-      essential: true
+      bearing: idx % 2 === 0 ? 16 : -16,
+      duration: 1350
     });
     Panel.highlightSpot(idx);
   }
   global.flyToSubSpot = flyToSubSpot;
 
-  function selectDestination(id, instant) {
+  function setSidebarOpen(open) {
+    const sidebar = document.getElementById('left-sidebar');
+    const openBtn = document.getElementById('sidebar-open-btn');
+    if (sidebar) sidebar.classList.toggle('is-hidden', !open);
+    if (openBtn) openBtn.classList.toggle('is-hidden', open);
+    document.body.classList.toggle('sidebar-collapsed', !open);
+  }
+
+  function selectDestination(id, opts) {
+    const options = typeof opts === 'boolean' ? { instant: opts } : (opts || {});
     const dest = ATLAS.getById(id);
     if (!dest) return;
     stopSpin();
-    state.selectedId = id;
-    document.getElementById('continent-banner').classList.add('hidden');
 
-    if (isMobileViewport()) {
-      document.getElementById('left-sidebar').classList.add('hidden');
-      document.getElementById('sidebar-open-btn').classList.remove('hidden');
-      const filtersBar = document.querySelector('.topbar-filters');
-      const filterBtn = document.getElementById('mobile-filter-toggle');
-      if (filtersBar) filtersBar.classList.remove('mobile-open');
-      if (filterBtn) {
-        filterBtn.setAttribute('aria-expanded', 'false');
-        filterBtn.textContent = '🔍 筛选';
-      }
-      const drawerEl = document.getElementById('detail-drawer');
-      const expandBtn = document.getElementById('drawer-expand-btn');
-      if (drawerEl) drawerEl.classList.remove('sheet-expanded');
-      if (expandBtn) expandBtn.textContent = '⤢ 展开';
+    // Switch back to map mode if currently in gallery
+    if (state.mode === 'gallery') {
+      setViewMode('map');
     }
 
-    renderSubSpots(dest);
-    Panel.open(dest, state.month);
-    updateSelectionUI();
+    state.selectedId = id;
+    state.activeSpotIdx = 0;
 
-    const camOpts = {
-      center: dest.coords,
-      zoom: dest.zoom || 9.0,
-      pitch: 42,
-      bearing: 0,
-      padding: getDrawerViewportPadding()
-    };
-    if (instant) {
-      map.jumpTo(camOpts);
+    // Auto-collapse left sidebar when focusing destination to keep globe as hero
+    setSidebarOpen(false);
+
+    renderSubSpots(dest);
+    updateActiveBeacon(dest);
+    Panel.open(dest, state.month);
+
+    if (typeof options.spotIdx === 'number' && options.spotIdx >= 0 && dest.spots && dest.spots[options.spotIdx]) {
+      Panel.highlightSpot(options.spotIdx);
+      focusSubSpotMarkerOnly(options.spotIdx);
+    }
+
+    syncGeoJsonSource();
+    updateSelectionUI();
+    scheduleLabelLayout();
+
+    if (!options.skipUrl) {
+      syncUrlState(true);
+    }
+
+    if (options.spotIdx >= 0 && dest.spots && dest.spots[options.spotIdx]) {
+      cinematicFlyTo({
+        center: dest.spots[options.spotIdx].coords,
+        zoom: 12.6,
+        pitch: 52,
+        bearing: 14,
+        instant: options.instant
+      });
     } else {
-      map.flyTo(Object.assign({}, camOpts, { duration: 1500, essential: true }));
+      cinematicFlyTo({
+        center: dest.coords,
+        zoom: dest.zoom || 9.0,
+        pitch: 42,
+        bearing: 0,
+        instant: options.instant
+      });
     }
   }
 
-  function closeDestination() {
+  function closeDestination(skipUrl) {
     state.selectedId = null;
+    state.activeSpotIdx = -1;
     clearSubSpots();
+    updateActiveBeacon(null);
     Panel.close();
+    syncGeoJsonSource();
     updateSelectionUI();
+    scheduleLabelLayout();
+    if (!skipUrl) {
+      syncUrlState(true);
+    }
   }
 
   function updateSelectionUI() {
-    state.mainMarkers.forEach((marker, id) => {
-      const el = marker.getElement();
-      const isSelected = id === state.selectedId;
-      el.classList.toggle('selected', isSelected);
-      el.classList.toggle('has-subspots', isSelected);
-    });
     document.querySelectorAll('.city-nav-item').forEach((btn) => {
       btn.classList.toggle('active', btn.dataset.id === state.selectedId);
     });
-    updateLabelDensity();
   }
 
-  function updateLabelDensity() {
-    if (!map) return;
-    const zoom = map.getZoom();
-    const isFiltering = state.month !== 'all' || state.theme !== 'all' || state.weather !== 'all' || state.query.trim() !== '';
-    const showAll = state.forceAllLabels || zoom >= 4.1 || isFiltering;
-    const matched = getFilteredIds();
+  /* Phenology 12-Month Timeline */
+  function renderPhenologyBar() {
+    const track = document.getElementById('phenology-track');
+    const hemiHint = document.getElementById('phenology-hemi-hint');
+    if (!track) return;
 
-    state.mainMarkers.forEach((marker, id) => {
-      const dest = ATLAS.getById(id);
-      const el = marker.getElement();
-      const isMatched = matched.has(id);
-      const shouldShow = isMatched && (showAll || (dest && dest.priority === 1) || id === state.selectedId);
-      el.classList.toggle('label-hidden', !shouldShow);
-    });
-  }
+    const counts = new Array(12).fill(0);
+    let totalScope = 0;
+    for (let i = 0; i < atlasIndex.length; i++) {
+      const entry = atlasIndex[i];
+      if (!matchesEntry(entry, true)) continue;
+      totalScope++;
+      for (let m = 0; m < 12; m++) {
+        if (entry.monthScores[m] >= 4) counts[m]++;
+      }
+    }
+    const maxCount = Math.max(1, ...counts);
 
-  function renderMainMarkers() {
-    const all = ATLAS.getAll();
-    all.forEach((dest) => {
-      const root = document.createElement('div');
-      root.className = `globe-pin-root ${dest.allWeather ? 'pin-gold' : 'pin-cyan'}`;
-      root.innerHTML = `
-        <div class="globe-pin-inner">
-          <span class="pin-pulse"><span class="pin-core"></span></span>
-          <span class="pin-label">${dest.shortName || dest.name}</span>
-        </div>
+    let html = `
+      <button class="pheno-btn ${state.month === 'all' ? 'active' : ''}" data-month="all" type="button" role="radio" aria-checked="${state.month === 'all'}">
+        <span class="pheno-label">全年</span>
+        <span class="pheno-count">${totalScope}</span>
+        <span class="pheno-meter"><span class="pheno-meter-fill" style="width:100%"></span></span>
+      </button>
+    `;
+
+    for (let m = 1; m <= 12; m++) {
+      const active = String(m) === String(state.month);
+      const cnt = counts[m - 1];
+      const pct = Math.round((cnt / maxCount) * 100);
+      html += `
+        <button class="pheno-btn ${active ? 'active' : ''}" data-month="${m}" type="button" role="radio" aria-checked="${active}" title="${m}月 推荐≥4★ 目的地 ${cnt} 座">
+          <span class="pheno-label">${m}月</span>
+          <span class="pheno-count">${cnt}</span>
+          <span class="pheno-meter"><span class="pheno-meter-fill" style="width:${pct}%"></span></span>
+        </button>
       `;
-      root.addEventListener('mouseenter', () => {
-        if (isCoarsePointer()) return;
-        if (!hoverPopup) {
-          hoverPopup = new maplibregl.Popup({ closeButton: false, closeOnClick: false, offset: 18 });
-        }
-        const badge = dest.allWeather ? '🌟 四季晴雨雪皆美' : '🎯 季节/气象限定';
-        const locLabel = (dest.country && dest.country !== '中国') ? `${dest.country} · ${dest.province}` : dest.province;
-        hoverPopup
-          .setLngLat(dest.coords)
-          .setHTML(`
-            <div style="font-weight:700;font-size:13px;margin-bottom:3px;">${dest.name}</div>
-            <div style="color:#38bdf8;font-size:11px;margin-bottom:4px;">${locLabel} · ${badge}</div>
-            <div style="color:#cbd5e1;font-size:11px;line-height:1.45;">${dest.subtitle}</div>
-            <div style="color:#fbbf24;font-size:10.5px;margin-top:5px;">点击地球仪俯冲查看 ${dest.spots.length} 个精准机位 →</div>
-          `)
-          .addTo(map);
-      });
-      root.addEventListener('mouseleave', () => {
-        if (isCoarsePointer()) return;
-        if (hoverPopup) hoverPopup.remove();
-      });
-      root.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (hoverPopup) hoverPopup.remove();
-        selectDestination(dest.id);
-      });
+    }
+    track.innerHTML = html;
 
-      const marker = new maplibregl.Marker({
-        element: root,
-        anchor: 'center',
-        subpixelPositioning: true
-      })
-        .setLngLat(dest.coords)
-        .addTo(map);
-      state.mainMarkers.set(dest.id, marker);
+    if (hemiHint) {
+      if (state.month === 'all') {
+        hemiHint.textContent = '全季节视图';
+      } else {
+        const m = Number(state.month);
+        const northSeason = m >= 3 && m <= 5 ? '北春 / 南秋' : m >= 6 && m <= 8 ? '北夏 / 南冬' : m >= 9 && m <= 11 ? '北秋 / 南春' : '北冬 / 南夏';
+        hemiHint.textContent = `${m}月 · ${northSeason}`;
+      }
+    }
+
+    track.querySelectorAll('.pheno-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        state.month = btn.dataset.month;
+        applyFilterUpdates();
+        if (state.selectedId && state.month !== 'all') {
+          const dest = ATLAS.getById(state.selectedId);
+          if (dest) Panel.open(dest, state.month);
+        }
+      });
     });
   }
+
+  /* Active Filter Chips Strip */
+  function isAnyFilterActive() {
+    return (
+      state.month !== 'all' ||
+      state.theme !== 'all' ||
+      state.weather !== 'all' ||
+      state.onlyFavorites ||
+      state.query.trim() !== '' ||
+      state.continent !== 'global'
+    );
+  }
+
+  function renderActiveChips() {
+    const bar = document.getElementById('active-filter-chips');
+    const badge = document.getElementById('filter-active-badge');
+    if (!bar) return;
+
+    const chips = [];
+    if (state.continent !== 'global') {
+      const info = ATLAS.getContinent(state.continent);
+      chips.push({ key: 'continent', label: info ? info.name : state.continent });
+    }
+    if (state.month !== 'all') {
+      chips.push({ key: 'month', label: `${state.month} 月` });
+    }
+    if (state.theme !== 'all') {
+      chips.push({ key: 'theme', label: THEME_LABELS[state.theme] || state.theme });
+    }
+    if (state.weather !== 'all') {
+      chips.push({ key: 'weather', label: WEATHER_LABELS[state.weather] || state.weather });
+    }
+    if (state.onlyFavorites) {
+      chips.push({ key: 'favorites', label: '我的收藏' });
+    }
+    if (state.query.trim()) {
+      chips.push({ key: 'query', label: `搜索: ${state.query.trim()}` });
+    }
+
+    const filterCount = (state.theme !== 'all' ? 1 : 0) + (state.weather !== 'all' ? 1 : 0);
+    if (badge) {
+      badge.textContent = String(filterCount);
+      badge.classList.toggle('is-hidden', filterCount === 0);
+    }
+
+    if (!chips.length) {
+      bar.classList.add('is-hidden');
+      bar.innerHTML = '';
+      return;
+    }
+
+    const closeSvg = Icons ? Icons.svg('x', 11) : '×';
+    bar.innerHTML = `
+      ${chips.map((c) => `<button class="filter-chip" data-clear="${c.key}" type="button">${c.label} ${closeSvg}</button>`).join('')}
+      <span class="chips-match-count mono-num">${lastMatchedIds.size} 城</span>
+      <button class="chips-action-btn" id="fit-filtered-btn" type="button">聚焦结果</button>
+      <button class="chips-action-btn" id="clear-all-chips-btn" type="button">清除</button>
+    `;
+    bar.classList.remove('is-hidden');
+
+    bar.querySelectorAll('.filter-chip').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const key = btn.dataset.clear;
+        if (key === 'continent') switchContinent('global', true);
+        else if (key === 'month') state.month = 'all';
+        else if (key === 'theme') state.theme = 'all';
+        else if (key === 'weather') state.weather = 'all';
+        else if (key === 'favorites') state.onlyFavorites = false;
+        else if (key === 'query') state.query = '';
+        syncFilterControlUI();
+        applyFilterUpdates();
+      });
+    });
+
+    const fitBtn = document.getElementById('fit-filtered-btn');
+    if (fitBtn) fitBtn.addEventListener('click', fitFilteredResults);
+
+    const clearAll = document.getElementById('clear-all-chips-btn');
+    if (clearAll) clearAll.addEventListener('click', resetAllFilters);
+  }
+
+  function fitFilteredResults() {
+    const items = getFilteredDestinations();
+    if (!items.length || !map) return;
+    if (items.length === 1) {
+      selectDestination(items[0].id);
+      return;
+    }
+    const bounds = new maplibregl.LngLatBounds();
+    items.forEach((d) => bounds.extend(d.coords));
+    map.fitBounds(bounds, {
+      padding: getDrawerViewportPadding(),
+      maxZoom: 6.5,
+      duration: prefersReducedMotion() ? 0 : 1100
+    });
+  }
+
+  function syncFilterControlUI() {
+    document.querySelectorAll('#theme-pills .pill-btn').forEach((b) => {
+      b.classList.toggle('active', b.dataset.theme === state.theme);
+    });
+    document.querySelectorAll('#weather-pills .pill-btn').forEach((b) => {
+      b.classList.toggle('active', b.dataset.weather === state.weather);
+    });
+    const favBtn = document.getElementById('favorites-toggle-btn');
+    if (favBtn) {
+      favBtn.classList.toggle('active', state.onlyFavorites);
+      favBtn.setAttribute('aria-pressed', state.onlyFavorites ? 'true' : 'false');
+    }
+    const favCount = document.getElementById('favorites-count-badge');
+    if (favCount) favCount.textContent = String(state.favorites.size);
+
+    document.querySelectorAll('.continent-btn').forEach((b) => {
+      b.classList.toggle('active', b.dataset.continent === state.continent);
+    });
+  }
+
+  function resetAllFilters() {
+    state.continent = 'global';
+    state.month = 'all';
+    state.theme = 'all';
+    state.weather = 'all';
+    state.onlyFavorites = false;
+    state.query = '';
+    syncFilterControlUI();
+    applyFilterUpdates();
+  }
+
+  function applyFilterUpdates(skipUrl) {
+    recomputeMatchedSet();
+    syncGeoJsonSource();
+    renderPhenologyBar();
+    renderSidebar();
+    renderActiveChips();
+    scheduleLabelLayout();
+    if (state.mode === 'gallery' && global.AestheticGallery) {
+      global.AestheticGallery.render();
+    }
+    const summaryEl = document.getElementById('popover-match-summary');
+    if (summaryEl) summaryEl.textContent = `当前命中 ${lastMatchedIds.size} 座目的地`;
+    if (!skipUrl) syncUrlState(false);
+  }
+
+  const SIDEBAR_TITLES = {
+    global: '全球精选目的地',
+    asia: '亚洲精选目的地',
+    europe: '欧洲精选目的地',
+    oceania: '大洋洲精选目的地',
+    north_america: '北美洲精选目的地',
+    south_america: '南美洲精选目的地',
+    africa_antarctica: '非洲 / 南极精选'
+  };
 
   function renderSidebar() {
     const all = ATLAS.getAll();
-    const matched = getFilteredIds();
     const listEl = document.getElementById('sidebar-list');
-    const isFiltering = state.month !== 'all' || state.theme !== 'all' || state.weather !== 'all' || state.query.trim() !== '';
     const scopeCont = getActiveScopeContinent();
     const scopeTotal = scopeCont === 'global'
       ? all.length
       : all.filter((d) => d.continent === scopeCont).length;
 
-    const titleEl = document.querySelector('.sidebar-title');
-    if (titleEl) {
-      titleEl.textContent = SIDEBAR_TITLES[scopeCont] || SIDEBAR_TITLES.global;
-    }
+    const titleEl = document.getElementById('sidebar-title');
+    if (titleEl) titleEl.textContent = SIDEBAR_TITLES[scopeCont] || SIDEBAR_TITLES.global;
 
-    document.getElementById('reset-filters-btn').classList.toggle('hidden', !isFiltering);
-    document.getElementById('sidebar-count').textContent = `${matched.size} / ${scopeTotal} 城`;
+    const resetBtn = document.getElementById('reset-filters-btn');
+    if (resetBtn) resetBtn.classList.toggle('is-hidden', !isAnyFilterActive());
 
-    // Dim/highlight markers on the 3D globe
-    state.mainMarkers.forEach((marker, id) => {
-      marker.getElement().classList.toggle('dimmed', !matched.has(id));
-    });
-    updateLabelDensity();
+    const countText = `${lastMatchedIds.size} / ${scopeTotal}`;
+    const sc = document.getElementById('sidebar-count');
+    if (sc) sc.textContent = `${countText} 城`;
+    const soc = document.getElementById('sidebar-open-count');
+    if (soc) soc.textContent = String(lastMatchedIds.size);
 
     const grouped = new Map();
     ATLAS.REGION_ORDER.forEach((r) => grouped.set(r, []));
     all.forEach((d) => {
-      if (!matched.has(d.id)) return;
+      if (!lastMatchedIds.has(d.id)) return;
       if (!grouped.has(d.region)) grouped.set(d.region, []);
       grouped.get(d.region).push(d);
     });
@@ -438,27 +1205,26 @@
     let html = '';
     grouped.forEach((items, regionName) => {
       if (!items.length) return;
-      const meta = ATLAS.REGION_META[regionName] || { icon: '📍' };
       html += `
         <div class="region-group">
           <div class="region-header">
-            <span>${meta.icon} ${regionName}</span>
-            <span>${items.length}</span>
+            <span>${regionName}</span>
+            <span class="mono-num">${items.length}</span>
           </div>
           <div class="region-items">
             ${items
               .map((d) => {
-                let rightBadge = `<span class="city-nav-prov">${d.suggestedDays}</span>`;
+                let rightBadge = `<span class="city-nav-prov mono-num">${d.suggestedDays}</span>`;
                 if (state.month !== 'all') {
-                  const mo = d.months.find((x) => x.m === Number(state.month));
-                  const sc = mo ? mo.score : 3;
-                  const cls = sc >= 5 ? 'score-5' : sc === 4 ? 'score-4' : sc === 3 ? 'score-3' : 'score-low';
-                  rightBadge = `<span class="score-pill ${cls}">${sc}★</span>`;
+                  const entry = indexById.get(d.id);
+                  const scVal = entry ? entry.monthScores[Number(state.month) - 1] : 3;
+                  const cls = scVal >= 5 ? 'score-5' : scVal === 4 ? 'score-4' : scVal === 3 ? 'score-3' : 'score-low';
+                  rightBadge = `<span class="score-pill ${cls}">${scVal}★</span>`;
                 }
-                const dotCls = d.allWeather ? 'dot-gold' : 'dot-cyan';
+                const dotCls = d.allWeather ? 'dot-gold' : 'dot-teal';
                 const activeCls = d.id === state.selectedId ? 'active' : '';
                 return `
-                  <button class="city-nav-item ${activeCls}" data-id="${d.id}">
+                  <button class="city-nav-item ${activeCls}" data-id="${d.id}" type="button">
                     <span class="city-nav-left">
                       <span class="dot ${dotCls}"></span>
                       <span class="city-nav-name">${d.name}</span>
@@ -474,7 +1240,7 @@
     });
 
     if (!html) {
-      html = `<div style="padding:24px 12px;text-align:center;color:#94a3b8;font-size:12px;">当前筛选条件下暂无匹配目的地，可点击右上角“重置筛选”。</div>`;
+      html = `<div style="padding:28px 14px;text-align:center;color:var(--text-secondary);font-size:12.5px;">当前筛选条件下暂无匹配目的地，可点击右上角「重置」。</div>`;
     }
     listEl.innerHTML = html;
 
@@ -485,15 +1251,16 @@
 
   function renderContinentTabs() {
     const container = document.getElementById('continent-tabs');
+    if (!container) return;
     const countsByCont = {};
     ATLAS.getAll().forEach((d) => {
       countsByCont[d.continent] = (countsByCont[d.continent] || 0) + 1;
     });
     container.innerHTML = ATLAS.CONTINENTS.map((c) => {
-      const cnt = countsByCont[c.id] || 0;
-      const tag = cnt > 0 ? `<span class="continent-tag">${cnt}城</span>` : '';
+      const cnt = c.id === 'global' ? ATLAS.getAll().length : (countsByCont[c.id] || 0);
       const active = c.id === state.continent ? 'active' : '';
-      return `<button class="continent-btn ${active}" data-continent="${c.id}">${c.icon} ${c.name}${tag}</button>`;
+      const shortName = c.id === 'global' ? '全球' : c.id === 'africa_antarctica' ? '非/南极' : c.name;
+      return `<button class="continent-btn ${active}" data-continent="${c.id}" type="button">${shortName} <span class="continent-tag">${cnt}</span></button>`;
     }).join('');
 
     container.querySelectorAll('.continent-btn').forEach((btn) => {
@@ -501,7 +1268,7 @@
     });
   }
 
-  function switchContinent(continentId) {
+  function switchContinent(continentId, skipCamera) {
     stopSpin();
     state.continent = continentId;
     const info = ATLAS.getContinent(continentId);
@@ -510,156 +1277,280 @@
       b.classList.toggle('active', b.dataset.continent === continentId);
     });
 
-    map.flyTo({
-      center: info.center,
-      zoom: info.zoom,
-      pitch: info.pitch || 16,
-      bearing: 0,
-      duration: 1400,
-      essential: true
-    });
-
-    const banner = document.getElementById('continent-banner');
-    if (continentId === 'global' || info.status === 'active') {
-      banner.classList.add('hidden');
-      if (state.selectedId) {
-        const cur = ATLAS.getById(state.selectedId);
-        if (!cur || continentId === 'global' || cur.continent !== continentId) {
-          closeDestination();
-        }
-      }
-      renderSidebar();
-      return;
+    if (!skipCamera && map) {
+      cinematicFlyTo({
+        center: info.center,
+        zoom: info.zoom,
+        pitch: info.pitch || 16,
+        bearing: 0,
+        padding: { top: 76, bottom: 76, left: isMobileViewport() ? 16 : 300, right: 16 },
+        duration: 1300
+      });
     }
 
-    closeDestination();
-    banner.classList.remove('hidden');
-    document.getElementById('banner-round').textContent = info.round;
-    document.getElementById('banner-title').textContent = `${info.icon} ${info.name}（待建设轮次）`;
-    document.getElementById('banner-desc').textContent =
-      '已按照全球大洲轮次锁定经纬度视角与国家清单。已完成亚欧大洋南北美五大洲，将按同款杭州级颗粒度在此大洲逐一放上真实坐标与全气象方案。';
-    document.getElementById('banner-chips').innerHTML = info.plannedCountries
-      .map((name) => `<span class="country-chip">⏳ ${typeof name === 'string' ? name : name.name}</span>`)
-      .join('');
-    renderSidebar();
+    if (state.selectedId) {
+      const cur = ATLAS.getById(state.selectedId);
+      if (!cur || continentId === 'global' || cur.continent !== continentId) {
+        closeDestination(true);
+      }
+    }
+    applyFilterUpdates();
   }
 
-  function switchSkin(skinId) {
+  /* Smooth Skin Crossfade + Per-Skin MaxZoom Clamp */
+  function switchSkin(skinId, skipUrl) {
+    if (!SKIN_META[skinId]) return;
+    const prevSkin = state.skin;
     state.skin = skinId;
-    const skins = ['satellite', 'natgeo', 'physical', 'dark'];
-    skins.forEach((s) => {
-      const layerId = `layer-${s}`;
-      if (map.getLayer(layerId)) {
-        map.setLayoutProperty(layerId, 'visibility', s === skinId ? 'visible' : 'none');
-      }
-    });
+
     document.querySelectorAll('[data-skin]').forEach((btn) => {
       btn.classList.toggle('active', btn.dataset.skin === skinId);
     });
+
+    if (!map) return;
+    const maxZ = SKIN_META[skinId].maxZoom;
+    map.setMaxZoom(maxZ);
+    if (map.getZoom() > maxZ) {
+      map.easeTo({ zoom: maxZ, duration: 350 });
+    }
+
+    if (prevSkin !== skinId) {
+      const nextLayer = `layer-${skinId}`;
+      const prevLayer = `layer-${prevSkin}`;
+      if (skinFadeTimer) clearTimeout(skinFadeTimer);
+
+      if (map.getLayer(nextLayer)) {
+        map.setLayoutProperty(nextLayer, 'visibility', 'visible');
+        map.setPaintProperty(nextLayer, 'raster-opacity', 0);
+        requestAnimationFrame(() => {
+          if (map.getLayer(nextLayer)) {
+            map.setPaintProperty(nextLayer, 'raster-opacity', 1);
+          }
+          if (map.getLayer(prevLayer)) {
+            map.setPaintProperty(prevLayer, 'raster-opacity', 0);
+          }
+        });
+        skinFadeTimer = setTimeout(() => {
+          Object.keys(SKIN_META).forEach((s) => {
+            if (s !== state.skin && map.getLayer(`layer-${s}`)) {
+              map.setLayoutProperty(`layer-${s}`, 'visibility', 'none');
+            }
+          });
+        }, 400);
+      }
+    }
+
+    if (!skipUrl) syncUrlState(false);
   }
 
-  function spinStep() {
+  /* Delta-Time Smooth Auto Spin */
+  function spinStep(now) {
     if (!state.isSpinning || !map) return;
+    if (!lastSpinTime) lastSpinTime = now;
+    const dt = Math.min(0.06, (now - lastSpinTime) / 1000);
+    lastSpinTime = now;
+
     const c = map.getCenter();
-    c.lng = (c.lng + 0.16) > 180 ? c.lng + 0.16 - 360 : c.lng + 0.16;
-    map.setCenter(c);
+    let nextLng = c.lng + dt * 7.2;
+    if (nextLng > 180) nextLng -= 360;
+    map.setCenter([nextLng, c.lat]);
     spinRaf = requestAnimationFrame(spinStep);
   }
 
   function startSpin() {
-    if (state.isSpinning) return;
+    if (state.isSpinning || prefersReducedMotion()) return;
     state.isSpinning = true;
-    document.getElementById('toggle-spin-btn').classList.add('active');
-    spinStep();
+    lastSpinTime = 0;
+    const btn = document.getElementById('toggle-spin-btn');
+    if (btn) btn.classList.add('active');
+    spinRaf = requestAnimationFrame(spinStep);
   }
 
   function stopSpin() {
+    if (!state.isSpinning && !spinRaf) return;
     state.isSpinning = false;
+    lastSpinTime = 0;
     if (spinRaf) cancelAnimationFrame(spinRaf);
     spinRaf = null;
     const btn = document.getElementById('toggle-spin-btn');
     if (btn) btn.classList.remove('active');
   }
 
+  /* View Mode (3D Map vs Aesthetic Gallery) */
+  function setViewMode(mode, skipUrl) {
+    state.mode = mode === 'gallery' ? 'gallery' : 'map';
+    const isGallery = state.mode === 'gallery';
+
+    const mapBtn = document.getElementById('mode-map-btn');
+    const galBtn = document.getElementById('mode-gallery-btn');
+    const galView = document.getElementById('gallery-view');
+
+    if (mapBtn) {
+      mapBtn.classList.toggle('active', !isGallery);
+      mapBtn.setAttribute('aria-selected', !isGallery ? 'true' : 'false');
+    }
+    if (galBtn) {
+      galBtn.classList.toggle('active', isGallery);
+      galBtn.setAttribute('aria-selected', isGallery ? 'true' : 'false');
+    }
+    if (galView) {
+      galView.classList.toggle('is-hidden', !isGallery);
+    }
+
+    if (isGallery && global.AestheticGallery) {
+      stopSpin();
+      global.AestheticGallery.render();
+    }
+    scheduleLabelLayout();
+    if (!skipUrl) syncUrlState(false);
+  }
+
+  /* Favorites Toggle & Sync */
+  function toggleFavorite(id) {
+    if (!id) return;
+    if (state.favorites.has(id)) {
+      state.favorites.delete(id);
+    } else {
+      state.favorites.add(id);
+    }
+    saveFavorites();
+    syncFavoriteButtonUI(id);
+    syncFilterControlUI();
+    applyFilterUpdates(true);
+  }
+
+  function syncFavoriteButtonUI(id) {
+    const btn = document.getElementById('drawer-fav-btn');
+    if (!btn || !Icons) return;
+    const isFav = Boolean(id && state.favorites.has(id));
+    btn.classList.toggle('is-favorited', isFav);
+    btn.setAttribute('aria-pressed', isFav ? 'true' : 'false');
+    btn.innerHTML = Icons.svg(isFav ? 'bookmarkFilled' : 'bookmark', 14);
+  }
+  global.syncFavoriteButtonUI = syncFavoriteButtonUI;
+
+  /* URL State Sync & Deep Link Compatibility */
+  function syncUrlState(push) {
+    if (suppressPopState || !global.history || !global.history.replaceState) return;
+    const url = new URL(global.location.href);
+    const params = url.searchParams;
+
+    if (state.selectedId) params.set('focus', state.selectedId);
+    else params.delete('focus');
+
+    if (state.month !== 'all') params.set('m', state.month);
+    else params.delete('m');
+
+    if (state.theme !== 'all') params.set('t', state.theme);
+    else params.delete('t');
+
+    if (state.weather !== 'all') params.set('w', state.weather);
+    else params.delete('w');
+
+    if (state.continent !== 'global') params.set('c', state.continent);
+    else params.delete('c');
+
+    if (state.skin !== 'satellite') params.set('skin', state.skin);
+    else params.delete('skin');
+
+    if (state.mode !== 'map') params.set('mode', state.mode);
+    else params.delete('mode');
+
+    params.delete('instant');
+
+    const nextHref = `${url.pathname}${params.toString() ? '?' + params.toString() : ''}${url.hash}`;
+    try {
+      if (push) global.history.pushState({ focus: state.selectedId }, '', nextHref);
+      else global.history.replaceState({ focus: state.selectedId }, '', nextHref);
+    } catch (e) {
+      // ignore file:// origin restrictions
+    }
+  }
+
+  function readInitialUrlState() {
+    const params = new URLSearchParams(global.location.search);
+    const m = params.get('m');
+    if (m && (m === 'all' || (Number(m) >= 1 && Number(m) <= 12))) state.month = m;
+
+    const t = params.get('t');
+    if (t && (t === 'all' || THEME_LABELS[t])) state.theme = t;
+
+    const w = params.get('w');
+    if (w && (w === 'all' || WEATHER_LABELS[w])) state.weather = w;
+
+    const c = params.get('c');
+    if (c && ATLAS.CONTINENTS.some((x) => x.id === c)) state.continent = c;
+
+    const skin = params.get('skin');
+    if (skin && SKIN_META[skin]) state.skin = skin;
+
+    const mode = params.get('mode');
+    if (mode === 'gallery') state.mode = 'gallery';
+
+    return {
+      focusId: params.get('focus'),
+      instant: params.get('instant') === '1'
+    };
+  }
+
   function bindEvents() {
-    document.getElementById('month-filter').addEventListener('change', (e) => {
-      state.month = e.target.value;
-      renderSidebar();
-      if (state.selectedId && state.month !== 'all') {
-        const dest = ATLAS.getById(state.selectedId);
-        if (dest) Panel.open(dest, state.month);
-      }
-    });
+    // Mode switch
+    document.getElementById('mode-map-btn').addEventListener('click', () => setViewMode('map'));
+    document.getElementById('mode-gallery-btn').addEventListener('click', () => setViewMode('gallery'));
+
+    // Filter Popover
+    const popBtn = document.getElementById('filter-popover-btn');
+    const popEl = document.getElementById('filter-popover');
+    if (popBtn && popEl) {
+      popBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const willOpen = popEl.classList.contains('is-hidden');
+        popEl.classList.toggle('is-hidden', !willOpen);
+        popBtn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+      });
+      document.addEventListener('click', (e) => {
+        if (!popEl.classList.contains('is-hidden') && !popEl.contains(e.target) && !popBtn.contains(e.target)) {
+          popEl.classList.add('is-hidden');
+          popBtn.setAttribute('aria-expanded', 'false');
+        }
+      });
+    }
 
     document.querySelectorAll('#theme-pills .pill-btn').forEach((btn) => {
       btn.addEventListener('click', () => {
         state.theme = btn.dataset.theme;
-        document.querySelectorAll('#theme-pills .pill-btn').forEach((b) => {
-          b.classList.toggle('active', b === btn);
-        });
-        renderSidebar();
+        syncFilterControlUI();
+        applyFilterUpdates();
       });
     });
 
     document.querySelectorAll('#weather-pills .pill-btn').forEach((btn) => {
       btn.addEventListener('click', () => {
         state.weather = btn.dataset.weather;
-        document.querySelectorAll('#weather-pills .pill-btn').forEach((b) => {
-          b.classList.toggle('active', b === btn);
-        });
-        renderSidebar();
+        syncFilterControlUI();
+        applyFilterUpdates();
       });
     });
 
-    const searchInput = document.getElementById('search-input');
-    const clearBtn = document.getElementById('search-clear');
-    searchInput.addEventListener('input', (e) => {
-      state.query = e.target.value;
-      clearBtn.classList.toggle('hidden', !state.query);
-      renderSidebar();
-    });
-    clearBtn.addEventListener('click', () => {
-      searchInput.value = '';
-      state.query = '';
-      clearBtn.classList.add('hidden');
-      renderSidebar();
+    document.getElementById('popover-reset-btn').addEventListener('click', resetAllFilters);
+    document.getElementById('reset-filters-btn').addEventListener('click', resetAllFilters);
+
+    // Favorites filter toggle & drawer bookmark button
+    document.getElementById('favorites-toggle-btn').addEventListener('click', () => {
+      state.onlyFavorites = !state.onlyFavorites;
+      syncFilterControlUI();
+      applyFilterUpdates();
     });
 
-    document.getElementById('reset-filters-btn').addEventListener('click', () => {
-      state.month = 'all';
-      state.theme = 'all';
-      state.weather = 'all';
-      state.query = '';
-      document.getElementById('month-filter').value = 'all';
-      document.getElementById('search-input').value = '';
-      document.getElementById('search-clear').classList.add('hidden');
-      document.querySelectorAll('#theme-pills .pill-btn').forEach((b) => {
-        b.classList.toggle('active', b.dataset.theme === 'all');
-      });
-      document.querySelectorAll('#weather-pills .pill-btn').forEach((b) => {
-        b.classList.toggle('active', b.dataset.weather === 'all');
-      });
-      renderSidebar();
+    document.getElementById('drawer-fav-btn').addEventListener('click', () => {
+      if (state.selectedId) toggleFavorite(state.selectedId);
     });
 
-    document.getElementById('sidebar-collapse-btn').addEventListener('click', () => {
-      document.getElementById('left-sidebar').classList.add('hidden');
-      document.getElementById('sidebar-open-btn').classList.remove('hidden');
-    });
+    // Sidebar collapse/expand
+    document.getElementById('sidebar-collapse-btn').addEventListener('click', () => setSidebarOpen(false));
+    document.getElementById('sidebar-open-btn').addEventListener('click', () => setSidebarOpen(true));
 
-    document.getElementById('sidebar-open-btn').addEventListener('click', () => {
-      document.getElementById('left-sidebar').classList.remove('hidden');
-      document.getElementById('sidebar-open-btn').classList.add('hidden');
-    });
-
-    document.getElementById('banner-close').addEventListener('click', () => {
-      document.getElementById('continent-banner').classList.add('hidden');
-    });
-
-    document.getElementById('banner-fly-china').addEventListener('click', () => {
-      switchContinent('global');
-    });
-
+    // Map skin & controls
     document.querySelectorAll('[data-skin]').forEach((btn) => {
       btn.addEventListener('click', () => switchSkin(btn.dataset.skin));
     });
@@ -667,7 +1558,7 @@
     document.getElementById('toggle-labels-btn').addEventListener('click', (e) => {
       state.showLabels = !state.showLabels;
       e.currentTarget.classList.toggle('active', state.showLabels);
-      if (map.getLayer('layer-labels')) {
+      if (map && map.getLayer('layer-labels')) {
         map.setLayoutProperty('layer-labels', 'visibility', state.showLabels ? 'visible' : 'none');
       }
     });
@@ -675,14 +1566,14 @@
     document.getElementById('toggle-all-labels-btn').addEventListener('click', (e) => {
       state.forceAllLabels = !state.forceAllLabels;
       e.currentTarget.classList.toggle('active', state.forceAllLabels);
-      updateLabelDensity();
+      scheduleLabelLayout();
     });
 
     document.getElementById('toggle-proj-btn').addEventListener('click', (e) => {
       state.isGlobe = !state.isGlobe;
       map.setProjection({ type: state.isGlobe ? 'globe' : 'mercator' });
       e.currentTarget.classList.toggle('active', state.isGlobe);
-      e.currentTarget.textContent = state.isGlobe ? '🌐 3D球体' : '🗺️ 2D平面';
+      scheduleLabelLayout();
     });
 
     document.getElementById('toggle-spin-btn').addEventListener('click', () => {
@@ -694,49 +1585,49 @@
       stopSpin();
       closeDestination();
       state.continent = 'asia';
-      document.querySelectorAll('.continent-btn').forEach((b) => {
-        b.classList.toggle('active', b.dataset.continent === 'asia');
+      syncFilterControlUI();
+      applyFilterUpdates();
+      cinematicFlyTo({
+        center: [104.5, 34.5],
+        zoom: 3.15,
+        pitch: 22,
+        bearing: 0,
+        padding: { top: 76, bottom: 76, left: 24, right: 24 },
+        duration: 1300
       });
-      document.getElementById('continent-banner').classList.add('hidden');
-      renderSidebar();
-      map.flyTo({ center: [104.5, 34.5], zoom: 3.15, pitch: 22, bearing: 0, padding: { top: 0, bottom: 0, left: 0, right: 0 }, duration: 1400 });
     });
 
-    document.getElementById('fly-global-btn').addEventListener('click', () => {
-      switchContinent('global');
+    document.getElementById('fly-global-btn').addEventListener('click', () => switchContinent('global'));
+
+    document.getElementById('zoom-in-btn').addEventListener('click', () => {
+      if (map) map.zoomIn({ duration: 280, easing: easeInOutCubic });
+    });
+    document.getElementById('zoom-out-btn').addEventListener('click', () => {
+      if (map) map.zoomOut({ duration: 280, easing: easeInOutCubic });
     });
 
     document.getElementById('back-to-city-overview').addEventListener('click', () => {
       const dest = ATLAS.getById(state.selectedId);
       if (dest) {
-        map.flyTo({ center: dest.coords, zoom: dest.zoom || 9.0, pitch: 42, bearing: 0, padding: getDrawerViewportPadding(), duration: 1100 });
+        cinematicFlyTo({
+          center: dest.coords,
+          zoom: dest.zoom || 9.0,
+          pitch: 42,
+          bearing: 0,
+          duration: 1050
+        });
       }
     });
 
-    document.getElementById('drawer-close-btn').addEventListener('click', closeDestination);
-
-    const mobileFilterBtn = document.getElementById('mobile-filter-toggle');
-    if (mobileFilterBtn) {
-      mobileFilterBtn.addEventListener('click', () => {
-        const filtersBar = document.querySelector('.topbar-filters');
-        if (!filtersBar) return;
-        const isOpen = filtersBar.classList.toggle('mobile-open');
-        mobileFilterBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-        mobileFilterBtn.textContent = isOpen ? '✕ 收起筛选' : '🔍 筛选';
-      });
+    document.getElementById('drawer-close-btn').addEventListener('click', () => closeDestination());
+    const expandBtn = document.getElementById('drawer-expand-btn');
+    if (expandBtn) {
+      expandBtn.addEventListener('click', () => Panel.cycleSheetState());
     }
 
-    const drawerExpandBtn = document.getElementById('drawer-expand-btn');
-    if (drawerExpandBtn) {
-      drawerExpandBtn.addEventListener('click', () => {
-        const drawerEl = document.getElementById('detail-drawer');
-        if (!drawerEl) return;
-        const expanded = drawerEl.classList.toggle('sheet-expanded');
-        drawerExpandBtn.textContent = expanded ? '⤡ 半屏' : '⤢ 展开';
-      });
-    }
-
+    // Share destination deep link
     const shareBtn = document.getElementById('share-dest-btn');
+    const shareLabel = document.getElementById('share-btn-label');
     if (shareBtn) {
       shareBtn.addEventListener('click', async () => {
         if (!state.selectedId) return;
@@ -746,14 +1637,14 @@
           : global.location.href.split('?')[0].split('#')[0];
         const shareUrl = `${baseUrl}?focus=${encodeURIComponent(state.selectedId)}`;
         const flashCopied = () => {
-          shareBtn.textContent = '✅ 已复制';
-          setTimeout(() => { shareBtn.textContent = '🔗 分享'; }, 1800);
+          if (shareLabel) shareLabel.textContent = '已复制';
+          setTimeout(() => { if (shareLabel) shareLabel.textContent = '分享'; }, 1800);
         };
         if (isCoarsePointer() && global.navigator && typeof global.navigator.share === 'function') {
           try {
             await global.navigator.share({
-              title: dest ? dest.name : '全球梦想旅游地球仪',
-              text: dest ? `${dest.country} · ${dest.subtitle}` : '3D 交互卫星旅行地球仪',
+              title: dest ? dest.name : 'World Travel Globe',
+              text: dest ? `${dest.country} · ${dest.subtitle}` : '全球旅行美学地球仪',
               url: shareUrl
             });
             return;
@@ -767,14 +1658,13 @@
             flashCopied();
             return;
           }
-        } catch (err) {
-          // fallback below
+        } catch (e) {
+          // fallback
         }
         const ta = document.createElement('textarea');
         ta.value = shareUrl;
         ta.setAttribute('readonly', '');
-        ta.style.position = 'fixed';
-        ta.style.opacity = '0';
+        ta.style.cssText = 'position:fixed;opacity:0;';
         document.body.appendChild(ta);
         ta.select();
         try {
@@ -791,66 +1681,305 @@
     });
 
     function stepDestination(delta) {
-      const all = ATLAS.getAll().filter(matchesFilter);
+      const all = getFilteredDestinations();
       if (!all.length) return;
       const idx = all.findIndex((d) => d.id === state.selectedId);
       const nextIdx = idx === -1 ? 0 : (idx + delta + all.length) % all.length;
       selectDestination(all[nextIdx].id);
     }
-
     document.getElementById('prev-dest-btn').addEventListener('click', () => stepDestination(-1));
     document.getElementById('next-dest-btn').addEventListener('click', () => stepDestination(1));
 
+    const skipBtn = document.getElementById('skip-intro-btn');
+    if (skipBtn) {
+      skipBtn.addEventListener('click', () => {
+        const dest = ATLAS.getById(state.selectedId);
+        cancelActiveFlight();
+        if (dest) {
+          cinematicFlyTo({ center: dest.coords, zoom: dest.zoom || 9.0, pitch: 42, bearing: 0, instant: true });
+        }
+      });
+    }
+
+    // Global Keyboard Shortcuts: Ctrl/Cmd+K, /, Esc, Left/Right
     global.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && state.selectedId) {
-        closeDestination();
+      const tag = document.activeElement && document.activeElement.tagName;
+      const isTyping = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
+
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        if (global.CommandPalette) {
+          if (global.CommandPalette.isOpen()) global.CommandPalette.close();
+          else global.CommandPalette.open();
+        }
+        return;
       }
+
+      if (e.key === '/' && !isTyping) {
+        e.preventDefault();
+        if (global.CommandPalette) global.CommandPalette.open();
+        return;
+      }
+
+      if (e.key === 'Escape') {
+        if (global.CommandPalette && global.CommandPalette.isOpen()) {
+          global.CommandPalette.close();
+          return;
+        }
+        if (popEl && !popEl.classList.contains('is-hidden')) {
+          popEl.classList.add('is-hidden');
+          if (popBtn) popBtn.setAttribute('aria-expanded', 'false');
+          return;
+        }
+        if (isIntroFlight) {
+          cancelActiveFlight();
+          return;
+        }
+        if (state.mode === 'gallery') {
+          setViewMode('map');
+          return;
+        }
+        if (state.selectedId) {
+          closeDestination();
+        }
+      }
+    });
+
+    // Browser Back/Forward support
+    global.addEventListener('popstate', () => {
+      suppressPopState = true;
+      const params = new URLSearchParams(global.location.search);
+      const focusId = params.get('focus');
+      if (focusId && ATLAS.getById(focusId)) {
+        selectDestination(focusId, { skipUrl: true });
+      } else if (state.selectedId) {
+        closeDestination(true);
+      }
+      suppressPopState = false;
+    });
+  }
+
+  function bindMapInteractions() {
+    map.on('mousedown', () => { stopSpin(); cancelActiveFlight(); });
+    map.on('wheel', () => { stopSpin(); cancelActiveFlight(); });
+    map.on('touchstart', () => { stopSpin(); cancelActiveFlight(); });
+
+    map.on('move', scheduleLabelLayout);
+    map.on('zoom', () => {
+      scheduleLabelLayout();
+      if (state.subSpotMarkers.length) applySpiderfyLayout();
+    });
+    map.on('resize', scheduleLabelLayout);
+
+    // WebGL Context Loss & Restore Handling
+    const canvas = map.getCanvas();
+    if (canvas) {
+      canvas.addEventListener('webglcontextlost', (e) => {
+        e.preventDefault();
+        const banner = document.getElementById('webgl-recovery-banner');
+        if (banner) banner.classList.remove('is-hidden');
+      });
+      canvas.addEventListener('webglcontextrestored', () => {
+        const banner = document.getElementById('webgl-recovery-banner');
+        if (banner) banner.classList.add('is-hidden');
+        syncGeoJsonSource();
+        scheduleLabelLayout();
+      });
+    }
+
+    // Hover & Click on WebGL Atlas Points
+    map.on('mousemove', 'atlas-hit', (e) => {
+      if (isCoarsePointer() || !e.features || !e.features.length) return;
+      const f = e.features[0];
+      const id = f.properties.id;
+      const dest = ATLAS.getById(id);
+      if (!dest) return;
+
+      map.getCanvas().style.cursor = 'pointer';
+      if (hoveredFeatureId !== null && hoveredFeatureId !== f.id) {
+        map.setFeatureState({ source: 'atlas-points', id: hoveredFeatureId }, { hover: false });
+      }
+      hoveredFeatureId = f.id;
+      map.setFeatureState({ source: 'atlas-points', id: hoveredFeatureId }, { hover: true });
+
+      if (!hoverPopup) {
+        hoverPopup = new maplibregl.Popup({ closeButton: false, closeOnClick: false, offset: 14 });
+      }
+      const badge = dest.allWeather ? '四季晴雨雪皆美' : '季节/气象限定';
+      const locLabel = (dest.country && dest.country !== '中国') ? `${dest.country} · ${dest.province}` : dest.province;
+      hoverPopup
+        .setLngLat(dest.coords)
+        .setHTML(`
+          <div style="font-weight:600;font-size:13px;margin-bottom:3px;color:#DCE5EF;">${dest.name}</div>
+          <div style="color:#56B8A9;font-size:11px;margin-bottom:4px;">${locLabel} · ${badge}</div>
+          <div style="color:#9FB4C8;font-size:11.5px;line-height:1.45;">${dest.subtitle}</div>
+          <div style="color:#D6B77A;font-size:11px;margin-top:5px;">点击俯冲查看 ${(dest.spots || []).length} 个精准机位 →</div>
+        `)
+        .addTo(map);
+    });
+
+    map.on('mouseleave', 'atlas-hit', () => {
+      if (map.getCanvas()) map.getCanvas().style.cursor = '';
+      if (hoveredFeatureId !== null) {
+        map.setFeatureState({ source: 'atlas-points', id: hoveredFeatureId }, { hover: false });
+        hoveredFeatureId = null;
+      }
+      if (hoverPopup) hoverPopup.remove();
+    });
+
+    map.on('click', 'atlas-hit', (e) => {
+      if (!e.features || !e.features.length) return;
+      const id = e.features[0].properties.id;
+      if (hoverPopup) hoverPopup.remove();
+      if (id) selectDestination(id);
     });
   }
 
   function init() {
+    hydrateIcons();
+    loadFavorites();
+    buildAtlasIndex();
+
     const all = ATLAS.getAll();
     const totalSpots = all.reduce((sum, d) => sum + (d.spots ? d.spots.length : 0), 0);
     const countryCount = countCountries(all);
     document.getElementById('atlas-stats-line').textContent =
-      `已点亮：全球七大洲全面封神 · ${countryCount} 国/地区 · ${all.length} 城 · ${totalSpots} 个精准机位（滚轮缩放 · 拖拽旋转地球）`;
+      `${countryCount} 国/地区 · ${all.length} 城 · ${totalSpots.toLocaleString('en-US')} 机位`;
+
+    const initialParams = readInitialUrlState();
+    const focusDest = initialParams.focusId ? ATLAS.getById(initialParams.focusId) : null;
 
     renderContinentTabs();
+    syncFilterControlUI();
+    recomputeMatchedSet();
+    renderPhenologyBar();
+    renderSidebar();
+    renderActiveChips();
 
     if (isMobileViewport()) {
-      document.getElementById('left-sidebar').classList.add('hidden');
-      document.getElementById('sidebar-open-btn').classList.remove('hidden');
+      setSidebarOpen(false);
+    }
+
+    // Initialize Command Palette & Gallery
+    if (global.CommandPalette) {
+      global.CommandPalette.init({
+        searchIndex: atlasIndex,
+        onSelect: (id, spotIdx) => selectDestination(id, { spotIdx }),
+        onRelax: resetAllFilters
+      });
+    }
+    if (global.AestheticGallery) {
+      global.AestheticGallery.init({
+        getFiltered: getFilteredDestinations,
+        getFavorites: () => state.favorites,
+        onSelect: (id) => selectDestination(id),
+        onBackToMap: () => setViewMode('map')
+      });
+    }
+
+    // Determine initial camera pose (if deep-linked without ?instant=1, show global context first for cinematic intro!)
+    let initCenter = [72.0, 22.0];
+    let initZoom = 1.65;
+    let initPitch = 14;
+    if (focusDest) {
+      if (initialParams.instant || prefersReducedMotion()) {
+        initCenter = focusDest.coords;
+        initZoom = focusDest.zoom || 9.0;
+        initPitch = 42;
+      } else {
+        const startLng = focusDest.coords[0] - 42 < -180 ? focusDest.coords[0] + 318 : focusDest.coords[0] - 42;
+        const startLat = Math.max(-35, Math.min(35, focusDest.coords[1] * 0.4));
+        initCenter = [startLng, startLat];
+        initZoom = 1.45;
+        initPitch = 10;
+      }
+    } else if (state.continent !== 'global') {
+      const cInfo = ATLAS.getContinent(state.continent);
+      if (cInfo) {
+        initCenter = cInfo.center;
+        initZoom = cInfo.zoom;
+        initPitch = cInfo.pitch || 16;
+      }
     }
 
     map = new maplibregl.Map({
       container: 'map',
       style: buildStyle(),
-      center: [72.0, 22.0],
-      zoom: 1.65,
-      pitch: 14,
+      center: initCenter,
+      zoom: initZoom,
+      pitch: initPitch,
       minZoom: 1.1,
-      maxZoom: 17.5,
+      maxZoom: SKIN_META[state.skin].maxZoom,
+      pixelRatio: Math.min(global.devicePixelRatio || 1, 2),
+      fadeDuration: 320,
+      maxTileCacheSize: 256,
       attributionControl: false
     });
 
-    map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'bottom-right');
+    if (map.scrollZoom) {
+      map.scrollZoom.setWheelZoomRate(1 / 320);
+      map.scrollZoom.setZoomRate(1 / 110);
+    }
 
-    map.on('mousedown', stopSpin);
-    map.on('wheel', stopSpin);
-    map.on('touchstart', stopSpin);
-    map.on('zoom', updateLabelDensity);
-
-    map.on('load', () => {
-      renderMainMarkers();
-      renderSidebar();
-      const params = new URLSearchParams(global.location.search);
-      const focusId = params.get('focus');
-      if (focusId && ATLAS.getById(focusId)) {
-        selectDestination(focusId, params.get('instant') === '1');
-      }
-    });
-
+    ensureLabelOverlay();
+    bindMapInteractions();
     bindEvents();
+
+    const hideLoader = () => {
+      const loader = document.getElementById('globe-loader');
+      if (loader) loader.classList.add('is-hidden');
+    };
+    const loaderFallback = setTimeout(hideLoader, 1500);
+
+    let styleReady = false;
+    const onStyleReady = () => {
+      if (styleReady) return;
+      styleReady = true;
+      clearTimeout(loaderFallback);
+      hideLoader();
+
+      syncGeoJsonSource();
+      if (state.skin !== 'satellite') switchSkin(state.skin, true);
+      if (state.mode === 'gallery') setViewMode('gallery', true);
+      scheduleLabelLayout();
+
+      if (focusDest) {
+        if (initialParams.instant || prefersReducedMotion()) {
+          selectDestination(focusDest.id, { instant: true, skipUrl: true });
+        } else {
+          // Open detail card immediately, then perform smooth 1.3s cinematic intro swoop from global orbit
+          isIntroFlight = true;
+          const skipBtn = document.getElementById('skip-intro-btn');
+          if (skipBtn) skipBtn.classList.remove('is-hidden');
+
+          state.selectedId = focusDest.id;
+          setSidebarOpen(false);
+          renderSubSpots(focusDest);
+          updateActiveBeacon(focusDest);
+          Panel.open(focusDest, state.month);
+          syncGeoJsonSource();
+          updateSelectionUI();
+
+          introTimer = setTimeout(() => {
+            if (!isIntroFlight) return;
+            cinematicFlyTo({
+              center: focusDest.coords,
+              zoom: focusDest.zoom || 9.0,
+              pitch: 42,
+              bearing: 0,
+              duration: 1350
+            });
+            map.once('moveend', () => {
+              isIntroFlight = false;
+              if (skipBtn) skipBtn.classList.add('is-hidden');
+            });
+          }, 220);
+        }
+      }
+    };
+
+    map.on('style.load', onStyleReady);
+    map.on('load', onStyleReady);
   }
 
   document.addEventListener('DOMContentLoaded', init);

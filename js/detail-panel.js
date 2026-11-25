@@ -12,13 +12,9 @@
     africa_antarctica: '非洲 / 南极'
   };
 
-  const CAT_META = {
-    '自然美景': { icon: '🏔️', cls: 'spot-cat-nature' },
-    '现代建筑': { icon: '🏙️', cls: 'spot-cat-modern' },
-    '古建遗存': { icon: '🏯', cls: 'spot-cat-ancient' },
-    '花海物候': { icon: '🌸', cls: 'spot-cat-bloom' },
-    '人文街区': { icon: '🏘️', cls: 'spot-cat-street' }
-  };
+  function icon(name, size) {
+    return global.AppIcons ? global.AppIcons.svg(name, size || 14) : '';
+  }
 
   function escapeHtml(str) {
     if (str === null || str === undefined) return '';
@@ -60,7 +56,7 @@
       let host = rawUrl.replace(/^https?:\/\//i, '').split(/[/?#]/)[0].replace(/^www\./i, '');
       if (!host) host = '参考链接';
       const safeUrl = escapeHtml(rawUrl);
-      out += `<a class="inline-ref-link" href="${safeUrl}" target="_blank" rel="noopener noreferrer" title="${safeUrl}">🔗 ${escapeHtml(host)}</a>${escapeHtml(trailing)}`;
+      out += `<a class="inline-ref-link" href="${safeUrl}" target="_blank" rel="noopener noreferrer" title="${safeUrl}">${icon('arrowUpRight', 11)}${escapeHtml(host)}</a>${escapeHtml(trailing)}`;
       lastIdx = match.index + match[0].length;
     }
     out += escapeHtml(text.slice(lastIdx));
@@ -76,18 +72,118 @@
     return '★'.repeat(s) + '☆'.repeat(5 - s);
   }
 
+  /* Procedural Topographic Horizon Banner seeded deterministically by destination coordinates */
+  function drawTopoBanner(dest) {
+    const canvas = document.getElementById('hero-topo-canvas');
+    if (!canvas || !canvas.getContext) return;
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width;
+    const h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+
+    const lng = Number((dest.coords && dest.coords[0]) || 0);
+    const lat = Number((dest.coords && dest.coords[1]) || 0);
+    const seed = Math.abs(Math.sin(lng * 12.9898 + lat * 78.233) * 43758.5453);
+    const isGold = Boolean(dest.allWeather);
+
+    // Subtle atmospheric gradient
+    const bg = ctx.createLinearGradient(0, 0, w, h);
+    bg.addColorStop(0, isGold ? 'rgba(214, 183, 122, 0.14)' : 'rgba(86, 184, 169, 0.14)');
+    bg.addColorStop(0.6, 'rgba(21, 30, 44, 0.4)');
+    bg.addColorStop(1, 'rgba(8, 12, 20, 0.92)');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, w, h);
+
+    // Latitude / longitude graticule lines
+    ctx.strokeStyle = 'rgba(159, 180, 200, 0.08)';
+    ctx.lineWidth = 1;
+    for (let x = 28; x < w; x += 48) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, h);
+      ctx.stroke();
+    }
+    for (let y = 20; y < h; y += 22) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(w, y);
+      ctx.stroke();
+    }
+
+    // Layered topographic ridgelines
+    const layers = 4;
+    for (let l = 0; l < layers; l++) {
+      ctx.beginPath();
+      const baseY = h * (0.48 + l * 0.12);
+      const amp = 16 - l * 2.5;
+      const freq = 0.015 + l * 0.007;
+      const phase = seed * 0.1 + l * 1.9;
+      ctx.moveTo(0, h);
+      for (let x = 0; x <= w; x += 6) {
+        const y =
+          baseY +
+          Math.sin(x * freq + phase) * amp +
+          Math.cos(x * freq * 2.1 - phase) * (amp * 0.42);
+        ctx.lineTo(x, y);
+      }
+      ctx.lineTo(w, h);
+      ctx.closePath();
+
+      ctx.fillStyle = isGold
+        ? `rgba(214, 183, 122, ${0.05 + l * 0.035})`
+        : `rgba(86, 184, 169, ${0.05 + l * 0.035})`;
+      ctx.fill();
+
+      ctx.strokeStyle = isGold
+        ? `rgba(214, 183, 122, ${0.18 + l * 0.08})`
+        : `rgba(86, 184, 169, ${0.18 + l * 0.08})`;
+      ctx.lineWidth = 1.1;
+      ctx.stroke();
+    }
+  }
+
+  function updateJsonLd(dest) {
+    const el = document.getElementById('dest-jsonld');
+    if (!el) return;
+    if (!dest) {
+      el.textContent = '{}';
+      return;
+    }
+    const payload = {
+      '@context': 'https://schema.org',
+      '@type': 'TouristDestination',
+      name: dest.name,
+      description: dest.heroSummary || dest.subtitle || '',
+      geo: Array.isArray(dest.coords) && dest.coords.length >= 2
+        ? {
+            '@type': 'GeoCoordinates',
+            latitude: dest.coords[1],
+            longitude: dest.coords[0]
+          }
+        : undefined,
+      containedInPlace: {
+        '@type': 'Country',
+        name: dest.country || ''
+      }
+    };
+    el.textContent = JSON.stringify(payload);
+  }
+
   const DetailPanel = {
     currentDest: null,
     activeTab: 'spots',
     selectedMonth: null,
-    highlightedSpotIndex: null,
+    expandedSpotIndex: 0,
+    sheetState: 'half',
 
     open: function (dest, preferredMonth) {
       if (!dest) return;
+      const isNewDest = !this.currentDest || this.currentDest.id !== dest.id;
       this.currentDest = dest;
-      this.highlightedSpotIndex = null;
+      if (isNewDest) {
+        this.expandedSpotIndex = 0;
+      }
 
-      // Pick default month: user's global month filter, or peak score month
       if (preferredMonth && preferredMonth !== 'all') {
         this.selectedMonth = Number(preferredMonth);
       } else {
@@ -100,60 +196,134 @@
 
       this.renderHeader(dest);
       this.renderBody();
-      document.getElementById('detail-drawer').classList.remove('hidden');
+      updateJsonLd(dest);
+
+      const drawer = document.getElementById('detail-drawer');
+      if (drawer) {
+        drawer.classList.remove('is-hidden');
+        this.setSheetState('half');
+      }
+      document.body.classList.add('drawer-open');
     },
 
     close: function () {
-      document.getElementById('detail-drawer').classList.add('hidden');
+      const drawer = document.getElementById('detail-drawer');
+      if (drawer) drawer.classList.add('is-hidden');
+      document.body.classList.remove('drawer-open');
       this.currentDest = null;
-      this.highlightedSpotIndex = null;
+      this.expandedSpotIndex = 0;
+      updateJsonLd(null);
+    },
+
+    setSheetState: function (nextState) {
+      const valid = nextState === 'peek' || nextState === 'half' || nextState === 'full' ? nextState : 'half';
+      this.sheetState = valid;
+      const drawer = document.getElementById('detail-drawer');
+      if (drawer) {
+        drawer.setAttribute('data-sheet-state', valid);
+        drawer.style.transform = '';
+      }
+      const expandBtn = document.getElementById('drawer-expand-btn');
+      if (expandBtn) {
+        expandBtn.innerHTML = icon(valid === 'full' ? 'minimize' : 'maximize', 14);
+      }
+    },
+
+    cycleSheetState: function () {
+      const next = this.sheetState === 'peek' ? 'half' : this.sheetState === 'half' ? 'full' : 'half';
+      this.setSheetState(next);
     },
 
     setTab: function (tabName) {
       this.activeTab = tabName;
       document.querySelectorAll('#drawer-tabs .tab-btn').forEach((btn) => {
-        btn.classList.toggle('active', btn.dataset.tab === tabName);
+        const active = btn.dataset.tab === tabName;
+        btn.classList.toggle('active', active);
+        btn.setAttribute('aria-selected', active ? 'true' : 'false');
       });
       this.renderBody();
     },
 
     highlightSpot: function (idx) {
-      this.highlightedSpotIndex = idx;
+      this.expandedSpotIndex = idx;
       if (this.activeTab !== 'spots') {
         this.setTab('spots');
       } else {
-        this.renderBody();
+        this.syncAccordionDOM();
       }
-      const card = document.querySelector(`.spot-card[data-spot-idx="${idx}"]`);
-      if (card) {
-        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
+      requestAnimationFrame(() => {
+        const card = document.querySelector(`.spot-card[data-spot-idx="${idx}"]`);
+        if (card) {
+          card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      });
+    },
+
+    syncAccordionDOM: function () {
+      const body = document.getElementById('detail-body');
+      if (!body) return;
+      body.querySelectorAll('.spot-card').forEach((card) => {
+        const i = Number(card.dataset.spotIdx);
+        const active = i === this.expandedSpotIndex;
+        card.classList.toggle('is-expanded', active);
+        card.classList.toggle('highlighted', active);
+        const btn = card.querySelector('.spot-accordion-head');
+        if (btn) btn.setAttribute('aria-expanded', active ? 'true' : 'false');
+      });
+      body.querySelectorAll('.spot-chip').forEach((chip) => {
+        chip.classList.toggle('active', Number(chip.dataset.idx) === this.expandedSpotIndex);
+      });
     },
 
     renderHeader: function (dest) {
       const contLabel = CONTINENT_LABELS[dest.continent] || '全球';
       document.getElementById('drawer-breadcrumb').textContent =
-        `${contLabel} › ${dest.country} › ${dest.region} › ${dest.province}`;
+        `${contLabel} · ${dest.country} · ${dest.province || dest.region}`;
       document.getElementById('drawer-title').textContent = dest.name;
       document.getElementById('drawer-subtitle').textContent = dest.subtitle;
 
       const badgeEl = document.getElementById('drawer-allweather-badge');
       if (dest.allWeather) {
         badgeEl.className = 'type-badge all-weather';
-        badgeEl.textContent = '🌟 四季晴雨雪全天候封神';
+        badgeEl.innerHTML = `${icon('sparkles', 12)} 四季晴雨雪全天候`;
       } else {
         badgeEl.className = 'type-badge seasonal';
-        badgeEl.textContent = '🎯 季节 / 气象限定巅峰';
+        badgeEl.innerHTML = `${icon('compass', 12)} 季节 / 气象限定`;
+      }
+
+      const coordsEl = document.getElementById('drawer-hero-coords');
+      if (coordsEl) {
+        coordsEl.textContent = formatCoords(dest.coords, 3);
+      }
+
+      drawTopoBanner(dest);
+
+      // 12-month phenology ribbon
+      const ribbonEl = document.getElementById('drawer-phenology-ribbon');
+      if (ribbonEl) {
+        const months = dest.months || [];
+        const byM = new Map(months.map((m) => [m.m, m]));
+        ribbonEl.innerHTML = Array.from({ length: 12 }, (_, idx) => {
+          const m = idx + 1;
+          const mo = byM.get(m) || { score: 2, highlight: '' };
+          const title = `${m}月 · ${mo.score}★ ${mo.highlight || ''}`.trim();
+          return `<div class="ribbon-cell" data-month="${m}" data-score="${mo.score || 2}" title="${escapeHtml(title)}"><span class="ribbon-bar"></span><span class="ribbon-m">${m}</span></div>`;
+        }).join('');
+        ribbonEl.querySelectorAll('.ribbon-cell').forEach((cell) => {
+          cell.addEventListener('click', () => {
+            this.selectedMonth = Number(cell.dataset.month);
+            this.setTab('months');
+          });
+        });
       }
 
       const metaStrip = document.getElementById('drawer-meta-strip');
       const badgesHtml = (dest.badges || [])
-        .map((b) => `<span class="meta-chip honor">🏆 ${escapeHtml(b)}</span>`)
+        .map((b) => `<span class="meta-chip honor">${icon('award', 11)}${escapeHtml(b)}</span>`)
         .join('');
       metaStrip.innerHTML = `
-        <span class="meta-chip">⛰️ 海拔 ${escapeHtml(dest.elevation)}</span>
-        <span class="meta-chip">⏱️ 建议 ${escapeHtml(dest.suggestedDays)}</span>
-        <span class="meta-chip">🧭 ${formatCoords(dest.coords, 3)}</span>
+        <span class="meta-chip mono-num">${icon('mountain', 11)}海拔 ${escapeHtml(dest.elevation)}</span>
+        <span class="meta-chip">${icon('clock', 11)}建议 ${escapeHtml(dest.suggestedDays)}</span>
         ${badgesHtml}
       `;
 
@@ -161,8 +331,14 @@
       document.getElementById('tab-spots-count').textContent = (dest.spots || []).length;
 
       document.querySelectorAll('#drawer-tabs .tab-btn').forEach((btn) => {
-        btn.classList.toggle('active', btn.dataset.tab === this.activeTab);
+        const active = btn.dataset.tab === this.activeTab;
+        btn.classList.toggle('active', active);
+        btn.setAttribute('aria-selected', active ? 'true' : 'false');
       });
+
+      if (typeof global.syncFavoriteButtonUI === 'function') {
+        global.syncFavoriteButtonUI(dest.id);
+      }
     },
 
     renderBody: function () {
@@ -170,40 +346,56 @@
       if (!dest) return;
       const body = document.getElementById('detail-body');
 
+      let contentHtml = '';
       if (this.activeTab === 'spots') {
-        body.innerHTML = this.buildSpotsHtml(dest);
-        const bindLocateClick = (el) => {
-          el.addEventListener('click', () => {
+        contentHtml = this.buildSpotsHtml(dest);
+      } else if (this.activeTab === 'months') {
+        contentHtml = this.buildMonthsHtml(dest);
+      } else if (this.activeTab === 'weather') {
+        contentHtml = this.buildWeatherHtml(dest);
+      } else if (this.activeTab === 'budget') {
+        contentHtml = this.buildBudgetHtml(dest);
+      } else if (this.activeTab === 'itinerary') {
+        contentHtml = this.buildItineraryHtml(dest);
+      }
+
+      const provenanceHtml = this.buildProvenanceHtml(dest);
+      body.innerHTML = `<div class="drawer-body-inner">${contentHtml}${provenanceHtml}</div>`;
+
+      if (this.activeTab === 'spots') {
+        body.querySelectorAll('.spot-accordion-head').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const idx = Number(btn.dataset.idx);
+            this.expandedSpotIndex = this.expandedSpotIndex === idx ? -1 : idx;
+            this.syncAccordionDOM();
+            if (this.expandedSpotIndex >= 0 && typeof global.focusSubSpotMarkerOnly === 'function') {
+              global.focusSubSpotMarkerOnly(idx);
+            }
+          });
+        });
+
+        const flyHandler = (el) => {
+          el.addEventListener('click', (e) => {
+            e.stopPropagation();
             const idx = Number(el.dataset.idx);
-            this.highlightedSpotIndex = idx;
-            body.querySelectorAll('.spot-card').forEach((c) => {
-              c.classList.toggle('highlighted', Number(c.dataset.spotIdx) === idx);
-            });
-            body.querySelectorAll('.spot-chip').forEach((c) => {
-              c.classList.toggle('active', Number(c.dataset.idx) === idx);
-            });
+            this.expandedSpotIndex = idx;
+            this.syncAccordionDOM();
             if (typeof global.flyToSubSpot === 'function') {
               global.flyToSubSpot(idx);
             }
           });
         };
-        body.querySelectorAll('.spot-locate-btn').forEach(bindLocateClick);
-        body.querySelectorAll('.spot-chip').forEach(bindLocateClick);
+        body.querySelectorAll('.spot-locate-btn').forEach(flyHandler);
+        body.querySelectorAll('.spot-chip').forEach(flyHandler);
       } else if (this.activeTab === 'months') {
-        body.innerHTML = this.buildMonthsHtml(dest);
         body.querySelectorAll('.month-cell').forEach((cell) => {
           cell.addEventListener('click', () => {
             this.selectedMonth = Number(cell.dataset.month);
             this.renderBody();
           });
         });
-      } else if (this.activeTab === 'weather') {
-        body.innerHTML = this.buildWeatherHtml(dest);
-      } else if (this.activeTab === 'budget') {
-        body.innerHTML = this.buildBudgetHtml(dest);
-      } else if (this.activeTab === 'itinerary') {
-        body.innerHTML = this.buildItineraryHtml(dest);
       }
+
       body.scrollTop = 0;
     },
 
@@ -214,22 +406,22 @@
           ${spots
             .map((sp, i) => {
               const shortLabel = sp.name.split(/[·（(&]/)[0].trim();
-              const activeCls = this.highlightedSpotIndex === i ? 'active' : '';
-              return `<button class="spot-chip ${activeCls}" data-idx="${i}"><span>${i + 1}</span> ${escapeHtml(shortLabel)}</button>`;
+              const activeCls = this.expandedSpotIndex === i ? 'active' : '';
+              return `<button class="spot-chip ${activeCls}" data-idx="${i}" type="button"><span>${i + 1}</span> ${escapeHtml(shortLabel)}</button>`;
             })
             .join('')}
         </div>
       `;
       const cardsHtml = spots
         .map((sp, i) => {
-          const isHL = this.highlightedSpotIndex === i ? 'highlighted' : '';
-          const catInfo = CAT_META[sp.category] || { icon: '📍', cls: 'spot-cat-nature' };
+          const isExpanded = this.expandedSpotIndex === i;
+          const expCls = isExpanded ? 'is-expanded highlighted' : '';
           const catBadge = sp.category
-            ? `<span class="spot-cat-badge ${catInfo.cls}">${catInfo.icon} ${escapeHtml(sp.category)}</span>`
+            ? `<span class="spot-cat-badge">${escapeHtml(sp.category)}</span>`
             : '';
           return `
-            <article class="spot-card ${isHL}" data-spot-idx="${i}">
-              <div class="spot-head">
+            <article class="spot-card ${expCls}" data-spot-idx="${i}">
+              <button class="spot-accordion-head" type="button" data-idx="${i}" aria-expanded="${isExpanded ? 'true' : 'false'}">
                 <div class="spot-title-wrap">
                   <span class="spot-index">${i + 1}</span>
                   <div>
@@ -237,16 +429,26 @@
                     ${catBadge}
                   </div>
                 </div>
-                <button class="spot-locate-btn" data-idx="${i}">🎯 地球仪定位</button>
+                <span class="spot-head-actions">
+                  <span class="spot-chevron">${icon('chevronDown', 15)}</span>
+                </span>
+              </button>
+              <div class="spot-accordion-body">
+                <div class="spot-accordion-inner">
+                  <div class="spot-accordion-pad">
+                    <div class="spot-locate-row">
+                      <span class="mono-num" style="font-size:11px;color:var(--text-secondary)">${formatCoords(sp.coords, 4)} · ${escapeHtml(sp.elevation)}</span>
+                      <button class="spot-locate-btn" data-idx="${i}" type="button">${icon('target', 12)} 俯冲定位</button>
+                    </div>
+                    <div class="spot-coords-row">
+                      <span>${icon('route', 12)} ${linkifyHtml(sp.access)}</span>
+                    </div>
+                    <div class="spot-field"><strong>黄金时段：</strong>${escapeHtml(sp.bestTime)}</div>
+                    <div class="spot-field"><strong>实景画面：</strong>${escapeHtml(sp.scene)}</div>
+                    <div class="spot-tips"><strong>机位实操与避坑：</strong>${linkifyHtml(sp.tips)}</div>
+                  </div>
+                </div>
               </div>
-              <div class="spot-coords-row">
-                <span>📍 ${formatCoords(sp.coords, 4)}</span>
-                <span>⛰️ 海拔 ${escapeHtml(sp.elevation)}</span>
-                <span>🚗 ${linkifyHtml(sp.access)}</span>
-              </div>
-              <div class="spot-field"><strong>⏰ 黄金时段：</strong>${escapeHtml(sp.bestTime)}</div>
-              <div class="spot-field"><strong>👁️ 实景画面：</strong>${escapeHtml(sp.scene)}</div>
-              <div class="spot-tips"><strong>💡 机位与避坑实操：</strong>${linkifyHtml(sp.tips)}</div>
             </article>
           `;
         })
@@ -259,9 +461,9 @@
       const cells = months
         .map((mo) => {
           const active = mo.m === this.selectedMonth ? 'active' : '';
-          const cls = mo.score >= 5 ? 'm-score-5' : mo.score === 4 ? 'm-score-4' : mo.score === 3 ? 'm-score-3' : '';
+          const cls = mo.score >= 5 ? 'm-score-5' : mo.score === 4 ? 'm-score-4' : '';
           return `
-            <button class="month-cell ${cls} ${active}" data-month="${mo.m}">
+            <button class="month-cell ${cls} ${active}" data-month="${mo.m}" type="button">
               <div class="month-name">${MONTH_NAMES[mo.m - 1]}</div>
               <div class="month-stars">${renderStars(mo.score)}</div>
               <div class="month-temp">${escapeHtml(mo.temp)}</div>
@@ -271,18 +473,20 @@
         .join('');
 
       const cur = months.find((x) => x.m === this.selectedMonth) || months[0];
+      const lat = Number((dest.coords && dest.coords[1]) || 0);
+      const hemiHint = lat >= 0 ? '北半球' : '南半球';
       const detailBox = cur
         ? `
           <div class="month-detail-box">
             <div class="month-detail-head">
-              <h4>📅 ${MONTH_NAMES[cur.m - 1]}实景档案</h4>
+              <h4>${MONTH_NAMES[cur.m - 1]}实景档案（${hemiHint}）</h4>
               <span class="weather-rating">推荐度 ${renderStars(cur.score)}</span>
             </div>
             <div class="month-kv-row">
-              <div class="month-kv"><span>🌡️ 日均气温区间</span><strong>${escapeHtml(cur.temp)}</strong></div>
-              <div class="month-kv"><span>🌦️ 晴雨气候特征</span><strong>${escapeHtml(cur.rain)}</strong></div>
+              <div class="month-kv"><span>日均气温区间</span><strong class="mono-num">${escapeHtml(cur.temp)}</strong></div>
+              <div class="month-kv"><span>晴雨气候特征</span><strong>${escapeHtml(cur.rain)}</strong></div>
             </div>
-            <div class="spot-field"><strong>✨ 当月实景亮点：</strong>${escapeHtml(cur.highlight)}</div>
+            <div class="spot-field"><strong>当月物候亮点：</strong>${escapeHtml(cur.highlight)}</div>
           </div>
         `
         : '';
@@ -293,24 +497,24 @@
     buildWeatherHtml: function (dest) {
       const w = dest.weather || {};
       const cards = [
-        { key: 'sunny', icon: '☀️ 晴天美学', data: w.sunny },
-        { key: 'rainy', icon: '🌧️ 雨天 & 雨后初晴', data: w.rainy },
-        { key: 'snowy', icon: '❄️ 雪天 & 冬季限定', data: w.snowy },
-        { key: 'special', icon: '🌌 极限气象奇观', data: w.special }
+        { key: 'sunny', iconName: 'sun', label: '晴天美学', data: w.sunny },
+        { key: 'rainy', iconName: 'cloudRain', label: '雨天 & 雨后初晴', data: w.rainy },
+        { key: 'snowy', iconName: 'snowflake', label: '雪天 & 冬季限定', data: w.snowy },
+        { key: 'special', iconName: 'aurora', label: '极限气象奇观', data: w.special }
       ];
       return cards
         .map((c) => {
           const d = c.data || {};
           const triggerHtml = d.trigger
-            ? `<div class="weather-trigger"><strong>⚡ 气象触发条件：</strong>${linkifyHtml(d.trigger)}</div>`
+            ? `<div class="weather-trigger"><strong>气象触发条件：</strong>${linkifyHtml(d.trigger)}</div>`
             : '';
           const gearHtml = d.gear
-            ? `<div class="weather-gear"><strong>🎒 穿搭与装备建议：</strong>${linkifyHtml(d.gear)}</div>`
+            ? `<div class="weather-gear"><strong>穿搭与装备建议：</strong>${linkifyHtml(d.gear)}</div>`
             : '';
           return `
             <article class="weather-card">
               <div class="weather-card-head">
-                <div class="weather-card-title">${c.icon} · ${escapeHtml(d.title || '')}</div>
+                <div class="weather-card-title">${icon(c.iconName, 14)} ${c.label}${d.title ? ` · ${escapeHtml(d.title)}` : ''}</div>
                 <span class="weather-rating">${escapeHtml(d.rating || '')}</span>
               </div>
               <p class="weather-desc">${linkifyHtml(d.desc || '')}</p>
@@ -325,8 +529,8 @@
     buildBudgetHtml: function (dest) {
       const b = dest.budget || {};
       const tiers = [
-        { key: 'luxury', cls: 'luxury', icon: '💎 顶奢不差钱档', data: b.luxury },
-        { key: 'comfort', cls: 'comfort', icon: '🎒 舒适深度档', data: b.comfort }
+        { key: 'luxury', cls: 'luxury', label: '顶奢尊享档', data: b.luxury },
+        { key: 'comfort', cls: 'comfort', label: '舒适深度档', data: b.comfort }
       ];
       return tiers
         .map((t) => {
@@ -350,7 +554,7 @@
             <section class="budget-tier-card ${t.cls}">
               <div class="budget-tier-head">
                 <div>
-                  <div class="budget-tier-title">${t.icon}</div>
+                  <div class="budget-tier-title">${t.label}</div>
                   <div class="budget-tier-sub">${escapeHtml(td.unitLabel)}</div>
                 </div>
                 <div class="budget-total">
@@ -359,7 +563,7 @@
                 </div>
               </div>
               <div class="budget-rows">${rows}</div>
-              <div class="budget-note">📌 ${linkifyHtml(td.note || '')}</div>
+              <div class="budget-note">${linkifyHtml(td.note || '')}</div>
             </section>
           `;
         })
@@ -383,8 +587,100 @@
             .join('')}
         </div>
       `;
+    },
+
+    buildProvenanceHtml: function (dest) {
+      const note = dest.verificationNote || dest.sourceNote || dest.dataNotes || dest.researchNotes || '';
+      const extra = note ? `<div style="margin-top:4px">${linkifyHtml(note)}</div>` : '';
+      return `
+        <div class="provenance-footer">
+          <div><strong>数据与坐标核验</strong> · 图鉴版本 <span class="mono-num">v2.0</span> · 编号 <span class="mono-num">${escapeHtml(dest.id)}</span></div>
+          <div>坐标、气象与预算来源于实地考察资料与公开权威地理库整理，出行前请再次核对当地开放政策。</div>
+          ${extra}
+        </div>
+      `;
     }
   };
+
+  /* Mobile 3-Stage Bottom Sheet Touch Drag & Velocity Snap */
+  function bindMobileSheetGesture() {
+    const handle = document.getElementById('drawer-drag-handle');
+    const drawer = document.getElementById('detail-drawer');
+    if (!handle || !drawer) return;
+
+    let dragging = false;
+    let startY = 0;
+    let baseTranslate = 0;
+    let lastY = 0;
+    let lastTime = 0;
+    let velocity = 0;
+
+    function getStateOffset(st) {
+      const vh = global.innerHeight || 800;
+      const sheetH = vh * 0.92;
+      if (st === 'full') return 0;
+      if (st === 'half') return Math.round(vh * 0.38);
+      return Math.max(120, Math.round(sheetH - 148));
+    }
+
+    handle.addEventListener('pointerdown', (e) => {
+      if (global.innerWidth > 768) return;
+      dragging = true;
+      startY = e.clientY;
+      lastY = e.clientY;
+      lastTime = performance.now();
+      velocity = 0;
+      baseTranslate = getStateOffset(DetailPanel.sheetState);
+      drawer.classList.add('is-dragging');
+      handle.setPointerCapture(e.pointerId);
+    });
+
+    handle.addEventListener('pointermove', (e) => {
+      if (!dragging) return;
+      const now = performance.now();
+      const dt = Math.max(1, now - lastTime);
+      velocity = (e.clientY - lastY) / dt;
+      lastY = e.clientY;
+      lastTime = now;
+
+      const peekMax = getStateOffset('peek');
+      const nextY = Math.max(0, Math.min(peekMax + 40, baseTranslate + (e.clientY - startY)));
+      drawer.style.transform = `translate3d(0, ${nextY}px, 0)`;
+    });
+
+    function finishDrag(e) {
+      if (!dragging) return;
+      dragging = false;
+      drawer.classList.remove('is-dragging');
+      if (handle.hasPointerCapture && handle.hasPointerCapture(e.pointerId)) {
+        handle.releasePointerCapture(e.pointerId);
+      }
+
+      const deltaY = e.clientY - startY;
+      const currentY = baseTranslate + deltaY;
+      const fullY = getStateOffset('full');
+      const halfY = getStateOffset('half');
+      const peekY = getStateOffset('peek');
+
+      if (velocity < -0.45) {
+        DetailPanel.setSheetState(DetailPanel.sheetState === 'peek' ? 'half' : 'full');
+      } else if (velocity > 0.45) {
+        DetailPanel.setSheetState(DetailPanel.sheetState === 'full' ? 'half' : 'peek');
+      } else {
+        const distances = [
+          { st: 'full', d: Math.abs(currentY - fullY) },
+          { st: 'half', d: Math.abs(currentY - halfY) },
+          { st: 'peek', d: Math.abs(currentY - peekY) }
+        ].sort((a, b) => a.d - b.d);
+        DetailPanel.setSheetState(distances[0].st);
+      }
+    }
+
+    handle.addEventListener('pointerup', finishDrag);
+    handle.addEventListener('pointercancel', finishDrag);
+  }
+
+  document.addEventListener('DOMContentLoaded', bindMobileSheetGesture);
 
   global.DetailPanel = DetailPanel;
 })(window);

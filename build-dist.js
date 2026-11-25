@@ -41,7 +41,10 @@ function main() {
   // Copy static runtime assets
   const assetCopies = [
     ['css/styles.css', 'css/styles.css'],
+    ['js/icons.js', 'js/icons.js'],
     ['js/detail-panel.js', 'js/detail-panel.js'],
+    ['js/command-palette.js', 'js/command-palette.js'],
+    ['js/gallery.js', 'js/gallery.js'],
     ['js/app.js', 'js/app.js'],
     ['vendor/maplibre-gl.js', 'vendor/maplibre-gl.js'],
     ['vendor/maplibre-gl.css', 'vendor/maplibre-gl.css']
@@ -87,7 +90,7 @@ function main() {
   }
   const distHtml = indexHtml.replace(
     blockRe,
-    '\n  <script src="data/atlas-bundle.min.js?v=11"></script>\n'
+    '\n  <script src="data/atlas-bundle.min.js?v=20"></script>\n'
   );
   fs.writeFileSync(path.join(distDir, 'index.html'), distHtml, 'utf8');
 

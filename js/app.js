@@ -1696,6 +1696,20 @@
       else startSpin();
     });
 
+    const wxLayerBtn = document.getElementById('toggle-weather-layer-btn');
+    if (wxLayerBtn) {
+      wxLayerBtn.addEventListener('click', async () => {
+        if (!global.WeatherPanel) return;
+        const activeMode = await global.WeatherPanel.setGlobalWeatherLayer(map);
+        wxLayerBtn.classList.toggle('active', activeMode !== 'off');
+        wxLayerBtn.title = activeMode === 'radar'
+          ? '全球实时雷达 (RainViewer) · 点击切红外云图'
+          : activeMode === 'clouds'
+            ? '全球红外云图 (RainViewer) · 点击关闭'
+            : '全球实时雷达/云图';
+      });
+    }
+
     document.getElementById('fly-china-btn').addEventListener('click', () => {
       stopSpin();
       closeDestination();

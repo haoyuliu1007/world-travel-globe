@@ -344,16 +344,29 @@
       return Promise.resolve(cur);
     }
     if (!regionFetchCache.has(rIdx)) {
-      const p = fetch(`data/regions/r${rIdx}.json`)
-        .then((res) => {
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          return res.json();
-        })
-        .then((items) => {
-          registerDestinations(items);
-          return byId.get(id) || null;
-        })
-        .catch(() => byId.get(id) || null);
+      const loadViaScript = () =>
+        new Promise((resolve) => {
+          const s = document.createElement('script');
+          s.src = `data/regions/r${rIdx}.js`;
+          s.async = true;
+          s.onload = () => resolve(byId.get(id) || null);
+          s.onerror = () => resolve(byId.get(id) || null);
+          document.head.appendChild(s);
+        });
+
+      const p =
+        global.location && global.location.protocol === 'file:'
+          ? loadViaScript()
+          : fetch(`data/regions/r${rIdx}.json`)
+              .then((res) => {
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                return res.json();
+              })
+              .then((items) => {
+                registerDestinations(items);
+                return byId.get(id) || null;
+              })
+              .catch(() => loadViaScript());
       regionFetchCache.set(rIdx, p);
     }
     return regionFetchCache.get(rIdx).then(() => byId.get(id) || null);

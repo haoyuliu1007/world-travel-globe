@@ -378,7 +378,10 @@
     },
 
     buildMonthsHtml: function (dest) {
-      const months = dest.months || [];
+      if (!Array.isArray(dest.months) || !dest.months.length) {
+        return `<div style="padding:24px 4px;color:var(--text-muted);font-size:12.5px;">${t('loadingDetail')}</div>`;
+      }
+      const months = dest.months;
       const cells = months
         .map((mo) => {
           const active = mo.m === this.selectedMonth ? 'active' : '';
@@ -416,7 +419,10 @@
     },
 
     buildWeatherHtml: function (dest) {
-      const w = dest.weather || {};
+      if (!dest.weather || typeof dest.weather !== 'object') {
+        return `<div style="padding:24px 4px;color:var(--text-muted);font-size:12.5px;">${t('loadingDetail')}</div>`;
+      }
+      const w = dest.weather;
       const cards = [
         { key: 'sunny', iconName: 'sun', label: t('weatherSunnyTitle'), data: w.sunny },
         { key: 'rainy', iconName: 'cloudRain', label: t('weatherRainyTitle'), data: w.rainy },
@@ -448,7 +454,10 @@
     },
 
     buildBudgetHtml: function (dest) {
-      const b = dest.budget || {};
+      if (!dest.budget || typeof dest.budget !== 'object') {
+        return `<div style="padding:24px 4px;color:var(--text-muted);font-size:12.5px;">${t('loadingDetail')}</div>`;
+      }
+      const b = dest.budget;
       const tiers = [
         { key: 'luxury', cls: 'luxury', label: t('budgetLuxury'), data: b.luxury },
         { key: 'comfort', cls: 'comfort', label: t('budgetComfort'), data: b.comfort }
@@ -492,7 +501,10 @@
     },
 
     buildItineraryHtml: function (dest) {
-      const steps = dest.itinerary || [];
+      if (!Array.isArray(dest.itinerary) || !dest.itinerary.length) {
+        return `<div style="padding:24px 4px;color:var(--text-muted);font-size:12.5px;">${t('loadingDetail')}</div>`;
+      }
+      const steps = dest.itinerary;
       return `
         <div class="timeline">
           ${steps

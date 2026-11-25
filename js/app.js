@@ -1972,23 +1972,24 @@
 
     if (!map || !map.isStyleLoaded()) return;
 
+    // Outer space backdrop & ocean globe always remain realistic deep-space dark
     map.setSky({
-      'sky-color': isLight ? '#DCE6F2' : '#09090B',
-      'horizon-color': isLight ? '#8BB3DF' : '#2B5B94',
-      'fog-color': isLight ? '#E7EEF6' : '#0C1624',
+      'sky-color': '#09090B',
+      'horizon-color': '#2B5B94',
+      'fog-color': '#0C1624',
       'sky-horizon-blend': 0.5,
       'horizon-fog-blend': 0.65,
       'atmosphere-blend': ['interpolate', ['linear'], ['zoom'], 0, 1, 4.5, 0.72, 7, 0]
     });
 
     if (map.getLayer('globe-ocean-base')) {
-      map.setPaintProperty('globe-ocean-base', 'background-color', isLight ? '#BFD4EA' : '#0A121D');
+      map.setPaintProperty('globe-ocean-base', 'background-color', '#0A121D');
     }
     if (map.getLayer('atlas-glow')) {
       map.setPaintProperty('atlas-glow', 'circle-color', [
         'case',
         ['==', ['get', 'allWeather'], 1], info.accentHex,
-        isLight ? '#2563EB' : '#8AB4F8'
+        isLightMapSkin ? '#2563EB' : '#8AB4F8'
       ]);
     }
     if (map.getLayer('atlas-core')) {
@@ -1996,12 +1997,12 @@
         'case',
         ['==', ['get', 'selected'], 1], '#FFFFFF',
         ['==', ['get', 'allWeather'], 1], info.accentHex,
-        isLight ? '#2563EB' : '#8AB4F8'
+        isLightMapSkin ? '#2563EB' : '#8AB4F8'
       ]);
       map.setPaintProperty('atlas-core', 'circle-stroke-color', [
         'case',
         ['==', ['get', 'selected'], 1], info.accentHex,
-        isLight ? '#FFFFFF' : '#09090B'
+        isLightMapSkin ? '#FFFFFF' : '#09090B'
       ]);
     }
     if (map.getLayer('subroute-line')) {

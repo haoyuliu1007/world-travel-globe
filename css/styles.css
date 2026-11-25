@@ -55,9 +55,9 @@
   --dur-theme: 280ms;
 }
 
-/* Apple Maps Daylight Mode Tokens */
+/* Apple Maps Daylight Mode Tokens (Floating UI only; 3D Space stays realistic black) */
 html[data-theme="light"] {
-  --bg-space: #E7EEF6;
+  --bg-space: #09090B;
   --bg-material: rgba(255, 255, 255, 0.92);
   --bg-material-strong: rgba(255, 255, 255, 0.97);
   --bg-solid: #FFFFFF;
@@ -144,11 +144,6 @@ input:focus-visible {
   z-index: 0;
   pointer-events: none;
   background: radial-gradient(circle at 50% 48%, #101218 0%, #09090B 68%, #050507 100%);
-  transition: background var(--dur-theme) var(--ease-out);
-}
-
-html[data-theme="light"] #space-backdrop {
-  background: radial-gradient(circle at 50% 42%, #F6F9FC 0%, #E7EEF6 58%, #D7E2EE 100%);
 }
 
 #space-backdrop::before {
@@ -164,11 +159,6 @@ html[data-theme="light"] #space-backdrop {
     radial-gradient(1px 1px at 91% 58%, rgba(255, 255, 255, 0.32), transparent);
   background-size: 560px 460px;
   opacity: 0.45;
-  transition: opacity var(--dur-theme) ease;
-}
-
-html[data-theme="light"] #space-backdrop::before {
-  opacity: 0;
 }
 
 /* Edge-to-Edge 3D Globe */
@@ -708,9 +698,9 @@ html[data-theme="light"] #space-backdrop::before {
 
 .atlas-micro-stat {
   font-size: 11.5px;
-  color: var(--text-muted);
+  color: rgba(245, 245, 247, 0.74);
   padding-left: 4px;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
   pointer-events: none;
 }
 
@@ -1394,8 +1384,8 @@ body.light-map-skin .subspot-tag {
     0 0 6px rgba(255, 255, 255, 0.92);
 }
 
-html[data-theme="light"] .atlas-micro-stat {
-  text-shadow: none;
+body.light-map-skin .atlas-micro-stat {
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.9);
   color: var(--text-secondary);
 }
 

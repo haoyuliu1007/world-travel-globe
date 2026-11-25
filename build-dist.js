@@ -116,8 +116,13 @@ function main() {
   });
 
   for (const [rIdx, items] of regionBuckets.entries()) {
-    const chunkPath = path.join(distDir, 'data', 'regions', `r${rIdx}.json`);
-    fs.writeFileSync(chunkPath, JSON.stringify(items), 'utf8');
+    const jsonStr = JSON.stringify(items);
+    fs.writeFileSync(path.join(distDir, 'data', 'regions', `r${rIdx}.json`), jsonStr, 'utf8');
+    fs.writeFileSync(
+      path.join(distDir, 'data', 'regions', `r${rIdx}.js`),
+      `window.TRAVEL_ATLAS.registerDestinations(${jsonStr});\n`,
+      'utf8'
+    );
   }
 
   // Build single lightweight index bundle
@@ -139,7 +144,7 @@ function main() {
   }
   const distHtml = indexHtml.replace(
     blockRe,
-    '\n  <script src="data/atlas-index.min.js?v=33"></script>\n'
+    '\n  <script src="data/atlas-index.min.js?v=35"></script>\n'
   );
   fs.writeFileSync(path.join(distDir, 'index.html'), distHtml, 'utf8');
 

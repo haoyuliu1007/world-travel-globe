@@ -13,6 +13,14 @@
     return global.AppIcons ? global.AppIcons.svg(name, size || 13) : '';
   }
 
+  function t(key, vars) {
+    return global.AppI18n ? global.AppI18n.t(key, vars) : key;
+  }
+
+  function tx(str) {
+    return global.AppI18n ? global.AppI18n.tx(str) : (str || '');
+  }
+
   function escapeHtml(str) {
     return String(str || '')
       .replace(/&/g, '&amp;')
@@ -55,13 +63,12 @@
 
     const baseList = typeof getFilteredFn === 'function' ? getFilteredFn() : [];
     const items = filterByCollection(baseList);
-    if (countEl) countEl.textContent = `${items.length} 座目的地`;
+    if (countEl) countEl.textContent = t('destCountFmt', { n: items.length });
 
     if (!items.length) {
       grid.innerHTML = `
         <div class="gallery-more-wrap" style="flex-direction:column;gap:8px;padding:48px 16px;color:var(--text-secondary);">
-          <div>当前图鉴分类下暂无匹配目的地。</div>
-          ${activeCollection === 'favorites' ? '<div style="font-size:12px">在任意目的地详情页点击右上角书签即可加入收藏。</div>' : ''}
+          <div>${t('emptyGallery')}</div>
         </div>
       `;
       return;
@@ -79,15 +86,15 @@
         return `
           <button class="gallery-card" data-id="${escapeHtml(d.id)}" type="button">
             <div class="gallery-card-top">
-              <span class="gallery-card-country">${escapeHtml(d.country)} · ${escapeHtml(d.region)}</span>
+              <span class="gallery-card-country">${escapeHtml(tx(d.country))} · ${escapeHtml(tx(d.region))}</span>
               <span class="gallery-card-coords mono-num">${formatCoords(d.coords)}</span>
             </div>
-            <h3 class="gallery-card-title">${escapeHtml(d.name)}</h3>
-            <p class="gallery-card-sub">${escapeHtml(d.subtitle || d.heroSummary)}</p>
-            <div class="gallery-card-ribbon" title="1–12月观赏指数分布">${ribbon}</div>
+            <h3 class="gallery-card-title">${escapeHtml(tx(d.name))}</h3>
+            <p class="gallery-card-sub">${escapeHtml(tx(d.subtitle || d.heroSummary))}</p>
+            <div class="gallery-card-ribbon">${ribbon}</div>
             <div class="gallery-card-foot">
-              <span class="mono-num">${(d.spots || []).length} 个机位 · ${escapeHtml(d.suggestedDays)}</span>
-              <span class="gallery-card-cta">飞往坐标 ${icon('arrowUpRight', 13)}</span>
+              <span class="mono-num">${t('spotsCountFmt', { n: (d.spots || []).length })} · ${escapeHtml(tx(d.suggestedDays))}</span>
+              <span class="gallery-card-cta">${t('flyCoord')} ${icon('arrowUpRight', 13)}</span>
             </div>
           </button>
         `;
@@ -95,7 +102,7 @@
       .join('');
 
     const moreHtml = items.length > visibleLimit
-      ? `<div class="gallery-more-wrap"><button class="mini-btn" id="gallery-load-more" type="button">继续加载更多（剩余 ${items.length - visibleLimit} 座）</button></div>`
+      ? `<div class="gallery-more-wrap"><button class="text-btn" id="gallery-load-more" type="button">${t('loadMore', { n: items.length - visibleLimit })}</button></div>`
       : '';
 
     grid.innerHTML = cardsHtml + moreHtml;

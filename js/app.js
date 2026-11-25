@@ -4,6 +4,16 @@
   const ATLAS = global.TRAVEL_ATLAS;
   const Panel = global.DetailPanel;
   const Icons = global.AppIcons;
+  const I18n = global.AppI18n;
+  const Theme = global.AppTheme;
+
+  function t(key, vars) {
+    return I18n ? I18n.t(key, vars) : key;
+  }
+
+  function tx(str) {
+    return I18n ? I18n.tx(str) : (str || '');
+  }
 
   const FAVORITES_KEY = 'wtg_favorites_v1';
 
@@ -586,7 +596,7 @@
 
     for (let i = 0; i < candidates.length && used < maxLabels; i++) {
       const c = candidates[i];
-      const text = c.dest.shortName || c.dest.name;
+      const text = tx(c.dest.shortName || c.dest.name);
       const estW = Math.min(130, text.length * 11 + 18);
       const estH = 22;
       const lx = Math.round(c.x + 10);
@@ -731,10 +741,10 @@
       const inner = document.createElement('div');
       inner.className = 'subspot-pin-inner';
       inner.style.animationDelay = `${Math.min(idx * 35, 240)}ms`;
-      const baseTag = sp.name.split(/[·&（(/]/)[0].trim();
+      const baseTag = tx(sp.name).split(/[·&（(/]/)[0].trim();
       const shortTag = baseTag.length > 8 ? baseTag.slice(0, 7) + '…' : baseTag;
       inner.innerHTML = `
-        <div class="subspot-hitbox" title="${sp.name}">
+        <div class="subspot-hitbox" title="${tx(sp.name)}">
           <span class="subspot-num">${idx + 1}</span>
         </div>
         <span class="subspot-tag">${shortTag}</span>
@@ -762,7 +772,7 @@
     const toast = document.getElementById('subspot-toast');
     const toastText = document.getElementById('subspot-toast-text');
     if (toast && toastText) {
-      toastText.textContent = `${dest.shortName || dest.name} · ${dest.spots.length} 个精准机位（点击编号俯冲）`;
+      toastText.textContent = t('subspotToast', { name: tx(dest.shortName || dest.name), n: dest.spots.length });
       toast.classList.remove('is-hidden');
     }
   }
@@ -959,8 +969,8 @@
     const maxCount = Math.max(1, ...counts);
 
     let html = `
-      <button class="pheno-btn ${state.month === 'all' ? 'active' : ''}" data-month="all" type="button" role="radio" aria-checked="${state.month === 'all'}" title="全年共 ${totalScope} 座目的地">
-        <span>全年</span>
+      <button class="pheno-btn ${state.month === 'all' ? 'active' : ''}" data-month="all" type="button" role="radio" aria-checked="${state.month === 'all'}" title="${t('allYear')} · ${totalScope}">
+        <span>${t('allYear')}</span>
       </button>
     `;
 
@@ -968,9 +978,10 @@
       const active = String(m) === String(state.month);
       const cnt = counts[m - 1];
       const dotOpacity = (0.18 + (cnt / maxCount) * 0.82).toFixed(2);
+      const label = t('monthFmt', { m });
       html += `
-        <button class="pheno-btn ${active ? 'active' : ''}" data-month="${m}" type="button" role="radio" aria-checked="${active}" title="${m}月 推荐≥4★ 目的地 ${cnt} 座">
-          <span>${m}月</span>
+        <button class="pheno-btn ${active ? 'active' : ''}" data-month="${m}" type="button" role="radio" aria-checked="${active}" title="${label} · ${t('citiesCountFmt', { n: cnt })}">
+          <span>${label}</span>
           <span class="pheno-dot" style="opacity:${dotOpacity}"></span>
         </button>
       `;
@@ -979,12 +990,12 @@
 
     if (hemiHint) {
       if (state.month === 'all') {
-        hemiHint.textContent = `${totalScope} 城`;
+        hemiHint.textContent = t('citiesCountFmt', { n: totalScope });
       } else {
         const m = Number(state.month);
         const cnt = counts[m - 1];
-        const northSeason = m >= 3 && m <= 5 ? '北春' : m >= 6 && m <= 8 ? '北夏' : m >= 9 && m <= 11 ? '北秋' : '北冬';
-        hemiHint.textContent = `${northSeason} · ${cnt} 城`;
+        const seasonStr = I18n ? I18n.tSeason(m) : '';
+        hemiHint.textContent = `${seasonStr} · ${t('citiesCountFmt', { n: cnt })}`;
       }
     }
 
@@ -1019,23 +1030,30 @@
 
     const chips = [];
     if (state.continent !== 'global') {
-      const info = ATLAS.getContinent(state.continent);
-      chips.push({ key: 'continent', label: info ? info.name : state.continent });
+      chips.push({ key: 'continent', label: I18n ? I18n.tContinent(state.continent) : state.continent });
     }
     if (state.month !== 'all') {
-      chips.push({ key: 'month', label: `${state.month} 月` });
+      chips.push({ key: 'month', label: t('monthFmt', { m: state.month }) });
     }
     if (state.theme !== 'all') {
-      chips.push({ key: 'theme', label: THEME_LABELS[state.theme] || state.theme });
+      const themeKey = state.theme === 'nature' ? 'themeNature' : 'themeArch';
+      chips.push({ key: 'theme', label: t(themeKey) });
     }
     if (state.weather !== 'all') {
-      chips.push({ key: 'weather', label: WEATHER_LABELS[state.weather] || state.weather });
+      const wMap = {
+        allWeather: 'weatherAllWeather',
+        sunny: 'weatherSunny',
+        rain: 'weatherRain',
+        snow: 'weatherSnow',
+        special: 'weatherSpecial'
+      };
+      chips.push({ key: 'weather', label: t(wMap[state.weather] || 'filterAll') });
     }
     if (state.onlyFavorites) {
-      chips.push({ key: 'favorites', label: '我的收藏' });
+      chips.push({ key: 'favorites', label: t('galFav') });
     }
     if (state.query.trim()) {
-      chips.push({ key: 'query', label: `搜索: ${state.query.trim()}` });
+      chips.push({ key: 'query', label: `${state.query.trim()}` });
     }
 
     const filterCount = (state.theme !== 'all' ? 1 : 0) + (state.weather !== 'all' ? 1 : 0);
@@ -1053,9 +1071,9 @@
     const closeSvg = Icons ? Icons.svg('x', 11) : '×';
     bar.innerHTML = `
       ${chips.map((c) => `<button class="filter-chip" data-clear="${c.key}" type="button">${c.label} ${closeSvg}</button>`).join('')}
-      <span class="chips-match-count mono-num">${lastMatchedIds.size} 城</span>
-      <button class="chips-action-btn" id="fit-filtered-btn" type="button">聚焦结果</button>
-      <button class="chips-action-btn" id="clear-all-chips-btn" type="button">清除</button>
+      <span class="chips-match-count mono-num">${t('citiesCountFmt', { n: lastMatchedIds.size })}</span>
+      <button class="chips-action-btn" id="fit-filtered-btn" type="button">${t('fitResults')}</button>
+      <button class="chips-action-btn" id="clear-all-chips-btn" type="button">${t('clear')}</button>
     `;
     bar.classList.remove('is-hidden');
 
@@ -1141,19 +1159,9 @@
       global.AestheticGallery.render();
     }
     const summaryEl = document.getElementById('popover-match-summary');
-    if (summaryEl) summaryEl.textContent = `当前命中 ${lastMatchedIds.size} 座目的地`;
+    if (summaryEl) summaryEl.textContent = t('matchFmt', { count: lastMatchedIds.size });
     if (!skipUrl) syncUrlState(false);
   }
-
-  const SIDEBAR_TITLES = {
-    global: '全球精选目的地',
-    asia: '亚洲精选目的地',
-    europe: '欧洲精选目的地',
-    oceania: '大洋洲精选目的地',
-    north_america: '北美洲精选目的地',
-    south_america: '南美洲精选目的地',
-    africa_antarctica: '非洲 / 南极精选'
-  };
 
   function renderSidebar() {
     const all = ATLAS.getAll();
@@ -1164,16 +1172,15 @@
       : all.filter((d) => d.continent === scopeCont).length;
 
     const titleEl = document.getElementById('sidebar-title');
-    if (titleEl) titleEl.textContent = SIDEBAR_TITLES[scopeCont] || SIDEBAR_TITLES.global;
+    if (titleEl) {
+      titleEl.textContent = scopeCont === 'global' ? t('sidebarTitle') : (I18n ? I18n.tContinent(scopeCont) : scopeCont);
+    }
 
     const resetBtn = document.getElementById('reset-filters-btn');
     if (resetBtn) resetBtn.classList.toggle('is-hidden', !isAnyFilterActive());
 
-    const countText = `${lastMatchedIds.size} / ${scopeTotal}`;
     const sc = document.getElementById('sidebar-count');
-    if (sc) sc.textContent = `${countText} 城`;
-    const soc = document.getElementById('sidebar-open-count');
-    if (soc) soc.textContent = String(lastMatchedIds.size);
+    if (sc) sc.textContent = `${lastMatchedIds.size} / ${scopeTotal}`;
 
     const grouped = new Map();
     ATLAS.REGION_ORDER.forEach((r) => grouped.set(r, []));
@@ -1189,13 +1196,13 @@
       html += `
         <div class="region-group">
           <div class="region-header">
-            <span>${regionName}</span>
+            <span>${tx(regionName)}</span>
             <span class="mono-num">${items.length}</span>
           </div>
           <div class="region-items">
             ${items
               .map((d) => {
-                let rightBadge = `<span class="city-nav-prov mono-num">${d.suggestedDays}</span>`;
+                let rightBadge = `<span class="city-nav-prov mono-num">${tx(d.suggestedDays)}</span>`;
                 if (state.month !== 'all') {
                   const entry = indexById.get(d.id);
                   const scVal = entry ? entry.monthScores[Number(state.month) - 1] : 3;
@@ -1208,7 +1215,7 @@
                   <button class="city-nav-item ${activeCls}" data-id="${d.id}" type="button">
                     <span class="city-nav-left">
                       <span class="dot ${dotCls}"></span>
-                      <span class="city-nav-name">${d.name}</span>
+                      <span class="city-nav-name">${tx(d.name)}</span>
                     </span>
                     <span class="city-nav-right">${rightBadge}</span>
                   </button>
@@ -1221,7 +1228,7 @@
     });
 
     if (!html) {
-      html = `<div style="padding:28px 14px;text-align:center;color:var(--text-secondary);font-size:12.5px;">当前筛选条件下暂无匹配目的地，可点击右上角「重置」。</div>`;
+      html = `<div style="padding:28px 14px;text-align:center;color:var(--text-secondary);font-size:12.5px;">${t('emptySidebar')}</div>`;
     }
     listEl.innerHTML = html;
 
@@ -1240,7 +1247,7 @@
     container.innerHTML = ATLAS.CONTINENTS.map((c) => {
       const cnt = c.id === 'global' ? ATLAS.getAll().length : (countsByCont[c.id] || 0);
       const active = c.id === state.continent ? 'active' : '';
-      const shortName = c.id === 'global' ? '全球' : c.id === 'africa_antarctica' ? '非/南极' : c.name;
+      const shortName = I18n ? I18n.tContinent(c.id) : c.name;
       return `<button class="continent-btn ${active}" data-continent="${c.id}" type="button">${shortName} <span class="continent-tag">${cnt}</span></button>`;
     }).join('');
 
@@ -1289,6 +1296,7 @@
     });
 
     if (!map) return;
+    syncMapThemeAndAccent();
     const maxZ = SKIN_META[skinId].maxZoom;
     map.setMaxZoom(maxZ);
     if (map.getZoom() > maxZ) {
@@ -1479,23 +1487,52 @@
     document.getElementById('mode-map-btn').addEventListener('click', () => setViewMode('map'));
     document.getElementById('mode-gallery-btn').addEventListener('click', () => setViewMode('gallery'));
 
-    // Filter Popover
+    // Popovers: Filter, Appearance Studio, Language Selector
     const popBtn = document.getElementById('filter-popover-btn');
     const popEl = document.getElementById('filter-popover');
-    if (popBtn && popEl) {
-      popBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const willOpen = popEl.classList.contains('is-hidden');
-        popEl.classList.toggle('is-hidden', !willOpen);
-        popBtn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
-      });
-      document.addEventListener('click', (e) => {
-        if (!popEl.classList.contains('is-hidden') && !popEl.contains(e.target) && !popBtn.contains(e.target)) {
-          popEl.classList.add('is-hidden');
-          popBtn.setAttribute('aria-expanded', 'false');
+    const appBtn = document.getElementById('appearance-btn');
+    const appEl = document.getElementById('appearance-popover');
+    const langBtn = document.getElementById('lang-btn');
+    const langEl = document.getElementById('lang-popover');
+
+    const closeAllPopovers = (exceptEl) => {
+      [
+        [popEl, popBtn],
+        [appEl, appBtn],
+        [langEl, langBtn]
+      ].forEach(([el, btn]) => {
+        if (el && el !== exceptEl && !el.classList.contains('is-hidden')) {
+          el.classList.add('is-hidden');
+          if (btn) btn.setAttribute('aria-expanded', 'false');
         }
       });
-    }
+    };
+
+    [
+      [popBtn, popEl],
+      [appBtn, appEl],
+      [langBtn, langEl]
+    ].forEach(([btn, el]) => {
+      if (!btn || !el) return;
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const willOpen = el.classList.contains('is-hidden');
+        closeAllPopovers(el);
+        el.classList.toggle('is-hidden', !willOpen);
+        btn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+      });
+    });
+
+    document.addEventListener('click', (e) => {
+      if (
+        (popEl && popEl.contains(e.target)) ||
+        (appEl && appEl.contains(e.target)) ||
+        (langEl && langEl.contains(e.target))
+      ) {
+        return;
+      }
+      closeAllPopovers(null);
+    });
 
     document.querySelectorAll('#theme-pills .pill-btn').forEach((btn) => {
       btn.addEventListener('click', () => {
@@ -1713,9 +1750,15 @@
           global.CommandPalette.close();
           return;
         }
-        if (popEl && !popEl.classList.contains('is-hidden')) {
-          popEl.classList.add('is-hidden');
+        if ((popEl && !popEl.classList.contains('is-hidden')) ||
+            (appEl && !appEl.classList.contains('is-hidden')) ||
+            (langEl && !langEl.classList.contains('is-hidden'))) {
+          if (popEl) popEl.classList.add('is-hidden');
+          if (appEl) appEl.classList.add('is-hidden');
+          if (langEl) langEl.classList.add('is-hidden');
           if (popBtn) popBtn.setAttribute('aria-expanded', 'false');
+          if (appBtn) appBtn.setAttribute('aria-expanded', 'false');
+          if (langBtn) langBtn.setAttribute('aria-expanded', 'false');
           return;
         }
         if (isIntroFlight) {
@@ -1792,15 +1835,19 @@
       if (!hoverPopup) {
         hoverPopup = new maplibregl.Popup({ closeButton: false, closeOnClick: false, offset: 14 });
       }
-      const badge = dest.allWeather ? '四季晴雨雪皆美' : '季节/气象限定';
-      const locLabel = (dest.country && dest.country !== '中国') ? `${dest.country} · ${dest.province}` : dest.province;
+      const badge = dest.allWeather ? t('badgeAllWeather') : t('badgeSeasonal');
+      const locLabel = (dest.country && dest.country !== '中国') ? `${tx(dest.country)} · ${tx(dest.province)}` : tx(dest.province);
+      const isLight = Theme && Theme.getState().mode === 'light';
+      const titleCol = isLight ? '#18181B' : '#F5F5F7';
+      const subCol = isLight ? '#52525B' : '#A1A1AA';
+      const accentCol = (Theme && Theme.getState().accentHex) || '#E2C07D';
       hoverPopup
         .setLngLat(dest.coords)
         .setHTML(`
-          <div style="font-weight:500;font-size:13px;margin-bottom:2px;color:#F5F5F7;">${dest.name}</div>
-          <div style="color:#A1A1AA;font-size:11px;margin-bottom:4px;">${locLabel} · ${badge}</div>
-          <div style="color:#A1A1AA;font-size:11.5px;line-height:1.45;">${dest.subtitle}</div>
-          <div style="color:#E2C07D;font-size:11px;margin-top:5px;">查看 ${(dest.spots || []).length} 个机位 →</div>
+          <div style="font-weight:500;font-size:13px;margin-bottom:2px;color:${titleCol};">${tx(dest.name)}</div>
+          <div style="color:${subCol};font-size:11px;margin-bottom:4px;">${locLabel} · ${badge}</div>
+          <div style="color:${subCol};font-size:11.5px;line-height:1.45;">${tx(dest.subtitle)}</div>
+          <div style="color:${accentCol};font-size:11px;margin-top:5px;">${t('hoverAction', { n: (dest.spots || []).length })}</div>
         `)
         .addTo(map);
     });
@@ -1822,16 +1869,137 @@
     });
   }
 
+  function syncMapThemeAndAccent(themeInfo) {
+    const info = themeInfo || (Theme ? Theme.getState() : { mode: 'dark', accentHex: '#E2C07D' });
+    const isLight = info.mode === 'light';
+    const isLightMapSkin = isLight && (state.skin === 'natgeo' || state.skin === 'physical');
+    document.body.classList.toggle('light-map-skin', isLightMapSkin);
+
+    if (!map || !map.isStyleLoaded()) return;
+
+    map.setSky({
+      'sky-color': isLight ? '#DCE6F2' : '#09090B',
+      'horizon-color': isLight ? '#8BB3DF' : '#2B5B94',
+      'fog-color': isLight ? '#E7EEF6' : '#0C1624',
+      'sky-horizon-blend': 0.5,
+      'horizon-fog-blend': 0.65,
+      'atmosphere-blend': ['interpolate', ['linear'], ['zoom'], 0, 1, 4.5, 0.72, 7, 0]
+    });
+
+    if (map.getLayer('globe-ocean-base')) {
+      map.setPaintProperty('globe-ocean-base', 'background-color', isLight ? '#BFD4EA' : '#0A121D');
+    }
+    if (map.getLayer('atlas-glow')) {
+      map.setPaintProperty('atlas-glow', 'circle-color', [
+        'case',
+        ['==', ['get', 'allWeather'], 1], info.accentHex,
+        isLight ? '#2563EB' : '#8AB4F8'
+      ]);
+    }
+    if (map.getLayer('atlas-core')) {
+      map.setPaintProperty('atlas-core', 'circle-color', [
+        'case',
+        ['==', ['get', 'selected'], 1], '#FFFFFF',
+        ['==', ['get', 'allWeather'], 1], info.accentHex,
+        isLight ? '#2563EB' : '#8AB4F8'
+      ]);
+      map.setPaintProperty('atlas-core', 'circle-stroke-color', [
+        'case',
+        ['==', ['get', 'selected'], 1], info.accentHex,
+        isLight ? '#FFFFFF' : '#09090B'
+      ]);
+    }
+    if (map.getLayer('subroute-line')) {
+      map.setPaintProperty('subroute-line', 'line-color', info.accentHex);
+    }
+  }
+
+  function renderLanguageGrid() {
+    const grid = document.getElementById('lang-grid');
+    if (!grid || !I18n) return;
+    const cur = I18n.getLang();
+    grid.innerHTML = I18n.LANGUAGES.map((l) => {
+      const active = l.id === cur ? 'active' : '';
+      return `
+        <button class="lang-item ${active}" data-lang="${l.id}" type="button" role="option" aria-selected="${l.id === cur ? 'true' : 'false'}">
+          <div>
+            <div class="lang-item-native">${l.name}</div>
+            <div class="lang-item-sub">${l.sub}</div>
+          </div>
+          <span class="lang-item-code">${l.code}</span>
+        </button>
+      `;
+    }).join('');
+
+    grid.querySelectorAll('.lang-item').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        switchLanguage(btn.dataset.lang);
+      });
+    });
+  }
+
+  function switchLanguage(langId) {
+    if (!I18n) return;
+    I18n.setLang(langId);
+    renderLanguageGrid();
+    refreshAllTexts();
+    const langEl = document.getElementById('lang-popover');
+    const langBtn = document.getElementById('lang-btn');
+    if (langEl) langEl.classList.add('is-hidden');
+    if (langBtn) langBtn.setAttribute('aria-expanded', 'false');
+  }
+
+  function refreshAllTexts() {
+    const all = ATLAS.getAll();
+    const totalSpots = all.reduce((sum, d) => sum + (d.spots ? d.spots.length : 0), 0);
+    const statsEl = document.getElementById('atlas-stats-line');
+    if (statsEl) {
+      statsEl.textContent = t('statsFmt', {
+        cities: all.length,
+        spots: totalSpots.toLocaleString('en-US')
+      });
+    }
+    renderContinentTabs();
+    renderPhenologyBar();
+    renderSidebar();
+    renderActiveChips();
+    scheduleLabelLayout();
+    if (state.selectedId) {
+      const dest = ATLAS.getById(state.selectedId);
+      if (dest) {
+        Panel.open(dest, state.month);
+        const toastText = document.getElementById('subspot-toast-text');
+        if (toastText) {
+          toastText.textContent = t('subspotToast', {
+            name: tx(dest.shortName || dest.name),
+            n: (dest.spots || []).length
+          });
+        }
+      }
+    }
+    if (state.mode === 'gallery' && global.AestheticGallery) {
+      global.AestheticGallery.render();
+    }
+  }
+
   function init() {
     hydrateIcons();
+    if (I18n) I18n.hydrateStaticDom();
+    if (Theme) {
+      Theme.init((themeInfo) => {
+        syncMapThemeAndAccent(themeInfo);
+      });
+    }
+    renderLanguageGrid();
     loadFavorites();
     buildAtlasIndex();
 
     const all = ATLAS.getAll();
     const totalSpots = all.reduce((sum, d) => sum + (d.spots ? d.spots.length : 0), 0);
-    const countryCount = countCountries(all);
-    document.getElementById('atlas-stats-line').textContent =
-      `${all.length} 城 · ${totalSpots.toLocaleString('en-US')} 机位`;
+    document.getElementById('atlas-stats-line').textContent = t('statsFmt', {
+      cities: all.length,
+      spots: totalSpots.toLocaleString('en-US')
+    });
 
     const initialParams = readInitialUrlState();
     const focusDest = initialParams.focusId ? ATLAS.getById(initialParams.focusId) : null;
@@ -1926,6 +2094,7 @@
       hideLoader();
 
       syncGeoJsonSource();
+      syncMapThemeAndAccent();
       if (state.skin !== 'satellite') switchSkin(state.skin, true);
       if (state.mode === 'gallery') setViewMode('gallery', true);
       scheduleLabelLayout();

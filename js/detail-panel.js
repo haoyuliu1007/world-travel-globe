@@ -16,6 +16,14 @@
     return global.AppIcons ? global.AppIcons.svg(name, size || 14) : '';
   }
 
+  function t(key, vars) {
+    return global.AppI18n ? global.AppI18n.t(key, vars) : key;
+  }
+
+  function tx(str) {
+    return global.AppI18n ? global.AppI18n.tx(str) : (str || '');
+  }
+
   function escapeHtml(str) {
     if (str === null || str === undefined) return '';
     return String(str)
@@ -206,19 +214,19 @@
     },
 
     renderHeader: function (dest) {
-      const contLabel = CONTINENT_LABELS[dest.continent] || '全球';
+      const contLabel = global.AppI18n ? global.AppI18n.tContinent(dest.continent) : (CONTINENT_LABELS[dest.continent] || '全球');
       document.getElementById('drawer-breadcrumb').textContent =
-        `${contLabel} · ${dest.country} · ${dest.province || dest.region}`;
-      document.getElementById('drawer-title').textContent = dest.name;
-      document.getElementById('drawer-subtitle').textContent = dest.subtitle;
+        `${contLabel} · ${tx(dest.country)} · ${tx(dest.province || dest.region)}`;
+      document.getElementById('drawer-title').textContent = tx(dest.name);
+      document.getElementById('drawer-subtitle').textContent = tx(dest.subtitle);
 
       const badgeEl = document.getElementById('drawer-allweather-badge');
       if (dest.allWeather) {
         badgeEl.className = 'kicker-tag all-weather';
-        badgeEl.textContent = '四季全天候';
+        badgeEl.textContent = t('badgeAllWeather');
       } else {
         badgeEl.className = 'kicker-tag seasonal';
-        badgeEl.textContent = '季节与气象限定';
+        badgeEl.textContent = t('badgeSeasonal');
       }
 
       const coordsEl = document.getElementById('drawer-hero-coords');
@@ -234,7 +242,7 @@
         ribbonEl.innerHTML = Array.from({ length: 12 }, (_, idx) => {
           const m = idx + 1;
           const mo = byM.get(m) || { score: 2, highlight: '' };
-          const title = `${m}月 · ${mo.score}★ ${mo.highlight || ''}`.trim();
+          const title = `${t('monthFmt', { m })} · ${mo.score}★ ${tx(mo.highlight || '')}`.trim();
           return `<div class="ribbon-cell" data-month="${m}" data-score="${mo.score || 2}" title="${escapeHtml(title)}"><span class="ribbon-bar"></span><span class="ribbon-m">${m}</span></div>`;
         }).join('');
         ribbonEl.querySelectorAll('.ribbon-cell').forEach((cell) => {
@@ -247,13 +255,13 @@
 
       const metaStrip = document.getElementById('drawer-meta-strip');
       const parts = [
-        `海拔 ${escapeHtml(dest.elevation)}`,
-        `建议 ${escapeHtml(dest.suggestedDays)}`,
-        ...(dest.badges || []).slice(0, 2).map((b) => escapeHtml(b))
+        `${t('elevationPrefix')} ${escapeHtml(tx(dest.elevation))}`,
+        `${t('daysPrefix')} ${escapeHtml(tx(dest.suggestedDays))}`,
+        ...(dest.badges || []).slice(0, 2).map((b) => escapeHtml(tx(b)))
       ].filter(Boolean);
       metaStrip.textContent = parts.join('  ·  ');
 
-      document.getElementById('drawer-hero-summary').textContent = dest.heroSummary;
+      document.getElementById('drawer-hero-summary').textContent = tx(dest.heroSummary);
       document.getElementById('tab-spots-count').textContent = (dest.spots || []).length;
 
       document.querySelectorAll('#drawer-tabs .tab-btn').forEach((btn) => {
@@ -332,7 +340,7 @@
           const isExpanded = this.expandedSpotIndex === i;
           const expCls = isExpanded ? 'is-expanded highlighted' : '';
           const catBadge = sp.category
-            ? `<div class="spot-cat-label">${escapeHtml(sp.category)}</div>`
+            ? `<div class="spot-cat-label">${escapeHtml(tx(sp.category))}</div>`
             : '';
           return `
             <article class="spot-card ${expCls}" data-spot-idx="${i}">
@@ -340,7 +348,7 @@
                 <div class="spot-title-wrap">
                   <span class="spot-index">${String(i + 1).padStart(2, '0')}</span>
                   <div>
-                    <h4 class="spot-name">${escapeHtml(sp.name)}</h4>
+                    <h4 class="spot-name">${escapeHtml(tx(sp.name))}</h4>
                     ${catBadge}
                   </div>
                 </div>
@@ -350,13 +358,13 @@
                 <div class="spot-accordion-inner">
                   <div class="spot-accordion-pad">
                     <div class="spot-locate-row">
-                      <span class="mono-num" style="font-size:11px;color:var(--text-muted)">${formatCoords(sp.coords, 4)} · ${escapeHtml(sp.elevation)}</span>
-                      <button class="spot-locate-btn" data-idx="${i}" type="button">${icon('target', 12)} 飞往机位</button>
+                      <span class="mono-num" style="font-size:11px;color:var(--text-muted)">${formatCoords(sp.coords, 4)} · ${escapeHtml(tx(sp.elevation))}</span>
+                      <button class="spot-locate-btn" data-idx="${i}" type="button">${icon('target', 12)} ${t('flyToSpot')}</button>
                     </div>
-                    <div class="spot-coords-row">${linkifyHtml(sp.access)}</div>
-                    <div class="spot-field"><strong>黄金时段：</strong>${escapeHtml(sp.bestTime)}</div>
-                    <div class="spot-field"><strong>实景画面：</strong>${escapeHtml(sp.scene)}</div>
-                    <div class="spot-tips">${linkifyHtml(sp.tips)}</div>
+                    <div class="spot-coords-row">${linkifyHtml(tx(sp.access))}</div>
+                    <div class="spot-field"><strong>${t('goldenHour')}</strong>${escapeHtml(tx(sp.bestTime))}</div>
+                    <div class="spot-field"><strong>${t('realScene')}</strong>${escapeHtml(tx(sp.scene))}</div>
+                    <div class="spot-tips">${linkifyHtml(tx(sp.tips))}</div>
                   </div>
                 </div>
               </div>
@@ -374,9 +382,9 @@
           const cls = mo.score >= 5 ? 'm-score-5' : mo.score === 4 ? 'm-score-4' : '';
           return `
             <button class="month-cell ${cls} ${active}" data-month="${mo.m}" type="button">
-              <div class="month-name">${MONTH_NAMES[mo.m - 1]}</div>
+              <div class="month-name">${t('monthFmt', { m: mo.m })}</div>
               <div class="month-stars">${renderStars(mo.score)}</div>
-              <div class="month-temp">${escapeHtml(mo.temp)}</div>
+              <div class="month-temp">${escapeHtml(tx(mo.temp))}</div>
             </button>
           `;
         })
@@ -384,19 +392,19 @@
 
       const cur = months.find((x) => x.m === this.selectedMonth) || months[0];
       const lat = Number((dest.coords && dest.coords[1]) || 0);
-      const hemiHint = lat >= 0 ? '北半球' : '南半球';
+      const hemiHint = lat >= 0 ? t('hemiNorth') : t('hemiSouth');
       const detailBox = cur
         ? `
           <div class="month-detail-box">
             <div class="month-detail-head">
-              <h4>${MONTH_NAMES[cur.m - 1]}实景档案（${hemiHint}）</h4>
-              <span class="weather-rating">推荐度 ${renderStars(cur.score)}</span>
+              <h4>${t('monthArchiveFmt', { m: cur.m, hemi: hemiHint })}</h4>
+              <span class="weather-rating">${t('recommendScore')} ${renderStars(cur.score)}</span>
             </div>
             <div class="month-kv-row">
-              <div class="month-kv"><span>日均气温区间</span><strong class="mono-num">${escapeHtml(cur.temp)}</strong></div>
-              <div class="month-kv"><span>晴雨气候特征</span><strong>${escapeHtml(cur.rain)}</strong></div>
+              <div class="month-kv"><span>${t('tempRange')}</span><strong class="mono-num">${escapeHtml(tx(cur.temp))}</strong></div>
+              <div class="month-kv"><span>${t('climateFeature')}</span><strong>${escapeHtml(tx(cur.rain))}</strong></div>
             </div>
-            <div class="spot-field"><strong>当月物候亮点：</strong>${escapeHtml(cur.highlight)}</div>
+            <div class="spot-field"><strong>${t('monthHighlight')}</strong>${escapeHtml(tx(cur.highlight))}</div>
           </div>
         `
         : '';
@@ -407,27 +415,27 @@
     buildWeatherHtml: function (dest) {
       const w = dest.weather || {};
       const cards = [
-        { key: 'sunny', iconName: 'sun', label: '晴天美学', data: w.sunny },
-        { key: 'rainy', iconName: 'cloudRain', label: '雨天 & 雨后初晴', data: w.rainy },
-        { key: 'snowy', iconName: 'snowflake', label: '雪天 & 冬季限定', data: w.snowy },
-        { key: 'special', iconName: 'aurora', label: '极限气象奇观', data: w.special }
+        { key: 'sunny', iconName: 'sun', label: t('weatherSunnyTitle'), data: w.sunny },
+        { key: 'rainy', iconName: 'cloudRain', label: t('weatherRainyTitle'), data: w.rainy },
+        { key: 'snowy', iconName: 'snowflake', label: t('weatherSnowyTitle'), data: w.snowy },
+        { key: 'special', iconName: 'aurora', label: t('weatherSpecialTitle'), data: w.special }
       ];
       return cards
         .map((c) => {
           const d = c.data || {};
           const triggerHtml = d.trigger
-            ? `<div class="weather-trigger"><strong>气象触发条件：</strong>${linkifyHtml(d.trigger)}</div>`
+            ? `<div class="weather-trigger"><strong>${t('weatherTrigger')}</strong>${linkifyHtml(tx(d.trigger))}</div>`
             : '';
           const gearHtml = d.gear
-            ? `<div class="weather-gear"><strong>穿搭与装备建议：</strong>${linkifyHtml(d.gear)}</div>`
+            ? `<div class="weather-gear"><strong>${t('weatherGear')}</strong>${linkifyHtml(tx(d.gear))}</div>`
             : '';
           return `
             <article class="weather-card">
               <div class="weather-card-head">
-                <div class="weather-card-title">${icon(c.iconName, 14)} ${c.label}${d.title ? ` · ${escapeHtml(d.title)}` : ''}</div>
-                <span class="weather-rating">${escapeHtml(d.rating || '')}</span>
+                <div class="weather-card-title">${icon(c.iconName, 14)} ${c.label}${d.title ? ` · ${escapeHtml(tx(d.title))}` : ''}</div>
+                <span class="weather-rating">${escapeHtml(tx(d.rating || ''))}</span>
               </div>
-              <p class="weather-desc">${linkifyHtml(d.desc || '')}</p>
+              <p class="weather-desc">${linkifyHtml(tx(d.desc || ''))}</p>
               ${triggerHtml}
               ${gearHtml}
             </article>
@@ -439,12 +447,12 @@
     buildBudgetHtml: function (dest) {
       const b = dest.budget || {};
       const tiers = [
-        { key: 'luxury', cls: 'luxury', label: '顶奢尊享档', data: b.luxury },
-        { key: 'comfort', cls: 'comfort', label: '舒适深度档', data: b.comfort }
+        { key: 'luxury', cls: 'luxury', label: t('budgetLuxury'), data: b.luxury },
+        { key: 'comfort', cls: 'comfort', label: t('budgetComfort'), data: b.comfort }
       ];
       return tiers
-        .map((t) => {
-          const td = t.data || { unitLabel: '', items: [], note: '' };
+        .map((tItem) => {
+          const td = tItem.data || { unitLabel: '', items: [], note: '' };
           const total = (td.items || []).reduce((sum, it) => sum + (Number(it.cost) || 0), 0);
           const usdApprox = Math.round(total / 7.2);
           const rows = (td.items || [])
@@ -452,8 +460,8 @@
               (it) => `
                 <div class="budget-row">
                   <div class="budget-row-left">
-                    <span class="budget-cat">[${escapeHtml(it.category)}]</span>
-                    <span class="budget-detail">${linkifyHtml(it.detail)}</span>
+                    <span class="budget-cat">[${escapeHtml(tx(it.category))}]</span>
+                    <span class="budget-detail">${linkifyHtml(tx(it.detail))}</span>
                   </div>
                   <div class="budget-cost">${formatRmb(it.cost)}</div>
                 </div>
@@ -461,19 +469,19 @@
             )
             .join('');
           return `
-            <section class="budget-tier-card ${t.cls}">
+            <section class="budget-tier-card ${tItem.cls}">
               <div class="budget-tier-head">
                 <div>
-                  <div class="budget-tier-title">${t.label}</div>
-                  <div class="budget-tier-sub">${escapeHtml(td.unitLabel)}</div>
+                  <div class="budget-tier-title">${tItem.label}</div>
+                  <div class="budget-tier-sub">${escapeHtml(tx(td.unitLabel))}</div>
                 </div>
                 <div class="budget-total">
                   <div class="budget-total-rmb">${formatRmb(total)}</div>
-                  <div class="budget-total-usd">约 ${usdApprox.toLocaleString('en-US')} USD</div>
+                  <div class="budget-total-usd">${t('approxUsd', { usd: usdApprox.toLocaleString('en-US') })}</div>
                 </div>
               </div>
               <div class="budget-rows">${rows}</div>
-              <div class="budget-note">${linkifyHtml(td.note || '')}</div>
+              <div class="budget-note">${linkifyHtml(tx(td.note || ''))}</div>
             </section>
           `;
         })
@@ -488,9 +496,9 @@
             .map(
               (st) => `
                 <div class="timeline-item">
-                  <div class="timeline-day">${escapeHtml(st.day)}</div>
-                  <h4 class="timeline-title">${escapeHtml(st.title)}</h4>
-                  <p class="timeline-plan">${linkifyHtml(st.plan)}</p>
+                  <div class="timeline-day">${escapeHtml(tx(st.day))}</div>
+                  <h4 class="timeline-title">${escapeHtml(tx(st.title))}</h4>
+                  <p class="timeline-plan">${linkifyHtml(tx(st.plan))}</p>
                 </div>
               `
             )
@@ -501,11 +509,11 @@
 
     buildProvenanceHtml: function (dest) {
       const note = dest.verificationNote || dest.sourceNote || dest.dataNotes || dest.researchNotes || '';
-      const extra = note ? `<div style="margin-top:4px">${linkifyHtml(note)}</div>` : '';
+      const extra = note ? `<div style="margin-top:4px">${linkifyHtml(tx(note))}</div>` : '';
       return `
         <div class="provenance-footer">
-          <div><strong>数据与坐标核验</strong> · 图鉴版本 <span class="mono-num">v2.0</span> · 编号 <span class="mono-num">${escapeHtml(dest.id)}</span></div>
-          <div>坐标、气象与预算来源于实地考察资料与公开权威地理库整理，出行前请再次核对当地开放政策。</div>
+          <div><strong>${t('provenanceTitle')}</strong> · <span class="mono-num">${escapeHtml(dest.id)}</span></div>
+          <div>${t('provenanceNote')}</div>
           ${extra}
         </div>
       `;

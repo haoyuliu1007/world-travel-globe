@@ -42,6 +42,8 @@ function main() {
   const assetCopies = [
     ['css/styles.css', 'css/styles.css'],
     ['js/icons.js', 'js/icons.js'],
+    ['js/i18n.js', 'js/i18n.js'],
+    ['js/theme.js', 'js/theme.js'],
     ['js/detail-panel.js', 'js/detail-panel.js'],
     ['js/command-palette.js', 'js/command-palette.js'],
     ['js/gallery.js', 'js/gallery.js'],

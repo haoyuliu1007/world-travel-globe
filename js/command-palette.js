@@ -12,6 +12,14 @@
     return global.AppIcons ? global.AppIcons.svg(name, size || 14) : '';
   }
 
+  function t(key, vars) {
+    return global.AppI18n ? global.AppI18n.t(key, vars) : key;
+  }
+
+  function tx(str) {
+    return global.AppI18n ? global.AppI18n.tx(str) : (str || '');
+  }
+
   function escapeHtml(str) {
     return String(str || '')
       .replace(/&/g, '&amp;')
@@ -95,10 +103,10 @@
       currentEntries = featured.map((e) => ({ dest: e.dest, matchedSpot: null, matchedSpotIdx: -1 }));
       selectedIdx = 0;
 
-      if (statsEl) statsEl.textContent = `全部 ${searchIndexRef.length} 座目的地可瞬时检索`;
+      if (statsEl) statsEl.textContent = t('paletteAllCount', { n: searchIndexRef.length });
 
       container.innerHTML = `
-        <div class="palette-section-title">全球风向标目的地（输入中文、英文 ID、国家或机位名检索）</div>
+        <div class="palette-section-title">${t('paletteAllCount', { n: searchIndexRef.length })}</div>
         ${currentEntries.map((item, i) => buildItemHtml(item, '', i)).join('')}
       `;
       bindResultClicks(container);
@@ -123,16 +131,15 @@
     currentEntries = hits.slice(0, 28);
     selectedIdx = 0;
 
-    if (statsEl) statsEl.textContent = `命中 ${hits.length} 座目的地`;
+    if (statsEl) statsEl.textContent = t('paletteHitsCount', { n: hits.length });
 
     if (!currentEntries.length) {
       container.innerHTML = `
         <div class="palette-empty">
-          <div>未找到与「<strong>${escapeHtml(q)}</strong>」匹配的城市、国家或摄影机位。</div>
-          <div style="margin-top:6px;font-size:12px;color:var(--text-muted)">建议尝试简短关键词（如：京都、冰岛、kerala、极光、雪山）或重置筛选条件。</div>
+          <div>${t('paletteEmptyTitle')}</div>
           <div class="palette-empty-actions">
-            <button class="mini-btn" id="palette-clear-query-btn" type="button">清空搜索词</button>
-            <button class="mini-btn" id="palette-relax-filters-btn" type="button">放宽全部筛选条件</button>
+            <button class="mini-btn" id="palette-clear-query-btn" type="button">${t('paletteClearQuery')}</button>
+            <button class="mini-btn" id="palette-relax-filters-btn" type="button">${t('paletteRelaxFilters')}</button>
           </div>
         </div>
       `;
@@ -158,7 +165,7 @@
     }
 
     container.innerHTML = `
-      <div class="palette-section-title">最佳匹配结果（${hits.length} 项）</div>
+      <div class="palette-section-title">${t('paletteHitsCount', { n: hits.length })}</div>
       ${currentEntries.map((item, i) => buildItemHtml(item, q, i)).join('')}
     `;
     bindResultClicks(container);
@@ -167,20 +174,20 @@
   function buildItemHtml(item, q, idx) {
     const d = item.dest;
     const spotHint = item.matchedSpot
-      ? ` · 机位「${item.matchedSpot.name}」`
+      ? ` · ${tx(item.matchedSpot.name)}`
       : '';
-    const subText = `${d.country} · ${d.province || d.region}${spotHint}`;
+    const subText = `${tx(d.country)} · ${tx(d.province || d.region)}${spotHint}`;
     const activeCls = idx === selectedIdx ? 'is-selected' : '';
     const dotCls = d.allWeather ? 'dot-gold' : 'dot-ice';
     return `
       <button class="palette-item ${activeCls}" data-idx="${idx}" type="button" role="option" aria-selected="${idx === selectedIdx ? 'true' : 'false'}">
         <span class="dot ${dotCls}"></span>
         <div class="palette-item-main">
-          <div class="palette-item-title">${highlightMatch(d.name, q)}</div>
+          <div class="palette-item-title">${highlightMatch(tx(d.name), q)}</div>
           <div class="palette-item-sub">${highlightMatch(subText, q)}</div>
         </div>
         <div class="palette-item-meta mono-num">
-          <span>${(d.spots || []).length} 机位</span>
+          <span>${t('spotsCountFmt', { n: (d.spots || []).length })}</span>
           ${icon('arrowUpRight', 13)}
         </div>
       </button>

@@ -41,7 +41,10 @@
     check: '<path d="m5 12.5 4.5 4.5L19 7.5"/>',
     arrowUpRight: '<path d="M7 17 17 7M9 7h8v8"/>',
     box3d: '<path d="M12 2.8 20 7.4v9.2L12 21.2 4 16.6V7.4l8-4.6Z"/><path d="M12 12v9.2M12 12l8-4.6M12 12 4 7.4"/>',
-    eye: '<path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.5"/>'
+    eye: '<path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.5"/>',
+    moon: '<path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5a8.5 8.5 0 1 0 10.7 10.7Z"/>',
+    palette: '<circle cx="12" cy="12" r="9.5"/><circle cx="8.5" cy="9.5" r="1.1" fill="currentColor"/><circle cx="12" cy="7.5" r="1.1" fill="currentColor"/><circle cx="15.5" cy="9.5" r="1.1" fill="currentColor"/><path d="M14.5 15.5a2.5 2.5 0 0 0 0-5h-1a2 2 0 0 1-2-2"/>',
+    languages: '<path d="m5 8 6 6M4 14l6-6 2-3M2 5h12M7 2h1M22 22l-5-10-5 10M14 18h6"/>'
   };
 
   function svg(name, size, cls) {

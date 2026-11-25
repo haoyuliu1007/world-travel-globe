@@ -175,12 +175,12 @@
       version: 8,
       projection: { type: 'globe' },
       sky: {
-        'sky-color': '#081122',
-        'horizon-color': '#2E66A8',
-        'fog-color': '#13284A',
-        'sky-horizon-blend': 0.54,
-        'horizon-fog-blend': 0.68,
-        'atmosphere-blend': ['interpolate', ['linear'], ['zoom'], 0, 1, 4.5, 0.78, 7, 0]
+        'sky-color': '#09090B',
+        'horizon-color': '#2B5B94',
+        'fog-color': '#0C1624',
+        'sky-horizon-blend': 0.5,
+        'horizon-fog-blend': 0.65,
+        'atmosphere-blend': ['interpolate', ['linear'], ['zoom'], 0, 1, 4.5, 0.72, 7, 0]
       },
       sources: {
         satellite: {
@@ -231,6 +231,11 @@
         }
       },
       layers: [
+        {
+          id: 'globe-ocean-base',
+          type: 'background',
+          paint: { 'background-color': '#0A121D' }
+        },
         {
           id: 'layer-satellite',
           type: 'raster',
@@ -297,15 +302,15 @@
             ],
             'circle-color': [
               'case',
-              ['==', ['get', 'allWeather'], 1], '#D6B77A',
-              '#56B8A9'
+              ['==', ['get', 'allWeather'], 1], '#E2C07D',
+              '#8AB4F8'
             ],
             'circle-opacity': [
               'case',
               ['==', ['get', 'selected'], 1], 0.34,
               ['boolean', ['feature-state', 'hover'], false], 0.38,
-              ['==', ['get', 'matched'], 0], 0.05,
-              0.22
+              ['==', ['get', 'matched'], 0], 0.04,
+              0.20
             ],
             'circle-blur': 0.72,
             'circle-opacity-transition': { duration: 260, delay: 0 },
@@ -321,45 +326,45 @@
               'interpolate', ['linear'], ['zoom'],
               1, [
                 'case',
-                ['==', ['get', 'selected'], 1], 6.5,
-                ['boolean', ['feature-state', 'hover'], false], 6.2,
-                ['==', ['get', 'matched'], 0], 2.5,
-                ['==', ['get', 'priority'], 1], 4.4,
-                3.2
+                ['==', ['get', 'selected'], 1], 6.0,
+                ['boolean', ['feature-state', 'hover'], false], 5.6,
+                ['==', ['get', 'matched'], 0], 2.2,
+                ['==', ['get', 'priority'], 1], 4.0,
+                2.8
               ],
               5, [
                 'case',
-                ['==', ['get', 'selected'], 1], 7.0,
-                ['boolean', ['feature-state', 'hover'], false], 6.6,
-                ['==', ['get', 'matched'], 0], 2.8,
-                ['==', ['get', 'priority'], 1], 5.5,
-                4.4
+                ['==', ['get', 'selected'], 1], 6.5,
+                ['boolean', ['feature-state', 'hover'], false], 6.0,
+                ['==', ['get', 'matched'], 0], 2.5,
+                ['==', ['get', 'priority'], 1], 5.0,
+                3.8
               ],
               10, [
                 'case',
-                ['==', ['get', 'selected'], 1], 7.5,
-                ['boolean', ['feature-state', 'hover'], false], 7.0,
-                ['==', ['get', 'matched'], 0], 3.2,
-                ['==', ['get', 'priority'], 1], 6.2,
-                5.4
+                ['==', ['get', 'selected'], 1], 7.0,
+                ['boolean', ['feature-state', 'hover'], false], 6.5,
+                ['==', ['get', 'matched'], 0], 2.8,
+                ['==', ['get', 'priority'], 1], 5.8,
+                4.8
               ]
             ],
             'circle-color': [
               'case',
               ['==', ['get', 'selected'], 1], '#FFFFFF',
-              ['==', ['get', 'allWeather'], 1], '#D6B77A',
-              '#56B8A9'
+              ['==', ['get', 'allWeather'], 1], '#E2C07D',
+              '#8AB4F8'
             ],
             'circle-stroke-width': [
               'case',
-              ['==', ['get', 'selected'], 1], 2.4,
-              ['==', ['get', 'matched'], 0], 0.5,
-              1.4
+              ['==', ['get', 'selected'], 1], 2.2,
+              ['==', ['get', 'matched'], 0], 0.4,
+              1.2
             ],
             'circle-stroke-color': [
               'case',
-              ['==', ['get', 'selected'], 1], '#D6B77A',
-              '#080C14'
+              ['==', ['get', 'selected'], 1], '#E2C07D',
+              '#09090B'
             ],
             'circle-opacity': [
               'case',
@@ -490,7 +495,7 @@
     map.getSource('atlas-points').setData({ type: 'FeatureCollection', features });
   }
 
-  /* Pooled Screen-Space Collision-Free Label Overlay */
+  /* Pooled Screen-Space Collision-Free Label Overlay (Borderless Halo Style) */
   function ensureLabelOverlay() {
     if (labelOverlayEl) return;
     labelOverlayEl = document.createElement('div');
@@ -502,25 +507,7 @@
       const el = document.createElement('button');
       el.type = 'button';
       el.className = 'gl-city-label';
-      el.style.cssText = [
-        'position:absolute',
-        'top:0',
-        'left:0',
-        'pointer-events:auto',
-        'display:none',
-        'padding:2px 7px',
-        'border-radius:6px',
-        'border:1px solid rgba(159,180,200,0.22)',
-        'background:rgba(8,12,20,0.82)',
-        'color:#DCE5EF',
-        'font-size:11px',
-        'font-weight:500',
-        'white-space:nowrap',
-        'cursor:pointer',
-        'box-shadow:0 4px 12px rgba(0,0,0,0.45)',
-        'transition:opacity 0.16s ease, border-color 0.15s ease, background 0.15s ease',
-        'will-change:transform'
-      ].join(';');
+      el.style.display = 'none';
       el.addEventListener('click', (e) => {
         e.stopPropagation();
         const id = el.dataset.destId;
@@ -623,15 +610,8 @@
       el.textContent = text;
       el.style.display = 'block';
       el.style.transform = `translate3d(${lx}px, ${ly}px, 0)`;
-      if (c.isSelected) {
-        el.style.borderColor = '#D6B77A';
-        el.style.background = 'rgba(21, 30, 44, 0.94)';
-        el.style.color = '#D6B77A';
-      } else {
-        el.style.borderColor = c.dest.allWeather ? 'rgba(214,183,122,0.34)' : 'rgba(159,180,200,0.22)';
-        el.style.background = 'rgba(8,12,20,0.82)';
-        el.style.color = '#DCE5EF';
-      }
+      el.classList.toggle('is-selected', Boolean(c.isSelected));
+      el.classList.toggle('is-gold', Boolean(!c.isSelected && c.dest.allWeather));
     }
 
     for (let i = used; i < labelPool.length; i++) {
@@ -881,9 +861,9 @@
 
   function setSidebarOpen(open) {
     const sidebar = document.getElementById('left-sidebar');
-    const openBtn = document.getElementById('sidebar-open-btn');
+    const toggleBtn = document.getElementById('sidebar-toggle-btn');
     if (sidebar) sidebar.classList.toggle('is-hidden', !open);
-    if (openBtn) openBtn.classList.toggle('is-hidden', open);
+    if (toggleBtn) toggleBtn.classList.toggle('active', open);
     document.body.classList.toggle('sidebar-collapsed', !open);
   }
 
@@ -979,22 +959,19 @@
     const maxCount = Math.max(1, ...counts);
 
     let html = `
-      <button class="pheno-btn ${state.month === 'all' ? 'active' : ''}" data-month="all" type="button" role="radio" aria-checked="${state.month === 'all'}">
-        <span class="pheno-label">全年</span>
-        <span class="pheno-count">${totalScope}</span>
-        <span class="pheno-meter"><span class="pheno-meter-fill" style="width:100%"></span></span>
+      <button class="pheno-btn ${state.month === 'all' ? 'active' : ''}" data-month="all" type="button" role="radio" aria-checked="${state.month === 'all'}" title="全年共 ${totalScope} 座目的地">
+        <span>全年</span>
       </button>
     `;
 
     for (let m = 1; m <= 12; m++) {
       const active = String(m) === String(state.month);
       const cnt = counts[m - 1];
-      const pct = Math.round((cnt / maxCount) * 100);
+      const dotOpacity = (0.18 + (cnt / maxCount) * 0.82).toFixed(2);
       html += `
         <button class="pheno-btn ${active ? 'active' : ''}" data-month="${m}" type="button" role="radio" aria-checked="${active}" title="${m}月 推荐≥4★ 目的地 ${cnt} 座">
-          <span class="pheno-label">${m}月</span>
-          <span class="pheno-count">${cnt}</span>
-          <span class="pheno-meter"><span class="pheno-meter-fill" style="width:${pct}%"></span></span>
+          <span>${m}月</span>
+          <span class="pheno-dot" style="opacity:${dotOpacity}"></span>
         </button>
       `;
     }
@@ -1002,11 +979,12 @@
 
     if (hemiHint) {
       if (state.month === 'all') {
-        hemiHint.textContent = '全季节视图';
+        hemiHint.textContent = `${totalScope} 城`;
       } else {
         const m = Number(state.month);
-        const northSeason = m >= 3 && m <= 5 ? '北春 / 南秋' : m >= 6 && m <= 8 ? '北夏 / 南冬' : m >= 9 && m <= 11 ? '北秋 / 南春' : '北冬 / 南夏';
-        hemiHint.textContent = `${m}月 · ${northSeason}`;
+        const cnt = counts[m - 1];
+        const northSeason = m >= 3 && m <= 5 ? '北春' : m >= 6 && m <= 8 ? '北夏' : m >= 9 && m <= 11 ? '北秋' : '北冬';
+        hemiHint.textContent = `${northSeason} · ${cnt} 城`;
       }
     }
 
@@ -1131,7 +1109,10 @@
       favBtn.setAttribute('aria-pressed', state.onlyFavorites ? 'true' : 'false');
     }
     const favCount = document.getElementById('favorites-count-badge');
-    if (favCount) favCount.textContent = String(state.favorites.size);
+    if (favCount) {
+      favCount.textContent = String(state.favorites.size);
+      favCount.classList.toggle('is-hidden', state.favorites.size === 0);
+    }
 
     document.querySelectorAll('.continent-btn').forEach((b) => {
       b.classList.toggle('active', b.dataset.continent === state.continent);
@@ -1221,7 +1202,7 @@
                   const cls = scVal >= 5 ? 'score-5' : scVal === 4 ? 'score-4' : scVal === 3 ? 'score-3' : 'score-low';
                   rightBadge = `<span class="score-pill ${cls}">${scVal}★</span>`;
                 }
-                const dotCls = d.allWeather ? 'dot-gold' : 'dot-teal';
+                const dotCls = d.allWeather ? 'dot-gold' : 'dot-ice';
                 const activeCls = d.id === state.selectedId ? 'active' : '';
                 return `
                   <button class="city-nav-item ${activeCls}" data-id="${d.id}" type="button">
@@ -1548,7 +1529,14 @@
 
     // Sidebar collapse/expand
     document.getElementById('sidebar-collapse-btn').addEventListener('click', () => setSidebarOpen(false));
-    document.getElementById('sidebar-open-btn').addEventListener('click', () => setSidebarOpen(true));
+    const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
+    if (sidebarToggleBtn) {
+      sidebarToggleBtn.addEventListener('click', () => {
+        const sidebar = document.getElementById('left-sidebar');
+        const isCurrentlyOpen = sidebar && !sidebar.classList.contains('is-hidden');
+        setSidebarOpen(!isCurrentlyOpen);
+      });
+    }
 
     // Map skin & controls
     document.querySelectorAll('[data-skin]').forEach((btn) => {
@@ -1627,7 +1615,6 @@
 
     // Share destination deep link
     const shareBtn = document.getElementById('share-dest-btn');
-    const shareLabel = document.getElementById('share-btn-label');
     if (shareBtn) {
       shareBtn.addEventListener('click', async () => {
         if (!state.selectedId) return;
@@ -1637,8 +1624,8 @@
           : global.location.href.split('?')[0].split('#')[0];
         const shareUrl = `${baseUrl}?focus=${encodeURIComponent(state.selectedId)}`;
         const flashCopied = () => {
-          if (shareLabel) shareLabel.textContent = '已复制';
-          setTimeout(() => { if (shareLabel) shareLabel.textContent = '分享'; }, 1800);
+          if (Icons) shareBtn.innerHTML = Icons.svg('check', 14);
+          setTimeout(() => { if (Icons) shareBtn.innerHTML = Icons.svg('share', 14); }, 1600);
         };
         if (isCoarsePointer() && global.navigator && typeof global.navigator.share === 'function') {
           try {
@@ -1810,10 +1797,10 @@
       hoverPopup
         .setLngLat(dest.coords)
         .setHTML(`
-          <div style="font-weight:600;font-size:13px;margin-bottom:3px;color:#DCE5EF;">${dest.name}</div>
-          <div style="color:#56B8A9;font-size:11px;margin-bottom:4px;">${locLabel} · ${badge}</div>
-          <div style="color:#9FB4C8;font-size:11.5px;line-height:1.45;">${dest.subtitle}</div>
-          <div style="color:#D6B77A;font-size:11px;margin-top:5px;">点击俯冲查看 ${(dest.spots || []).length} 个精准机位 →</div>
+          <div style="font-weight:500;font-size:13px;margin-bottom:2px;color:#F5F5F7;">${dest.name}</div>
+          <div style="color:#A1A1AA;font-size:11px;margin-bottom:4px;">${locLabel} · ${badge}</div>
+          <div style="color:#A1A1AA;font-size:11.5px;line-height:1.45;">${dest.subtitle}</div>
+          <div style="color:#E2C07D;font-size:11px;margin-top:5px;">查看 ${(dest.spots || []).length} 个机位 →</div>
         `)
         .addTo(map);
     });
@@ -1844,7 +1831,7 @@
     const totalSpots = all.reduce((sum, d) => sum + (d.spots ? d.spots.length : 0), 0);
     const countryCount = countCountries(all);
     document.getElementById('atlas-stats-line').textContent =
-      `${countryCount} 国/地区 · ${all.length} 城 · ${totalSpots.toLocaleString('en-US')} 机位`;
+      `${all.length} 城 · ${totalSpots.toLocaleString('en-US')} 机位`;
 
     const initialParams = readInitialUrlState();
     const focusDest = initialParams.focusId ? ATLAS.getById(initialParams.focusId) : null;

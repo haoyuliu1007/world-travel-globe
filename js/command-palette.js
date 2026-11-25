@@ -171,7 +171,7 @@
       : '';
     const subText = `${d.country} · ${d.province || d.region}${spotHint}`;
     const activeCls = idx === selectedIdx ? 'is-selected' : '';
-    const dotCls = d.allWeather ? 'dot-gold' : 'dot-teal';
+    const dotCls = d.allWeather ? 'dot-gold' : 'dot-ice';
     return `
       <button class="palette-item ${activeCls}" data-idx="${idx}" type="button" role="option" aria-selected="${idx === selectedIdx ? 'true' : 'false'}">
         <span class="dot ${dotCls}"></span>

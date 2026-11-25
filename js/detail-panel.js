@@ -72,76 +72,6 @@
     return '★'.repeat(s) + '☆'.repeat(5 - s);
   }
 
-  /* Procedural Topographic Horizon Banner seeded deterministically by destination coordinates */
-  function drawTopoBanner(dest) {
-    const canvas = document.getElementById('hero-topo-canvas');
-    if (!canvas || !canvas.getContext) return;
-    const ctx = canvas.getContext('2d');
-    const w = canvas.width;
-    const h = canvas.height;
-    ctx.clearRect(0, 0, w, h);
-
-    const lng = Number((dest.coords && dest.coords[0]) || 0);
-    const lat = Number((dest.coords && dest.coords[1]) || 0);
-    const seed = Math.abs(Math.sin(lng * 12.9898 + lat * 78.233) * 43758.5453);
-    const isGold = Boolean(dest.allWeather);
-
-    // Subtle atmospheric gradient
-    const bg = ctx.createLinearGradient(0, 0, w, h);
-    bg.addColorStop(0, isGold ? 'rgba(214, 183, 122, 0.14)' : 'rgba(86, 184, 169, 0.14)');
-    bg.addColorStop(0.6, 'rgba(21, 30, 44, 0.4)');
-    bg.addColorStop(1, 'rgba(8, 12, 20, 0.92)');
-    ctx.fillStyle = bg;
-    ctx.fillRect(0, 0, w, h);
-
-    // Latitude / longitude graticule lines
-    ctx.strokeStyle = 'rgba(159, 180, 200, 0.08)';
-    ctx.lineWidth = 1;
-    for (let x = 28; x < w; x += 48) {
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, h);
-      ctx.stroke();
-    }
-    for (let y = 20; y < h; y += 22) {
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(w, y);
-      ctx.stroke();
-    }
-
-    // Layered topographic ridgelines
-    const layers = 4;
-    for (let l = 0; l < layers; l++) {
-      ctx.beginPath();
-      const baseY = h * (0.48 + l * 0.12);
-      const amp = 16 - l * 2.5;
-      const freq = 0.015 + l * 0.007;
-      const phase = seed * 0.1 + l * 1.9;
-      ctx.moveTo(0, h);
-      for (let x = 0; x <= w; x += 6) {
-        const y =
-          baseY +
-          Math.sin(x * freq + phase) * amp +
-          Math.cos(x * freq * 2.1 - phase) * (amp * 0.42);
-        ctx.lineTo(x, y);
-      }
-      ctx.lineTo(w, h);
-      ctx.closePath();
-
-      ctx.fillStyle = isGold
-        ? `rgba(214, 183, 122, ${0.05 + l * 0.035})`
-        : `rgba(86, 184, 169, ${0.05 + l * 0.035})`;
-      ctx.fill();
-
-      ctx.strokeStyle = isGold
-        ? `rgba(214, 183, 122, ${0.18 + l * 0.08})`
-        : `rgba(86, 184, 169, ${0.18 + l * 0.08})`;
-      ctx.lineWidth = 1.1;
-      ctx.stroke();
-    }
-  }
-
   function updateJsonLd(dest) {
     const el = document.getElementById('dest-jsonld');
     if (!el) return;
@@ -284,19 +214,17 @@
 
       const badgeEl = document.getElementById('drawer-allweather-badge');
       if (dest.allWeather) {
-        badgeEl.className = 'type-badge all-weather';
-        badgeEl.innerHTML = `${icon('sparkles', 12)} 四季晴雨雪全天候`;
+        badgeEl.className = 'kicker-tag all-weather';
+        badgeEl.textContent = '四季全天候';
       } else {
-        badgeEl.className = 'type-badge seasonal';
-        badgeEl.innerHTML = `${icon('compass', 12)} 季节 / 气象限定`;
+        badgeEl.className = 'kicker-tag seasonal';
+        badgeEl.textContent = '季节与气象限定';
       }
 
       const coordsEl = document.getElementById('drawer-hero-coords');
       if (coordsEl) {
         coordsEl.textContent = formatCoords(dest.coords, 3);
       }
-
-      drawTopoBanner(dest);
 
       // 12-month phenology ribbon
       const ribbonEl = document.getElementById('drawer-phenology-ribbon');
@@ -318,14 +246,12 @@
       }
 
       const metaStrip = document.getElementById('drawer-meta-strip');
-      const badgesHtml = (dest.badges || [])
-        .map((b) => `<span class="meta-chip honor">${icon('award', 11)}${escapeHtml(b)}</span>`)
-        .join('');
-      metaStrip.innerHTML = `
-        <span class="meta-chip mono-num">${icon('mountain', 11)}海拔 ${escapeHtml(dest.elevation)}</span>
-        <span class="meta-chip">${icon('clock', 11)}建议 ${escapeHtml(dest.suggestedDays)}</span>
-        ${badgesHtml}
-      `;
+      const parts = [
+        `海拔 ${escapeHtml(dest.elevation)}`,
+        `建议 ${escapeHtml(dest.suggestedDays)}`,
+        ...(dest.badges || []).slice(0, 2).map((b) => escapeHtml(b))
+      ].filter(Boolean);
+      metaStrip.textContent = parts.join('  ·  ');
 
       document.getElementById('drawer-hero-summary').textContent = dest.heroSummary;
       document.getElementById('tab-spots-count').textContent = (dest.spots || []).length;
@@ -401,51 +327,36 @@
 
     buildSpotsHtml: function (dest) {
       const spots = dest.spots || [];
-      const quickBar = `
-        <div class="spot-quickbar">
-          ${spots
-            .map((sp, i) => {
-              const shortLabel = sp.name.split(/[·（(&]/)[0].trim();
-              const activeCls = this.expandedSpotIndex === i ? 'active' : '';
-              return `<button class="spot-chip ${activeCls}" data-idx="${i}" type="button"><span>${i + 1}</span> ${escapeHtml(shortLabel)}</button>`;
-            })
-            .join('')}
-        </div>
-      `;
-      const cardsHtml = spots
+      return spots
         .map((sp, i) => {
           const isExpanded = this.expandedSpotIndex === i;
           const expCls = isExpanded ? 'is-expanded highlighted' : '';
           const catBadge = sp.category
-            ? `<span class="spot-cat-badge">${escapeHtml(sp.category)}</span>`
+            ? `<div class="spot-cat-label">${escapeHtml(sp.category)}</div>`
             : '';
           return `
             <article class="spot-card ${expCls}" data-spot-idx="${i}">
               <button class="spot-accordion-head" type="button" data-idx="${i}" aria-expanded="${isExpanded ? 'true' : 'false'}">
                 <div class="spot-title-wrap">
-                  <span class="spot-index">${i + 1}</span>
+                  <span class="spot-index">${String(i + 1).padStart(2, '0')}</span>
                   <div>
                     <h4 class="spot-name">${escapeHtml(sp.name)}</h4>
                     ${catBadge}
                   </div>
                 </div>
-                <span class="spot-head-actions">
-                  <span class="spot-chevron">${icon('chevronDown', 15)}</span>
-                </span>
+                <span class="spot-chevron">${icon('chevronDown', 15)}</span>
               </button>
               <div class="spot-accordion-body">
                 <div class="spot-accordion-inner">
                   <div class="spot-accordion-pad">
                     <div class="spot-locate-row">
-                      <span class="mono-num" style="font-size:11px;color:var(--text-secondary)">${formatCoords(sp.coords, 4)} · ${escapeHtml(sp.elevation)}</span>
-                      <button class="spot-locate-btn" data-idx="${i}" type="button">${icon('target', 12)} 俯冲定位</button>
+                      <span class="mono-num" style="font-size:11px;color:var(--text-muted)">${formatCoords(sp.coords, 4)} · ${escapeHtml(sp.elevation)}</span>
+                      <button class="spot-locate-btn" data-idx="${i}" type="button">${icon('target', 12)} 飞往机位</button>
                     </div>
-                    <div class="spot-coords-row">
-                      <span>${icon('route', 12)} ${linkifyHtml(sp.access)}</span>
-                    </div>
+                    <div class="spot-coords-row">${linkifyHtml(sp.access)}</div>
                     <div class="spot-field"><strong>黄金时段：</strong>${escapeHtml(sp.bestTime)}</div>
                     <div class="spot-field"><strong>实景画面：</strong>${escapeHtml(sp.scene)}</div>
-                    <div class="spot-tips"><strong>机位实操与避坑：</strong>${linkifyHtml(sp.tips)}</div>
+                    <div class="spot-tips">${linkifyHtml(sp.tips)}</div>
                   </div>
                 </div>
               </div>
@@ -453,7 +364,6 @@
           `;
         })
         .join('');
-      return quickBar + cardsHtml;
     },
 
     buildMonthsHtml: function (dest) {

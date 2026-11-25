@@ -62,6 +62,12 @@
     if (!grid) return;
 
     const baseList = typeof getFilteredFn === 'function' ? getFilteredFn() : [];
+    if (activeCollection === 'index' && global.AestheticIndex && typeof global.AestheticIndex.renderGlobalRanking === 'function') {
+      const fullList = global.TRAVEL_ATLAS ? global.TRAVEL_ATLAS.getAll() : baseList;
+      if (countEl) countEl.textContent = t('destCountFmt', { n: fullList.length });
+      global.AestheticIndex.renderGlobalRanking(grid, fullList, onSelectFn);
+      return;
+    }
     const items = filterByCollection(baseList);
     if (countEl) countEl.textContent = t('destCountFmt', { n: items.length });
 

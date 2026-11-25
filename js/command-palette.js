@@ -7,6 +7,44 @@
   let onSelectCallback = null;
   let onRelaxCallback = null;
   let searchIndexRef = [];
+  let fuseInstance = null;
+  let fuseLen = 0;
+
+  function ensureFuse() {
+    if (!global.Fuse || !searchIndexRef.length) return null;
+    if (fuseInstance && fuseLen === searchIndexRef.length) return fuseInstance;
+    const records = searchIndexRef.map((e) => {
+      const d = e.dest;
+      return {
+        entry: e,
+        id: d.id || '',
+        shortName: `${d.shortName || ''} ${tx(d.shortName || '')}`,
+        name: `${d.name || ''} ${tx(d.name || '')}`,
+        country: `${d.country || ''} ${tx(d.country || '')}`,
+        province: `${d.province || ''} ${tx(d.province || '')}`,
+        region: `${d.region || ''} ${tx(d.region || '')}`,
+        subtitle: `${d.subtitle || ''} ${tx(d.subtitle || '')}`,
+        spotNames: (d.spotNames || (d.spots ? d.spots.map((s) => s.name) : [])).join(' ')
+      };
+    });
+    fuseInstance = new global.Fuse(records, {
+      includeScore: true,
+      threshold: 0.36,
+      ignoreLocation: true,
+      minMatchCharLength: 2,
+      keys: [
+        { name: 'shortName', weight: 2.5 },
+        { name: 'name', weight: 2.0 },
+        { name: 'country', weight: 1.8 },
+        { name: 'id', weight: 1.6 },
+        { name: 'province', weight: 1.2 },
+        { name: 'spotNames', weight: 1.1 },
+        { name: 'subtitle', weight: 0.7 }
+      ]
+    });
+    fuseLen = searchIndexRef.length;
+    return fuseInstance;
+  }
 
   function icon(name, size) {
     return global.AppIcons ? global.AppIcons.svg(name, size || 14) : '';
@@ -169,6 +207,27 @@
     }
 
     hits.sort((a, b) => b.score - a.score);
+
+    // Fuse.js fuzzy fallback/augmentation for typos & bilingual queries
+    if (hits.length < 18) {
+      const fuse = ensureFuse();
+      if (fuse) {
+        const seenIds = new Set(hits.map((h) => h.dest.id));
+        const fuzzyHits = fuse.search(q, { limit: 20 });
+        for (let i = 0; i < fuzzyHits.length; i++) {
+          const item = fuzzyHits[i].item;
+          if (!item || !item.entry || seenIds.has(item.entry.dest.id)) continue;
+          seenIds.add(item.entry.dest.id);
+          hits.push({
+            dest: item.entry.dest,
+            score: Math.round((1 - (fuzzyHits[i].score || 0.5)) * 40),
+            matchedSpot: null,
+            matchedSpotIdx: -1
+          });
+        }
+      }
+    }
+
     currentEntries = hits.slice(0, 28);
     selectedIdx = 0;
 

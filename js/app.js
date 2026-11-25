@@ -50,6 +50,8 @@
     forceAllLabels: false,
     isGlobe: true,
     isSpinning: false,
+    clustering: true,
+    isFullscreen: false,
     selectedId: null,
     activeSpotIdx: -1,
     favorites: new Set(),
@@ -73,6 +75,8 @@
   let indexById = new Map();
   let lastMatchedIds = new Set();
   const expandedRegions = new Set();
+  let clusterIndex = null;
+  let drawnClusters = [];
 
   // Zero-DOM-churn HiDPI Canvas 2D label layer
   let labelCanvas = null;
@@ -247,6 +251,10 @@
           type: 'geojson',
           data: { type: 'FeatureCollection', features: [] }
         },
+        'atlas-clusters': {
+          type: 'geojson',
+          data: { type: 'FeatureCollection', features: [] }
+        },
         subroute: {
           type: 'geojson',
           data: { type: 'FeatureCollection', features: [] }
@@ -411,6 +419,18 @@
           }
         },
         {
+          id: 'atlas-cluster-circle',
+          type: 'circle',
+          source: 'atlas-clusters',
+          paint: {
+            'circle-radius': ['interpolate', ['linear'], ['get', 'point_count'], 3, 13, 30, 19, 120, 26],
+            'circle-color': 'rgba(226, 192, 125, 0.88)',
+            'circle-stroke-width': 2,
+            'circle-stroke-color': '#09090B',
+            'circle-opacity': 0.92
+          }
+        },
+        {
           id: 'subroute-line',
           type: 'line',
           source: 'subroute',
@@ -500,8 +520,77 @@
   }
 
   /* Update WebGL GeoJSON source (only called when filters/selection change, never on zoom!) */
+  function rebuildClusterIndex() {
+    if (!global.Supercluster) {
+      clusterIndex = null;
+      return;
+    }
+    const matchedPts = [];
+    for (let i = 0; i < atlasIndex.length; i++) {
+      const d = atlasIndex[i].dest;
+      if (!lastMatchedIds.has(d.id) || d.id === state.selectedId) continue;
+      if (!Array.isArray(d.coords) || d.coords.length < 2) continue;
+      matchedPts.push({
+        type: 'Feature',
+        id: atlasIndex[i].numId,
+        geometry: { type: 'Point', coordinates: d.coords },
+        properties: {
+          id: d.id,
+          label: d.shortName || d.name,
+          allWeather: d.allWeather ? 1 : 0,
+          priority: d.priority === 1 ? 1 : 2,
+          matched: 1,
+          selected: 0,
+          favorite: state.favorites.has(d.id) ? 1 : 0
+        }
+      });
+    }
+    clusterIndex = new global.Supercluster({ radius: 44, maxZoom: 5, minPoints: 3 });
+    clusterIndex.load(matchedPts);
+  }
+
+  function syncClusterLayer() {
+    if (!map || !map.getSource('atlas-clusters')) return;
+    const zoom = map.getZoom();
+    const useClusters = Boolean(state.clustering && clusterIndex && zoom < 4.5 && !state.selectedId);
+    drawnClusters = [];
+    if (!useClusters) {
+      map.getSource('atlas-clusters').setData({ type: 'FeatureCollection', features: [] });
+      if (map.getLayer('atlas-core')) map.setLayoutProperty('atlas-core', 'visibility', 'visible');
+      if (map.getLayer('atlas-glow')) map.setLayoutProperty('atlas-glow', 'visibility', 'visible');
+      return;
+    }
+
+    const allInView = clusterIndex.getClusters([-180, -85, 180, 85], Math.max(0, Math.floor(zoom)));
+    const clusterFeatures = [];
+    const unclusteredFeatures = [];
+    for (let i = 0; i < allInView.length; i++) {
+      const f = allInView[i];
+      if (f.properties && f.properties.cluster) {
+        clusterFeatures.push(f);
+        drawnClusters.push(f);
+      } else {
+        unclusteredFeatures.push(f);
+      }
+    }
+    map.getSource('atlas-clusters').setData({ type: 'FeatureCollection', features: clusterFeatures });
+    if (map.getSource('atlas-points')) {
+      map.getSource('atlas-points').setData({ type: 'FeatureCollection', features: unclusteredFeatures });
+    }
+  }
+
   function syncGeoJsonSource() {
     if (!map || !map.getSource('atlas-points')) return;
+    rebuildClusterIndex();
+    const zoom = map.getZoom();
+    if (state.clustering && clusterIndex && zoom < 4.5 && !state.selectedId) {
+      syncClusterLayer();
+      return;
+    }
+    if (map.getSource('atlas-clusters')) {
+      map.getSource('atlas-clusters').setData({ type: 'FeatureCollection', features: [] });
+    }
+    drawnClusters = [];
     const features = atlasIndex.map((entry) => {
       const d = entry.dest;
       return {
@@ -572,7 +661,26 @@
     labelCtx.clearRect(0, 0, w, h);
     drawnLabelBoxes = [];
 
-    if (state.mode === 'gallery') return;
+    if (state.mode === 'gallery' || state.mode === 'planner' || state.mode === 'archive') return;
+
+    // Draw Supercluster count badges on HiDPI 2D canvas (no MapLibre glyphs needed)
+    if (drawnClusters.length && state.clustering && !state.selectedId && map.getZoom() < 4.5) {
+      const cCenter = map.getCenter();
+      labelCtx.font = '600 11px "IBM Plex Mono", "Inter", sans-serif';
+      labelCtx.textAlign = 'center';
+      labelCtx.textBaseline = 'middle';
+      for (let i = 0; i < drawnClusters.length; i++) {
+        const cf = drawnClusters[i];
+        const coords = cf.geometry && cf.geometry.coordinates;
+        if (!coords) continue;
+        if (state.isGlobe && !isPointOnFrontHemisphere(coords, cCenter.lng, cCenter.lat)) continue;
+        const pt = map.project(coords);
+        if (pt.x < 10 || pt.x > w - 10 || pt.y < 10 || pt.y > h - 10) continue;
+        labelCtx.fillStyle = '#09090B';
+        labelCtx.fillText(String(cf.properties.point_count_abbreviated || cf.properties.point_count), pt.x, pt.y + 0.5);
+      }
+      labelCtx.textAlign = 'left';
+    }
 
     const zoom = map.getZoom();
     const center = map.getCenter();
@@ -991,6 +1099,7 @@
       });
     }
   }
+  global.selectAtlasDestination = selectDestination;
 
   function closeDestination(skipUrl) {
     state.selectedId = null;
@@ -1737,6 +1846,44 @@
       });
     }
 
+    const clusterBtn = document.getElementById('toggle-cluster-btn');
+    if (clusterBtn) {
+      clusterBtn.classList.toggle('active', state.clustering);
+      clusterBtn.addEventListener('click', () => {
+        state.clustering = !state.clustering;
+        clusterBtn.classList.toggle('active', state.clustering);
+        syncGeoJsonSource();
+        scheduleLabelLayout();
+      });
+    }
+
+    const fpBtn = document.getElementById('toggle-footprint-btn');
+    if (fpBtn) {
+      fpBtn.addEventListener('click', () => {
+        if (global.TravelArchive) global.TravelArchive.applyFootprintLayer(map);
+      });
+    }
+
+    const toggleFullscreen = (nextVal) => {
+      state.isFullscreen = nextVal !== undefined ? nextVal : !state.isFullscreen;
+      document.body.classList.toggle('fullscreen-globe', state.isFullscreen);
+      const exitPill = document.getElementById('fullscreen-exit-btn');
+      if (exitPill) exitPill.classList.toggle('is-hidden', !state.isFullscreen);
+      const fsBtn = document.getElementById('toggle-fullscreen-btn');
+      if (fsBtn) fsBtn.classList.toggle('active', state.isFullscreen);
+    };
+    const fsBtn = document.getElementById('toggle-fullscreen-btn');
+    if (fsBtn) fsBtn.addEventListener('click', () => toggleFullscreen());
+    const fsExitBtn = document.getElementById('fullscreen-exit-btn');
+    if (fsExitBtn) fsExitBtn.addEventListener('click', () => toggleFullscreen(false));
+
+    const diagBtn = document.getElementById('open-diagnostics-btn');
+    if (diagBtn) {
+      diagBtn.addEventListener('click', () => {
+        if (global.DiagnosticsModule) global.DiagnosticsModule.open();
+      });
+    }
+
     document.getElementById('fly-china-btn').addEventListener('click', () => {
       stopSpin();
       closeDestination();
@@ -1876,7 +2023,37 @@
         return;
       }
 
+      if (e.key.toLowerCase() === 'f' && !isTyping && !e.ctrlKey && !e.metaKey) {
+        e.preventDefault();
+        state.isFullscreen = !state.isFullscreen;
+        document.body.classList.toggle('fullscreen-globe', state.isFullscreen);
+        const exitPill = document.getElementById('fullscreen-exit-btn');
+        if (exitPill) exitPill.classList.toggle('is-hidden', !state.isFullscreen);
+        const fsBtn = document.getElementById('toggle-fullscreen-btn');
+        if (fsBtn) fsBtn.classList.toggle('active', state.isFullscreen);
+        return;
+      }
+
       if (e.key === 'Escape') {
+        if (state.isFullscreen) {
+          state.isFullscreen = false;
+          document.body.classList.remove('fullscreen-globe');
+          const exitPill = document.getElementById('fullscreen-exit-btn');
+          if (exitPill) exitPill.classList.add('is-hidden');
+          const fsBtn = document.getElementById('toggle-fullscreen-btn');
+          if (fsBtn) fsBtn.classList.remove('active');
+          return;
+        }
+        const svModal = document.getElementById('streetview-modal');
+        if (svModal && !svModal.classList.contains('is-hidden') && global.StreetViewModule) {
+          global.StreetViewModule.close();
+          return;
+        }
+        const diagModal = document.getElementById('diagnostics-modal');
+        if (diagModal && !diagModal.classList.contains('is-hidden') && global.DiagnosticsModule) {
+          global.DiagnosticsModule.close();
+          return;
+        }
         if (global.CommandPalette && global.CommandPalette.isOpen()) {
           global.CommandPalette.close();
           return;
@@ -1927,6 +2104,9 @@
 
     map.on('move', scheduleLabelLayout);
     map.on('zoomend', () => {
+      if (state.clustering && clusterIndex && !state.selectedId) {
+        syncGeoJsonSource();
+      }
       scheduleLabelLayout();
       if (state.subSpotMarkers.length) applySpiderfyLayout();
     });
@@ -1999,6 +2179,15 @@
     });
 
     map.on('click', (e) => {
+      if (state.clustering && clusterIndex && map.getLayer('atlas-cluster-circle')) {
+        const cHits = map.queryRenderedFeatures(e.point, { layers: ['atlas-cluster-circle'] });
+        if (cHits && cHits.length && cHits[0].properties.cluster_id !== undefined) {
+          const cid = Number(cHits[0].properties.cluster_id);
+          const targetZoom = Math.min(7, clusterIndex.getClusterExpansionZoom(cid) + 0.4);
+          cinematicFlyTo({ center: cHits[0].geometry.coordinates, zoom: targetZoom, pitch: 24, duration: 850 });
+          return;
+        }
+      }
       const hits = map.queryRenderedFeatures(e.point, { layers: ['atlas-hit'] });
       if (hits && hits.length) {
         const id = hits[0].properties.id;
@@ -2350,7 +2539,13 @@
             if (restored) setViewMode('planner', true);
           });
         }
+        if (global.TravelArchive && global.TravelArchive.restoreFootprintFromUrl()) {
+          global.TravelArchive.applyFootprintLayer(map, true);
+        }
       }).catch(() => {});
+    }
+    if (global.DiagnosticsModule) {
+      global.DiagnosticsModule.applyPerformanceTier('auto');
     }
     if (global.navigator && 'serviceWorker' in global.navigator && global.location && (global.location.protocol === 'https:' || global.location.hostname === '127.0.0.1' || global.location.hostname === 'localhost')) {
       global.navigator.serviceWorker.register('sw.js').catch(() => {});

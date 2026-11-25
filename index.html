@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#030712" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="description" content="全球七大洲 137 国/地区 722 座顶级目的地与 5,414 个精准摄影机位的 3D 交互卫星旅行地球仪。" />
+  <meta property="og:title" content="全球梦想旅游计划 · 3D 交互卫星地球仪" />
+  <meta property="og:description" content="覆盖全球七大洲 137 国/地区、722 座目的地与 5,414 个精准机位，全季节气象与预算动线指南。" />
+  <meta property="og:type" content="website" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌍</text></svg>" />
+  <title>全球梦想旅游计划 · 3D 交互卫星地球仪</title>
+  <link rel="stylesheet" href="vendor/maplibre-gl.css" />
+  <link rel="stylesheet" href="css/styles.css?v=11" />
+</head>
+<body>
+  <!-- Deep Space Starfield Backdrop -->
+  <div id="space-backdrop" aria-hidden="true"></div>
+
+  <!-- 3D Globe Container -->
+  <div id="map"></div>
+
+  <!-- Top Floating Command Bar -->
+  <header class="topbar" id="topbar">
+    <div class="topbar-row topbar-primary">
+      <div class="brand">
+        <span class="brand-globe">🌍</span>
+        <div class="brand-text">
+          <h1>全球梦想旅游地球仪</h1>
+          <p id="atlas-stats-line">正在加载全球坐标数据...</p>
+        </div>
+      </div>
+
+      <button id="mobile-filter-toggle" class="mini-btn mobile-only" type="button" aria-expanded="false">🔍 筛选</button>
+
+      <nav class="continent-tabs" id="continent-tabs" aria-label="大洲切换"></nav>
+    </div>
+
+    <div class="topbar-row topbar-filters">
+      <div class="filter-group">
+        <label for="month-filter" class="filter-label">追美月份</label>
+        <select id="month-filter" class="glass-select">
+          <option value="all">全年 1–12 月（全部）</option>
+          <option value="1">1 月 · 深冬蓝冰/雾凇</option>
+          <option value="2">2 月 · 春节雪国/暖阳</option>
+          <option value="3">3 月 · 江南春樱/林芝桃花</option>
+          <option value="4">4 月 · 桃花杏花/蓝眼泪初现</option>
+          <option value="5">5 月 · 平潭蓝眼泪/灌水梯田</option>
+          <option value="6">6 月 · 伊犁花海/漠河极光</option>
+          <option value="7">7 月 · 草原油菜花/避暑</option>
+          <option value="8">8 月 · 高原盛夏/九曲落日</option>
+          <option value="9">9 月 · 喀纳斯初秋/红海滩</option>
+          <option value="10">10 月 · 额济纳胡杨/亚丁彩林</option>
+          <option value="11">11 月 · 银杏红枫/三峡红叶</option>
+          <option value="12">12 月 · 日照金山/雪乡开季</option>
+        </select>
+      </div>
+
+      <div class="theme-pills" id="theme-pills" role="group" aria-label="主题筛选">
+        <button class="pill-btn active" data-theme="all">全部主题</button>
+        <button class="pill-btn" data-theme="nature">🏔️ 自然奇观</button>
+        <button class="pill-btn" data-theme="architecture">🏛️ 城市建筑</button>
+      </div>
+
+      <div class="weather-pills" id="weather-pills" role="group" aria-label="天气筛选">
+        <button class="pill-btn active" data-weather="all">全部气象</button>
+        <button class="pill-btn" data-weather="allWeather">🌟 四季晴雨雪皆美</button>
+        <button class="pill-btn" data-weather="sunny">☀️ 晴天/金山星空</button>
+        <button class="pill-btn" data-weather="rain">🌧️ 烟雨/雨后云海</button>
+        <button class="pill-btn" data-weather="snow">❄️ 雪景/蓝冰雾凇</button>
+        <button class="pill-btn" data-weather="special">🌌 极限气象奇观</button>
+      </div>
+
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input id="search-input" type="text" placeholder="搜国家 / 城市 / 景点 / 酒店 / 关键词..." autocomplete="off" />
+        <button id="search-clear" class="search-clear hidden" title="清空搜索">✕</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Left Collapsible Region/City Navigator -->
+  <aside class="left-sidebar" id="left-sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-title-wrap">
+        <span class="sidebar-title">🌍 全球精选目的地</span>
+        <span class="sidebar-count" id="sidebar-count">722 城</span>
+      </div>
+      <div class="sidebar-actions">
+        <button id="reset-filters-btn" class="mini-btn hidden" title="重置所有筛选">重置筛选</button>
+        <button id="sidebar-collapse-btn" class="icon-btn" title="收起侧栏">◀</button>
+      </div>
+    </div>
+    <div class="sidebar-legend">
+      <span class="legend-item"><i class="dot dot-gold"></i>四季晴雨雪皆美</span>
+      <span class="legend-item"><i class="dot dot-cyan"></i>季节/气象限定巅峰</span>
+    </div>
+    <div class="sidebar-list" id="sidebar-list"></div>
+  </aside>
+
+  <!-- Reopen Sidebar Floating Button -->
+  <button id="sidebar-open-btn" class="sidebar-open-btn hidden" title="展开目的地目录">
+    <span>📋</span> 目的地清单
+  </button>
+
+  <!-- Planned Continent / Asia Countries Floating Card -->
+  <section class="continent-banner hidden" id="continent-banner">
+    <div class="banner-head">
+      <div>
+        <span class="banner-round" id="banner-round"></span>
+        <h3 id="banner-title"></h3>
+      </div>
+      <button id="banner-close" class="icon-btn" title="关闭">✕</button>
+    </div>
+    <p class="banner-desc" id="banner-desc"></p>
+    <div class="banner-chips" id="banner-chips"></div>
+    <div class="banner-footer">
+      <button id="banner-fly-china" class="primary-btn">🌍 飞回已点亮全球视角</button>
+    </div>
+  </section>
+
+  <!-- Bottom Map Style & Globe Controls -->
+  <div class="globe-controls" id="globe-controls">
+    <div class="skin-switcher" role="group" aria-label="地球底图">
+      <button class="ctrl-btn active" data-skin="satellite" title="真实高清卫星影像">🛰️ 卫星</button>
+      <button class="ctrl-btn" data-skin="natgeo" title="国家地理探险风格">🗺️ 国家地理</button>
+      <button class="ctrl-btn" data-skin="physical" title="自然地理山川地形">🏔️ 地形</button>
+      <button class="ctrl-btn" data-skin="dark" title="暗夜星河灯光">🌃 暗夜</button>
+    </div>
+    <div class="divider-v"></div>
+    <div class="action-switcher">
+      <button class="ctrl-btn active" id="toggle-labels-btn" title="叠加国界与城市地名">🏷️ 地名</button>
+      <button class="ctrl-btn" id="toggle-all-labels-btn" title="强制显示全部城市名称（默认随缩放自动展开）">💬 全标签</button>
+      <button class="ctrl-btn active" id="toggle-proj-btn" title="切换 3D 地球仪 / 2D 平面">🌐 3D球体</button>
+      <button class="ctrl-btn" id="toggle-spin-btn" title="开启或暂停地球自转">🔄 自转</button>
+      <button class="ctrl-btn" id="fly-china-btn" title="重置视角到中国全境">🇨🇳 看中国</button>
+      <button class="ctrl-btn" id="fly-global-btn" title="拉远到太空俯瞰全球">🌍 看全球</button>
+    </div>
+  </div>
+
+  <!-- Sub-spot Hint Toast (when zoomed into a destination) -->
+  <div class="subspot-toast hidden" id="subspot-toast">
+    <span id="subspot-toast-text"></span>
+    <button id="back-to-city-overview" class="mini-btn">拉高视角看全景</button>
+  </div>
+
+  <!-- Right 5-Tab Detail Drawer -->
+  <aside class="detail-drawer hidden" id="detail-drawer" aria-label="目的地深度档案">
+    <div class="drawer-header" id="drawer-header">
+      <div class="drawer-nav-row">
+        <div class="breadcrumb" id="drawer-breadcrumb"></div>
+        <div class="drawer-win-actions">
+          <button id="drawer-expand-btn" class="mini-btn mobile-only" type="button" title="展开或收起抽屉">⤢ 展开</button>
+          <button id="share-dest-btn" class="mini-btn" type="button" title="复制当前目的地直达链接">🔗 分享</button>
+          <button id="prev-dest-btn" class="mini-btn" title="上一个目的地">‹ 上一站</button>
+          <button id="next-dest-btn" class="mini-btn" title="下一个目的地">下一站 ›</button>
+          <button id="drawer-close-btn" class="icon-btn" title="关闭详情 (Esc)">✕</button>
+        </div>
+      </div>
+
+      <div class="drawer-title-block">
+        <div class="drawer-title-row">
+          <h2 id="drawer-title"></h2>
+          <span class="type-badge" id="drawer-allweather-badge"></span>
+        </div>
+        <p class="drawer-subtitle" id="drawer-subtitle"></p>
+      </div>
+
+      <div class="drawer-meta-strip" id="drawer-meta-strip"></div>
+      <p class="drawer-hero-summary" id="drawer-hero-summary"></p>
+
+      <div class="drawer-tabs" id="drawer-tabs" role="tablist">
+        <button class="tab-btn active" data-tab="spots" role="tab">📍 精选机位 <span class="tab-count" id="tab-spots-count"></span></button>
+        <button class="tab-btn" data-tab="months" role="tab">📅 12月日历</button>
+        <button class="tab-btn" data-tab="weather" role="tab">🌦️ 晴雨雪雾</button>
+        <button class="tab-btn" data-tab="budget" role="tab">💎 预算账单</button>
+        <button class="tab-btn" data-tab="itinerary" role="tab">🗺️ 落地动线</button>
+      </div>
+    </div>
+
+    <div class="drawer-body" id="detail-body"></div>
+  </aside>
+
+  <!-- MapLibre GL v5 Local Runtime -->
+  <script src="vendor/maplibre-gl.js"></script>
+  <!-- Registry & All 7 Continents 722 Destinations Data -->
+  <script src="data/registry.js?v=10"></script>
+  <script src="data/asia/china/north_metro.js?v=10"></script>
+  <script src="data/asia/china/north_steppe.js?v=10"></script>
+  <script src="data/asia/china/northeast.js?v=10"></script>
+  <script src="data/asia/china/east_jiangnan.js?v=10"></script>
+  <script src="data/asia/china/east_qilu_huigan.js?v=10"></script>
+  <script src="data/asia/china/east_fujian.js?v=10"></script>
+  <script src="data/asia/china/central.js?v=10"></script>
+  <script src="data/asia/china/south.js?v=10"></script>
+  <script src="data/asia/china/southwest_chuanyu.js?v=10"></script>
+  <script src="data/asia/china/southwest_yungui.js?v=10"></script>
+  <script src="data/asia/china/southwest_tibet.js?v=10"></script>
+  <script src="data/asia/china/northwest_silkroad.js?v=10"></script>
+  <script src="data/asia/china/northwest_xinjiang.js?v=10"></script>
+  <script src="data/asia/china/hkmotw.js?v=10"></script>
+  <script src="data/asia/japan.js?v=10"></script>
+  <script src="data/asia/korea_mongolia.js?v=10"></script>
+  <script src="data/asia/maritime_sea.js?v=10"></script>
+  <script src="data/asia/indochina.js?v=10"></script>
+  <script src="data/asia/south_asia.js?v=10"></script>
+  <script src="data/asia/middle_east.js?v=10"></script>
+  <script src="data/asia/turkey_caucasus_central_asia.js?v=10"></script>
+  <script src="data/asia/north_karakoram.js?v=10"></script>
+  <script src="data/asia/west_asia_gems.js?v=10"></script>
+  <script src="data/asia/asia_nature_plus.js?v=10"></script>
+  <script src="data/asia/russia_siberia_fareast.js?v=10"></script>
+  <script src="data/oceania/new_zealand.js?v=10"></script>
+  <script src="data/oceania/australia.js?v=10"></script>
+  <script src="data/oceania/pacific_islands.js?v=10"></script>
+  <script src="data/europe/nordic.js?v=10"></script>
+  <script src="data/europe/alps_dolomites.js?v=10"></script>
+  <script src="data/europe/italy_mediterranean.js?v=10"></script>
+  <script src="data/europe/iberia_adriatic.js?v=10"></script>
+  <script src="data/europe/west_europe.js?v=10"></script>
+  <script src="data/europe/uk_ireland.js?v=10"></script>
+  <script src="data/europe/russia_europe.js?v=10"></script>
+  <script src="data/north_america/canada_rockies_west.js?v=10"></script>
+  <script src="data/north_america/canada_arctic_east_greenland.js?v=10"></script>
+  <script src="data/north_america/usa_alaska_rockies.js?v=10"></script>
+  <script src="data/north_america/usa_southwest_canyons.js?v=10"></script>
+  <script src="data/north_america/usa_pacific_coast_cascades.js?v=10"></script>
+  <script src="data/north_america/usa_hawaii_east.js?v=10"></script>
+  <script src="data/north_america/mexico_central_caribbean.js?v=10"></script>
+  <script src="data/south_america/peru_ecuador_andes.js?v=10"></script>
+  <script src="data/south_america/bolivia_chile_atacama.js?v=10"></script>
+  <script src="data/south_america/patagonia_argentina.js?v=10"></script>
+  <script src="data/south_america/brazil_amazon_guiana.js?v=10"></script>
+  <script src="data/south_america/colombia_andes_caribbean.js?v=10"></script>
+  <script src="data/africa_antarctica/east_africa_savanna.js?v=10"></script>
+  <script src="data/africa_antarctica/east_africa_highlands.js?v=10"></script>
+  <script src="data/africa_antarctica/southern_africa_namibia_botswana.js?v=10"></script>
+  <script src="data/africa_antarctica/southern_africa_sa_lesotho.js?v=10"></script>
+  <script src="data/africa_antarctica/indian_ocean_madagascar.js?v=10"></script>
+  <script src="data/africa_antarctica/north_africa_maghreb.js?v=10"></script>
+  <script src="data/africa_antarctica/egypt_redsea_west_africa.js?v=10"></script>
+  <script src="data/africa_antarctica/antarctica_subantarctic.js?v=10"></script>
+  <!-- App Logic -->
+  <script src="js/detail-panel.js?v=11"></script>
+  <script src="js/app.js?v=11"></script>
+</body>
+</html>

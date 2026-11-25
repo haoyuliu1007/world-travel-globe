@@ -330,12 +330,39 @@
         });
       }
 
+      const retryBtn = body.querySelector('#retry-detail-btn');
+      if (retryBtn) {
+        retryBtn.addEventListener('click', () => {
+          if (typeof global.TRAVEL_ATLAS?.ensureDetail === 'function') {
+            dest._detailFailed = false;
+            this.renderBody();
+            global.TRAVEL_ATLAS.ensureDetail(dest.id).then((hydrated) => {
+              if (hydrated && this.currentDest && this.currentDest.id === dest.id) {
+                this.open(hydrated, this.selectedMonth);
+              }
+            });
+          }
+        });
+      }
+
       body.scrollTop = 0;
+    },
+
+    buildPendingHtml: function (dest) {
+      if (dest && dest._detailFailed) {
+        return `
+          <div style="padding:24px 4px;color:var(--text-secondary);font-size:12.5px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <span>详情分片加载超时，请重试</span>
+            <button id="retry-detail-btn" class="text-btn" type="button" style="border:1px solid var(--border-strong);padding:4px 10px;border-radius:999px;">重新加载</button>
+          </div>
+        `;
+      }
+      return `<div style="padding:24px 4px;color:var(--text-muted);font-size:12.5px;">${t('loadingDetail')}</div>`;
     },
 
     buildSpotsHtml: function (dest) {
       if (!Array.isArray(dest.spots)) {
-        return `<div style="padding:24px 4px;color:var(--text-muted);font-size:12.5px;">${t('loadingDetail')}</div>`;
+        return this.buildPendingHtml(dest);
       }
       const spots = dest.spots;
       return spots
@@ -379,7 +406,7 @@
 
     buildMonthsHtml: function (dest) {
       if (!Array.isArray(dest.months) || !dest.months.length) {
-        return `<div style="padding:24px 4px;color:var(--text-muted);font-size:12.5px;">${t('loadingDetail')}</div>`;
+        return this.buildPendingHtml(dest);
       }
       const months = dest.months;
       const cells = months
@@ -420,7 +447,7 @@
 
     buildWeatherHtml: function (dest) {
       if (!dest.weather || typeof dest.weather !== 'object') {
-        return `<div style="padding:24px 4px;color:var(--text-muted);font-size:12.5px;">${t('loadingDetail')}</div>`;
+        return this.buildPendingHtml(dest);
       }
       const w = dest.weather;
       const cards = [
@@ -455,7 +482,7 @@
 
     buildBudgetHtml: function (dest) {
       if (!dest.budget || typeof dest.budget !== 'object') {
-        return `<div style="padding:24px 4px;color:var(--text-muted);font-size:12.5px;">${t('loadingDetail')}</div>`;
+        return this.buildPendingHtml(dest);
       }
       const b = dest.budget;
       const tiers = [
@@ -502,7 +529,7 @@
 
     buildItineraryHtml: function (dest) {
       if (!Array.isArray(dest.itinerary) || !dest.itinerary.length) {
-        return `<div style="padding:24px 4px;color:var(--text-muted);font-size:12.5px;">${t('loadingDetail')}</div>`;
+        return this.buildPendingHtml(dest);
       }
       const steps = dest.itinerary;
       return `

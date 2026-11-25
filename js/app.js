@@ -1318,6 +1318,12 @@
 
     listEl.querySelectorAll('.city-nav-item').forEach((btn) => {
       btn.addEventListener('click', () => selectDestination(btn.dataset.id));
+      btn.addEventListener('mouseenter', () => {
+        const d = ATLAS.getById(btn.dataset.id);
+        if (d && !d.spots && typeof ATLAS.ensureDetail === 'function') {
+          ATLAS.ensureDetail(btn.dataset.id);
+        }
+      }, { passive: true });
     });
   }
 
@@ -1911,6 +1917,9 @@
       const id = f.properties.id;
       const dest = ATLAS.getById(id);
       if (!dest) return;
+      if (!dest.spots && typeof ATLAS.ensureDetail === 'function') {
+        ATLAS.ensureDetail(id);
+      }
 
       map.getCanvas().style.cursor = 'pointer';
       if (hoveredFeatureId !== null && hoveredFeatureId !== f.id) {

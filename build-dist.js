@@ -137,15 +137,16 @@ function main() {
   const rawBytes = Buffer.byteLength(indexCode, 'utf8');
   const gzBytes = zlib.gzipSync(Buffer.from(indexCode, 'utf8'), { level: 9 }).length;
 
-  // Replace all 56 data/*.js script tags with lightweight index bundle tag in dist/index.html
+  // Replace all 56 data/*.js script tags with lightweight index bundle tag + unique build version in dist/index.html
+  const buildVer = Date.now().toString(36);
   const blockRe = /(?:\s*<script src="data\/[^"?]+(?:\?v=\d+)?"><\/script>\s*)+/;
   if (!blockRe.test(indexHtml)) {
     throw new Error('Could not locate data/*.js script block in index.html');
   }
-  const distHtml = indexHtml.replace(
-    blockRe,
-    '\n  <script src="data/atlas-index.min.js?v=35"></script>\n'
-  );
+  const distHtml = indexHtml
+    .replace(blockRe, `\n  <script src="data/atlas-index.min.js?v=${buildVer}"></script>\n`)
+    .replace(/(href="css\/styles\.css)\?v=\d+"/g, `$1?v=${buildVer}"`)
+    .replace(/(src="js\/[^"?]+)\?v=\d+"/g, `$1?v=${buildVer}"`);
   fs.writeFileSync(path.join(distDir, 'index.html'), distHtml, 'utf8');
 
   // Copy optional pre-translated i18n chunks if present (data/i18n/{lang}/index.json & r*.json)
@@ -173,13 +174,13 @@ function main() {
   Cache-Control: no-cache, must-revalidate
 
 /data/*
-  Cache-Control: public, max-age=31536000, immutable
+  Cache-Control: public, max-age=3600, must-revalidate
 
 /css/*
-  Cache-Control: public, max-age=31536000, immutable
+  Cache-Control: public, max-age=3600, must-revalidate
 
 /js/*
-  Cache-Control: public, max-age=31536000, immutable
+  Cache-Control: public, max-age=3600, must-revalidate
 
 /vendor/*
   Cache-Control: public, max-age=31536000, immutable

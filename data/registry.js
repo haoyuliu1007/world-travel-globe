@@ -343,6 +343,7 @@
     if (rIdx === undefined || rIdx === null) {
       return Promise.resolve(cur);
     }
+    cur._detailFailed = false;
     if (!regionFetchCache.has(rIdx)) {
       const loadViaScript = () =>
         new Promise((resolve) => {
@@ -350,26 +351,57 @@
           s.src = `data/regions/r${rIdx}.js`;
           s.async = true;
           s.onload = () => resolve(byId.get(id) || null);
-          s.onerror = () => resolve(byId.get(id) || null);
+          s.onerror = () => resolve(null);
           document.head.appendChild(s);
         });
+
+      const fetchJsonWithTimeout = (url, ms) => {
+        const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+        const timer = ctrl ? setTimeout(() => ctrl.abort(), ms) : null;
+        return fetch(url, ctrl ? { signal: ctrl.signal } : undefined)
+          .then((res) => {
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            return res.json();
+          })
+          .finally(() => {
+            if (timer) clearTimeout(timer);
+          });
+      };
+
+      const fetchWithRetry = () =>
+        fetchJsonWithTimeout(`data/regions/r${rIdx}.json`, 8000).catch(() =>
+          new Promise((r) => setTimeout(r, 450)).then(() =>
+            fetchJsonWithTimeout(`data/regions/r${rIdx}.json`, 10000)
+          )
+        );
 
       const p =
         global.location && global.location.protocol === 'file:'
           ? loadViaScript()
-          : fetch(`data/regions/r${rIdx}.json`)
-              .then((res) => {
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                return res.json();
-              })
+          : fetchWithRetry()
               .then((items) => {
                 registerDestinations(items);
                 return byId.get(id) || null;
               })
-              .catch(() => loadViaScript());
+              .catch(() => loadViaScript())
+              .then((resolved) => {
+                const latest = resolved || byId.get(id);
+                if (!latest || !Array.isArray(latest.spots)) {
+                  regionFetchCache.delete(rIdx);
+                  if (latest) latest._detailFailed = true;
+                }
+                return latest || null;
+              });
       regionFetchCache.set(rIdx, p);
     }
-    return regionFetchCache.get(rIdx).then(() => byId.get(id) || null);
+    return regionFetchCache.get(rIdx).then(() => {
+      const latest = byId.get(id) || null;
+      if (latest && !Array.isArray(latest.spots)) {
+        regionFetchCache.delete(rIdx);
+        latest._detailFailed = true;
+      }
+      return latest;
+    });
   }
 
   global.TRAVEL_ATLAS = {

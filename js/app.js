@@ -1713,6 +1713,13 @@
       });
     }
 
+    const tmBtn = document.getElementById('toggle-timemachine-btn');
+    if (tmBtn) {
+      tmBtn.addEventListener('click', () => {
+        if (global.EarthTimeMachine) global.EarthTimeMachine.toggleDock();
+      });
+    }
+
     document.getElementById('fly-china-btn').addEventListener('click', () => {
       stopSpin();
       closeDestination();

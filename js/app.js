@@ -997,6 +997,9 @@
     state.activeSpotIdx = -1;
     clearSubSpots();
     updateActiveBeacon(null);
+    if (global.PhotoSimulator && typeof global.PhotoSimulator.clearGlobeOverlay === 'function') {
+      global.PhotoSimulator.clearGlobeOverlay(map);
+    }
     Panel.close();
     syncGeoJsonSource();
     updateSelectionUI();
@@ -2313,6 +2316,8 @@
 
     map.on('style.load', onStyleReady);
     map.on('load', onStyleReady);
+
+    global.getGlobeMap = function () { return map; };
 
     if (global.StorageDB) {
       global.StorageDB.init().catch(() => {});

@@ -34,13 +34,23 @@ function main() {
 
   // Recreate dist/
   fs.rmSync(distDir, { recursive: true, force: true });
-  for (const sub of ['css', 'js', 'vendor', 'data', path.join('data', 'regions')]) {
+  for (const sub of [
+    'css',
+    'js',
+    path.join('js', 'services'),
+    path.join('js', 'workers'),
+    path.join('js', 'modules'),
+    'vendor',
+    'data',
+    path.join('data', 'regions')
+  ]) {
     ensureDir(path.join(distDir, sub));
   }
 
   // Copy static runtime assets
   const assetCopies = [
     ['css/styles.css', 'css/styles.css'],
+    ['css/upgrades.css', 'css/upgrades.css'],
     ['js/icons.js', 'js/icons.js'],
     ['js/i18n.js', 'js/i18n.js'],
     ['js/theme.js', 'js/theme.js'],
@@ -49,10 +59,34 @@ function main() {
     ['js/gallery.js', 'js/gallery.js'],
     ['js/app.js', 'js/app.js'],
     ['vendor/maplibre-gl.js', 'vendor/maplibre-gl.js'],
-    ['vendor/maplibre-gl.css', 'vendor/maplibre-gl.css']
+    ['vendor/maplibre-gl.css', 'vendor/maplibre-gl.css'],
+    ['vendor/suncalc.min.js', 'vendor/suncalc.min.js'],
+    ['vendor/fuse.min.js', 'vendor/fuse.min.js'],
+    ['vendor/supercluster.min.js', 'vendor/supercluster.min.js'],
+    ['vendor/dexie.min.js', 'vendor/dexie.min.js'],
+    ['vendor/echarts.min.js', 'vendor/echarts.min.js'],
+    ['manifest.webmanifest', 'manifest.webmanifest'],
+    ['sw.js', 'sw.js']
   ];
   for (const [srcRel, dstRel] of assetCopies) {
-    fs.copyFileSync(path.join(rootDir, srcRel), path.join(distDir, dstRel));
+    const srcAbs = path.join(rootDir, srcRel);
+    if (fs.existsSync(srcAbs)) {
+      fs.copyFileSync(srcAbs, path.join(distDir, dstRel));
+    }
+  }
+  for (const dirRel of [path.join('js', 'services'), path.join('js', 'workers'), path.join('js', 'modules')]) {
+    const srcDirAbs = path.join(rootDir, dirRel);
+    if (fs.existsSync(srcDirAbs)) {
+      for (const ent of fs.readdirSync(srcDirAbs, { withFileTypes: true })) {
+        if (ent.isFile() && ent.name.endsWith('.js')) {
+          fs.copyFileSync(path.join(srcDirAbs, ent.name), path.join(distDir, dirRel, ent.name));
+        }
+      }
+    }
+  }
+  const auditReportSrc = path.join(rootDir, 'data', 'audit-report.json');
+  if (fs.existsSync(auditReportSrc)) {
+    fs.copyFileSync(auditReportSrc, path.join(distDir, 'data', 'audit-report.json'));
   }
 
   // Load registry.js + all 55 data modules in exact order
@@ -145,7 +179,7 @@ function main() {
   }
   const distHtml = indexHtml
     .replace(blockRe, `\n  <script src="data/atlas-index.min.js?v=${buildVer}"></script>\n`)
-    .replace(/(href="css\/styles\.css)\?v=\d+"/g, `$1?v=${buildVer}"`)
+    .replace(/(href="css\/[^"?]+)\?v=\d+"/g, `$1?v=${buildVer}"`)
     .replace(/(src="js\/[^"?]+)\?v=\d+"/g, `$1?v=${buildVer}"`);
   fs.writeFileSync(path.join(distDir, 'index.html'), distHtml, 'utf8');
 

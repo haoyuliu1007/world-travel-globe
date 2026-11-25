@@ -2299,6 +2299,13 @@
 
     map.on('style.load', onStyleReady);
     map.on('load', onStyleReady);
+
+    if (global.StorageDB) {
+      global.StorageDB.init().catch(() => {});
+    }
+    if (global.navigator && 'serviceWorker' in global.navigator && global.location && (global.location.protocol === 'https:' || global.location.hostname === '127.0.0.1' || global.location.hostname === 'localhost')) {
+      global.navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
   }
 
   document.addEventListener('DOMContentLoaded', init);

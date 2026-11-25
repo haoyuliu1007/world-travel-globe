@@ -11,9 +11,11 @@
   <meta property="og:description" content="全球七大洲 137 国/地区、722 座目的地与 5,414 个机位，物候时间轴、全气候指南与双档预算动线。" />
   <meta property="og:type" content="website" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23F5F5F7%22 stroke-width=%221.75%22><circle cx=%2212%22 cy=%2212%22 r=%229.5%22/><path d=%22M2.5 12h19M12 2.5a14.5 14.5 0 0 1 0 19M12 2.5a14.5 14.5 0 0 0 0 19%22/></svg>" />
+  <link rel="manifest" href="manifest.webmanifest" />
   <title>World Travel Globe · 全球旅行地理图鉴</title>
   <link rel="stylesheet" href="vendor/maplibre-gl.css" />
   <link rel="stylesheet" href="css/styles.css?v=36" />
+  <link rel="stylesheet" href="css/upgrades.css?v=36" />
   <script type="application/ld+json" id="dest-jsonld">{}</script>
 </head>
 <body>
@@ -81,6 +83,8 @@
     <div class="mode-switch" role="tablist" aria-label="视图模式">
       <button class="mode-btn active" id="mode-map-btn" type="button" role="tab" aria-selected="true" data-i18n="modeMap">地球</button>
       <button class="mode-btn" id="mode-gallery-btn" type="button" role="tab" aria-selected="false" data-i18n="modeGallery">图鉴</button>
+      <button class="mode-btn" id="mode-planner-btn" type="button" role="tab" aria-selected="false" data-i18n="modePlanner">规划</button>
+      <button class="mode-btn" id="mode-archive-btn" type="button" role="tab" aria-selected="false" data-i18n="modeArchive">档案</button>
     </div>
 
     <span class="atlas-micro-stat mono-num hide-xs" id="atlas-stats-line">722 城 · 5,414 机位</span>
@@ -207,6 +211,24 @@
       <button class="ctrl-icon-btn" id="toggle-spin-btn" type="button" aria-label="地球自转" title="自转">
         <span data-icon="rotateCw" data-size="14"></span>
       </button>
+      <button class="ctrl-icon-btn" id="toggle-cluster-btn" type="button" aria-label="空间聚合" title="空间聚合 (Supercluster)">
+        <span data-icon="cluster" data-size="14"></span>
+      </button>
+      <button class="ctrl-icon-btn" id="toggle-weather-layer-btn" type="button" aria-label="全球气象图层" title="全球实时雷达/云图">
+        <span data-icon="cloud" data-size="14"></span>
+      </button>
+      <button class="ctrl-icon-btn" id="toggle-timemachine-btn" type="button" aria-label="地球时光机" title="地球时光机 (NASA GIBS)">
+        <span data-icon="history" data-size="14"></span>
+      </button>
+      <button class="ctrl-icon-btn" id="toggle-footprint-btn" type="button" aria-label="私人足迹图层" title="私人旅行足迹图层">
+        <span data-icon="user" data-size="14"></span>
+      </button>
+      <button class="ctrl-icon-btn" id="toggle-fullscreen-btn" type="button" aria-label="全屏探索模式" title="全屏探索 (F)">
+        <span data-icon="maximize" data-size="14"></span>
+      </button>
+      <button class="ctrl-icon-btn" id="open-diagnostics-btn" type="button" aria-label="系统诊断与配置" title="系统诊断、质量审核与设置">
+        <span data-icon="activity" data-size="14"></span>
+      </button>
       <button class="ctrl-btn" id="fly-china-btn" type="button" title="中国视角" data-i18n="flyChina">中国</button>
       <button class="ctrl-btn" id="fly-global-btn" type="button" title="全球视角" data-i18n="flyGlobal">全球</button>
       <div class="divider-v hide-xs"></div>
@@ -273,6 +295,7 @@
         <button class="tab-btn active" data-tab="spots" type="button" role="tab" aria-selected="true">
           <span data-i18n="tabSpots">机位</span> <span class="tab-count mono-num" id="tab-spots-count"></span>
         </button>
+        <button class="tab-btn" data-tab="photo" type="button" role="tab" aria-selected="false" data-i18n="tabPhoto">光影</button>
         <button class="tab-btn" data-tab="months" type="button" role="tab" aria-selected="false" data-i18n="tabMonths">物候</button>
         <button class="tab-btn" data-tab="weather" type="button" role="tab" aria-selected="false" data-i18n="tabWeather">气候</button>
         <button class="tab-btn" data-tab="budget" type="button" role="tab" aria-selected="false" data-i18n="tabBudget">预算</button>
@@ -306,6 +329,7 @@
           <button class="gallery-tab" data-collection="allWeather" type="button" data-i18n="weatherAllWeather">四季皆美</button>
           <button class="gallery-tab" data-collection="special" type="button" data-i18n="weatherSpecial">极限天象</button>
           <button class="gallery-tab" data-collection="favorites" type="button" data-i18n="galFav">收藏</button>
+          <button class="gallery-tab" data-collection="index" type="button" data-i18n="galIndex">追美榜</button>
         </div>
         <div class="gallery-count mono-num" id="gallery-count">0</div>
       </div>
@@ -342,8 +366,28 @@
     </div>
   </div>
 
-  <!-- MapLibre GL v5 Local Runtime -->
+  <!-- Fullscreen Exit Pill -->
+  <button class="fullscreen-exit-pill is-hidden" id="fullscreen-exit-btn" type="button">
+    <span data-icon="minimize" data-size="14"></span>
+    <span data-i18n="exitFullscreen">退出全屏</span>
+    <kbd>F</kbd>
+  </button>
+
+  <!-- Upgrade Workspaces & Modals -->
+  <section class="workspace-view is-hidden" id="planner-view" aria-label="智能旅行规划系统"></section>
+  <section class="workspace-view is-hidden" id="archive-view" aria-label="私人旅行档案"></section>
+  <aside class="timemachine-dock is-hidden" id="timemachine-dock" aria-label="地球时光机"></aside>
+  <div class="streetview-modal is-hidden" id="streetview-modal" role="dialog" aria-modal="true" aria-label="沉浸式街景"></div>
+  <div class="diag-modal is-hidden" id="diagnostics-modal" role="dialog" aria-modal="true" aria-label="系统诊断与审核"></div>
+  <div class="lightbox-backdrop is-hidden" id="media-lightbox" role="dialog" aria-modal="true" aria-label="全屏照片查看器"></div>
+  <div id="trip-print-area" class="is-hidden" aria-hidden="true"></div>
+
+  <!-- MapLibre GL v5 & Local Vendor Libraries -->
   <script src="vendor/maplibre-gl.js"></script>
+  <script src="vendor/suncalc.min.js"></script>
+  <script src="vendor/fuse.min.js"></script>
+  <script src="vendor/supercluster.min.js"></script>
+  <script src="vendor/dexie.min.js"></script>
   <!-- Registry & All 7 Continents 722 Destinations Data -->
   <script src="data/registry.js?v=10"></script>
   <script src="data/asia/china/north_metro.js?v=10"></script>
@@ -401,10 +445,13 @@
   <script src="data/africa_antarctica/north_africa_maghreb.js?v=10"></script>
   <script src="data/africa_antarctica/egypt_redsea_west_africa.js?v=10"></script>
   <script src="data/africa_antarctica/antarctica_subantarctic.js?v=10"></script>
-  <!-- App Logic -->
+  <!-- App Logic & Services -->
   <script src="js/icons.js?v=36"></script>
   <script src="js/i18n.js?v=36"></script>
   <script src="js/theme.js?v=36"></script>
+  <script src="js/services/lazy-loader.js?v=36"></script>
+  <script src="js/services/storage-db.js?v=36"></script>
+  <script src="js/services/api-client.js?v=36"></script>
   <script src="js/detail-panel.js?v=36"></script>
   <script src="js/command-palette.js?v=36"></script>
   <script src="js/gallery.js?v=36"></script>

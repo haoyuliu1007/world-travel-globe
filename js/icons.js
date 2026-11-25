@@ -44,7 +44,27 @@
     eye: '<path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.5"/>',
     moon: '<path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5a8.5 8.5 0 1 0 10.7 10.7Z"/>',
     palette: '<circle cx="12" cy="12" r="9.5"/><circle cx="8.5" cy="9.5" r="1.1" fill="currentColor"/><circle cx="12" cy="7.5" r="1.1" fill="currentColor"/><circle cx="15.5" cy="9.5" r="1.1" fill="currentColor"/><path d="M14.5 15.5a2.5 2.5 0 0 0 0-5h-1a2 2 0 0 1-2-2"/>',
-    languages: '<path d="m5 8 6 6M4 14l6-6 2-3M2 5h12M7 2h1M22 22l-5-10-5 10M14 18h6"/>'
+    languages: '<path d="m5 8 6 6M4 14l6-6 2-3M2 5h12M7 2h1M22 22l-5-10-5 10M14 18h6"/>',
+    camera: '<path d="M4 8a2 2 0 0 1 2-2h2.5l1.5-2h4l1.5 2H18a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8Z"/><circle cx="12" cy="13" r="3.5"/>',
+    image: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m21 15-4.5-4.5L6 20"/>',
+    wind: '<path d="M3 8h11a2.5 2.5 0 1 0-2.5-2.5M3 12h15a2.5 2.5 0 1 1-2.5 2.5M3 16h8a2 2 0 1 1-2 2"/>',
+    droplet: '<path d="M12 2.5s6 6.5 6 11a6 6 0 1 1-12 0c0-4.5 6-11 6-11Z"/>',
+    cloud: '<path d="M6.5 18.5A4.5 4.5 0 0 1 7.2 9.6 5.5 5.5 0 0 1 18 11.2a3.8 3.8 0 0 1-.5 7.3H6.5Z"/>',
+    history: '<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/>',
+    user: '<circle cx="12" cy="8" r="4"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/>',
+    activity: '<path d="M3 12h4l3-7 4 14 3-7h4"/>',
+    download: '<path d="M12 3v12M7 11l5 5 5-5M4 19h16"/>',
+    upload: '<path d="M12 15V3M7 7l5-4 5 4M4 19h16"/>',
+    trash: '<path d="M4 6h16M9 6V4h6v2M6 6l1 14h10l1-14"/>',
+    edit: '<path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5Z"/>',
+    shield: '<path d="M12 3 4 6.5v5.5c0 5 3.4 8.5 8 10 4.6-1.5 8-5 8-10V6.5L12 3Z"/>',
+    sunrise: '<path d="M12 3v4M5.6 9.6l2.1 2.1M18.4 9.6l-2.1 2.1M3 17h18M7 17a5 5 0 0 1 10 0"/>',
+    sunset: '<path d="M12 7V3M5.6 9.6l2.1 2.1M18.4 9.6l-2.1 2.1M3 17h18M7 17a5 5 0 0 1 10 0"/>',
+    car: '<path d="M5 11l2-5h10l2 5M3 11h18v6H3v-6Z"/><circle cx="7" cy="17" r="1.5"/><circle cx="17" cy="17" r="1.5"/>',
+    walk: '<circle cx="12" cy="4.5" r="1.5"/><path d="m10 8 2 4-2.5 7M12 12l3 3.5 1.5 3.5M7.5 12l2.5-4 3.5 1.5"/>',
+    bike: '<circle cx="6" cy="16.5" r="3"/><circle cx="18" cy="16.5" r="3"/><path d="M6 16.5 10 9h4l4 7.5M10 9l-1-2.5M14 9l1.5-2.5h2"/>',
+    star: '<polygon points="12 3 14.9 8.8 21.3 9.7 16.6 14.2 17.7 20.6 12 17.6 6.3 20.6 7.4 14.2 2.7 9.7 9.1 8.8 12 3"/>',
+    cluster: '<circle cx="8" cy="9" r="3.5"/><circle cx="16" cy="9" r="3.5"/><circle cx="12" cy="16" r="3.5"/>'
   };
 
   function svg(name, size, cls) {

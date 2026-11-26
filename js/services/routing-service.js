@@ -115,7 +115,15 @@
     // 3. Default zero-key public OSRM router
     try {
       const profile = mapOsrmProfile(mode);
-      const osrmUrl = `https://router.project-osrm.org/route/v1/${profile}/${coordPair}?overview=full&geometries=geojson`;
+      // router.project-osrm.org hosts ONLY the driving profile (foot/bike paths
+      // silently return driving routes). FOSSGIS routing.openstreetmap.de provides
+      // genuine foot/bike routing, so use it for walking/cycling.
+      const osrmBase = mode === 'walking'
+        ? 'https://routing.openstreetmap.de/routed-foot/route/v1/driving'
+        : mode === 'cycling'
+          ? 'https://routing.openstreetmap.de/routed-bike/route/v1/driving'
+          : 'https://router.project-osrm.org/route/v1/driving';
+      const osrmUrl = `${osrmBase}/${coordPair}?overview=full&geometries=geojson`;
       const res = await (Api
         ? Api.fetchJson(osrmUrl, {
             cacheKey: `osrm:${profile}:${coordPair}`,
@@ -130,7 +138,7 @@
         const out = {
           routed: true,
           crossSea: false,
-          provider: 'OSRM (OpenStreetMap)',
+          provider: mode === 'driving' ? 'OSRM (OpenStreetMap)' : 'OSRM FOSSGIS (OpenStreetMap)',
           distanceKm: Number((r0.distance / 1000).toFixed(2)),
           durationMin: Math.round(r0.duration / 60),
           note: '真实 OSM 路网路线',

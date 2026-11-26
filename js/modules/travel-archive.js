@@ -606,17 +606,24 @@
       try {
         if (direction === 'push') {
           const payload = await global.StorageDB.exportAllUserData();
+          const baseUpdatedAt = Number(global.localStorage ? global.localStorage.getItem('wtg_cloud_updated_at') || 0 : 0);
           const res = await fetch('/api/profile', {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json', 'X-Sync-Key': keyHash },
+            headers: { 'Content-Type': 'application/json', 'X-Sync-Key': keyHash, 'X-Base-Updated-At': String(baseUpdatedAt) },
             body: JSON.stringify(payload)
           });
           const j = await res.json();
+          if (res.status === 409) {
+            msgEl.textContent = '云端档案已被另一台设备更新，本地未覆盖云端。请先点“从云端拉取”合并，再重新推送。';
+            return;
+          }
+          if (res.ok && j.updatedAt && global.localStorage) global.localStorage.setItem('wtg_cloud_updated_at', String(j.updatedAt));
           msgEl.textContent = res.ok ? '已安全同步至 Cloudflare D1。' : `云同步未启用 (${res.status}): ${j.error || 'D1 Not Configured'}`;
         } else {
           const res = await fetch('/api/profile', { headers: { 'X-Sync-Key': keyHash } });
           const j = await res.json();
           if (res.ok && j.data) {
+            if (j.updatedAt && global.localStorage) global.localStorage.setItem('wtg_cloud_updated_at', String(j.updatedAt));
             await global.StorageDB.importAllUserData(j.data, 'merge');
             msgEl.textContent = '已从云端合并恢复档案！';
             renderWorkspace();

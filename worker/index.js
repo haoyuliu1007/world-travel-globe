@@ -82,8 +82,9 @@ async function handleApi(request, env) {
         img: true,
         tile: true,
         route: true,
-        streetview: Boolean(env && env.MAPILLARY_TOKEN),
-        pois: Boolean(env && env.OTM_API_KEY),
+        streetview: Boolean(env && (env.MAPILLARY_CLIENT_TOKEN || env.MAPILLARY_TOKEN)),
+        pois: true, // Overpass fallback works without a key; OTM key only enhances it
+        poisEnhanced: Boolean(env && env.OTM_API_KEY),
         d1: Boolean(env && env.DB),
         r2: Boolean(env && env.PHOTOS_BUCKET)
       }
@@ -217,15 +218,31 @@ async function handleApi(request, env) {
   }
 
   if (p === '/api/streetview') {
-    if (!env || !env.MAPILLARY_TOKEN) {
-      return jsonResponse({ ok: false, configured: false, error: 'MAPILLARY_TOKEN not configured' }, 501);
+    // MAPILLARY_CLIENT_TOKEN is the *public* client token (safe to expose to browsers;
+    // Mapillary's own docs require it in frontend MapillaryJS). Never store a private
+    // app secret here. MAPILLARY_TOKEN is kept as a legacy alias.
+    const mlyToken = env && (env.MAPILLARY_CLIENT_TOKEN || env.MAPILLARY_TOKEN);
+    if (!mlyToken) {
+      return jsonResponse({ ok: false, configured: false, error: 'MAPILLARY_CLIENT_TOKEN not configured' }, 501);
     }
     const bbox = url.searchParams.get('bbox') || '';
-    const limit = Math.min(12, Number(url.searchParams.get('limit') || 8));
-    const upstream = `https://graph.mapillary.com/images?access_token=${encodeURIComponent(env.MAPILLARY_TOKEN)}&fields=id,captured_at,compass_angle,is_pano,computed_geometry,thumb_1024_url&bbox=${encodeURIComponent(bbox)}&limit=${limit}`;
-    const res = await fetch(upstream);
-    const data = await res.json();
-    return jsonResponse({ ok: res.ok, configured: true, data: data.data || [] }, res.status, 'public, max-age=3600');
+    const parts = bbox.split(',').map(Number);
+    if (parts.length !== 4 || parts.some((n) => !Number.isFinite(n))) {
+      return jsonResponse({ ok: false, error: 'Invalid bbox' }, 400);
+    }
+    const limit = Math.min(12, Math.max(1, Number(url.searchParams.get('limit') || 8)));
+    try {
+      const upstream = 'https://graph.mapillary.com/images?access_token=' + mlyToken + '&fields=id,captured_at,compass_angle,is_pano,computed_geometry,thumb_1024_url&bbox=' + encodeURIComponent(bbox) + '&limit=' + limit;
+      const res = await fetch(upstream);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        return jsonResponse({ ok: false, configured: true, error: (data && data.error && data.error.message) || 'Mapillary upstream error', data: [] }, 502);
+      }
+      // clientToken is public by design: frontend MapillaryJS needs it to render the 360 viewer.
+      return jsonResponse({ ok: true, configured: true, clientToken: mlyToken, data: data.data || [] }, 200, 'public, max-age=3600');
+    } catch (e) {
+      return jsonResponse({ ok: false, configured: true, error: 'Mapillary upstream unreachable', data: [] }, 502);
+    }
   }
 
   if (p === '/api/route' && request.method === 'POST') {
@@ -256,10 +273,20 @@ async function handleApi(request, env) {
         }
       }
     }
-    const osrmProf = mode === 'walking' ? 'foot' : mode === 'cycling' ? 'bike' : 'driving';
+    // router.project-osrm.org only hosts the *driving* profile; its /foot/ and /bike/
+    // paths silently return driving routes. Use the FOSSGIS routing.openstreetmap.de
+    // instances for foot/bike so walking/cycling results are genuinely profile-correct.
+    const osrmBase = mode === 'walking'
+      ? 'https://routing.openstreetmap.de/routed-foot/route/v1/driving'
+      : mode === 'cycling'
+        ? 'https://routing.openstreetmap.de/routed-bike/route/v1/driving'
+        : 'https://router.project-osrm.org/route/v1/driving';
     const pair = body.coordinates.map((c) => `${Number(c[0]).toFixed(5)},${Number(c[1]).toFixed(5)}`).join(';');
-    const osrmRes = await fetch(`https://router.project-osrm.org/route/v1/${osrmProf}/${pair}?overview=full&geometries=geojson`);
-    const osrmJson = await osrmRes.json();
+    const osrmRes = await fetch(`${osrmBase}/${pair}?overview=full&geometries=geojson`);
+    const osrmJson = await osrmRes.json().catch(() => null);
+    if (!osrmJson) {
+      return jsonResponse({ routed: false, crossSea: true, error: 'Routing upstream returned invalid response' }, 200);
+    }
     if (osrmJson && osrmJson.code === 'Ok' && osrmJson.routes && osrmJson.routes[0]) {
       const r0 = osrmJson.routes[0];
       return jsonResponse({
@@ -282,6 +309,15 @@ async function handleApi(request, env) {
     if (!syncKey || syncKey.length < 16) {
       return jsonResponse({ ok: false, error: 'Valid X-Sync-Key header required' }, 401);
     }
+    if (request.method === 'GET' && url.searchParams.get('backup') === 'latest') {
+      try {
+        const row = await env.DB.prepare('SELECT payload_json, updated_at, backed_up_at FROM profile_backups WHERE user_key = ? ORDER BY backed_up_at DESC LIMIT 1').bind(syncKey).first();
+        if (!row) return jsonResponse({ ok: false, error: 'No backup found' }, 404);
+        return jsonResponse({ ok: true, data: JSON.parse(row.payload_json), updatedAt: row.updated_at, backedUpAt: row.backed_up_at });
+      } catch (e) {
+        return jsonResponse({ ok: false, error: 'Backups not available (migration 0002 not applied)' }, 501);
+      }
+    }
     if (request.method === 'GET') {
       const row = await env.DB.prepare('SELECT payload_json, updated_at FROM user_profiles WHERE user_key = ?').bind(syncKey).first();
       if (!row) return jsonResponse({ ok: false, error: 'Profile not found' }, 404);
@@ -289,7 +325,30 @@ async function handleApi(request, env) {
     }
     if (request.method === 'PUT') {
       const payload = await request.text();
+      if (payload.length > 5_000_000) {
+        return jsonResponse({ ok: false, error: 'Payload too large (max 5 MB)' }, 413);
+      }
+      try { JSON.parse(payload); } catch (e) {
+        return jsonResponse({ ok: false, error: 'Payload is not valid JSON' }, 400);
+      }
       const now = Date.now();
+      const existing = await env.DB.prepare('SELECT payload_json, updated_at FROM user_profiles WHERE user_key = ?').bind(syncKey).first();
+      // Optimistic-concurrency conflict check: client sends the server updatedAt it
+      // based its edits on. If the server moved since, refuse to silently overwrite.
+      const baseUpdatedAt = Number(request.headers.get('X-Base-Updated-At') || 0);
+      if (existing && baseUpdatedAt && Number(existing.updated_at) !== baseUpdatedAt) {
+        return jsonResponse({ ok: false, conflict: true, error: 'Server profile changed since last sync; pull and merge first', serverUpdatedAt: Number(existing.updated_at) }, 409);
+      }
+      if (existing) {
+        // Keep the previous version as a backup (best-effort; table may not exist on
+        // databases that have not applied migration 0002 yet).
+        try {
+          await env.DB.prepare('INSERT INTO profile_backups (user_key, payload_json, updated_at, backed_up_at) VALUES (?, ?, ?, ?)')
+            .bind(syncKey, existing.payload_json, Number(existing.updated_at), now).run();
+          await env.DB.prepare('DELETE FROM profile_backups WHERE user_key = ? AND id NOT IN (SELECT id FROM profile_backups WHERE user_key = ? ORDER BY backed_up_at DESC LIMIT 3)')
+            .bind(syncKey, syncKey).run();
+        } catch (e) { /* backup is best-effort */ }
+      }
       await env.DB.prepare(
         'INSERT INTO user_profiles (user_key, payload_json, updated_at) VALUES (?, ?, ?) ON CONFLICT(user_key) DO UPDATE SET payload_json = excluded.payload_json, updated_at = excluded.updated_at'
       )
@@ -340,7 +399,11 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     if (url.pathname.startsWith('/api/')) {
-      return handleApi(request, env);
+      try {
+        return await handleApi(request, env);
+      } catch (e) {
+        return jsonResponse({ ok: false, error: 'Worker internal error', detail: String(e && e.message ? e.message : e) }, 500);
+      }
     }
     if (env && env.ASSETS) {
       return env.ASSETS.fetch(request);

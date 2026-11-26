@@ -286,6 +286,10 @@
       if (typeof global.syncFavoriteButtonUI === 'function') {
         global.syncFavoriteButtonUI(dest.id);
       }
+
+      if (global.MediaGallery && typeof global.MediaGallery.loadDrawerHeroBanner === 'function') {
+        global.MediaGallery.loadDrawerHeroBanner(dest, document.getElementById('drawer-hero-banner'));
+      }
     },
 
     renderBody: function () {

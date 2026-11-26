@@ -1,7 +1,7 @@
 (function (global) {
   'use strict';
 
-  const MODE_KEY = 'wtg_appearance_v1';
+  const MODE_KEY = 'wtg_appearance_v2';
   const ACCENT_KEY = 'wtg_accent_v1';
 
   const SWATCHES = [
@@ -15,8 +15,8 @@
     { id: 'mono', name: '极简黑白', dark: '#F5F5F7', light: '#18181B' }
   ];
 
-  let mode = 'dark'; // 'dark' | 'light'
-  let accentHex = '#E2C07D';
+  let mode = 'light'; // 'dark' | 'light'
+  let accentHex = '#B47D22';
   let activeSwatchId = 'champagne';
   let onChangeListeners = [];
 
@@ -151,7 +151,8 @@
         const parsed = JSON.parse(rawA);
         if (parsed && parsed.hex) {
           activeSwatchId = parsed.id || 'custom';
-          accentHex = parsed.hex;
+          const sw = SWATCHES.find((s) => s.id === activeSwatchId);
+          accentHex = sw ? (mode === 'light' ? sw.light : sw.dark) : parsed.hex;
         }
       }
     } catch (e) {

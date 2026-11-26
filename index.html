@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#09090B" />
+  <meta name="theme-color" content="#F2F4F8" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="description" content="覆盖全球七大洲 137 国/地区、722 座顶级目的地与 5,414 个精准摄影机位的 3D 交互卫星旅行地球仪。" />
@@ -16,8 +16,8 @@
   <link rel="stylesheet" href="vendor/maplibre-gl.css" />
   <link rel="stylesheet" href="css/styles.css?v=36" />
   <link rel="stylesheet" href="css/upgrades.css?v=36" />
-  <link rel="stylesheet" href="assets/cosmic-intro/player.css?v=2" />
-  <script defer src="assets/cosmic-intro/player.js?v=2"></script>
+  <link rel="stylesheet" href="assets/cosmic-intro/player.css?v=4" />
+  <script defer src="assets/cosmic-intro/player.js?v=4"></script>
   <script type="application/ld+json" id="dest-jsonld">{}</script>
 </head>
 <body>
@@ -48,7 +48,7 @@
     <video id="cosmic-film" muted playsinline preload="none" disablepictureinpicture></video>
     <div class="cosmic-film-controls">
       <button id="cosmic-play" type="button" aria-label="暂停">Ⅱ</button>
-      <input id="cosmic-progress" type="range" min="0" max="24" step="0.033333" value="0" aria-label="播放进度">
+      <input id="cosmic-progress" type="range" min="0" max="26.6" step="0.041667" value="0" aria-label="播放进度">
       <button id="cosmic-skip" type="button"><span>跳过</span> <kbd>Esc</kbd></button>
     </div>
   </section>
@@ -81,7 +81,7 @@
       <div class="capsule-sep"></div>
 
       <button class="capsule-icon-btn" id="appearance-btn" type="button" aria-expanded="false" aria-controls="appearance-popover" aria-label="外观与主题色" title="外观与主题色">
-        <span id="appearance-mode-icon" data-icon="moon" data-size="15"></span>
+        <span id="appearance-mode-icon" data-icon="sun" data-size="15"></span>
         <span class="accent-indicator-dot" id="appearance-accent-dot"></span>
       </button>
 
@@ -105,13 +105,13 @@
   <section class="studio-popover is-hidden" id="appearance-popover" role="dialog" aria-label="外观与主题色设置">
     <div class="studio-section">
       <div class="popover-label" data-i18n="appearanceTitle">外观与主题色</div>
-      <div class="theme-mode-switch" id="theme-mode-switch" data-active="dark" role="group" aria-label="白天或黑夜模式">
+      <div class="theme-mode-switch" id="theme-mode-switch" data-active="light" role="group" aria-label="白天或黑夜模式">
         <span class="seg-thumb" aria-hidden="true"></span>
-        <button class="seg-btn active" data-mode-val="dark" type="button">
+        <button class="seg-btn" data-mode-val="dark" type="button">
           <span data-icon="moon" data-size="13"></span>
           <span data-i18n="modeNight">黑夜</span>
         </button>
-        <button class="seg-btn" data-mode-val="light" type="button">
+        <button class="seg-btn active" data-mode-val="light" type="button">
           <span data-icon="sun" data-size="13"></span>
           <span data-i18n="modeDay">白天</span>
         </button>
@@ -124,8 +124,8 @@
       <label class="custom-color-row" for="custom-accent-input">
         <span class="custom-color-label" data-i18n="customColorLabel">自定义色值</span>
         <span class="custom-color-ctrl">
-          <span class="custom-color-hex mono-num" id="custom-accent-hex">#E2C07D</span>
-          <input type="color" id="custom-accent-input" value="#E2C07D" aria-label="自定义主题色" />
+          <span class="custom-color-hex mono-num" id="custom-accent-hex">#B47D22</span>
+          <input type="color" id="custom-accent-input" value="#B47D22" aria-label="自定义主题色" />
         </span>
       </label>
     </div>
@@ -204,58 +204,98 @@
     <span class="phenology-hemi mono-num" id="phenology-hemi-hint">全年</span>
   </section>
 
-  <!-- Bottom-Right Apple/Google Earth Control Cluster -->
+  <!-- Bottom-Right Compact Apple/Google Earth Control Cluster -->
   <div class="globe-controls" id="globe-controls" aria-label="底图与视角控制">
-    <div class="skin-switcher" role="group" aria-label="地图风格">
-      <button class="ctrl-btn active" data-skin="satellite" type="button" data-i18n="skinSatellite">卫星</button>
-      <button class="ctrl-btn" data-skin="natgeo" type="button" data-i18n="skinNatgeo">国家地理</button>
-      <button class="ctrl-btn" data-skin="physical" type="button" data-i18n="skinPhysical">地形</button>
-      <button class="ctrl-btn" data-skin="dark" type="button" data-i18n="skinDark">暗夜</button>
-    </div>
+    <button class="ctrl-icon-btn layers-trigger-btn" id="layers-popover-btn" type="button" aria-expanded="false" aria-controls="layers-popover" aria-label="地图图层与工具" title="地图图层与工具">
+      <span data-icon="layers" data-size="15"></span>
+      <span class="layers-active-dot is-hidden" id="layers-active-badge"></span>
+    </button>
     <div class="divider-v"></div>
     <div class="action-switcher">
-      <button class="ctrl-icon-btn" id="toggle-labels-btn" type="button" aria-label="底图地名" title="底图地名">
-        <span data-icon="layers" data-size="14"></span>
-      </button>
-      <button class="ctrl-btn" id="toggle-tile-cdn-btn" type="button" title="切换底图线路（标准 / 国内极速）" data-i18n="tileRouteAuto">自动线路</button>
-      <button class="ctrl-icon-btn" id="toggle-all-labels-btn" type="button" aria-label="全量城市标签" title="全量标签">
-        <span data-icon="tag" data-size="14"></span>
-      </button>
       <button class="ctrl-icon-btn active" id="toggle-proj-btn" type="button" aria-label="3D 球体 / 2D 平面" title="3D / 2D">
         <span data-icon="box3d" data-size="14"></span>
       </button>
       <button class="ctrl-icon-btn" id="toggle-spin-btn" type="button" aria-label="地球自转" title="自转">
         <span data-icon="rotateCw" data-size="14"></span>
       </button>
-      <button class="ctrl-icon-btn" id="toggle-cluster-btn" type="button" aria-label="空间聚合" title="空间聚合 (Supercluster)">
-        <span data-icon="cluster" data-size="14"></span>
-      </button>
-      <button class="ctrl-icon-btn" id="toggle-weather-layer-btn" type="button" aria-label="全球气象图层" title="全球实时雷达/云图">
-        <span data-icon="cloud" data-size="14"></span>
-      </button>
-      <button class="ctrl-icon-btn" id="toggle-timemachine-btn" type="button" aria-label="地球时光机" title="地球时光机 (NASA GIBS)">
-        <span data-icon="history" data-size="14"></span>
-      </button>
-      <button class="ctrl-icon-btn" id="toggle-footprint-btn" type="button" aria-label="私人足迹图层" title="私人旅行足迹图层">
-        <span data-icon="user" data-size="14"></span>
-      </button>
       <button class="ctrl-icon-btn" id="toggle-fullscreen-btn" type="button" aria-label="全屏探索模式" title="全屏探索 (F)">
         <span data-icon="maximize" data-size="14"></span>
       </button>
-      <button class="ctrl-icon-btn" id="open-diagnostics-btn" type="button" aria-label="系统诊断与配置" title="系统诊断、质量审核与设置">
-        <span data-icon="activity" data-size="14"></span>
-      </button>
-      <button class="ctrl-btn" id="fly-china-btn" type="button" title="中国视角" data-i18n="flyChina">中国</button>
-      <button class="ctrl-btn" id="fly-global-btn" type="button" title="全球视角" data-i18n="flyGlobal">全球</button>
-      <div class="divider-v hide-xs"></div>
-      <button class="ctrl-icon-btn hide-xs" id="zoom-in-btn" type="button" aria-label="放大" title="放大">
-        <span data-icon="plus" data-size="14"></span>
-      </button>
-      <button class="ctrl-icon-btn hide-xs" id="zoom-out-btn" type="button" aria-label="缩小" title="缩小">
-        <span data-icon="minus" data-size="14"></span>
+    </div>
+    <div class="divider-v"></div>
+    <button class="ctrl-btn" id="fly-china-btn" type="button" title="中国视角" data-i18n="flyChina">中国</button>
+    <button class="ctrl-btn" id="fly-global-btn" type="button" title="全球视角" data-i18n="flyGlobal">全球</button>
+    <div class="divider-v hide-xs"></div>
+    <button class="ctrl-icon-btn hide-xs" id="zoom-in-btn" type="button" aria-label="放大" title="放大">
+      <span data-icon="plus" data-size="14"></span>
+    </button>
+    <button class="ctrl-icon-btn hide-xs" id="zoom-out-btn" type="button" aria-label="缩小" title="缩小">
+      <span data-icon="minus" data-size="14"></span>
+    </button>
+  </div>
+
+  <!-- Map Layers & Tools Popover -->
+  <section class="layers-popover is-hidden" id="layers-popover" role="dialog" aria-label="地图图层与工具">
+    <div class="popover-section">
+      <div class="popover-label" data-i18n="layersMapStyle">底图风格</div>
+      <div class="skin-card-grid" role="group" aria-label="地图风格">
+        <button class="skin-card-btn active" data-skin="satellite" type="button">
+          <span class="skin-preview skin-preview-satellite" aria-hidden="true"></span>
+          <span class="skin-card-label" data-i18n="skinSatellite">卫星</span>
+        </button>
+        <button class="skin-card-btn" data-skin="natgeo" type="button">
+          <span class="skin-preview skin-preview-natgeo" aria-hidden="true"></span>
+          <span class="skin-card-label" data-i18n="skinNatgeo">国家地理</span>
+        </button>
+        <button class="skin-card-btn" data-skin="physical" type="button">
+          <span class="skin-preview skin-preview-physical" aria-hidden="true"></span>
+          <span class="skin-card-label" data-i18n="skinPhysical">地形</span>
+        </button>
+        <button class="skin-card-btn" data-skin="dark" type="button">
+          <span class="skin-preview skin-preview-dark" aria-hidden="true"></span>
+          <span class="skin-card-label" data-i18n="skinDark">暗夜</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="popover-section">
+      <div class="popover-label" data-i18n="layersOverlays">叠加图层</div>
+      <div class="layers-toggle-grid">
+        <button class="layer-tile-btn" id="toggle-labels-btn" type="button" aria-label="底图地名" title="底图地名">
+          <span data-icon="layers" data-size="14"></span>
+          <span data-i18n="layerLabels">底图地名</span>
+        </button>
+        <button class="layer-tile-btn" id="toggle-all-labels-btn" type="button" aria-label="全量城市标签" title="全量标签">
+          <span data-icon="tag" data-size="14"></span>
+          <span data-i18n="layerAllLabels">全量标签</span>
+        </button>
+        <button class="layer-tile-btn" id="toggle-cluster-btn" type="button" aria-label="空间聚合" title="空间聚合 (Supercluster)">
+          <span data-icon="cluster" data-size="14"></span>
+          <span data-i18n="layerCluster">空间聚合</span>
+        </button>
+        <button class="layer-tile-btn" id="toggle-weather-layer-btn" type="button" aria-label="全球气象图层" title="全球实时雷达/云图">
+          <span data-icon="cloud" data-size="14"></span>
+          <span data-i18n="layerWeather">实时云图</span>
+        </button>
+        <button class="layer-tile-btn" id="toggle-timemachine-btn" type="button" aria-label="地球时光机" title="地球时光机 (NASA GIBS)">
+          <span data-icon="history" data-size="14"></span>
+          <span data-i18n="layerTimeMachine">地球时光机</span>
+        </button>
+        <button class="layer-tile-btn" id="toggle-footprint-btn" type="button" aria-label="私人足迹图层" title="私人旅行足迹图层">
+          <span data-icon="user" data-size="14"></span>
+          <span data-i18n="layerFootprint">旅行足迹</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="popover-section layers-footer-row">
+      <button class="layer-foot-btn" id="toggle-tile-cdn-btn" type="button" title="切换底图线路（标准 / 国内极速）" data-i18n="tileRouteAuto">自动线路</button>
+      <button class="layer-foot-btn" id="open-diagnostics-btn" type="button" aria-label="系统诊断与配置" title="系统诊断、质量审核与设置">
+        <span data-icon="activity" data-size="13"></span>
+        <span data-i18n="layerDiagnostics">系统诊断</span>
       </button>
     </div>
-  </div>
+  </section>
 
   <!-- Sub-spot Floating Pill -->
   <div class="subspot-toast is-hidden" id="subspot-toast">
@@ -270,52 +310,58 @@
     </div>
 
     <div class="drawer-header" id="drawer-header">
-      <div class="drawer-nav-row">
-        <div class="breadcrumb" id="drawer-breadcrumb"></div>
-        <div class="drawer-win-actions">
-          <button id="drawer-fav-btn" class="icon-btn" type="button" aria-label="收藏目的地" title="收藏">
-            <span data-icon="bookmark" data-size="14"></span>
-          </button>
-          <button id="share-dest-btn" class="icon-btn" type="button" aria-label="复制直达链接" title="分享链接">
-            <span data-icon="share" data-size="14"></span>
-          </button>
-          <button id="prev-dest-btn" class="icon-btn" type="button" aria-label="上一站" title="上一站">
-            <span data-icon="chevronLeft" data-size="15"></span>
-          </button>
-          <button id="next-dest-btn" class="icon-btn" type="button" aria-label="下一站" title="下一站">
-            <span data-icon="chevronRight" data-size="15"></span>
-          </button>
-          <button id="drawer-expand-btn" class="icon-btn mobile-only" type="button" aria-label="展开或收起" title="切换高度">
-            <span data-icon="maximize" data-size="14"></span>
-          </button>
-          <button id="drawer-close-btn" class="icon-btn" type="button" aria-label="关闭 (Esc)" title="关闭">
-            <span data-icon="x" data-size="15"></span>
-          </button>
+      <div class="drawer-hero-banner" id="drawer-hero-banner">
+        <div class="drawer-hero-bg" id="drawer-hero-bg"></div>
+        <div class="drawer-hero-scrim" aria-hidden="true"></div>
+        <div class="drawer-nav-row">
+          <div class="breadcrumb" id="drawer-breadcrumb"></div>
+          <div class="drawer-win-actions">
+            <button id="drawer-fav-btn" class="icon-btn" type="button" aria-label="收藏目的地" title="收藏">
+              <span data-icon="bookmark" data-size="14"></span>
+            </button>
+            <button id="share-dest-btn" class="icon-btn" type="button" aria-label="复制直达链接" title="分享链接">
+              <span data-icon="share" data-size="14"></span>
+            </button>
+            <button id="prev-dest-btn" class="icon-btn" type="button" aria-label="上一站" title="上一站">
+              <span data-icon="chevronLeft" data-size="15"></span>
+            </button>
+            <button id="next-dest-btn" class="icon-btn" type="button" aria-label="下一站" title="下一站">
+              <span data-icon="chevronRight" data-size="15"></span>
+            </button>
+            <button id="drawer-expand-btn" class="icon-btn mobile-only" type="button" aria-label="展开或收起" title="切换高度">
+              <span data-icon="maximize" data-size="14"></span>
+            </button>
+            <button id="drawer-close-btn" class="icon-btn" type="button" aria-label="关闭 (Esc)" title="关闭">
+              <span data-icon="x" data-size="15"></span>
+            </button>
+          </div>
+        </div>
+
+        <div class="drawer-title-block">
+          <div class="drawer-kicker-row">
+            <span class="kicker-tag" id="drawer-allweather-badge"></span>
+            <span class="kicker-coords mono-num" id="drawer-hero-coords"></span>
+          </div>
+          <h2 id="drawer-title"></h2>
+          <p class="drawer-subtitle" id="drawer-subtitle"></p>
         </div>
       </div>
 
-      <div class="drawer-title-block">
-        <div class="drawer-kicker-row">
-          <span class="kicker-tag" id="drawer-allweather-badge"></span>
-          <span class="kicker-coords mono-num" id="drawer-hero-coords"></span>
+      <div class="drawer-header-body">
+        <div class="drawer-meta-line" id="drawer-meta-strip"></div>
+        <div class="hero-phenology-ribbon" id="drawer-phenology-ribbon" aria-label="12个月最佳观赏指数"></div>
+        <p class="drawer-hero-summary" id="drawer-hero-summary"></p>
+
+        <div class="drawer-tabs" id="drawer-tabs" role="tablist">
+          <button class="tab-btn active" data-tab="spots" type="button" role="tab" aria-selected="true">
+            <span data-i18n="tabSpots">机位</span> <span class="tab-count mono-num" id="tab-spots-count"></span>
+          </button>
+          <button class="tab-btn" data-tab="photo" type="button" role="tab" aria-selected="false" data-i18n="tabPhoto">光影</button>
+          <button class="tab-btn" data-tab="months" type="button" role="tab" aria-selected="false" data-i18n="tabMonths">物候</button>
+          <button class="tab-btn" data-tab="weather" type="button" role="tab" aria-selected="false" data-i18n="tabWeather">气候</button>
+          <button class="tab-btn" data-tab="budget" type="button" role="tab" aria-selected="false" data-i18n="tabBudget">预算</button>
+          <button class="tab-btn" data-tab="itinerary" type="button" role="tab" aria-selected="false" data-i18n="tabItinerary">动线</button>
         </div>
-        <h2 id="drawer-title"></h2>
-        <p class="drawer-subtitle" id="drawer-subtitle"></p>
-      </div>
-
-      <div class="drawer-meta-line" id="drawer-meta-strip"></div>
-      <div class="hero-phenology-ribbon" id="drawer-phenology-ribbon" aria-label="12个月最佳观赏指数"></div>
-      <p class="drawer-hero-summary" id="drawer-hero-summary"></p>
-
-      <div class="drawer-tabs" id="drawer-tabs" role="tablist">
-        <button class="tab-btn active" data-tab="spots" type="button" role="tab" aria-selected="true">
-          <span data-i18n="tabSpots">机位</span> <span class="tab-count mono-num" id="tab-spots-count"></span>
-        </button>
-        <button class="tab-btn" data-tab="photo" type="button" role="tab" aria-selected="false" data-i18n="tabPhoto">光影</button>
-        <button class="tab-btn" data-tab="months" type="button" role="tab" aria-selected="false" data-i18n="tabMonths">物候</button>
-        <button class="tab-btn" data-tab="weather" type="button" role="tab" aria-selected="false" data-i18n="tabWeather">气候</button>
-        <button class="tab-btn" data-tab="budget" type="button" role="tab" aria-selected="false" data-i18n="tabBudget">预算</button>
-        <button class="tab-btn" data-tab="itinerary" type="button" role="tab" aria-selected="false" data-i18n="tabItinerary">动线</button>
       </div>
     </div>
 

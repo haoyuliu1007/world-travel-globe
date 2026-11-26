@@ -1845,19 +1845,22 @@
     const archModeBtn = document.getElementById('mode-archive-btn');
     if (archModeBtn) archModeBtn.addEventListener('click', () => setViewMode('archive'));
 
-    // Popovers: Filter, Appearance Studio, Language Selector
+    // Popovers: Filter, Appearance Studio, Language Selector, Map Layers
     const popBtn = document.getElementById('filter-popover-btn');
     const popEl = document.getElementById('filter-popover');
     const appBtn = document.getElementById('appearance-btn');
     const appEl = document.getElementById('appearance-popover');
     const langBtn = document.getElementById('lang-btn');
     const langEl = document.getElementById('lang-popover');
+    const layersBtn = document.getElementById('layers-popover-btn');
+    const layersEl = document.getElementById('layers-popover');
 
     const closeAllPopovers = (exceptEl) => {
       [
         [popEl, popBtn],
         [appEl, appBtn],
-        [langEl, langBtn]
+        [langEl, langBtn],
+        [layersEl, layersBtn]
       ].forEach(([el, btn]) => {
         if (el && el !== exceptEl && !el.classList.contains('is-hidden')) {
           el.classList.add('is-hidden');
@@ -1869,7 +1872,8 @@
     [
       [popBtn, popEl],
       [appBtn, appEl],
-      [langBtn, langEl]
+      [langBtn, langEl],
+      [layersBtn, layersEl]
     ].forEach(([btn, el]) => {
       if (!btn || !el) return;
       btn.addEventListener('click', (e) => {
@@ -1885,12 +1889,37 @@
       if (
         (popEl && popEl.contains(e.target)) ||
         (appEl && appEl.contains(e.target)) ||
-        (langEl && langEl.contains(e.target))
+        (langEl && langEl.contains(e.target)) ||
+        (layersEl && layersEl.contains(e.target))
       ) {
         return;
       }
       closeAllPopovers(null);
     });
+
+    function updateLayersBadge() {
+      const badge = document.getElementById('layers-active-badge');
+      if (!badge) return;
+      const wxBtnEl = document.getElementById('toggle-weather-layer-btn');
+      const tmBtnEl = document.getElementById('toggle-timemachine-btn');
+      const fpBtnEl = document.getElementById('toggle-footprint-btn');
+      const anyActive = Boolean(
+        state.showLabels ||
+        state.forceAllLabels ||
+        (wxBtnEl && wxBtnEl.classList.contains('active')) ||
+        (tmBtnEl && tmBtnEl.classList.contains('active')) ||
+        (fpBtnEl && fpBtnEl.classList.contains('active'))
+      );
+      badge.classList.toggle('is-hidden', !anyActive);
+    }
+
+    if (typeof MutationObserver !== 'undefined') {
+      const layerObserver = new MutationObserver(updateLayersBadge);
+      ['toggle-weather-layer-btn', 'toggle-timemachine-btn', 'toggle-footprint-btn'].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) layerObserver.observe(el, { attributes: true, attributeFilter: ['class'] });
+      });
+    }
 
     document.querySelectorAll('#theme-pills .pill-btn').forEach((btn) => {
       btn.addEventListener('click', () => {
@@ -1944,6 +1973,7 @@
       if (map && map.getLayer('layer-labels')) {
         map.setLayoutProperty('layer-labels', 'visibility', state.showLabels ? 'visible' : 'none');
       }
+      updateLayersBadge();
     });
 
     const tileCdnBtn = document.getElementById('toggle-tile-cdn-btn');
@@ -1964,6 +1994,7 @@
       state.forceAllLabels = !state.forceAllLabels;
       e.currentTarget.classList.toggle('active', state.forceAllLabels);
       scheduleLabelLayout();
+      updateLayersBadge();
     });
 
     document.getElementById('toggle-proj-btn').addEventListener('click', (e) => {
@@ -2213,13 +2244,16 @@
         }
         if ((popEl && !popEl.classList.contains('is-hidden')) ||
             (appEl && !appEl.classList.contains('is-hidden')) ||
-            (langEl && !langEl.classList.contains('is-hidden'))) {
+            (langEl && !langEl.classList.contains('is-hidden')) ||
+            (layersEl && !layersEl.classList.contains('is-hidden'))) {
           if (popEl) popEl.classList.add('is-hidden');
           if (appEl) appEl.classList.add('is-hidden');
           if (langEl) langEl.classList.add('is-hidden');
+          if (layersEl) layersEl.classList.add('is-hidden');
           if (popBtn) popBtn.setAttribute('aria-expanded', 'false');
           if (appBtn) appBtn.setAttribute('aria-expanded', 'false');
           if (langBtn) langBtn.setAttribute('aria-expanded', 'false');
+          if (layersBtn) layersBtn.setAttribute('aria-expanded', 'false');
           return;
         }
         if (isIntroFlight) {
@@ -2251,6 +2285,22 @@
   }
 
   function bindMapInteractions() {
+    let moveGlassTimer = null;
+    map.on('movestart', () => {
+      if (moveGlassTimer) {
+        clearTimeout(moveGlassTimer);
+        moveGlassTimer = null;
+      }
+      document.body.classList.add('is-map-moving');
+    });
+    map.on('moveend', () => {
+      if (moveGlassTimer) clearTimeout(moveGlassTimer);
+      moveGlassTimer = setTimeout(() => {
+        document.body.classList.remove('is-map-moving');
+        moveGlassTimer = null;
+      }, 140);
+    });
+
     map.on('mousedown', () => { stopSpin(); cancelActiveFlight(); });
     map.on('wheel', () => { stopSpin(); cancelActiveFlight(); });
     map.on('touchstart', () => { stopSpin(); cancelActiveFlight(); });

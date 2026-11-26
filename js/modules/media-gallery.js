@@ -247,6 +247,69 @@
     }
   }
 
+  function hashDestHue(id) {
+    const str = String(id || 'globe');
+    let h = 0;
+    for (let i = 0; i < str.length; i++) {
+      h = (h * 31 + str.charCodeAt(i)) >>> 0;
+    }
+    return h % 360;
+  }
+
+  function buildGeoGradient(dest) {
+    const baseHue = hashDestHue(dest && dest.id);
+    const isNature = dest && Array.isArray(dest.themeTags) && dest.themeTags.includes('nature');
+    const h1 = isNature ? (175 + (baseHue % 55)) : (210 + (baseHue % 45));
+    const h2 = (h1 + (dest && dest.allWeather ? 28 : 42)) % 360;
+    return `radial-gradient(circle at 82% 18%, hsla(${h2}, 58%, 38%, 0.48) 0%, transparent 56%), linear-gradient(135deg, hsl(${h1}, 32%, 14%) 0%, hsl(${h2}, 26%, 9%) 100%)`;
+  }
+
+  async function loadDrawerHeroBanner(dest, bannerEl) {
+    if (!dest || !bannerEl) return;
+    const bgEl = bannerEl.querySelector('#drawer-hero-bg') || bannerEl.querySelector('.drawer-hero-bg');
+    if (!bgEl) return;
+
+    bannerEl.dataset.destId = dest.id;
+    bannerEl.classList.remove('has-hero-photo');
+    bgEl.style.background = buildGeoGradient(dest);
+    bgEl.innerHTML = '';
+    bgEl.onclick = null;
+
+    if (!global.MediaWikidataService) return;
+    try {
+      const photos = await global.MediaWikidataService.fetchPlacePhotos({
+        id: dest.id,
+        lat: dest.coords && dest.coords[1],
+        lng: dest.coords && dest.coords[0],
+        name: dest.shortName || dest.name,
+        country: dest.country,
+        radiusM: 5000,
+        limit: 6
+      });
+      if (!document.body.contains(bannerEl) || bannerEl.dataset.destId !== dest.id) return;
+      if (!photos || !photos.length) return;
+
+      const hero = photos[0];
+      const img = document.createElement('img');
+      img.className = 'drawer-hero-img';
+      img.alt = hero.title || dest.name || '';
+      img.decoding = 'async';
+      img.addEventListener('load', () => {
+        if (bannerEl.dataset.destId !== dest.id) return;
+        img.classList.add('is-loaded');
+        bannerEl.classList.add('has-hero-photo');
+      }, { once: true });
+      img.addEventListener('error', () => {
+        img.remove();
+      }, { once: true });
+      img.src = hero.thumbUrl;
+      bgEl.appendChild(img);
+      bgEl.onclick = () => openLightbox(photos, 0);
+    } catch (e) {
+      // Keep atmospheric gradient fallback silently
+    }
+  }
+
   function processThumbQueue() {
     while (activeThumbFetches < 3 && thumbQueue.length) {
       const task = thumbQueue.shift();
@@ -263,7 +326,20 @@
         .then((photos) => {
           if (photos && photos[0] && document.body.contains(task.slotEl)) {
             const p = photos[0];
-            task.slotEl.innerHTML = `<img src="${esc(p.thumbUrl)}" alt="${esc(task.dest.shortName || task.dest.name)}" loading="lazy" decoding="async" title="${esc(p.license)}" />`;
+            const img = document.createElement('img');
+            img.src = p.thumbUrl;
+            img.alt = task.dest.shortName || task.dest.name || '';
+            img.loading = 'lazy';
+            img.decoding = 'async';
+            img.title = p.license || '';
+            img.className = 'gallery-thumb-img';
+            img.addEventListener('load', () => {
+              img.classList.add('is-loaded');
+              const ph = task.slotEl.querySelector('.gallery-thumb-placeholder');
+              if (ph) ph.style.opacity = '0';
+            }, { once: true });
+            img.addEventListener('error', () => img.remove(), { once: true });
+            task.slotEl.insertBefore(img, task.slotEl.firstChild);
           }
         })
         .catch(() => {})
@@ -307,6 +383,7 @@
     openLightbox,
     closeLightbox,
     loadDestinationMedia,
+    loadDrawerHeroBanner,
     loadSpotPhoto,
     loadWikidataBadge,
     observeGalleryThumbs

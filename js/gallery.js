@@ -89,21 +89,26 @@
           const sc = (Array.isArray(d.monthScores) && d.monthScores[idx]) || byM.get(idx + 1) || 2;
           return `<span class="gallery-ribbon-seg" data-score="${sc}"></span>`;
         }).join('');
+        const badgeCls = d.allWeather ? 'is-gold' : 'is-ice';
+        const badgeText = d.allWeather ? t('badgeAllWeather') : t('badgeSeasonal');
         return `
           <button class="gallery-card" data-id="${escapeHtml(d.id)}" type="button">
-            <div class="gallery-card-thumb" data-thumb-id="${escapeHtml(d.id)}">
-              <span>${escapeHtml(tx(d.shortName || d.name))}</span>
+            <div class="gallery-card-thumb" data-thumb-id="${escapeHtml(d.id)}" data-continent="${escapeHtml(d.continent || '')}">
+              <span class="gallery-thumb-placeholder">${escapeHtml(tx(d.shortName || d.name))}</span>
+              <span class="gallery-thumb-badge ${badgeCls}">${escapeHtml(badgeText)}</span>
             </div>
-            <div class="gallery-card-top">
-              <span class="gallery-card-country">${escapeHtml(tx(d.country))} · ${escapeHtml(tx(d.region))}</span>
-              <span class="gallery-card-coords mono-num">${formatCoords(d.coords)}</span>
-            </div>
-            <h3 class="gallery-card-title">${escapeHtml(tx(d.name))}</h3>
-            <p class="gallery-card-sub">${escapeHtml(tx(d.subtitle || d.heroSummary))}</p>
-            <div class="gallery-card-ribbon">${ribbon}</div>
-            <div class="gallery-card-foot">
-              <span class="mono-num">${t('spotsCountFmt', { n: d.spotCount || (d.spots ? d.spots.length : 0) })} · ${escapeHtml(tx(d.suggestedDays))}</span>
-              <span class="gallery-card-cta">${t('flyCoord')} ${icon('arrowUpRight', 13)}</span>
+            <div class="gallery-card-body">
+              <div class="gallery-card-top">
+                <span class="gallery-card-country">${escapeHtml(tx(d.country))} · ${escapeHtml(tx(d.region))}</span>
+                <span class="gallery-card-coords mono-num">${formatCoords(d.coords)}</span>
+              </div>
+              <h3 class="gallery-card-title">${escapeHtml(tx(d.name))}</h3>
+              <p class="gallery-card-sub">${escapeHtml(tx(d.subtitle || d.heroSummary))}</p>
+              <div class="gallery-card-ribbon">${ribbon}</div>
+              <div class="gallery-card-foot">
+                <span class="mono-num">${t('spotsCountFmt', { n: d.spotCount || (d.spots ? d.spots.length : 0) })} · ${escapeHtml(tx(d.suggestedDays))}</span>
+                <span class="gallery-card-cta">${t('flyCoord')} ${icon('arrowUpRight', 13)}</span>
+              </div>
             </div>
           </button>
         `;

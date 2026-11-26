@@ -11,17 +11,10 @@
   const credits = document.querySelector('#cosmic-credits');
   const options = replay.closest('.cosmic-options');
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
-  const scene = { center: [72, 22], zoom: 1.65, pitch: 14, bearing: 0 };
-  const storageKey = 'wtg-cosmic-slow-tour-seen';
-  const handoffTime = 23.80;
-  const matchLandmarks = [
-    [[76, 10], [979.034, 597.269]],
-    [[40, -20], [827.802, 723.585]],
-    [[100, 4], [1087.259, 620.277]]
-  ];
+  const storageKey = 'wtg-cosmic-intro-v4-seen';
   const supportedVideo = [
-    ['assets/cosmic-intro/cosmic-slow-tour.webm', 'video/webm; codecs="vp9"'],
-    ['assets/cosmic-intro/cosmic-slow-tour.mp4', 'video/mp4; codecs="avc1.640028"']
+    ['assets/cosmic-intro/cosmic-slow-tour.webm?v=4', 'video/webm; codecs="vp9"'],
+    ['assets/cosmic-intro/cosmic-slow-tour.mp4?v=4', 'video/mp4; codecs="avc1.640028"']
   ].filter(([, type]) => video.canPlayType(type)).map(([url]) => url);
 
   let playback = null;
@@ -52,10 +45,7 @@
     if (!map?.isStyleLoaded() || !map.areTilesLoaded() || !map.getLayer('layer-satellite')
         || map.getLayoutProperty('layer-satellite', 'visibility') === 'none'
         || document.getElementById('mode-map-btn').getAttribute('aria-selected') !== 'true') return false;
-    const pose = map.getCenter();
-    return Math.abs(pose.lng - scene.center[0]) < .05 && Math.abs(pose.lat - scene.center[1]) < .05
-      && Math.abs(map.getZoom() - scene.zoom) < .02 && Math.abs(map.getPitch() - scene.pitch) < .2
-      && Math.abs(map.getBearing()) < .2 && matchesViewport(map);
+    return true;
   }
 
   function prepareMap(map) {
@@ -164,7 +154,7 @@
     };
     if (matched) {
       intro.classList.add('is-exiting');
-      setTimeout(release, 170);
+      setTimeout(release, 520);
     } else release();
   }
 
@@ -211,7 +201,8 @@
       run.frameId = 0;
       const time = metadata?.mediaTime ?? video.currentTime;
       progress.value = Math.min(time, Number(progress.max));
-      if (time >= handoffTime && currentMap()?.areTilesLoaded()) {
+      const handoffAt = Number.isFinite(video.duration) && video.duration > 1 ? video.duration - 0.45 : 26.15;
+      if (time >= handoffAt && currentMap()?.areTilesLoaded()) {
         finish(run, 'complete');
       } else if (!video.paused) scheduleFrame();
     };

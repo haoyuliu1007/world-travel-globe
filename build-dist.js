@@ -59,6 +59,9 @@ function main() {
       fs.copyFileSync(srcAbs, path.join(distDir, dstRel));
     }
   }
+  fs.cpSync(path.join(rootDir, 'assets', 'cosmic-intro'),
+    path.join(distDir, 'assets', 'cosmic-intro'), { recursive: true });
+
   const workerSrcDir = path.join(rootDir, 'js', 'workers');
   if (fs.existsSync(workerSrcDir)) {
     for (const ent of fs.readdirSync(workerSrcDir, { withFileTypes: true })) {

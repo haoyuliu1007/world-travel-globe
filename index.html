@@ -16,6 +16,8 @@
   <link rel="stylesheet" href="vendor/maplibre-gl.css" />
   <link rel="stylesheet" href="css/styles.css?v=36" />
   <link rel="stylesheet" href="css/upgrades.css?v=36" />
+  <link rel="stylesheet" href="assets/cosmic-intro/player.css?v=1" />
+  <script defer src="assets/cosmic-intro/player.js?v=1"></script>
   <script type="application/ld+json" id="dest-jsonld">{}</script>
 </head>
 <body>
@@ -41,6 +43,15 @@
     <span data-i18n="skipIntro">跳过飞入</span>
     <kbd>Esc</kbd>
   </button>
+
+  <section id="cosmic-intro" aria-label="宇宙开场" role="dialog" aria-modal="true" hidden>
+    <video id="cosmic-film" muted playsinline preload="none" disablepictureinpicture></video>
+    <div class="cosmic-film-controls">
+      <button id="cosmic-play" type="button" aria-label="暂停">Ⅱ</button>
+      <input id="cosmic-progress" type="range" min="0" max="24" step="0.033333" value="0" aria-label="播放进度">
+      <button id="cosmic-skip" type="button"><span>跳过</span> <kbd>Esc</kbd></button>
+    </div>
+  </section>
 
   <!-- Top-Left Floating Spatial Command Cluster (Google Earth / Apple Maps Pattern) -->
   <header class="top-dock" id="topbar">
@@ -117,6 +128,10 @@
           <input type="color" id="custom-accent-input" value="#E2C07D" aria-label="自定义主题色" />
         </span>
       </label>
+    </div>
+    <div class="studio-section cosmic-options" hidden>
+      <button id="cosmic-replay" type="button">重播宇宙开场</button>
+      <a id="cosmic-credits" href="assets/cosmic-intro/credits.html" target="_blank" rel="noopener">影像来源</a>
     </div>
   </section>
 

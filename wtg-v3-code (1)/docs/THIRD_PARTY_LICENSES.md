@@ -1,0 +1,19 @@
+# 第三方开源项目与开放数据授权声明
+
+| 组件 / 数据源 | 版本 | 许可证 / 数据授权 | 使用范围与归属标注方式 |
+|---|---|---|---|
+| **MapLibre GL JS** | v5 (`vendor/maplibre-gl.js`) | BSD-3-Clause | 3D 球体与 2D 地图 WebGL 渲染引擎 |
+| **SunCalc** | v2.1.4 (`vendor/suncalc.min.js`) | BSD-2-Clause | 太阳方位角/高度角、日出日落、黄金蓝调时刻与月相计算 |
+| **Fuse.js** | v7.5.0 (`vendor/fuse.min.js`) | Apache-2.0 | 全局中英文模糊检索与拼写容错 |
+| **Supercluster** | v9.1.0 (`vendor/supercluster.min.js`) | ISC | 722 座目的地低缩放空间聚合 |
+| **Dexie.js** | v4.4.7 (`vendor/dexie.min.js`) | Apache-2.0 | IndexedDB 本地离线缓存与私人档案持久化 |
+| **Apache ECharts** | v6.1.0 (`vendor/echarts.min.js`) | Apache-2.0 | 懒加载气象统计、行程预算饼图与年度足迹图表 |
+| **Open-Meteo** | REST API v1 | CC BY 4.0（非商用免费） | 实时天气、7 日预报与 ERA5 历史再分析气候；界面已明确标注来源 |
+| **RainViewer** | Public Weather Maps API | 免费公开气象瓦片（非商用） | 全球实时降雨雷达与红外云图叠加 |
+| **Wikimedia Commons & Wikipedia** | MediaWiki API | CC BY / CC BY-SA / Public Domain 等 | 逐张图片在画廊与灯箱内展示作者、具体协议名称与原图链接 |
+| **Wikidata** | MediaWiki API | CC0 1.0 Public Domain | 地理坐标、海拔、建筑师与遗产交叉核验，界面附带 QID 链接 |
+| **NASA EOSDIS GIBS** | WMTS v1.0.0 | Public Domain (NASA) | 地球时光机历史遥感卫星瓦片，界面展示图层名、分辨率与日期 |
+| **OpenStreetMap / OSRM** | Public Route API v1 | ODbL / BSD-2-Clause | 默认驾车、步行、骑行真实路网几何与距离计算 |
+| **OpenRouteService** | Directions API v2（可选） | OpenRouteService Terms | 免费额度 2,000 req/day，配置 Key 后作为增强路由选项 |
+| **Mapillary** | Graph API v4 & MapillaryJS（可选） | CC BY-SA 4.0 / MIT | 配置免费 Client Token 后提供街景与 360° 全景联动 |
+| **Esri / CartoDB 底图瓦片** | 原有内置底图 | 各底图服务条款 | 保持原有底图源与归属标注 |

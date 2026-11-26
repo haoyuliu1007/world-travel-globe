@@ -13,11 +13,10 @@
   const credits = document.querySelector('#cosmic-credits');
   const options = replay.closest('.cosmic-options');
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
-  const storageKey = 'wtg-cosmic-intro-v5-seen';
+  const storageKey = 'wtg-cosmic-intro-v6-seen';
   const supportedVideo = [
-    ['assets/cosmic-intro/cosmic-slow-tour.webm?v=5', 'video/webm; codecs="vp9"'],
-    ['assets/cosmic-intro/cosmic-slow-tour.mp4?v=5', 'video/mp4; codecs="avc1.640028"']
-  ].filter(([, type]) => video.canPlayType(type)).map(([url]) => url);
+    ['assets/cosmic-intro/cosmic-slow-tour.mp4?v=6', 'video/mp4; codecs="avc1.640028"']
+  ].filter(([, type]) => video.canPlayType(type) || video.canPlayType('video/mp4')).map(([url]) => url);
 
   let playback = null;
   let mapReveal = null;

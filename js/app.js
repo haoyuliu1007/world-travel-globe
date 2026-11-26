@@ -2048,6 +2048,15 @@
       });
     }
 
+    const tourReplayBtn = document.getElementById('onboarding-replay-btn');
+    if (tourReplayBtn) {
+      tourReplayBtn.addEventListener('click', () => {
+        closeAllPopovers(null);
+        if (state.selectedId) closeDestination(true);
+        if (global.OnboardingTour) global.OnboardingTour.start(true);
+      });
+    }
+
     const toggleFullscreen = (nextVal) => {
       state.isFullscreen = nextVal !== undefined ? nextVal : !state.isFullscreen;
       document.body.classList.toggle('fullscreen-globe', state.isFullscreen);
@@ -2680,6 +2689,7 @@
       if (state.mode === 'gallery') setViewMode('gallery', true);
       scheduleLabelLayout();
       initAutoTileRoute();
+      if (global.OnboardingTour) global.OnboardingTour.init();
 
       if (focusDest) {
         if (initialParams.instant || prefersReducedMotion()) {

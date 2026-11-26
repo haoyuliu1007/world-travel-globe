@@ -122,7 +122,7 @@
         ? 'https://routing.openstreetmap.de/routed-foot/route/v1/driving'
         : mode === 'cycling'
           ? 'https://routing.openstreetmap.de/routed-bike/route/v1/driving'
-          : 'https://router.project-osrm.org/route/v1/driving';
+          : 'https://routing.openstreetmap.de/routed-car/route/v1/driving';
       const osrmUrl = `${osrmBase}/${coordPair}?overview=full&geometries=geojson`;
       const res = await (Api
         ? Api.fetchJson(osrmUrl, {

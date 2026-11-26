@@ -276,14 +276,25 @@ async function handleApi(request, env) {
     // router.project-osrm.org only hosts the *driving* profile; its /foot/ and /bike/
     // paths silently return driving routes. Use the FOSSGIS routing.openstreetmap.de
     // instances for foot/bike so walking/cycling results are genuinely profile-correct.
-    const osrmBase = mode === 'walking'
-      ? 'https://routing.openstreetmap.de/routed-foot/route/v1/driving'
-      : mode === 'cycling'
-        ? 'https://routing.openstreetmap.de/routed-bike/route/v1/driving'
-        : 'https://router.project-osrm.org/route/v1/driving';
+    // FOSSGIS (routing.openstreetmap.de) hosts car/foot/bike profiles and accepts
+    // server-side fetch. router.project-osrm.org 403s non-browser user agents
+    // (verified 2026-11-26: nginx 403 HTML, which broke JSON parsing here), so it
+    // is only a secondary fallback for driving.
+    const fosProfile = mode === 'walking' ? 'routed-foot' : mode === 'cycling' ? 'routed-bike' : 'routed-car';
+    const bases = [`https://routing.openstreetmap.de/${fosProfile}/route/v1/driving`];
+    if (mode !== 'walking' && mode !== 'cycling') bases.push('https://router.project-osrm.org/route/v1/driving');
     const pair = body.coordinates.map((c) => `${Number(c[0]).toFixed(5)},${Number(c[1]).toFixed(5)}`).join(';');
-    const osrmRes = await fetch(`${osrmBase}/${pair}?overview=full&geometries=geojson`);
-    const osrmJson = await osrmRes.json().catch(() => null);
+    let osrmJson = null;
+    for (const base of bases) {
+      try {
+        const r = await fetch(`${base}/${pair}?overview=full&geometries=geojson`, {
+          headers: { 'User-Agent': 'world-travel-globe/3.0 (+https://world-travel-globe.globe-app.workers.dev/)' }
+        });
+        const j = await r.json().catch(() => null);
+        if (j && j.code === 'Ok') { osrmJson = j; break; }
+        if (j && !osrmJson) osrmJson = j;
+      } catch (e) { /* try next base */ }
+    }
     if (!osrmJson) {
       return jsonResponse({ routed: false, crossSea: true, error: 'Routing upstream returned invalid response' }, 200);
     }

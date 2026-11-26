@@ -154,7 +154,8 @@
       video.classList.remove('has-frame');
       intro.hidden = true;
       run.inertNodes.forEach(node => { node.inert = false; });
-      intro.classList.remove('is-exiting');
+      intro.classList.remove('is-exiting', 'is-warming');
+    intro.inert = false;
       document.body.classList.remove('intro-active');
       publish('map', reason);
       playback = null;
@@ -167,6 +168,18 @@
     } else release();
   }
 
+  function revealIntro(run) {
+    if (run.activated) return;
+    run.activated = true;
+    intro.classList.remove('is-warming');
+    intro.inert = false;
+    document.body.classList.add('intro-active');
+    run.inertNodes = Array.from(document.body.children)
+      .filter(node => node !== intro && node.tagName !== 'SCRIPT' && !node.inert);
+    run.inertNodes.forEach(node => { node.inert = true; });
+    skip.focus({ preventScroll: true });
+  }
+
   function start(isReplay) {
     if (playback || !supportedVideo.length) return;
     restorePending?.();
@@ -174,8 +187,7 @@
     document.documentElement.classList.remove('cosmic-motion');
     const run = {
       returnFocus: isReplay ? document.activeElement : null,
-      inertNodes: Array.from(document.body.children)
-        .filter(node => node !== intro && node.tagName !== 'SCRIPT' && !node.inert),
+      inertNodes: [],
       events: new AbortController(),
       frameId: 0,
       started: performance.now(),
@@ -185,13 +197,13 @@
     };
     playback = run;
     intro.hidden = false;
-    document.body.classList.add('intro-active');
-    run.inertNodes.forEach(node => { node.inert = true; });
+    intro.classList.toggle('is-warming', !isReplay);
+    intro.inert = !isReplay;
+    if (isReplay) revealIntro(run);
     progress.value = 0;
     progress.disabled = true;
     play.disabled = true;
     publish('loading');
-    skip.focus({ preventScroll: true });
     const on = (type, callback) => video.addEventListener(type, callback, { signal: run.events.signal });
 
     const tick = (_now, metadata) => {
@@ -227,7 +239,7 @@
       }
       clearTimeout(run.startupTimer);
       run.startupTimer = setTimeout(() => finish(run, 'startup-timeout'),
-        Math.min(1050, Math.max(0, 2350 - (performance.now() - run.started))));
+        Math.min(4500, Math.max(0, 8000 - (performance.now() - run.started))));
       trySource();
     });
     on('loadedmetadata', () => {
@@ -238,6 +250,7 @@
       clearTimeout(run.startupTimer);
       clearTimeout(run.stallTimer);
       run.played = true;
+      revealIntro(run);
       video.classList.add('has-frame');
       play.disabled = false;
       publish('playing');
@@ -259,18 +272,27 @@
     });
     on('ended', () => finish(run, 'complete'));
 
-    run.startupTimer = setTimeout(() => finish(run, 'startup-timeout'), isReplay ? 2000 : 1500);
+    run.startupTimer = setTimeout(() => finish(run, 'startup-timeout'), 7000);
     trySource();
   }
 
   document.addEventListener('keydown', event => {
     if (!playback) return;
+    if (!playback.activated) {
+      finish(playback, event.key === 'Escape' ? 'escape' : 'interacted');
+      return;
+    }
     event.stopPropagation();
     if (event.key === 'Escape') {
       event.preventDefault();
       finish(playback, 'escape');
     }
   });
+  for (const event of ['pointerdown', 'wheel', 'touchstart']) {
+    document.addEventListener(event, () => {
+      if (playback && !playback.activated) finish(playback, 'interacted');
+    }, { capture: true, passive: true });
+  }
   skip.addEventListener('click', () => playback && finish(playback, 'skip'));
   replay.addEventListener('click', () => start(true));
   play.addEventListener('click', () => {

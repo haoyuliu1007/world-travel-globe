@@ -1,6 +1,7 @@
 #cosmic-intro[hidden], .cosmic-options[hidden] { display: none !important; }
 #cosmic-intro, #cosmic-film { position: fixed; inset: 0; width: 100%; height: 100%; }
 #cosmic-intro { z-index: 10000; background: #0a0a0c; opacity: 1; color: #e2e6ee; }
+#cosmic-intro.is-warming { opacity: 0; pointer-events: none; }
 #cosmic-intro.is-exiting { opacity: 0; transition: opacity 165ms linear; }
 #cosmic-film { display: block; object-fit: cover; border: 0; }
 #cosmic-film:not(.has-frame), .is-exiting .cosmic-film-controls { visibility: hidden; }

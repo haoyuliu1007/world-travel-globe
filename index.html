@@ -16,8 +16,8 @@
   <link rel="stylesheet" href="vendor/maplibre-gl.css" />
   <link rel="stylesheet" href="css/styles.css?v=36" />
   <link rel="stylesheet" href="css/upgrades.css?v=36" />
-  <link rel="stylesheet" href="assets/cosmic-intro/player.css?v=4" />
-  <script defer src="assets/cosmic-intro/player.js?v=4"></script>
+  <link rel="stylesheet" href="assets/cosmic-intro/player.css?v=5" />
+  <script defer src="assets/cosmic-intro/player.js?v=5"></script>
   <script type="application/ld+json" id="dest-jsonld">{}</script>
 </head>
 <body>
@@ -45,9 +45,11 @@
   </button>
 
   <section id="cosmic-intro" aria-label="宇宙开场" role="dialog" aria-modal="true" hidden>
-    <video id="cosmic-film" muted playsinline preload="none" disablepictureinpicture></video>
+    <video id="cosmic-film" playsinline preload="none" disablepictureinpicture></video>
+    <button id="cosmic-unmute-hint" type="button" hidden>🔊 点击开启声音</button>
     <div class="cosmic-film-controls">
       <button id="cosmic-play" type="button" aria-label="暂停">Ⅱ</button>
+      <button id="cosmic-mute" type="button" aria-label="静音">🔊</button>
       <input id="cosmic-progress" type="range" min="0" max="26.6" step="0.041667" value="0" aria-label="播放进度">
       <button id="cosmic-skip" type="button"><span>跳过</span> <kbd>Esc</kbd></button>
     </div>

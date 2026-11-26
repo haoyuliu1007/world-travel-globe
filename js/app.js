@@ -344,10 +344,10 @@
       version: 8,
       projection: { type: 'globe' },
       sky: {
-        'sky-color': '#09090B',
-        'horizon-color': '#2B5B94',
-        'fog-color': '#0C1624',
-        'sky-horizon-blend': 0.5,
+        'sky-color': 'rgba(8, 16, 34, 0)',
+        'horizon-color': '#4B96EB',
+        'fog-color': '#122544',
+        'sky-horizon-blend': 0.55,
         'horizon-fog-blend': 0.65,
         'atmosphere-blend': ['interpolate', ['linear'], ['zoom'], 0, 1, 4.5, 0.72, 7, 0]
       },
@@ -2414,12 +2414,12 @@
 
     if (!map || !map.isStyleLoaded()) return;
 
-    // Outer space backdrop & ocean globe always remain realistic deep-space dark
+    // Outer space backdrop shows luminous Milky Way starfield; sky-color stays transparent with sapphire halo
     map.setSky({
-      'sky-color': '#09090B',
-      'horizon-color': '#2B5B94',
-      'fog-color': '#0C1624',
-      'sky-horizon-blend': 0.5,
+      'sky-color': 'rgba(8, 16, 34, 0)',
+      'horizon-color': '#4B96EB',
+      'fog-color': '#122544',
+      'sky-horizon-blend': 0.55,
       'horizon-fog-blend': 0.65,
       'atmosphere-blend': ['interpolate', ['linear'], ['zoom'], 0, 1, 4.5, 0.72, 7, 0]
     });

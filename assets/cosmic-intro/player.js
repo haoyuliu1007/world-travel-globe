@@ -6,15 +6,17 @@
   const video = document.querySelector('#cosmic-film');
   const progress = document.querySelector('#cosmic-progress');
   const play = document.querySelector('#cosmic-play');
+  const mute = document.querySelector('#cosmic-mute');
+  const unmuteHint = document.querySelector('#cosmic-unmute-hint');
   const skip = document.querySelector('#cosmic-skip');
   const replay = document.querySelector('#cosmic-replay');
   const credits = document.querySelector('#cosmic-credits');
   const options = replay.closest('.cosmic-options');
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
-  const storageKey = 'wtg-cosmic-intro-v4-seen';
+  const storageKey = 'wtg-cosmic-intro-v5-seen';
   const supportedVideo = [
-    ['assets/cosmic-intro/cosmic-slow-tour.webm?v=4', 'video/webm; codecs="vp9"'],
-    ['assets/cosmic-intro/cosmic-slow-tour.mp4?v=4', 'video/mp4; codecs="avc1.640028"']
+    ['assets/cosmic-intro/cosmic-slow-tour.webm?v=5', 'video/webm; codecs="vp9"'],
+    ['assets/cosmic-intro/cosmic-slow-tour.mp4?v=5', 'video/mp4; codecs="avc1.640028"']
   ].filter(([, type]) => video.canPlayType(type)).map(([url]) => url);
 
   let playback = null;
@@ -77,15 +79,15 @@
   }
 
   const strings = {
-    'zh': ['宇宙开场', '重播宇宙开场', '影像来源', '跳过', '播放进度', '播放', '暂停'],
-    'zh-tw': ['宇宙開場', '重播宇宙開場', '影像來源', '略過', '播放進度', '播放', '暫停'],
-    en: ['Opening film', 'Replay opening film', 'Film credits', 'Skip', 'Playback position', 'Play', 'Pause'],
-    ja: ['オープニング映像', 'オープニングを再生', '映像クレジット', 'スキップ', '再生位置', '再生', '一時停止'],
-    ko: ['오프닝 영상', '오프닝 다시 보기', '영상 출처', '건너뛰기', '재생 위치', '재생', '일시 정지'],
-    fr: ['Film d’ouverture', 'Revoir le film', 'Crédits du film', 'Passer', 'Position de lecture', 'Lire', 'Pause'],
-    de: ['Eröffnungsfilm', 'Eröffnungsfilm erneut ansehen', 'Bildnachweise', 'Überspringen', 'Wiedergabeposition', 'Abspielen', 'Pause'],
-    es: ['Vídeo de apertura', 'Repetir la apertura', 'Créditos del vídeo', 'Omitir', 'Posición de reproducción', 'Reproducir', 'Pausa'],
-    ru: ['Вступительный ролик', 'Повторить вступление', 'Источники видео', 'Пропустить', 'Позиция воспроизведения', 'Воспроизвести', 'Пауза']
+    'zh': ['宇宙开场', '重播宇宙开场', '影像来源', '跳过', '播放进度', '播放', '暂停', '静音', '取消静音', '🔊 点击开启声音'],
+    'zh-tw': ['宇宙開場', '重播宇宙開場', '影像來源', '略過', '播放進度', '播放', '暫停', '靜音', '取消靜音', '🔊 點擊開啟聲音'],
+    en: ['Opening film', 'Replay opening film', 'Film credits', 'Skip', 'Playback position', 'Play', 'Pause', 'Mute', 'Unmute', '🔊 Click to enable sound'],
+    ja: ['オープニング映像', 'オープニングを再生', '映像クレジット', 'スキップ', '再生位置', '再生', '一時停止', 'ミュート', 'ミュート解除', '🔊 クリックで音声オン'],
+    ko: ['오프닝 영상', '오프닝 다시 보기', '영상 출처', '건너뛰기', '재생 위치', '재생', '일시 정지', '음소거', '음소거 해제', '🔊 클릭하여 소리 켜기'],
+    fr: ['Film d’ouverture', 'Revoir le film', 'Crédits du film', 'Passer', 'Position de lecture', 'Lire', 'Pause', 'Muet', 'Activer le son', '🔊 Cliquer pour activer le son'],
+    de: ['Eröffnungsfilm', 'Eröffnungsfilm erneut ansehen', 'Bildnachweise', 'Überspringen', 'Wiedergabeposition', 'Abspielen', 'Pause', 'Stumm', 'Ton an', '🔊 Klicken für Ton'],
+    es: ['Vídeo de apertura', 'Repetir la apertura', 'Créditos del vídeo', 'Omitir', 'Posición de reproducción', 'Reproducir', 'Pausa', 'Silenciar', 'Activar sonido', '🔊 Haz clic para activar el sonido'],
+    ru: ['Вступительный ролик', 'Повторить вступление', 'Источники видео', 'Пропустить', 'Позиция воспроизведения', 'Воспроизвести', 'Пауза', 'Без звука', 'Включить звук', '🔊 Нажмите для звука']
   };
   let labels = strings.en;
   function localize() {
@@ -97,13 +99,23 @@
     credits.textContent = creditLabel;
     skip.querySelector('span').textContent = skipLabel;
     progress.setAttribute('aria-label', progressLabel);
+    if (unmuteHint) unmuteHint.textContent = labels[9];
     playButton();
+    muteButton();
   }
 
   function playButton() {
     const paused = video.paused;
     play.textContent = paused ? '▶' : 'Ⅱ';
     play.setAttribute('aria-label', paused ? labels[5] : labels[6]);
+  }
+
+  function muteButton() {
+    if (!mute) return;
+    const isMuted = video.muted;
+    mute.textContent = isMuted ? '🔇' : '🔊';
+    mute.setAttribute('aria-label', isMuted ? labels[8] : labels[7]);
+    if (unmuteHint && !isMuted) unmuteHint.hidden = true;
   }
 
   function cancelFrame(run) {
@@ -138,11 +150,14 @@
     const hadFocus = intro.contains(document.activeElement);
     const release = () => {
       if (playback !== run) return;
+      clearInterval(run.audioFadeTimer);
       video.pause();
+      video.volume = 1;
       video.removeAttribute('src');
       video.load();
       video.classList.remove('has-frame');
       intro.hidden = true;
+      if (unmuteHint) unmuteHint.hidden = true;
       run.inertNodes.forEach(node => { node.inert = false; });
       intro.classList.remove('is-exiting', 'is-warming');
     intro.inert = false;
@@ -154,6 +169,13 @@
     };
     if (matched) {
       intro.classList.add('is-exiting');
+      if (unmuteHint) unmuteHint.hidden = true;
+      const startVol = video.volume;
+      const fadeStart = performance.now();
+      run.audioFadeTimer = setInterval(() => {
+        const t = Math.min(1, (performance.now() - fadeStart) / 480);
+        video.volume = Math.max(0, startVol * (1 - t));
+      }, 30);
       setTimeout(release, 520);
     } else release();
   }
@@ -193,6 +215,8 @@
     progress.value = 0;
     progress.disabled = true;
     play.disabled = true;
+    if (mute) mute.disabled = true;
+    if (unmuteHint) unmuteHint.hidden = true;
     publish('loading');
     const on = (type, callback) => video.addEventListener(type, callback, { signal: run.events.signal });
 
@@ -217,9 +241,21 @@
       const attempt = ++run.attempt;
       run.url = supportedVideo[run.index];
       video.src = run.url;
+      video.muted = false;
+      video.volume = 1;
+      muteButton();
       video.play().catch(error => {
-        if (playback === run && !run.finishing && attempt === run.attempt && error.name === 'NotAllowedError') {
-          finish(run, 'blocked');
+        if (playback !== run || run.finishing || attempt !== run.attempt) return;
+        if (error.name === 'NotAllowedError') {
+          // Browser blocked unmuted autoplay on initial visit: fall back cleanly to muted + unmute prompt
+          video.muted = true;
+          muteButton();
+          if (unmuteHint && !isReplay) unmuteHint.hidden = false;
+          video.play().catch(err2 => {
+            if (playback === run && !run.finishing && attempt === run.attempt && err2.name === 'NotAllowedError') {
+              finish(run, 'blocked');
+            }
+          });
         }
       });
     };
@@ -244,8 +280,11 @@
       revealIntro(run);
       video.classList.add('has-frame');
       play.disabled = false;
+      if (mute) mute.disabled = false;
+      if (unmuteHint) unmuteHint.hidden = !video.muted;
       publish('playing');
       playButton();
+      muteButton();
       scheduleFrame();
     });
     on('waiting', () => {
@@ -290,6 +329,26 @@
     if (!playback || introStatus === 'handoff') return;
     if (video.paused) video.play().catch(() => playback && finish(playback, 'blocked'));
     else video.pause();
+  });
+  const enableAudio = () => {
+    if (!playback || introStatus === 'handoff') return;
+    video.muted = false;
+    video.volume = 1;
+    if (unmuteHint) unmuteHint.hidden = true;
+    muteButton();
+  };
+  if (mute) {
+    mute.addEventListener('click', () => {
+      if (!playback || introStatus === 'handoff') return;
+      video.muted = !video.muted;
+      if (!video.muted) video.volume = 1;
+      if (unmuteHint) unmuteHint.hidden = !video.muted;
+      muteButton();
+    });
+  }
+  if (unmuteHint) unmuteHint.addEventListener('click', enableAudio);
+  video.addEventListener('click', () => {
+    if (playback && playback.activated && video.muted) enableAudio();
   });
   progress.addEventListener('input', () => {
     if (playback && !playback.finishing && video.readyState > 0) {

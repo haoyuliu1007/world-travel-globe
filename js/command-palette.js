@@ -277,9 +277,11 @@
         selectedIdx = 0;
         if (statsEl) statsEl.textContent = t('paletteHitsCount', { n: currentEntries.length });
 
-        const chipsHtml = giOut.intent.summaryChips.length
+        const chipsHtml = (giOut.intent.summaryChips.length
           ? `<div class="palette-intent-bar">${giOut.intent.summaryChips.map((c) => `<span class="palette-intent-chip">${escapeHtml(c)}</span>`).join('')}</div>`
-          : '';
+          : '') + (currentEntries.length >= 2
+          ? `<div style="padding:0 12px 6px;display:flex;justify-content:flex-end;"><button class="mini-btn" id="palette-compare-top-btn" type="button">⚖ ${global.AppI18n && global.AppI18n.getLang() === 'en' ? 'Compare Top 3' : '对比前 3 名'}</button></div>`
+          : '');
 
         if (!currentEntries.length) {
           container.innerHTML = `
@@ -313,6 +315,20 @@
             <div class="palette-section-title">${escapeHtml(t('paletteGiRecs', { n: currentEntries.length }))}</div>
             ${currentEntries.map((item, i) => buildItemHtml(item, q, i)).join('')}
           `;
+          const cmpTopBtn = document.getElementById('palette-compare-top-btn');
+          if (cmpTopBtn) {
+            cmpTopBtn.addEventListener('click', () => {
+              const ids = currentEntries.slice(0, 3).map((x) => x.dest && x.dest.id).filter(Boolean);
+              close();
+              if (global.DestCompare) {
+                global.DestCompare.open(ids);
+              } else if (global.LazyLoader) {
+                global.LazyLoader.loadScript('js/lazy/dest-compare.js').then(() => {
+                  if (global.DestCompare) global.DestCompare.open(ids);
+                }).catch(() => {});
+              }
+            });
+          }
           bindResultClicks(container);
           return;
         }

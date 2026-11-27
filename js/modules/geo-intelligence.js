@@ -202,6 +202,18 @@
     const preferDry = /少雨|晴朗|干爽|不下雨|晴天|通透|dry|sunny|clear/i.test(cleanedForPositive);
     const preferWarm = /温暖|暖和|暖冬|热带|warm/i.test(cleanedForPositive);
     const preferCool = /避暑|凉爽|清凉|cool/i.test(cleanedForPositive);
+    const preferTransit = /高铁|机场|交通方便|直达|火车站|便捷|transit|rail|high-speed|accessible/i.test(cleanedForPositive);
+
+    let photoScene = null;
+    if (/日照金山|alpenglow|山峰|雪山/i.test(cleanedForPositive)) photoScene = 'mountain';
+    else if (/银河|星空|暗夜|milky.?way|astro/i.test(cleanedForPositive)) photoScene = 'milky_way';
+    else if (/日出|日落|霞|黄金时刻|sunrise|sunset|golden/i.test(cleanedForPositive)) photoScene = 'sunrise_sunset';
+    else if (/樱花|花海|春花|blossom|sakura/i.test(cleanedForPositive)) photoScene = 'blossom';
+    else if (/夜景|地标|霓虹|天际线|nightscape|skyline/i.test(cleanedForPositive)) photoScene = 'city_night';
+
+    let pace = null;
+    if (/慢游|休闲|度假|躺平|relaxed|slow|chill/i.test(cleanedForPositive)) pace = 'relaxed';
+    else if (/紧凑|特种兵|打卡|compact|intense/i.test(cleanedForPositive)) pace = 'compact';
 
     const summaryChips = [];
     if (month) summaryChips.push(`${month}月`);
@@ -222,6 +234,9 @@
     if (preferDry) summaryChips.push('少雨晴朗偏好');
     if (preferWarm) summaryChips.push('温暖偏好');
     if (preferCool) summaryChips.push('避暑清凉偏好');
+    if (preferTransit) summaryChips.push('交通便捷偏好');
+    if (photoScene) summaryChips.push(`机位主题:${photoScene}`);
+    if (pace) summaryChips.push(pace === 'relaxed' ? '慢节奏' : '高密度');
 
     const hasIntent = Boolean(
       month ||
@@ -232,6 +247,9 @@
       preferDry ||
       preferWarm ||
       preferCool ||
+      preferTransit ||
+      photoScene ||
+      pace ||
       excludeTags.length > 0 ||
       analogy ||
       landscapeTags.length >= 2 ||
@@ -253,6 +271,9 @@
       preferDry,
       preferWarm,
       preferCool,
+      preferTransit,
+      photoScene,
+      pace,
       summaryChips
     };
   }
@@ -607,12 +628,156 @@
     return candidates.slice(0, maxN);
   }
 
+  function estimateComfortBudget(dest, enr) {
+    if (enr && Number.isFinite(enr.comfortBudgetRmb)) return enr.comfortBudgetRmb;
+    if (dest && Number.isFinite(Number(dest.comfortBudgetRmb))) return Number(dest.comfortBudgetRmb);
+    const items = dest && dest.budget && dest.budget.comfort && Array.isArray(dest.budget.comfort.items)
+      ? dest.budget.comfort.items
+      : [];
+    const sum = items.reduce((acc, it) => acc + (Number(it && it.cost) || 0), 0);
+    return sum > 0 ? Math.round(sum) : null;
+  }
+
+  function parseElevNum(dest, enr) {
+    if (enr && Number.isFinite(enr.elevationM)) return enr.elevationM;
+    const m = String((dest && dest.elevation) || '').replace(/,/g, '').match(/-?\d+(?:\.\d+)?/);
+    return m ? Number(m[0]) : 150;
+  }
+
+  /**
+   * 10-dimensional normalized interpretable feature vector:
+   * [elevation, coastal, alpine, urban, foliage, blossom, snowIce, darkSky, budgetTier, transitScore]
+   */
+  function buildDestinationVector(dest, enr) {
+    const lands = new Set(getDestLandscapes(dest, enr));
+    const elev = Math.max(0, Math.min(1, parseElevNum(dest, enr) / 4000));
+    const budget = estimateComfortBudget(dest, enr);
+    const budgetTier = budget ? Math.max(0, Math.min(1, budget / 25000)) : 0.45;
+    const coastal = lands.has('coast') ? 1 : 0;
+    const alpine = (lands.has('mountain') || lands.has('canyon') || lands.has('cloudsea') || elev > 0.35) ? 1 : 0;
+    const urban = lands.has('architecture') ? 1 : 0;
+    const foliage = lands.has('autumn') ? 1 : 0;
+    const blossom = lands.has('blossom') ? 1 : 0;
+    const snowIce = (lands.has('snow') || lands.has('glacier')) ? 1 : 0;
+    const darkSky = (lands.has('milkyway') || lands.has('aurora')) ? 1 : 0;
+    const isEastAsiaRail = /中国|日本|韩国|法国|德国|瑞士|意大利|西班牙|China|Japan|Korea|Europe/i.test(`${dest.country || ''} ${dest.continent || ''}`);
+    const transitScore = Number((isEastAsiaRail ? 0.85 : (urban ? 0.72 : 0.5)).toFixed(2));
+    return [
+      Number(elev.toFixed(3)),
+      coastal,
+      alpine,
+      urban,
+      foliage,
+      blossom,
+      snowIce,
+      darkSky,
+      Number(budgetTier.toFixed(3)),
+      transitScore
+    ];
+  }
+
+  function cosineSim(a, b) {
+    let dot = 0;
+    let na = 0;
+    let nb = 0;
+    for (let i = 0; i < a.length; i += 1) {
+      dot += a[i] * b[i];
+      na += a[i] * a[i];
+      nb += b[i] * b[i];
+    }
+    return na > 0 && nb > 0 ? dot / (Math.sqrt(na) * Math.sqrt(nb)) : 0;
+  }
+
+  function findSimilarDestinations(destIdOrObj, allDestinations, opts) {
+    if (!Array.isArray(allDestinations) || !allDestinations.length) return [];
+    const options = opts || {};
+    const enrMap = options.enrichmentMap || null;
+    const src = typeof destIdOrObj === 'string'
+      ? allDestinations.find((d) => d && d.id === destIdOrObj)
+      : destIdOrObj;
+    if (!src) return [];
+
+    const srcEnr = enrMap ? enrMap[src.id] : null;
+    const srcVec = buildDestinationVector(src, srcEnr);
+    const srcBudget = estimateComfortBudget(src, srcEnr);
+    const srcLands = new Set(getDestLandscapes(src, srcEnr));
+    const srcPeaks = new Set((src.months || []).filter((m) => m.score >= 4).map((m) => m.m));
+    const maxDist = Number(options.maxDistanceKm) || 0;
+    const minTransit = Number(options.minTransitScore) || 0;
+    const targetMonth = options.sameMonth === true
+      ? (Array.from(srcPeaks)[0] || null)
+      : (Number.isFinite(Number(options.sameMonth)) ? Number(options.sameMonth) : null);
+
+    const out = [];
+    for (let i = 0; i < allDestinations.length; i += 1) {
+      const other = allDestinations[i];
+      if (!other || other.id === src.id) continue;
+
+      let distKm = null;
+      if (Array.isArray(src.coords) && Array.isArray(other.coords)) {
+        distKm = Math.round(haversineKm(src.coords, other.coords));
+      }
+      if (maxDist > 0 && (distKm === null || distKm > maxDist)) continue;
+
+      const otherEnr = enrMap ? enrMap[other.id] : null;
+      const otherBudget = estimateComfortBudget(other, otherEnr);
+      if (options.cheaperThanSource && srcBudget && (!otherBudget || otherBudget >= srcBudget)) continue;
+
+      const otherVec = buildDestinationVector(other, otherEnr);
+      if (minTransit > 0 && otherVec[9] < minTransit) continue;
+
+      const otherPeaks = new Set((other.months || []).filter((m) => m.score >= 4).map((m) => m.m));
+      if (targetMonth && !otherPeaks.has(targetMonth)) {
+        const mObj = (other.months || []).find((m) => m.m === targetMonth);
+        if (!mObj || mObj.score < 3) continue;
+      }
+
+      const sim = cosineSim(srcVec, otherVec);
+      const otherLands = getDestLandscapes(other, otherEnr);
+      const sharedLands = otherLands.filter((l) => srcLands.has(l));
+      const sharedMonths = Array.from(srcPeaks).filter((m) => otherPeaks.has(m));
+
+      const reasons = [];
+      if (sharedLands.length) {
+        const names = sharedLands.slice(0, 2).map((id) => {
+          const r = LANDSCAPE_RULES.find((x) => x.id === id);
+          return r ? r.label.split('/')[0] : id;
+        });
+        reasons.push(`同属${names.join('·')}`);
+      }
+      if (options.cheaperThanSource && srcBudget && otherBudget) {
+        reasons.push(`预算省约 ${Math.max(1, Math.round((1 - otherBudget / srcBudget) * 100))}%`);
+      }
+      if (sharedMonths.length) {
+        reasons.push(`${sharedMonths.slice(0, 3).join('/')}月同旺季`);
+      }
+      if (distKm !== null && distKm <= 600) {
+        reasons.push(`邻近 ${distKm}km`);
+      }
+
+      const score = Math.min(100, Math.round(sim * 82 + sharedLands.length * 6 + (sharedMonths.length ? 6 : 0)));
+      out.push({
+        dest: other,
+        score,
+        distanceKm: distKm,
+        budgetRmb: otherBudget,
+        sharedMonths,
+        reasons
+      });
+    }
+
+    out.sort((a, b) => b.score - a.score);
+    return out.slice(0, options.limit || 6);
+  }
+
   return {
     LANDSCAPE_RULES,
     tokenizeGeoText,
     classifyLandscapesFromText,
     parseNaturalQuery,
     searchAndExplain,
-    findRelatedDestinations
+    findRelatedDestinations,
+    buildDestinationVector,
+    findSimilarDestinations
   };
 });

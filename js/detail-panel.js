@@ -278,6 +278,24 @@
       } else if (statusBar) {
         statusBar.innerHTML = '';
       }
+      if (statusBar) {
+        const cmpBtn = document.createElement('button');
+        cmpBtn.type = 'button';
+        cmpBtn.id = 'drawer-compare-btn';
+        cmpBtn.className = 'mini-action-pill';
+        cmpBtn.style.marginLeft = '6px';
+        cmpBtn.textContent = global.AppI18n && global.AppI18n.getLang() === 'en' ? '⚖ Compare' : (global.AppI18n && global.AppI18n.getLang() === 'zh-TW' ? '⚖ 對比' : '⚖ 对比');
+        cmpBtn.addEventListener('click', () => {
+          if (global.DestCompare && typeof global.DestCompare.open === 'function') {
+            global.DestCompare.open([dest.id]);
+          } else if (global.LazyLoader && typeof global.LazyLoader.loadScript === 'function') {
+            global.LazyLoader.loadScript('js/lazy/dest-compare.js').then(() => {
+              if (global.DestCompare) global.DestCompare.open([dest.id]);
+            }).catch(() => {});
+          }
+        });
+        statusBar.appendChild(cmpBtn);
+      }
 
       document.getElementById('drawer-hero-summary').textContent = tx(dest.heroSummary);
       document.getElementById('tab-spots-count').textContent = dest.spots ? dest.spots.length : (dest.spotCount || 0);

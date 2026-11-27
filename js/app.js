@@ -199,6 +199,10 @@
   };
 
   let map = null;
+  let appInitialized = false;
+  let isEmbedMode = false;
+  let webglFailed = false;
+  let wasSpinningBeforeHide = false;
   let hoverPopup = null;
   let hoveredFeatureId = null;
   let spinRaf = null;
@@ -503,7 +507,9 @@
       const zoomFade = zoom <= 3.6 ? 1 : Math.max(0, 1 - (zoom - 3.6) / 1.6);
 
       const meta = getPresetMeta(currentPresetId);
-      const count = Math.min(MAX_STARS, meta.starCount || MAX_STARS);
+      const perfCfg = global.__wtgPerfConfig || { starDensity: 1.0 };
+      const starDensity = Number.isFinite(Number(perfCfg.starDensity)) ? Number(perfCfg.starDensity) : 1.0;
+      const count = Math.min(MAX_STARS, Math.round((meta.starCount || MAX_STARS) * starDensity));
       const boost = meta.starBoost || 1.0;
 
       for (let i = 0; i < count; i++) {
@@ -1337,7 +1343,9 @@
     const center = map.getCenter();
     const isFiltering = isAnyFilterActive();
     const showTier2 = state.forceAllLabels || zoom >= 3.9 || isFiltering;
-    const maxLabels = state.forceAllLabels ? 80 : isMobileViewport() ? 18 : 34;
+    const perfMax = (global.__wtgPerfConfig && Number(global.__wtgPerfConfig.maxLabels)) || 65;
+    const baseMax = state.forceAllLabels ? Math.max(80, perfMax) : isMobileViewport() ? Math.min(20, Math.round(perfMax * 0.4)) : Math.min(48, perfMax);
+    const maxLabels = baseMax;
     const maxLatSpan = zoom >= 3.0 ? Math.min(90, 185 / Math.pow(2, zoom - 1.2)) : 180;
     const maxLngSpan = Math.min(180, maxLatSpan * 1.45);
 
@@ -2234,7 +2242,11 @@
   /* View Mode (3D Map / Aesthetic Gallery / Trip Planner / Private Archive) */
   function setViewMode(mode, skipUrl) {
     const valid = ['map', 'gallery', 'planner', 'archive'];
-    state.mode = valid.includes(mode) ? mode : 'map';
+    let requested = valid.includes(mode) ? mode : 'map';
+    if (isEmbedMode && (requested === 'archive' || requested === 'planner')) {
+      requested = 'map';
+    }
+    state.mode = requested;
 
     const mapBtn = document.getElementById('mode-map-btn');
     const galBtn = document.getElementById('mode-gallery-btn');
@@ -2845,6 +2857,7 @@
       const isTyping = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
 
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        if (isEmbedMode) return;
         e.preventDefault();
         if (global.CommandPalette) {
           if (global.CommandPalette.isOpen()) global.CommandPalette.close();
@@ -2854,12 +2867,14 @@
       }
 
       if (e.key === '/' && !isTyping) {
+        if (isEmbedMode) return;
         e.preventDefault();
         if (global.CommandPalette) global.CommandPalette.open();
         return;
       }
 
       if (e.key.toLowerCase() === 'f' && !isTyping && !e.ctrlKey && !e.metaKey) {
+        if (isEmbedMode) return;
         e.preventDefault();
         state.isFullscreen = !state.isFullscreen;
         document.body.classList.toggle('fullscreen-globe', state.isFullscreen);
@@ -2992,17 +3007,34 @@
 
     // WebGL Context Loss & Restore Handling
     const canvas = map.getCanvas();
+    let webglFallbackTimer = null;
     if (canvas) {
       canvas.addEventListener('webglcontextlost', (e) => {
         e.preventDefault();
         const banner = document.getElementById('webgl-recovery-banner');
+        const txt = document.getElementById('webgl-recovery-text');
+        if (txt) {
+          txt.textContent = I18n && I18n.getLang() === 'en'
+            ? 'WebGL context lost — restoring 3D view (2D catalog remains available)…'
+            : t('webglRecovery');
+        }
         if (banner) banner.classList.remove('is-hidden');
+        stopSpin();
+        if (webglFallbackTimer) clearTimeout(webglFallbackTimer);
+        webglFallbackTimer = setTimeout(() => {
+          if (!isEmbedMode) setViewMode('gallery', true);
+        }, 4200);
       });
       canvas.addEventListener('webglcontextrestored', () => {
+        if (webglFallbackTimer) {
+          clearTimeout(webglFallbackTimer);
+          webglFallbackTimer = null;
+        }
         const banner = document.getElementById('webgl-recovery-banner');
         if (banner) banner.classList.add('is-hidden');
         syncGeoJsonSource();
         scheduleLabelLayout();
+        starfield.scheduleRender();
       });
     }
 
@@ -3267,7 +3299,28 @@
     }
   }
 
+  function enterWebglFallbackMode(err) {
+    webglFailed = true;
+    const loader = document.getElementById('globe-loader');
+    if (loader) loader.classList.add('is-hidden');
+    const banner = document.getElementById('webgl-recovery-banner');
+    const txt = document.getElementById('webgl-recovery-text');
+    if (txt) {
+      const lang = I18n ? I18n.getLang() : 'zh-CN';
+      txt.textContent = lang === 'en'
+        ? 'WebGL unavailable on this device — switched to 2D Atlas Catalog (all 722 destinations remain browsable).'
+        : '当前设备暂不支持 WebGL 3D 渲染，已自动切换为 2D 图鉴与清单浏览全部 722 座目的地。';
+    }
+    if (banner) banner.classList.remove('is-hidden');
+    if (!isEmbedMode) {
+      setViewMode('gallery', true);
+      setSidebarOpen(true);
+    }
+  }
+
   function init() {
+    if (appInitialized) return;
+    appInitialized = true;
     hydrateIcons();
     if (I18n) {
       I18n.hydrateStaticDom();
@@ -3302,6 +3355,7 @@
     });
 
     const initialParams = readInitialUrlState();
+    isEmbedMode = Boolean(initialParams.embed);
     const focusDest = initialParams.focusId ? ATLAS.getById(initialParams.focusId) : null;
 
     renderContinentTabs();
@@ -3364,20 +3418,26 @@
       activeTileRoute = initialSavedTileMode;
     }
 
-    map = new maplibregl.Map({
-      container: 'map',
-      style: buildStyle(),
-      center: initCenter,
-      zoom: initZoom,
-      pitch: initPitch,
-      minZoom: 1.1,
-      maxZoom: SKIN_META[state.skin].maxZoom,
-      pixelRatio: Math.min(global.devicePixelRatio || 1, 1.5),
-      fadeDuration: 120,
-      refreshExpiredTiles: false,
-      maxTileCacheSize: 256,
-      attributionControl: false
-    });
+    try {
+      map = new maplibregl.Map({
+        container: 'map',
+        style: buildStyle(),
+        center: initCenter,
+        zoom: initZoom,
+        pitch: initPitch,
+        minZoom: 1.1,
+        maxZoom: SKIN_META[state.skin].maxZoom,
+        pixelRatio: Math.min(global.devicePixelRatio || 1, 1.5),
+        fadeDuration: 120,
+        refreshExpiredTiles: false,
+        maxTileCacheSize: 256,
+        attributionControl: false
+      });
+    } catch (e) {
+      bindEvents();
+      enterWebglFallbackMode(e);
+      return;
+    }
 
     if (map.scrollZoom) {
       map.scrollZoom.setWheelZoomRate(1 / 320);
@@ -3386,7 +3446,43 @@
 
     ensureLabelOverlay();
     starfield.resize();
-    global.addEventListener('resize', starfield.resize);
+    let resizeDebounceTimer = null;
+    const handleViewportChange = () => {
+      if (resizeDebounceTimer) clearTimeout(resizeDebounceTimer);
+      resizeDebounceTimer = setTimeout(() => {
+        resizeDebounceTimer = null;
+        if (map && typeof map.resize === 'function') map.resize();
+        starfield.resize();
+        resizeLabelCanvas();
+        scheduleLabelLayout();
+      }, 90);
+    };
+    global.addEventListener('resize', handleViewportChange);
+    global.addEventListener('orientationchange', handleViewportChange);
+    global.addEventListener('wtg:perfchange', () => {
+      resizeLabelCanvas();
+      scheduleLabelLayout();
+      starfield.resize();
+    });
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        wasSpinningBeforeHide = state.isSpinning;
+        if (state.isSpinning) stopSpin();
+        if (global.SolarTerminator && typeof global.SolarTerminator.setPaused === 'function') {
+          global.SolarTerminator.setPaused(true);
+        }
+      } else {
+        if (wasSpinningBeforeHide && state.mode === 'map' && !webglFailed) {
+          startSpin();
+        }
+        wasSpinningBeforeHide = false;
+        if (global.SolarTerminator && typeof global.SolarTerminator.setPaused === 'function') {
+          global.SolarTerminator.setPaused(false);
+        }
+        starfield.scheduleRender();
+        scheduleLabelLayout();
+      }
+    });
     bindMapInteractions();
     bindEvents();
 
@@ -3435,9 +3531,10 @@
           const titleTxt = focusDest
             ? `${tx(focusDest.name)} · ${tx(focusDest.country || '')}`
             : 'World Travel Globe · 722 Destinations';
+          const openLabel = I18n && I18n.getLang() !== 'en' ? '打开完整 3D 地球仪 ↗' : 'Open Full Globe ↗';
           bar.innerHTML = `
             <span class="embed-bar-title">${String(titleTxt).replace(/&/g, '&amp;').replace(/</g, '&lt;')}</span>
-            <a class="embed-bar-link" href="${openUrl}" target="_blank" rel="noopener noreferrer">Open in World Travel Globe ↗</a>
+            <a class="embed-bar-link" href="${openUrl}" target="_blank" rel="noopener noreferrer">${openLabel}</a>
           `;
         }
         if (focusDest) {
@@ -3522,6 +3619,9 @@
     }
     if (global.DiagnosticsModule) {
       global.DiagnosticsModule.applyPerformanceTier('auto');
+      if (typeof global.DiagnosticsModule.startWatchdog === 'function') {
+        global.DiagnosticsModule.startWatchdog();
+      }
     }
     if (global.navigator && 'serviceWorker' in global.navigator && global.location && (global.location.protocol === 'https:' || global.location.hostname === '127.0.0.1' || global.location.hostname === 'localhost')) {
       global.navigator.serviceWorker.register('sw.js').catch(() => {});

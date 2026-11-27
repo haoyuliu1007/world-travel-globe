@@ -17,15 +17,28 @@
 
   const LOCAL_ONLY_SETTING_KEYS = new Set([
     'cloudSyncPassphrase',
+    'syncPassphrase',
+    'apiTokens',
+    'openMeteoKey',
     'mapillaryToken',
     'orsApiKey',
     'preSyncBackup',
     'legacyFavMigrated',
     'crdtTombstones',
-    'crdtLogicalClock'
+    'crdtLogicalClock',
+    'perfTier'
   ]);
 
+  const TRAVEL_STATUS_FIELDS = ['status', 'notes', 'rating', 'visitedAt'];
+  const TRAVEL_STATUS_DEFAULTS = {
+    status: '',
+    notes: '',
+    rating: 0,
+    visitedAt: ''
+  };
+
   function canonicalJson(val) {
+    if (val === undefined) return 'null';
     if (val === null || typeof val !== 'object') return JSON.stringify(val);
     if (Array.isArray(val)) return '[' + val.map(canonicalJson).join(',') + ']';
     const keys = Object.keys(val).sort();
@@ -100,45 +113,80 @@
     return out;
   }
 
-  const TRAVEL_STATUS_FIELDS = ['status', 'notes', 'rating', 'visitedAt'];
+  /**
+   * Canonicalize a travelStatus record so legacy records without fieldUpdatedAt
+   * and field-stamped records obey strict semilattice symmetry.
+   */
+  function normalizeTravelStatusRecord(rec) {
+    if (!rec || typeof rec !== 'object') return rec;
+    const baseTs = recordStamp(rec);
+    const srcFields = rec.fieldUpdatedAt && typeof rec.fieldUpdatedAt === 'object' ? rec.fieldUpdatedAt : {};
+    const fieldUpdatedAt = {};
+    const out = Object.assign({}, rec);
 
-  function mergeTravelStatusRecord(lItem, rItem) {
-    const lFields = lItem && lItem.fieldUpdatedAt && typeof lItem.fieldUpdatedAt === 'object' ? lItem.fieldUpdatedAt : null;
-    const rFields = rItem && rItem.fieldUpdatedAt && typeof rItem.fieldUpdatedAt === 'object' ? rItem.fieldUpdatedAt : null;
-    const winner = compareRecordOrder(rItem, lItem) >= 0 ? rItem : lItem;
-
-    if (!lFields && !rFields) {
-      return winner;
+    let maxFieldTs = baseTs;
+    for (let i = 0; i < TRAVEL_STATUS_FIELDS.length; i++) {
+      const f = TRAVEL_STATUS_FIELDS[i];
+      const hasVal = rec[f] !== undefined;
+      const hasExplicit = Object.prototype.hasOwnProperty.call(srcFields, f) && Number.isFinite(Number(srcFields[f]));
+      const ts = hasExplicit ? Math.max(0, Number(srcFields[f])) : (hasVal ? baseTs : 0);
+      fieldUpdatedAt[f] = ts;
+      if (ts > maxFieldTs) maxFieldTs = ts;
+      out[f] = hasVal ? rec[f] : TRAVEL_STATUS_DEFAULTS[f];
     }
 
-    const lDefaultTs = recordStamp(lItem);
-    const rDefaultTs = recordStamp(rItem);
+    out.fieldUpdatedAt = fieldUpdatedAt;
+    out.updatedAt = maxFieldTs;
+    out.clock = recordClock(rec);
+    return out;
+  }
+
+  function mergeTravelStatusRecord(lItem, rItem) {
+    const a = normalizeTravelStatusRecord(lItem);
+    const b = normalizeTravelStatusRecord(rItem);
+    const winner = compareRecordOrder(b, a) >= 0 ? b : a;
     const merged = Object.assign({}, winner);
     const mergedFieldStamps = {};
 
     for (let i = 0; i < TRAVEL_STATUS_FIELDS.length; i++) {
       const f = TRAVEL_STATUS_FIELDS[i];
-      const lTs = Number((lFields && lFields[f]) || (lItem && lItem[f] !== undefined ? lDefaultTs : 0)) || 0;
-      const rTs = Number((rFields && rFields[f]) || (rItem && rItem[f] !== undefined ? rDefaultTs : 0)) || 0;
+      const lTs = Number(a.fieldUpdatedAt[f] || 0);
+      const rTs = Number(b.fieldUpdatedAt[f] || 0);
 
       if (rTs > lTs) {
-        if (rItem[f] !== undefined) merged[f] = rItem[f];
+        merged[f] = b[f];
         mergedFieldStamps[f] = rTs;
       } else if (lTs > rTs) {
-        if (lItem[f] !== undefined) merged[f] = lItem[f];
+        merged[f] = a[f];
         mergedFieldStamps[f] = lTs;
       } else {
-        const valA = lItem && lItem[f] !== undefined ? lItem[f] : '';
-        const valB = rItem && rItem[f] !== undefined ? rItem[f] : '';
-        merged[f] = canonicalJson(valB) > canonicalJson(valA) ? (rItem[f] !== undefined ? rItem[f] : valA) : (lItem[f] !== undefined ? lItem[f] : valB);
+        const ca = canonicalJson(a[f]);
+        const cb = canonicalJson(b[f]);
+        merged[f] = cb > ca ? b[f] : a[f];
         mergedFieldStamps[f] = Math.max(lTs, rTs);
       }
     }
 
     merged.fieldUpdatedAt = mergedFieldStamps;
-    merged.updatedAt = Math.max(lDefaultTs, rDefaultTs, ...Object.values(mergedFieldStamps));
-    merged.clock = Math.max(recordClock(lItem), recordClock(rItem));
+    merged.updatedAt = Math.max(recordStamp(a), recordStamp(b), ...Object.values(mergedFieldStamps));
+    merged.clock = recordClock(winner);
     return merged;
+  }
+
+  function applyTombstoneToTravelStatus(item, delTs) {
+    if (!delTs || delTs <= 0) return item;
+    if (delTs >= recordStamp(item)) return null;
+    const out = Object.assign({}, item);
+    const nextFields = Object.assign({}, item.fieldUpdatedAt || {});
+    for (let i = 0; i < TRAVEL_STATUS_FIELDS.length; i++) {
+      const f = TRAVEL_STATUS_FIELDS[i];
+      if ((Number(nextFields[f]) || 0) <= delTs) {
+        out[f] = TRAVEL_STATUS_DEFAULTS[f];
+        nextFields[f] = 0;
+      }
+    }
+    out.fieldUpdatedAt = nextFields;
+    return out;
   }
 
   function mergeArrayByKey(localArr, remoteArr, keyField, tableTombs, tableName, stats) {
@@ -147,12 +195,18 @@
     const bList = Array.isArray(remoteArr) ? remoteArr : [];
     const tombs = tableTombs || {};
 
+    const prep = (raw, k) => {
+      if (tableName !== 'travelStatus') return raw;
+      return applyTombstoneToTravelStatus(normalizeTravelStatusRecord(raw), Number(tombs[k] || 0));
+    };
+
     for (let i = 0; i < aList.length; i++) {
-      const item = aList[i];
-      if (!item || item[keyField] == null) continue;
-      const k = String(item[keyField]);
+      const raw = aList[i];
+      if (!raw || raw[keyField] == null) continue;
+      const k = String(raw[keyField]);
       const delTs = Number(tombs[k] || 0);
-      if (delTs >= recordStamp(item)) {
+      const item = prep(raw, k);
+      if (!item || delTs >= recordStamp(item)) {
         if (stats) stats.deletedByTombstone++;
         continue;
       }
@@ -165,11 +219,12 @@
     }
 
     for (let i = 0; i < bList.length; i++) {
-      const rItem = bList[i];
-      if (!rItem || rItem[keyField] == null) continue;
-      const k = String(rItem[keyField]);
+      const raw = bList[i];
+      if (!raw || raw[keyField] == null) continue;
+      const k = String(raw[keyField]);
       const delTs = Number(tombs[k] || 0);
-      if (delTs >= recordStamp(rItem)) {
+      const rItem = prep(raw, k);
+      if (!rItem || delTs >= recordStamp(rItem)) {
         if (stats) stats.deletedByTombstone++;
         continue;
       }
@@ -239,8 +294,9 @@
   }
 
   /**
-   * Commutative, associative, idempotent LWW-Element-Set CRDT merge with deletion tombstones,
-   * logical Lamport clock, field-level travelStatus merging, and strict secret isolation.
+   * Commutative, associative, idempotent join-semilattice CRDT merge with deletion tombstones,
+   * monotone logical clock join (increment happens ONLY on local write events), field-level
+   * travelStatus merging, and strict secret isolation.
    */
   function mergeUserProfiles(localProfile, remoteProfile) {
     const local = localProfile && typeof localProfile === 'object' ? localProfile : {};
@@ -250,10 +306,10 @@
     const tombstones = mergeTombstones(local.tombstones, remote.tombstones);
     const localClock = Number(local.logicalClock || 0) || 0;
     const remoteClock = Number(remote.logicalClock || 0) || 0;
-    const logicalClock = Math.max(localClock, remoteClock) + (localClock === remoteClock ? 0 : 1);
+    const logicalClock = Math.max(localClock, remoteClock);
 
     const merged = {
-      schemaVersion: '4.2.0',
+      schemaVersion: '4.5.0',
       logicalClock,
       tombstones,
       travelStatus: mergeArrayByKey(local.travelStatus, remote.travelStatus, 'destId', tombstones.travelStatus, 'travelStatus', stats),

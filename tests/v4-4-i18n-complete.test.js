@@ -79,7 +79,7 @@ test('V4.4 index.html early boot syncs <html lang> and hydrates data-i18n-aria /
   assert.equal(hasCjk(doc._els.ariaEl.getAttribute('aria-label')), false, 'aria-label hydrated to EN');
   assert.equal(hasCjk(doc._els.titleEl.getAttribute('title')), false, 'title hydrated to EN');
   assert.equal(doc._els.badgeEl.textContent, 'EN');
-  assert.ok(sb.AppI18n.t('pageTitle').includes('V4.4'));
+  assert.match(sb.AppI18n.t('pageTitle'), /V4\.[45]/);
 });
 
 test('V4.4 StoryPrologue provides entry language switcher & complete English copy for all 8 chapters', () => {

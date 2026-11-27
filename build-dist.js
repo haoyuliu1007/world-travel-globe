@@ -25,7 +25,7 @@ function countCountries(list) {
   return set.size;
 }
 
-function main() {
+async function main() {
   const indexHtml = fs.readFileSync(path.join(rootDir, 'index.html'), 'utf8');
   const scriptMatches = [...indexHtml.matchAll(/<script src="(data\/[^"?]+)(?:\?v=\d+)?"><\/script>/g)];
   const dataScripts = scriptMatches.map((m) => m[1]);
@@ -125,7 +125,8 @@ function main() {
     'vendor/supercluster.min.js',
     'vendor/dexie.min.js',
     'vendor/astronomy.browser.min.js',
-    'vendor/minisearch.min.js'
+    'vendor/minisearch.min.js',
+    'vendor/tz-lookup.min.js'
   ].map((rel) => fs.readFileSync(path.join(rootDir, rel), 'utf8').trim());
   const vendorBundle = vendorLibParts.join('\n;\n') + '\n';
   fs.writeFileSync(path.join(distDir, 'vendor', 'libs.bundle.min.js'), vendorBundle, 'utf8');
@@ -228,7 +229,7 @@ function main() {
   const buildVer = Date.now().toString(36);
   const cssBlockRe = /(?:\s*<link rel="stylesheet" href="(?:vendor\/maplibre-gl\.css|css\/[^"?]+|assets\/prologue\/prologue\.css)(?:\?v=\d+)?"\s*\/>\s*)+/;
   const introBlockRe = /(?:\s*<script src="assets\/(?:prologue\/(?:bgm|prologue)|cosmic-intro\/player)\.js(?:\?v=\d+)?"><\/script>\s*)+/;
-  const vendorBlockRe = /(?:\s*<script src="vendor\/(?:suncalc|fuse|supercluster|dexie|astronomy\.browser|minisearch)\.min\.js"><\/script>\s*)+/;
+  const vendorBlockRe = /(?:\s*<script src="vendor\/(?:suncalc|fuse|supercluster|dexie|astronomy\.browser|minisearch|tz-lookup)\.min\.js"><\/script>\s*)+/;
   const dataBlockRe = /(?:\s*<script src="data\/[^"?]+(?:\?v=\d+)?"><\/script>\s*)+/;
   const appBlockRe = /(?:\s*<script src="js\/[^"?]+(?:\?v=\d+)?"><\/script>\s*)+/;
   if (!cssBlockRe.test(indexHtml) || !vendorBlockRe.test(indexHtml) || !dataBlockRe.test(indexHtml) || !appBlockRe.test(indexHtml)) {
@@ -305,7 +306,7 @@ function main() {
 `;
   fs.writeFileSync(path.join(distDir, '_headers'), headersContent, 'utf8');
 
-  const seoSummary = buildSeoPages(all, distDir, { rootDir });
+  const seoSummary = await buildSeoPages(all, distDir, { rootDir });
 
   // Count dist files
   let fileCount = 0;
@@ -329,8 +330,11 @@ function main() {
   console.log(`  atlas-index.min.js: ${(rawBytes / 1024).toFixed(1)} KB raw (${rawBytes} bytes) -> ${(gzBytes / 1024).toFixed(1)} KB gzip (${gzBytes} bytes)`);
   console.log(`  Lazy region chunks: ${regionBuckets.size} files in data/regions/`);
   if (i18nCount > 0) console.log(`  Lazy i18n chunks: ${i18nCount} files in data/i18n/`);
-  console.log(`  SEO landing pages: ${seoSummary.pagesCount} pages in p/, ${seoSummary.ogCardsCount} OG cards in og/, sitemap.xml (${seoSummary.sitemapUrls} URLs)`);
+  console.log(`  SEO landing pages: ${seoSummary.pagesCount} pages in p/, ${seoSummary.ogCardsCount} OG cards in og/ (PNG rendered=${seoSummary.ogPngsRendered}, cached=${seoSummary.ogPngsCached}), sitemap.xml (${seoSummary.sitemapUrls} URLs)`);
   console.log(`  Total dist/ files: ${fileCount}`);
 }
 
-main();
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

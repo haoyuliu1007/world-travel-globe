@@ -1,19 +1,28 @@
 <div align="center">
 
-# 🌍 World Travel Globe · 全球旅行地理图鉴 (v4.4 — Full Global Trilingual & Scenery Precision)
+# 🌍 World Travel Globe · 全球旅行地理图鉴 (v4.5 — Engineering Hardening & Global Precision)
 
 **覆盖七大洲 · 137 个国家/地区 · 722 座精选目的地 · 5,414 个精准摄影机位的全球地理智能与三维探索平台**
 
-[![Version](https://img.shields.io/badge/Version-v4.4.0-e0c38e?style=flat-square&labelColor=0b101b)](docs/CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Version-v4.5.0-e0c38e?style=flat-square&labelColor=0b101b)](docs/CHANGELOG.md)
 [![Countries](https://img.shields.io/badge/Countries%20%26%20Regions-137-4f8cff?style=flat-square&labelColor=0b101b)](#核心功能矩阵)
 [![Destinations](https://img.shields.io/badge/Destinations-722-5b5ff9?style=flat-square&labelColor=0b101b)](#核心功能矩阵)
 [![Photo Spots](https://img.shields.io/badge/Photo%20Spots-5%2C414-8b5cf6?style=flat-square&labelColor=0b101b)](#核心功能矩阵)
 [![MapLibre](https://img.shields.io/badge/MapLibre%20GL-v5-2768f5?style=flat-square&labelColor=0b101b)](https://maplibre.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-10b981?style=flat-square&labelColor=0b101b)](docs/THIRD_PARTY_LICENSES.md)
 
-[🌐 在线体验 (Cloudflare 边缘加速)](https://world-travel-globe.globe-app.workers.dev) · [📄 GitHub Pages 镜像](https://haoyuliu1007.github.io/world-travel-globe/) · [📜 v4.0 更新日志](docs/CHANGELOG.md)
+[🌐 在线体验 (Cloudflare 边缘加速)](https://world-travel-globe.globe-app.workers.dev) · [📄 GitHub Pages 镜像](https://haoyuliu1007.github.io/world-travel-globe/) · [📜 更新日志](docs/CHANGELOG.md) · [✅ V4.5 验收报告](docs/V4_5_ACCEPTANCE_REPORT.md) · [⚠️ 已知边界声明](docs/KNOWN_LIMITATIONS.md)
 
 </div>
+
+---
+
+## ✨ v4.5.0 工程可靠性与科学精度亮点
+
+- **CRDT 严格半格合并 + 240 组随机性质校验 (`ProfileCRDT`)**：修正逻辑时钟合并非结合性、对称化 `travelStatus` 字段时间戳与墓碑剥离，离线删除 + 重建 + 三端乱序严格收敛、敏感凭据零泄露。
+- **全球 IANA 时区系统 (`TimezoneService`) & 真球面晨昏线 (`SolarTerminator`)**：离线 `tz-lookup` + `Intl.DateTimeFormat` 精准结算任意日期夏令时、半小时（阿德莱德 `+9:30/+10:30`）与 45 分钟（加德满都 `+5:45`）偏移；反太阳真球冠 + 跨日界线裁剪全面消除春分秋分异常跳变。
+- **NASA DSCOVR EPIC 1080px 全盘地球实拍 + 轮播**：升级中清 `jpg/` 全盘图像显示与定时自动轮播；自适应渲染引擎 (`high/balanced/eco/auto`) 配合前台看门狗与 WebGL 丢失自动 2D 图鉴兜底。
+- **722 城 `1200×630` PNG OG 卡片 + 真实 Playwright 端到端测试**：通过 `@resvg/resvg-js` + `.cache/og/` 增量缓存生成全量栅格分享图，46 项单元/属性测试与 10 项全流程 E2E 回归全部通过。
 
 ---
 

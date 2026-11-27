@@ -169,12 +169,16 @@
 
   const LOCAL_ONLY_KEYS = new Set([
     'cloudSyncPassphrase',
+    'syncPassphrase',
+    'apiTokens',
+    'openMeteoKey',
     'mapillaryToken',
     'orsApiKey',
     'preSyncBackup',
     'legacyFavMigrated',
     'crdtTombstones',
-    'crdtLogicalClock'
+    'crdtLogicalClock',
+    'perfTier'
   ]);
   const TRAVEL_STATUS_FIELDS = ['status', 'notes', 'rating', 'visitedAt'];
 
@@ -185,31 +189,42 @@
       : { travelStatus: {}, customLists: {}, trips: {}, expenses: {}, userPhotos: {} };
   }
 
+  async function tickLogicalClock() {
+    const curClk = Number(await getSetting('crdtLogicalClock', 0)) || 0;
+    const nextClk = curClk + 1;
+    await setSetting('crdtLogicalClock', nextClk);
+    return nextClk;
+  }
+
   async function recordTombstone(table, id) {
     if (!id) return;
     const tombs = await readTombstones();
     if (!tombs[table] || typeof tombs[table] !== 'object') tombs[table] = {};
-    tombs[table][String(id)] = Date.now();
+    const prevTs = Number(tombs[table][String(id)] || 0);
+    tombs[table][String(id)] = Math.max(Date.now(), prevTs + 1);
     await setSetting('crdtTombstones', tombs);
-    const curClk = Number(await getSetting('crdtLogicalClock', 0)) || 0;
-    await setSetting('crdtLogicalClock', curClk + 1);
+    await tickLogicalClock();
   }
 
-  async function clearTombstone(table, id) {
-    if (!id) return;
+  async function getMinRecreateTimestamp(table, id, fallbackNow) {
+    const now = Number.isFinite(fallbackNow) ? fallbackNow : Date.now();
+    if (!id) return now;
     const tombs = await readTombstones();
-    if (tombs[table] && tombs[table][String(id)]) {
-      delete tombs[table][String(id)];
-      await setSetting('crdtTombstones', tombs);
-    }
+    const prevTs = Number((tombs[table] && tombs[table][String(id)]) || 0);
+    return prevTs > 0 ? Math.max(now, prevTs + 1) : now;
   }
 
   async function setTravelStatus(destId, patch, opts) {
     await init();
     if (!destId) return null;
-    const now = Date.now();
     const prev = (await getTravelStatus(destId)) || { destId, status: 'wishlist', notes: '', rating: 0, fieldUpdatedAt: {} };
     const preserveTs = Boolean(opts && opts.preserveTimestamp);
+    const now = preserveTs && patch && patch.updatedAt
+      ? Number(patch.updatedAt)
+      : await getMinRecreateTimestamp('travelStatus', destId, Date.now());
+    const clk = preserveTs && patch && Number.isFinite(Number(patch.clock))
+      ? Number(patch.clock)
+      : (preserveTs ? Number(prev.clock || 0) : await tickLogicalClock());
     const nextFieldUpdatedAt = Object.assign({}, prev.fieldUpdatedAt || {}, (patch && patch.fieldUpdatedAt) || {});
     if (!preserveTs && patch && typeof patch === 'object') {
       for (let i = 0; i < TRAVEL_STATUS_FIELDS.length; i++) {
@@ -224,7 +239,8 @@
       {
         destId,
         fieldUpdatedAt: nextFieldUpdatedAt,
-        updatedAt: preserveTs && patch && patch.updatedAt ? Number(patch.updatedAt) : now
+        updatedAt: now,
+        clock: clk
       }
     );
     if (!next.status) {
@@ -233,7 +249,6 @@
       if (!preserveTs) await recordTombstone('travelStatus', destId);
       return null;
     }
-    if (!preserveTs) await clearTombstone('travelStatus', destId);
     if (db) await db.travelStatus.put(next);
     else MEMORY_FALLBACK.travelStatus.set(destId, next);
     return next;
@@ -255,13 +270,18 @@
   async function saveCustomList(listObj, opts) {
     await init();
     const preserveTs = Boolean(opts && opts.preserveTimestamp);
-    const now = Date.now();
+    const id = (listObj && listObj.id) || makeId('list');
+    const now = preserveTs && listObj && listObj.updatedAt
+      ? Number(listObj.updatedAt)
+      : await getMinRecreateTimestamp('customLists', id, Date.now());
+    const clk = preserveTs && listObj && Number.isFinite(Number(listObj.clock))
+      ? Number(listObj.clock)
+      : (preserveTs ? Number((listObj && listObj.clock) || 0) : await tickLogicalClock());
     const item = Object.assign(
-      { id: makeId('list'), name: '未命名清单', description: '', destIds: [], createdAt: now },
+      { id, name: '未命名清单', description: '', destIds: [], createdAt: now },
       listObj,
-      { updatedAt: preserveTs && listObj && listObj.updatedAt ? Number(listObj.updatedAt) : now }
+      { updatedAt: now, clock: clk }
     );
-    if (!preserveTs) await clearTombstone('customLists', item.id);
     if (db) await db.customLists.put(item);
     else MEMORY_FALLBACK.customLists.set(item.id, item);
     return item;
@@ -288,13 +308,18 @@
   async function saveUserPhoto(photo, opts) {
     await init();
     const preserveTs = Boolean(opts && opts.preserveTimestamp);
-    const now = Date.now();
+    const id = (photo && photo.id) || makeId('photo');
+    const now = preserveTs && photo && photo.updatedAt
+      ? Number(photo.updatedAt)
+      : await getMinRecreateTimestamp('userPhotos', id, Date.now());
+    const clk = preserveTs && photo && Number.isFinite(Number(photo.clock))
+      ? Number(photo.clock)
+      : (preserveTs ? Number((photo && photo.clock) || 0) : await tickLogicalClock());
     const item = Object.assign(
-      { id: makeId('photo'), takenAt: new Date().toISOString().slice(0, 10) },
+      { id, takenAt: new Date().toISOString().slice(0, 10) },
       photo,
-      { updatedAt: preserveTs && photo && photo.updatedAt ? Number(photo.updatedAt) : now }
+      { updatedAt: now, clock: clk }
     );
-    if (!preserveTs) await clearTombstone('userPhotos', item.id);
     if (db) await db.userPhotos.put(item);
     else MEMORY_FALLBACK.userPhotos.set(item.id, item);
     return item;
@@ -319,10 +344,16 @@
   async function saveExpense(exp, opts) {
     await init();
     const preserveTs = Boolean(opts && opts.preserveTimestamp);
-    const now = Date.now();
+    const id = (exp && exp.id) || makeId('exp');
+    const now = preserveTs && exp && exp.updatedAt
+      ? Number(exp.updatedAt)
+      : await getMinRecreateTimestamp('expenses', id, Date.now());
+    const clk = preserveTs && exp && Number.isFinite(Number(exp.clock))
+      ? Number(exp.clock)
+      : (preserveTs ? Number((exp && exp.clock) || 0) : await tickLogicalClock());
     const item = Object.assign(
       {
-        id: makeId('exp'),
+        id,
         tripId: '',
         destId: '',
         date: new Date().toISOString().slice(0, 10),
@@ -332,9 +363,8 @@
         note: ''
       },
       exp,
-      { updatedAt: preserveTs && exp && exp.updatedAt ? Number(exp.updatedAt) : now }
+      { updatedAt: now, clock: clk }
     );
-    if (!preserveTs) await clearTombstone('expenses', item.id);
     if (db) await db.expenses.put(item);
     else MEMORY_FALLBACK.expenses.set(item.id, item);
     return item;
@@ -356,13 +386,18 @@
   async function saveTrip(trip, opts) {
     await init();
     const preserveTs = Boolean(opts && opts.preserveTimestamp);
-    const now = Date.now();
+    const id = (trip && trip.id) || makeId('trip');
+    const now = preserveTs && trip && trip.updatedAt
+      ? Number(trip.updatedAt)
+      : await getMinRecreateTimestamp('trips', id, Date.now());
+    const clk = preserveTs && trip && Number.isFinite(Number(trip.clock))
+      ? Number(trip.clock)
+      : (preserveTs ? Number((trip && trip.clock) || 0) : await tickLogicalClock());
     const item = Object.assign(
-      { id: makeId('trip'), name: '新旅行计划' },
+      { id, name: '新旅行计划' },
       trip,
-      { updatedAt: preserveTs && trip && trip.updatedAt ? Number(trip.updatedAt) : now }
+      { updatedAt: now, clock: clk }
     );
-    if (!preserveTs) await clearTombstone('trips', item.id);
     if (db) await db.trips.put(item);
     else MEMORY_FALLBACK.trips.set(item.id, item);
     return item;
@@ -422,7 +457,7 @@
       ? rawSettings
       : rawSettings.filter((s) => s && s.key && !LOCAL_ONLY_KEYS.has(s.key));
     return {
-      schemaVersion: '4.2.0',
+      schemaVersion: '4.5.0',
       logicalClock: Number(logicalClock || 0) || 0,
       tombstones,
       exportedAt: new Date().toISOString(),

@@ -44,7 +44,8 @@ async function cachedUpstreamJson(cacheKeyUrl, upstreamUrl, ttlSeconds, init) {
     const hit = await cache.match(cacheReq);
     if (hit) return hit;
   }
-  const res = await fetch(upstreamUrl, init);
+  const fetchInit = Object.assign({ signal: AbortSignal.timeout(12000) }, init || {});
+  const res = await fetch(upstreamUrl, fetchInit);
   const body = await res.text();
   const out = new Response(body, {
     status: res.status,
@@ -157,8 +158,9 @@ async function handleApi(request, env) {
       if (hit) return hit;
     }
     const res = await fetch(parsed.toString(), {
+      signal: AbortSignal.timeout(12000),
       headers: {
-        'User-Agent': 'WorldTravelGlobe/3.0 (https://world-travel-globe.globe-app.workers.dev)',
+        'User-Agent': 'WorldTravelGlobe/4.5 (https://world-travel-globe.globe-app.workers.dev)',
         Accept: 'image/*'
       }
     });
@@ -210,8 +212,9 @@ async function handleApi(request, env) {
       if (hit) return hit;
     }
     const res = await fetch(upstream, {
+      signal: AbortSignal.timeout(12000),
       headers: {
-        'User-Agent': 'WorldTravelGlobe/3.0 (https://world-travel-globe.globe-app.workers.dev)',
+        'User-Agent': 'WorldTravelGlobe/4.5 (https://world-travel-globe.globe-app.workers.dev)',
         Accept: 'image/*'
       }
     });
@@ -439,8 +442,8 @@ async function handleApi(request, env) {
       if (hit) return hit;
     }
     const [ovRes, kpRes] = await Promise.all([
-      fetch('https://services.swpc.noaa.gov/json/ovation_aurora_latest.json'),
-      fetch('https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json')
+      fetch('https://services.swpc.noaa.gov/json/ovation_aurora_latest.json', { signal: AbortSignal.timeout(12000) }),
+      fetch('https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json', { signal: AbortSignal.timeout(12000) })
     ]);
     if (!ovRes.ok) {
       return jsonResponse({ ok: false, error: 'NOAA aurora upstream unavailable' }, 502);
@@ -482,7 +485,8 @@ async function handleApi(request, env) {
       if (hit) return hit;
     }
     const res = await fetch('https://epic.gsfc.nasa.gov/api/natural', {
-      headers: { 'User-Agent': 'WorldTravelGlobe/4.3 (https://world-travel-globe.globe-app.workers.dev)' }
+      signal: AbortSignal.timeout(12000),
+      headers: { 'User-Agent': 'WorldTravelGlobe/4.5 (https://world-travel-globe.globe-app.workers.dev)' }
     });
     if (!res.ok) {
       return jsonResponse({ ok: false, error: 'NASA EPIC upstream unavailable' }, 502);
@@ -492,6 +496,7 @@ async function handleApi(request, env) {
       const datePart = String(item.date || '').split(' ')[0].replace(/-/g, '/');
       const imgName = item.image || '';
       const thumbUrl = `https://epic.gsfc.nasa.gov/archive/natural/${datePart}/thumbs/${imgName}.jpg`;
+      const mediumUrl = `https://epic.gsfc.nasa.gov/archive/natural/${datePart}/jpg/${imgName}.jpg`;
       const fullUrl = `https://epic.gsfc.nasa.gov/archive/natural/${datePart}/png/${imgName}.png`;
       return {
         identifier: item.identifier,
@@ -500,6 +505,7 @@ async function handleApi(request, env) {
         centroid: item.centroid_coordinates || null,
         dscovrPos: item.dscovr_j2000_position || null,
         thumbUrl,
+        mediumUrl,
         fullUrl
       };
     });
@@ -524,7 +530,26 @@ export default {
       }
     }
     if (env && env.ASSETS) {
-      return env.ASSETS.fetch(request);
+      const assetRes = await env.ASSETS.fetch(request);
+      const ct = assetRes.headers.get('content-type') || '';
+      if (ct.includes('text/html') || url.pathname === '/' || url.pathname.endsWith('/')) {
+        const hdrs = new Headers(assetRes.headers);
+        if (!hdrs.has('Content-Security-Policy')) {
+          hdrs.set('Content-Security-Policy', 'frame-ancestors *');
+        }
+        if (!hdrs.has('X-Content-Type-Options')) {
+          hdrs.set('X-Content-Type-Options', 'nosniff');
+        }
+        if (!hdrs.has('Referrer-Policy')) {
+          hdrs.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+        }
+        return new Response(assetRes.body, {
+          status: assetRes.status,
+          statusText: assetRes.statusText,
+          headers: hdrs
+        });
+      }
+      return assetRes;
     }
     return new Response('Static assets binding unavailable', { status: 500 });
   }

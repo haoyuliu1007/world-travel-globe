@@ -3,6 +3,31 @@
 const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
+const crypto = require('crypto');
+const os = require('os');
+const { Worker } = require('worker_threads');
+
+let resvgPkgPath = null;
+try {
+  resvgPkgPath = require.resolve('@resvg/resvg-js');
+} catch (e) {
+  resvgPkgPath = null;
+}
+
+const OG_CACHE_VER = 'v4.5.2';
+const FONT_CANDIDATES = [
+  'C:/Windows/Fonts/simhei.ttf',
+  '/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc',
+  '/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc',
+  '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
+  'C:/Windows/Fonts/msyh.ttc',
+  '/System/Library/Fonts/PingFang.ttc'
+].filter((p) => {
+  try { return fs.existsSync(p); } catch (e) { return false; }
+});
+const RESVG_FONT_OPTS = FONT_CANDIDATES.length
+  ? { fontFiles: [FONT_CANDIDATES[0]], loadSystemFonts: false, defaultFontFamily: 'SimHei' }
+  : { loadSystemFonts: true };
 
 const SITE_ORIGIN = 'https://world-travel-globe.globe-app.workers.dev';
 const CONTINENT_META = {
@@ -188,6 +213,7 @@ function buildDestPageHtml(dest, neighbors, enDict) {
   const contLabel = (CONTINENT_META[dest.continent] && CONTINENT_META[dest.continent].zh) || '';
   const embedHtml = `<iframe src="${SITE_ORIGIN}/?embed=${encodeURIComponent(id)}&chrome=off" title="${esc(dest.shortName || dest.name)}" width="100%" height="460" style="border:0;border-radius:16px;" loading="lazy"></iframe>`;
 
+  const ogImageUrl = `${SITE_ORIGIN}/og/${encodeURIComponent(id)}.png`;
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'TouristDestination',
@@ -195,7 +221,7 @@ function buildDestPageHtml(dest, neighbors, enDict) {
     alternateName: enName || undefined,
     description: dest.heroSummary || dest.subtitle || '',
     url: canonicalUrl,
-    image: `${SITE_ORIGIN}/og/cover.png`,
+    image: ogImageUrl,
     geo: { '@type': 'GeoCoordinates', latitude: lat, longitude: lng },
     containedInPlace: { '@type': 'Country', name: dest.country || '' }
   };
@@ -212,8 +238,12 @@ function buildDestPageHtml(dest, neighbors, enDict) {
   <meta property="og:title" content="${esc(titleText)}" />
   <meta property="og:description" content="${esc(descText)}" />
   <meta property="og:url" content="${esc(canonicalUrl)}" />
-  <meta property="og:image" content="${SITE_ORIGIN}/og/cover.png" />
+  <meta property="og:image" content="${esc(ogImageUrl)}" />
+  <meta property="og:image:type" content="image/png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
   <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="${esc(ogImageUrl)}" />
   <script type="application/ld+json">${JSON.stringify(jsonLd)}</script>
   <style>
     :root{color-scheme:dark;--bg:#070B16;--card:#0F172A;--border:rgba(255,255,255,.12);--gold:#E2C07D;--text:#F8FAFC;--muted:#94A3B8;}
@@ -250,7 +280,7 @@ function buildDestPageHtml(dest, neighbors, enDict) {
       <a class="btn btn-sec" href="../../?embed=${encodeURIComponent(id)}&chrome=off" target="_blank" rel="noopener">预览嵌入小部件</a>
       <a class="btn btn-sec" href="../">浏览全部 722 城目录</a>
     </div>
-    <img class="hero-img" src="../../og/${encodeURIComponent(id)}.svg" alt="${esc(dest.name)} 地理信息卡" width="1200" height="630" />
+    <img class="hero-img" src="../../og/${encodeURIComponent(id)}.png" alt="${esc(dest.name)} 地理信息卡" width="1200" height="630" />
 
     <h2>12 个月物候评分</h2>
     <div class="m-row">
@@ -323,7 +353,46 @@ function buildDirectoryHtml(all) {
 </html>`;
 }
 
-function buildSeoPages(allDestinations, distDir, opts) {
+function runParallelOgWorkers(jobs, ogDir, cacheDir) {
+  if (!jobs.length) return Promise.resolve();
+  const threadCount = Math.max(1, Math.min(12, os.cpus().length || 4, jobs.length));
+  const buckets = Array.from({ length: threadCount }, () => []);
+  jobs.forEach((job, idx) => buckets[idx % threadCount].push(job));
+
+  const workerCode = `
+    const { workerData, parentPort } = require('worker_threads');
+    const fs = require('fs');
+    const path = require('path');
+    const { Resvg } = require(workerData.resvgPkgPath);
+    for (const j of workerData.jobs) {
+      const r = new Resvg(j.svgStr, { fitTo: { mode: 'width', value: 1200 }, font: workerData.fontOpts });
+      const pngData = r.render().asPng();
+      fs.writeFileSync(path.join(workerData.cacheDir, j.id + '.png'), pngData);
+      fs.writeFileSync(path.join(workerData.cacheDir, j.id + '.sha256'), j.hash, 'utf8');
+      fs.writeFileSync(path.join(workerData.ogDir, j.id + '.png'), pngData);
+    }
+    parentPort.postMessage(workerData.jobs.length);
+  `;
+
+  return Promise.all(
+    buckets.map(
+      (chunk) =>
+        new Promise((resolve, reject) => {
+          const w = new Worker(workerCode, {
+            eval: true,
+            workerData: { jobs: chunk, ogDir, cacheDir, fontOpts: RESVG_FONT_OPTS, resvgPkgPath }
+          });
+          w.on('message', () => resolve());
+          w.on('error', reject);
+          w.on('exit', (code) => {
+            if (code !== 0) reject(new Error(`OG worker exited with code ${code}`));
+          });
+        })
+    )
+  );
+}
+
+async function buildSeoPages(allDestinations, distDir, opts) {
   const list = Array.isArray(allDestinations) ? allDestinations : [];
   const rootDir = (opts && opts.rootDir) || path.resolve(distDir, '..');
   const enIndexPath = path.join(rootDir, 'data', 'i18n', 'en', 'index.json');
@@ -334,11 +403,16 @@ function buildSeoPages(allDestinations, distDir, opts) {
 
   const pDir = path.join(distDir, 'p');
   const ogDir = path.join(distDir, 'og');
+  const cacheDir = path.join(rootDir, '.cache', 'og');
   fs.mkdirSync(pDir, { recursive: true });
   fs.mkdirSync(ogDir, { recursive: true });
+  fs.mkdirSync(cacheDir, { recursive: true });
 
-  fs.writeFileSync(path.join(ogDir, 'cover.png'), generateFallbackCoverPng());
+  const fallbackCoverBuf = generateFallbackCoverPng();
+  fs.writeFileSync(path.join(ogDir, 'cover.png'), fallbackCoverBuf);
 
+  const missJobs = [];
+  let cachedPngs = 0;
   const urls = [`${SITE_ORIGIN}/`, `${SITE_ORIGIN}/p/`];
   for (let i = 0; i < list.length; i++) {
     const dest = list[i];
@@ -348,21 +422,38 @@ function buildSeoPages(allDestinations, distDir, opts) {
       .filter((x) => x.id !== dest.id && (x.country === dest.country || x.continent === dest.continent))
       .slice(0, 6);
 
-    fs.writeFileSync(path.join(ogDir, `${dest.id}.svg`), generateOgSvg(dest), 'utf8');
+    const svgStr = generateOgSvg(dest);
+    fs.writeFileSync(path.join(ogDir, `${dest.id}.svg`), svgStr, 'utf8');
+    if (!resvgPkgPath) {
+      fs.writeFileSync(path.join(ogDir, `${dest.id}.png`), fallbackCoverBuf);
+    } else {
+      const hash = crypto.createHash('sha256').update(OG_CACHE_VER).update(svgStr).digest('hex');
+      const hashPath = path.join(cacheDir, `${dest.id}.sha256`);
+      const pngCachePath = path.join(cacheDir, `${dest.id}.png`);
+      if (fs.existsSync(hashPath) && fs.existsSync(pngCachePath) && fs.readFileSync(hashPath, 'utf8').trim() === hash) {
+        fs.copyFileSync(pngCachePath, path.join(ogDir, `${dest.id}.png`));
+        cachedPngs++;
+      } else {
+        missJobs.push({ id: dest.id, svgStr, hash });
+      }
+    }
     fs.writeFileSync(path.join(destDir, 'index.html'), buildDestPageHtml(dest, neighbors, enDict), 'utf8');
     urls.push(`${SITE_ORIGIN}/p/${encodeURIComponent(dest.id)}/`);
+  }
+
+  if (missJobs.length > 0 && resvgPkgPath) {
+    await runParallelOgWorkers(missJobs, ogDir, cacheDir);
   }
 
   fs.writeFileSync(path.join(pDir, 'index.html'), buildDirectoryHtml(list), 'utf8');
 
   const nowIso = new Date().toISOString().slice(0, 10);
-  const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls
-    .map((u) => `  <url><loc>${esc(u)}</loc><lastmod>${nowIso}</lastmod></url>`)
-    .join('\n')}\n</urlset>\n`;
+  const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
+    urls.map((u) => `  <url><loc>${esc(u)}</loc><lastmod>${nowIso}</lastmod></url>`).join('\n') + `\n</urlset>\n`;
   fs.writeFileSync(path.join(distDir, 'sitemap.xml'), sitemapXml, 'utf8');
   fs.writeFileSync(path.join(distDir, 'robots.txt'), `User-agent: *\nAllow: /\nSitemap: ${SITE_ORIGIN}/sitemap.xml\n`, 'utf8');
 
-  return { pagesCount: list.length, ogCardsCount: list.length + 1, sitemapUrls: urls.length };
+  return { pagesCount: list.length, ogCardsCount: list.length + 1, ogPngsRendered: missJobs.length, ogPngsCached: cachedPngs, sitemapUrls: urls.length };
 }
 
 module.exports = {

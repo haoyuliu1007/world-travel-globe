@@ -131,9 +131,15 @@
     const lens = currentLens();
     const proj = currentProjection(lens);
 
-    const simKey = `${state.coords[1].toFixed(4)},${state.coords[0].toFixed(4)}|${state.dateStr}|${state.minutes}|${state.utcOffsetMin}`;
+    const simKey = `${state.coords[1].toFixed(4)},${state.coords[0].toFixed(4)}|${state.dateStr}|${state.minutes}`;
     if (global.PhotoSimulator) {
       if (simKey !== cachedSimKey || !cachedSim) {
+        const resolvedTz = global.TimezoneService && typeof global.TimezoneService.resolveOffsetForLocationDate === 'function'
+          ? global.TimezoneService.resolveOffsetForLocationDate(state.coords[1], state.coords[0], state.dateStr, state.minutes)
+          : null;
+        if (resolvedTz && Number.isFinite(resolvedTz.offsetMin)) {
+          state.utcOffsetMin = resolvedTz.offsetMin;
+        }
         cachedSim = global.PhotoSimulator.computeSimulation(
           state.coords[1],
           state.coords[0],
@@ -153,7 +159,7 @@
     const elevM = map && global.Terrain3DModule ? global.Terrain3DModule.queryElevation(map, state.coords[0], state.coords[1]) : null;
     const elevLabel = elevM !== null ? `${elevM}m` : ((state.spot && state.spot.elevation) || state.dest.elevation || '--');
     const timeText = `${String(Math.floor(state.minutes / 60)).padStart(2, '0')}:${String(state.minutes % 60).padStart(2, '0')}`;
-    const tzBadge = (sim && sim.utcOffsetLabel) || 'Local';
+    const tzBadge = (sim && (sim.timezoneDisplay || sim.utcOffsetLabel)) || 'Local';
     const title = state.spot
       ? `${tx(state.dest.shortName || state.dest.name)} · ${tx(state.spot.name)}`
       : tx(state.dest.shortName || state.dest.name);
@@ -294,9 +300,14 @@
     state.dest = dest;
     state.spot = spot || null;
     state.coords = coords;
-    state.utcOffsetMin = global.PhotoSimulator
-      ? global.PhotoSimulator.estimateUtcOffsetMinutes(coords[0], opts && opts.utcOffsetSec)
+    const initDate = (opts && opts.dateStr) || state.dateStr;
+    const initMin = (opts && Number.isFinite(opts.minutes)) ? opts.minutes : state.minutes;
+    const resolvedTzInit = global.TimezoneService && typeof global.TimezoneService.resolveOffsetForLocationDate === 'function'
+      ? global.TimezoneService.resolveOffsetForLocationDate(coords[1], coords[0], initDate, initMin)
       : null;
+    state.utcOffsetMin = resolvedTzInit && Number.isFinite(resolvedTzInit.offsetMin)
+      ? resolvedTzInit.offsetMin
+      : (global.PhotoSimulator ? global.PhotoSimulator.estimateUtcOffsetMinutes(coords[0], opts && opts.utcOffsetSec) : null);
     if (opts) {
       if (opts.dateStr) state.dateStr = opts.dateStr;
       if (Number.isFinite(opts.minutes)) state.minutes = opts.minutes;

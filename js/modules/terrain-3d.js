@@ -20,12 +20,15 @@
     terrain: false,
     exaggeration: 1.35,
     demProvider: 'mapterhorn',
+    demFallbackTriggered: false,
     contours: false,
     buildings: false,
     nightLights: false,
     aurora: false,
     auroraInfo: null
   };
+  let demErrorHookAttached = false;
+  let demErrorCount = 0;
 
   let contourDemSource = null;
   let contourProtocolRegistered = false;
@@ -354,6 +357,20 @@
 
   function ensureDemSource(map) {
     if (!map) return;
+    if (!demErrorHookAttached && typeof map.on === 'function') {
+      demErrorHookAttached = true;
+      map.on('error', (ev) => {
+        if (!ev || ev.sourceId !== 'aws-terrarium-dem') return;
+        demErrorCount++;
+        if (state.demProvider === 'mapterhorn' && demErrorCount >= 2 && !state.demFallbackTriggered) {
+          state.demFallbackTriggered = true;
+          if (global.ApiClient && typeof global.ApiClient.recordServiceHealth === 'function') {
+            global.ApiClient.recordServiceHealth('mapterhorn', { status: 'degraded', freshness: 'unavailable', lastError: 'Tile fallback to AWS Terrarium' });
+          }
+          setDemProvider(map, 'aws-terrarium');
+        }
+      });
+    }
     if (!map.getSource('aws-terrarium-dem')) {
       const useMapterhorn = state.demProvider === 'mapterhorn';
       map.addSource('aws-terrarium-dem', {

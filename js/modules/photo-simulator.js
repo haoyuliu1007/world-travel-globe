@@ -72,6 +72,22 @@
     return L(preset.label, enMap[preset.id] || preset.label);
   }
 
+  function resolveLocationTimezone(lat, lng, dateStr, minutes, weatherUtcOffsetSec) {
+    if (global.TimezoneService && typeof global.TimezoneService.resolveOffsetForLocationDate === 'function') {
+      return global.TimezoneService.resolveOffsetForLocationDate(lat, lng, dateStr, minutes);
+    }
+    const offsetMin = estimateUtcOffsetMinutes(lng, weatherUtcOffsetSec);
+    const label = formatUtcOffset(offsetMin);
+    return {
+      iana: null,
+      offsetMin,
+      isDst: false,
+      source: Number.isFinite(Number(weatherUtcOffsetSec)) ? 'weather_offset' : 'longitude_fallback',
+      utcOffsetLabel: label,
+      displayLabel: `Est. ${label}`
+    };
+  }
+
   function estimateUtcOffsetMinutes(lng, weatherUtcOffsetSec) {
     if (Number.isFinite(Number(weatherUtcOffsetSec))) {
       return Math.round(Number(weatherUtcOffsetSec) / 60);
@@ -250,9 +266,10 @@
     if (!A || typeof A.Observer !== 'function' || typeof A.Horizon !== 'function') {
       return { available: false };
     }
-    const offsetMin = Number.isFinite(Number(utcOffsetMin))
-      ? Number(utcOffsetMin)
-      : estimateUtcOffsetMinutes(lng);
+    const tzInfo = Number.isFinite(Number(utcOffsetMin))
+      ? { offsetMin: Number(utcOffsetMin) }
+      : resolveLocationTimezone(lat, lng, dateStr, minutes);
+    const offsetMin = tzInfo.offsetMin;
     const dt = localWallTimeToUtcDate(dateStr, minutes || 0, offsetMin);
     const obs = new A.Observer(lat, lng, 0);
 
@@ -330,9 +347,10 @@
 
   function computeSimulation(lat, lng, dateStr, minutes, cameraAzimuth, utcOffsetMin) {
     if (!global.SunCalc) return null;
+    const tzInfo = resolveLocationTimezone(lat, lng, dateStr, minutes);
     const offsetMin = Number.isFinite(Number(utcOffsetMin))
       ? Number(utcOffsetMin)
-      : estimateUtcOffsetMinutes(lng);
+      : tzInfo.offsetMin;
     const dt = localWallTimeToUtcDate(dateStr, minutes, offsetMin);
     const noonDt = localWallTimeToUtcDate(dateStr, 12 * 60, offsetMin);
 
@@ -363,7 +381,11 @@
     return {
       dt,
       utcOffsetMin: offsetMin,
+      timezoneIana: tzInfo.iana,
+      timezoneSource: tzInfo.source,
+      isDst: tzInfo.isDst,
       utcOffsetLabel: formatUtcOffset(offsetMin),
+      timezoneDisplay: tzInfo.iana ? `${tzInfo.iana} · ${formatUtcOffset(offsetMin)}${tzInfo.isDst ? ' DST' : ''}` : tzInfo.displayLabel,
       times,
       sunPos,
       sunrisePos,
@@ -586,12 +608,8 @@
     const coords = (activeSpot && activeSpot.coords) || dest.coords;
     if (!Array.isArray(coords) || coords.length < 2) return;
 
-    const wxKey = `${coords[1].toFixed(3)},${coords[0].toFixed(3)}`;
-    const cachedWxInit = weatherCache.get(wxKey);
-    const utcOffsetMin = estimateUtcOffsetMinutes(
-      coords[0],
-      cachedWxInit && cachedWxInit.data && cachedWxInit.data.utc_offset_seconds
-    );
+    const tzInfo = resolveLocationTimezone(coords[1], coords[0], state.dateStr, state.minutes);
+    const utcOffsetMin = tzInfo.offsetMin;
     const lensFov = computeLensFov(state.focalMm, state.sensorKey, {
       w: state.customW,
       h: state.customH,
@@ -604,6 +622,7 @@
       return;
     }
 
+    const wxKey = `${coords[1].toFixed(3)},${coords[0].toFixed(3)}`;
     const tzOff = sim.utcOffsetMin;
     const timeText = `${String(Math.floor(state.minutes / 60)).padStart(2, '0')}:${String(state.minutes % 60).padStart(2, '0')}`;
     const targetOptions = [
@@ -650,7 +669,7 @@
       <div class="sim-card">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap;">
           <strong>${icon('sunrise', 14)} ${esc(L('专业摄影机位光影模拟器', 'Sun & Light Spot Simulator'))}</strong>
-          <span class="source-tag astronomy">${esc(L('目的地时间', 'Local Time'))} ${esc(sim.utcOffsetLabel)} · SunCalc</span>
+          <span class="source-tag astronomy" id="sim-tz-badge">${esc(sim.timezoneDisplay || sim.utcOffsetLabel)} · SunCalc</span>
         </div>
 
         <div style="margin-top:8px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
@@ -761,6 +780,12 @@
               </div>`
             : ''
         }
+        <div style="margin-top:8px;padding-top:6px;border-top:1px dashed var(--border-hairline);font-size:10.5px;color:var(--text-muted);line-height:1.5;">
+          ${esc(L(
+            '光学与 DEM 说明：3D 取景器在 WebGL 18°–65° 垂直视场限制内通过裁切框模拟长焦/超广角；地形遮挡基于约 30–76m 网格 DEM，未计入建筑、树木及大气折射细节，请结合实地踩点判断。',
+            'Simulation Caveat: 3D viewfinder emulates telephoto/ultrawide framing via digital crop inside WebGL 18°–65° limits; terrain occlusion uses ~30–76m DEM grids without buildings, trees, or optical lens distortion.'
+          ))}
+        </div>
       </div>
     `;
 
@@ -789,9 +814,11 @@
     };
 
     const updateDynamicReadouts = () => {
-      const wxHit = weatherCache.get(wxKey);
-      const curTzOff = estimateUtcOffsetMinutes(coords[0], wxHit && wxHit.data && wxHit.data.utc_offset_seconds);
-      const nextSim = computeSimulation(coords[1], coords[0], state.dateStr, state.minutes, state.cameraAzimuth, curTzOff);
+      const tzNow = resolveLocationTimezone(coords[1], coords[0], state.dateStr, state.minutes);
+      const nextSim = computeSimulation(coords[1], coords[0], state.dateStr, state.minutes, state.cameraAzimuth, tzNow.offsetMin);
+      if (!nextSim) return;
+      const tzBadgeEl = containerEl.querySelector('#sim-tz-badge');
+      if (tzBadgeEl) tzBadgeEl.textContent = `${nextSim.timezoneDisplay || nextSim.utcOffsetLabel} · SunCalc`;
       if (!nextSim) return;
       const tLabel = containerEl.querySelector('#sim-time-label');
       const azLabel = containerEl.querySelector('#sim-azimuth-label');

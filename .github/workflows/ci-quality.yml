@@ -1,0 +1,38 @@
+name: CI Quality, Build & Playwright E2E
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run non-destructive geographic audit
+        run: npm run audit
+
+      - name: Build single-bundle dist & 722 PNG OG cards
+        run: npm run build
+
+      - name: Run unit & randomized CRDT property tests
+        run: npm test
+
+      - name: Locate / install Chromium for playwright-core
+        run: npx playwright-core install chromium || true
+
+      - name: Run Playwright E2E suite across desktop, tablet & mobile viewports
+        run: npm run test:e2e

@@ -28,7 +28,7 @@
   const DICT = {
     'zh-CN': {
       appTitle: 'World Travel Globe',
-      pageTitle: 'World Travel Globe · 全球旅行地理图鉴 V4.4',
+      pageTitle: 'World Travel Globe · 全球旅行地理图鉴 V4.5',
       ariaMap: '全球旅行 3D 交互卫星地球仪',
       ariaCosmicIntro: '宇宙开场',
       ariaCosmicPlay: '暂停',
@@ -340,7 +340,7 @@
     },
     'zh-TW': {
       appTitle: 'World Travel Globe',
-      pageTitle: 'World Travel Globe · 全球旅行地理圖鑑 V4.4',
+      pageTitle: 'World Travel Globe · 全球旅行地理圖鑑 V4.5',
       ariaMap: '全球旅行 3D 互動衛星地球儀',
       ariaCosmicIntro: '宇宙開場',
       ariaCosmicPlay: '暫停',
@@ -652,7 +652,7 @@
     },
     en: {
       appTitle: 'World Travel Globe',
-      pageTitle: 'World Travel Globe · Geo Intelligence Atlas V4.4',
+      pageTitle: 'World Travel Globe · Geo Intelligence Atlas V4.5',
       ariaMap: 'World Travel 3D Interactive Satellite Globe',
       ariaCosmicIntro: 'Cosmic Intro',
       ariaCosmicPlay: 'Pause / Play',

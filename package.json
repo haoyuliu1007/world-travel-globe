@@ -1,13 +1,19 @@
 {
   "name": "world-travel-globe",
-  "version": "4.4.0",
+  "version": "4.5.0",
   "private": true,
-  "description": "World Travel Globe V4.0 — Geo Intelligence: 3D terrain DEM, contours, buildings, Astronomy Engine, 3D viewfinder, Panoramax 360, MiniSearch natural-language search, phenology engine, 2-opt planner & CRDT sync.",
+  "description": "World Travel Globe V4.5.0 — Engineering Hardening, IANA Timezones, Spherical Terminator, Resvg 1200x630 PNG OG Cards, Full-Disk EPIC & CRDT Join-Semilattice.",
   "scripts": {
     "build": "node build-dist.js",
     "audit": "node scripts/audit-data.js",
     "dev": "node scripts/dev-server.js",
-    "test": "node --test tests/*.test.js"
+    "test": "node --test tests/*.test.js",
+    "test:e2e": "node e2e/globe.spec.mjs"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "@resvg/resvg-js": "^2.6.2",
+    "playwright-core": "^1.65.1",
+    "tz-lookup": "^6.1.25"
+  }
 }

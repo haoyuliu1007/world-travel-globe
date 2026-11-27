@@ -1,6 +1,9 @@
-# World Travel Globe V4.4.0 验收报告
+# World Travel Globe V4.x 系列验收归档报告
 
-- **当前版本**：`v4.4.0` (Full Global Trilingual & Scenery Precision)
+> [!NOTE]
+> 最新 **V4.5.0** 全量工程加固、IANA 时区、真球晨昏线、CRDT 随机性质检验、1200×630 PNG OG 卡片与 Playwright E2E 完整实测结果，请直接查阅 [**V4_5_ACCEPTANCE_REPORT.md**](V4_5_ACCEPTANCE_REPORT.md) 与 [**KNOWN_LIMITATIONS.md**](KNOWN_LIMITATIONS.md)。
+
+- **历史归档版本**：`v4.4.0` (Full Global Trilingual & Scenery Precision)
 - **前置版本**：`v4.0.0` (`6218599`), `v4.1.0` (`43a939b`), `v4.2.0` (`9298f4a`), `v4.3.0` (`5061cb1`)
 - **更新日期**：2026-11-27
 

@@ -1,5 +1,28 @@
 # 更新日志 (CHANGELOG)
 
+## [4.5.0] - 2026-11-27 · Engineering Hardening, Full-Disk EPIC, IANA Timezones & E2E Release Readiness
+
+### 修复与工程可靠性升级 (Hardening & Upgraded)
+- **NASA DSCOVR EPIC 今日真地球放大重构 (`worker/index.js`, `js/modules/epic-earth.js`, `css/upgrades.css`)**：
+  - 修复原弹窗直接拉取 `thumbs/`（160×160）导致地球过小的问题，改为服务端返回与前端默认显示 **1080×1080 中清实拍 (`jpg/`)**（失败自动回退缩略图，保留 `2048px PNG` 原图直链）。
+  - 放大展示舞台（`.epic-dialog` 最宽 640px、`.epic-stage` 自适应高度 `320px–480px`），新增自动轮播 Play/Pause（1.15s/帧）、下一帧预加载、键盘左右/空格/Esc 控制与完整三语文案。
+- **P0 · CRDT 逻辑时钟严格半格化与随机性质测试 (`js/services/crdt-merge.js`, `js/services/storage-db.js`, `tests/v4-5-crdt-properties.test.js`)**：
+  - 修复 `mergeUserProfiles` 中 `logicalClock` 合并加 1 破坏结合律与幂等性的缺陷，改为纯粹状态合并 `Math.max(localClock, remoteClock)`，仅在 `storage-db.js` 本地写操作中自增时钟并写入 `clock`。
+  - 对 `travelStatus` 实现对称字段时间戳归一化（保留显式 `0`）与字段级墓碑剥离，杜绝先删后重建+离线旧设备三端乱序同步冲突；扩充敏感字段隔离表。
+  - 新增 240 组带种子伪随机 3 设备乱序属性测试与 6 种排列并发删除/重建测试，全部通过。
+- **P0 · 全球 IANA 时区引擎与真球面晨昏线 (`js/services/timezone-service.js`, `js/modules/solar-terminator.js`, `js/modules/photo-simulator.js`, `js/modules/viewfinder-3d.js`)**：
+  - 集成离线 `tz-lookup`（v6.1.25, CC0）与原生 `Intl.DateTimeFormat`，精准解析任意目标日期的 IANA 时区与夏令时/半小时/45 分钟偏移（如武汉 `Asia/Shanghai UTC+8`、加德满都 `Asia/Kathmandu UTC+5:45`、阿德莱德 `Australia/Adelaide UTC+10:30 DST / +9:30` 等 8 城全校验），海洋无归属坐标显式标示 `Est. UTC±X` 经度估算回退。
+  - 重写 `SolarTerminator` 夜半球阴影构造，采用反太阳点真球冠几何 + Sutherland-Hodgman 跨日界线裁剪，彻底消除春分/秋分零赤纬突变与极区反转，并通过 SunCalc 进行独立交叉验证（误差 `< 1.0°`）。
+  - `Terrain3DModule` 新增 Mapterhorn 单瓦片失败自动回退 AWS Terrarium；光影模拟器增加 WebGL 视场裁切与 ~30–76m DEM 分辨率边界声明。
+- **P0 · 自适应渲染引擎、WebGL 生命周期与移动端触控强化 (`js/modules/diagnostics.js`, `js/app.js`, `css/upgrades.css`)**：
+  - `diagnostics.js` 实现 `high / balanced / eco / auto` 四档动态配置 `window.__wtgPerfConfig`（DPR、标签预算、星空密度、3D 建筑联动），并增加仅在前台可见时运行的低帧率自动降档看门狗与全部三语界面。
+  - `app.js` 补全 `init()` 幂等锁、`visibilitychange` 后台节能暂停（星空、自转、晨昏线计时器）、`orientationchange` 防抖重排，以及 `webglcontextlost` / 初始化失败自动降级 2D 图鉴与目录清单的兜底流程。
+  - 加固 `?embed=<id>&chrome=off` 嵌入模式（屏蔽私人档案、规划器及快捷键），移动端顶栏搜索/切换按钮全面满足 `>= 40px` 最小触控高度。
+- **P1 · 722 城专属 `1200×630` PNG OG 卡片、上游弹性治理与 Playwright E2E (`scripts/build-seo-pages.js`, `js/services/api-client.js`, `worker/index.js`, `e2e/globe.spec.mjs`, `.github/workflows/ci-quality.yml`)**：
+  - 使用 `@resvg/resvg-js` + Node 并发工作线程与 `.cache/og/` SHA-256 增量缓存生成 722 张独立 `1200×630` PNG OG 卡片，缓存复建仅约 `1.6s`。
+  - `ApiClient` 升级指数退避抖动、`Retry-After` 解析、外部 `AbortSignal` 取消与 11 路公开服务实时健康表；Worker 所有上游代理强制 `12s` 超时控制，HTML 静态响应显式注入 `Content-Security-Policy: frame-ancestors *` 等安全头。
+  - 落地 10 大场景 `playwright-core` 真实无头 Chrome 端到端测试脚本及 CI 工作流，新增 `docs/KNOWN_LIMITATIONS.md` 与 `docs/V4_5_ACCEPTANCE_REPORT.md`。
+
 ## [4.4.0] - 2026-11-27 · Full Global English Content Layer, Prologue Language Switcher & Scenery Filter
 
 ### 新增与全面国际化升级 (Added & Fixed)

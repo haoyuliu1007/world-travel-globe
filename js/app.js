@@ -2248,12 +2248,13 @@
   }
 
   /* View Mode (3D Map / Aesthetic Gallery / Trip Planner / Private Archive) */
-  function setViewMode(mode, skipUrl) {
+  function setViewMode(mode, skipUrl, pushHistory) {
     const valid = ['map', 'gallery', 'planner', 'archive'];
     let requested = valid.includes(mode) ? mode : 'map';
     if (isEmbedMode && (requested === 'archive' || requested === 'planner')) {
       requested = 'map';
     }
+    const prevMode = state.mode;
     state.mode = requested;
 
     const mapBtn = document.getElementById('mode-map-btn');
@@ -2276,6 +2277,12 @@
       btn.setAttribute('aria-selected', active ? 'true' : 'false');
     });
 
+    document.querySelectorAll('#mobile-bottom-nav [data-mob-mode]').forEach((btn) => {
+      const active = btn.getAttribute('data-mob-mode') === state.mode;
+      btn.classList.toggle('active', active);
+      btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+
     if (galView) galView.classList.toggle('is-hidden', state.mode !== 'gallery');
     if (planView) planView.classList.toggle('is-hidden', state.mode !== 'planner');
     if (archView) archView.classList.toggle('is-hidden', state.mode !== 'archive');
@@ -2289,7 +2296,7 @@
       global.TravelArchive.renderWorkspace();
     }
     scheduleLabelLayout();
-    if (!skipUrl) syncUrlState(false);
+    if (!skipUrl) syncUrlState(Boolean(pushHistory !== false && prevMode !== state.mode));
   }
   global.setAppViewMode = setViewMode;
 
@@ -2373,7 +2380,7 @@
     if (skin && SKIN_META[skin]) state.skin = skin;
 
     const mode = params.get('mode');
-    if (mode === 'gallery') state.mode = 'gallery';
+    if (mode === 'gallery' || mode === 'planner' || mode === 'archive') state.mode = mode;
 
     const embed = params.get('embed');
     return {
@@ -2388,6 +2395,42 @@
   }
 
   function bindEvents() {
+    // Brand home button -> return to globe & fly global
+    const brandHomeBtn = document.getElementById('brand-home-btn');
+    if (brandHomeBtn) {
+      brandHomeBtn.addEventListener('click', () => {
+        if (state.mode !== 'map') setViewMode('map');
+        flyContinent('global');
+      });
+    }
+
+    // Mobile bottom navigation bar
+    document.querySelectorAll('#mobile-bottom-nav [data-mob-mode]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const m = btn.getAttribute('data-mob-mode');
+        if (m) setViewMode(m);
+      });
+    });
+    const mobLayersBtn = document.getElementById('mob-layers-btn');
+    if (mobLayersBtn) {
+      mobLayersBtn.addEventListener('click', () => {
+        const lBtn = document.getElementById('layers-popover-btn');
+        if (lBtn) lBtn.click();
+      });
+    }
+
+    // Gallery sticky back + help
+    const galStickyBack = document.getElementById('gallery-sticky-back-btn');
+    if (galStickyBack) galStickyBack.addEventListener('click', () => setViewMode('map'));
+    const galHelpBtn = document.getElementById('gallery-help-btn');
+    if (galHelpBtn) {
+      galHelpBtn.addEventListener('click', () => {
+        if (global.HelpCenter && typeof global.HelpCenter.openTopic === 'function') {
+          global.HelpCenter.openTopic('destination-details');
+        }
+      });
+    }
+
     // Mode switch
     document.getElementById('mode-map-btn').addEventListener('click', () => setViewMode('map'));
     document.getElementById('mode-gallery-btn').addEventListener('click', () => setViewMode('gallery'));
@@ -2949,10 +2992,14 @@
       }
     });
 
-    // Browser Back/Forward support
+    // Browser Back/Forward support (restores both view mode and destination focus)
     global.addEventListener('popstate', () => {
       suppressPopState = true;
       const params = new URLSearchParams(global.location.search);
+      const nextMode = params.get('mode') || 'map';
+      if (['map', 'gallery', 'planner', 'archive'].includes(nextMode) && nextMode !== state.mode) {
+        setViewMode(nextMode, true, false);
+      }
       const focusId = params.get('focus');
       if (focusId && ATLAS.getById(focusId)) {
         selectDestination(focusId, { skipUrl: true });

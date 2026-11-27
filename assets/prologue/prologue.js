@@ -229,8 +229,9 @@
 
       <header class="sp-nav" id="sp-nav">
         <div class="sp-brand">
-          <span class="sp-brand-dot" aria-hidden="true"></span>
-          <span>World Travel Globe</span>
+          <img src="assets/brand/svg/kairos-symbol-dark.svg" alt="" width="20" height="20" aria-hidden="true" />
+          <span style="letter-spacing:0.12em;">KΛIROS<span style="color:#E8A33D;">.</span></span>
+          <span style="opacity:0.55;font-size:11px;font-weight:400;letter-spacing:0.14em;">WORLD TRAVEL ATLAS</span>
         </div>
         <div class="sp-top-controls">
           <div class="sp-lang-switch" id="sp-lang-switch" role="group" aria-label="${c.langSwitchAria}">
@@ -258,6 +259,9 @@
         <div class="sp-scrim-hero" aria-hidden="true"></div>
 
         <div class="sp-hero-inner">
+          <div class="kairos-enso-anim sp-reveal" style="--sp-delay: 0ms;" aria-hidden="true">
+            <img src="assets/brand/svg/kairos-symbol-dark.svg" alt="" width="72" height="72" class="kairos-enso-arc" />
+          </div>
           <div class="sp-badge sp-reveal" style="--sp-delay: 20ms;">
             <span class="sp-badge-pill" id="sp-s1-badge-pill">${c.s1BadgePill}</span>
             <span id="sp-s1-badge-text">${c.s1BadgeText}</span>

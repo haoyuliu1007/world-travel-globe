@@ -113,6 +113,19 @@ function startStaticServer() {
         return;
       }
 
+      if (p === '/api/route') {
+        res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({
+          routed: true,
+          crossSea: false,
+          provider: 'E2E Mock OSRM',
+          distanceKm: 12.4,
+          durationMin: 24,
+          geometry: { type: 'LineString', coordinates: [[116.397, 39.916], [116.407, 39.904]] }
+        }));
+        return;
+      }
+
       let rel = p === '/' ? 'index.html' : p.replace(/^\/+/, '');
       let filePath = path.join(DIST_DIR, rel);
       if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
@@ -225,7 +238,7 @@ async function run() {
     await page.evaluate(() => window.switchAppLanguage && window.switchAppLanguage('en'));
     await page.waitForTimeout(500);
     const enTitle = await page.title();
-    assert.ok(enTitle.includes('World Travel Globe'), `Expected English title, got: ${enTitle}`);
+    assert.ok(enTitle.includes('KAIROS'), `Expected KAIROS English title, got: ${enTitle}`);
     await page.screenshot({ path: path.join(SHOT_DIR, 'desktop-kathmandu-en.png') });
     await page.evaluate(() => window.switchAppLanguage && window.switchAppLanguage('zh-CN'));
     await page.waitForTimeout(350);
@@ -340,7 +353,7 @@ async function run() {
       const layout = await vpPage.evaluate((isMobile) => {
         const overflowPx = Math.max(0, document.documentElement.scrollWidth - window.innerWidth);
         const searchBtn = document.getElementById('open-palette-btn');
-        const modeBtn = document.getElementById('mode-map-btn');
+        const modeBtn = isMobile ? document.querySelector('#mobile-bottom-nav .mob-nav-btn') : document.getElementById('mode-map-btn');
         const sr = searchBtn ? searchBtn.getBoundingClientRect() : { height: 0 };
         const mr = modeBtn ? modeBtn.getBoundingClientRect() : { height: 0 };
         return {
@@ -425,6 +438,30 @@ async function run() {
     assert.ok(mobMetrics.isScrolled, 'Expected mobile #drawer-scroll to receive .is-scrolled');
     await mobCtx.close();
     report.scenarios.push('11. Map label stacking inside #map & unified drawer scroll (desktop + mobile auto-expand)');
+
+    // 12. V5.0 Batch 1 Regression: Tokyo -> Beijing independent planner + return-to-globe sticky bar & mobile bottom nav
+    await page.goto(`${baseUrl}/?instant=1`, { waitUntil: 'load' });
+    await page.click('#mode-planner-btn');
+    await page.waitForSelector('#planner-view:not(.is-hidden) #tp-generate-btn', { timeout: 8000 });
+    await page.click('#tp-new-trip-btn');
+    await page.fill('#tp-dest-search', '北京');
+    await page.click('#tp-generate-btn');
+    await page.waitForFunction(() => {
+      const sel = document.getElementById('tp-trip-select');
+      const txt = sel && sel.selectedOptions[0] ? sel.selectedOptions[0].textContent : '';
+      return txt.includes('北京') || txt.includes('Beijing');
+    }, null, { timeout: 8000 });
+    const bjState = await page.evaluate(() => {
+      const sel = document.getElementById('tp-trip-select');
+      const optText = sel && sel.selectedOptions[0] ? sel.selectedOptions[0].textContent : '';
+      const stopTxt = document.querySelector('#planner-view .stop-drag-item') ? document.querySelector('#planner-view .stop-drag-item').textContent : '';
+      return { optText, stopTxt };
+    });
+    assert.ok(bjState.optText.includes('北京') || bjState.optText.includes('Beijing'), `Expected Beijing trip after Tokyo, got ${bjState.optText}`);
+    assert.ok(bjState.stopTxt.length > 0, 'Expected Beijing stops rendered');
+    await page.click('#tp-sticky-back-btn');
+    await page.waitForSelector('#planner-view.is-hidden', { state: 'attached', timeout: 6000 });
+    report.scenarios.push('12. V5.0 Beijing vs Tokyo independent planner & sticky return bar');
 
     assert.equal(pageErrors.length, 0, `Uncaught pageerrors occurred: ${pageErrors.join(' | ')}`);
     await ctx.close();

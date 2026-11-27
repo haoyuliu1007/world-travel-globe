@@ -32,7 +32,7 @@
     const base = baseOrigin || (global.location ? `${global.location.origin}${global.location.pathname}` : 'https://world-travel-globe.globe-app.workers.dev/');
     const cleanBase = base.endsWith('/') ? base : base.replace(/index\.html$/, '');
     const src = `${cleanBase}?embed=${encodeURIComponent(id)}&chrome=off`;
-    const title = dest ? `World Travel Globe - ${dest.shortName || dest.name}` : 'World Travel Globe';
+    const title = dest ? `KAIROS · ${dest.shortName || dest.name}` : 'KAIROS · World Travel Atlas';
     return `<iframe src="${src}" title="${esc(title)}" width="100%" height="460" style="border:0;border-radius:16px;overflow:hidden;" loading="lazy" allowfullscreen></iframe>`;
   }
 
@@ -169,9 +169,9 @@
     ctx.stroke();
 
     // Kicker header
-    ctx.fillStyle = '#E2C07D';
+    ctx.fillStyle = '#E8A33D';
     ctx.font = '600 22px "Inter", "PingFang SC", sans-serif';
-    ctx.fillText(spec.kicker || 'WORLD TRAVEL GLOBE · V4.3', 72, 92);
+    ctx.fillText(spec.kicker || 'KAIROS. · WORLD TRAVEL ATLAS', 72, 92);
 
     ctx.fillStyle = 'rgba(226, 232, 240, 0.55)';
     ctx.font = '500 20px "IBM Plex Mono", monospace';
@@ -282,9 +282,22 @@
     ctx.lineTo(W - 72, H - 108);
     ctx.stroke();
 
-    ctx.fillStyle = '#E2C07D';
+    // KAIROS Enso emblem + brand footer
+    ctx.save();
+    ctx.strokeStyle = '#FAF8F4';
+    ctx.lineWidth = 3.2;
+    ctx.beginPath();
+    ctx.arc(88, H - 72, 13, Math.PI * 0.35, Math.PI * 2.08);
+    ctx.stroke();
+    ctx.fillStyle = '#E8A33D';
+    ctx.beginPath();
+    ctx.arc(98, H - 62, 3.4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    ctx.fillStyle = '#E8A33D';
     ctx.font = '600 22px "Inter", "PingFang SC", sans-serif';
-    ctx.fillText('World Travel Globe · 全球旅行地理图鉴', 72, H - 64);
+    ctx.fillText('KAIROS. · WORLD TRAVEL ATLAS', 114, H - 64);
 
     ctx.fillStyle = '#94A3B8';
     ctx.font = '500 18px "IBM Plex Mono", monospace';
@@ -297,8 +310,8 @@
         resolve({
           dataUrl: canvas.toDataURL('image/png'),
           blob,
-          filename: spec.filename || 'world-travel-globe-poster.png',
-          title: spec.title || 'World Travel Globe',
+          filename: spec.filename || 'kairos-poster.png',
+          title: spec.title || 'KAIROS · World Travel Atlas',
           text: spec.subtitle || '',
           shareUrl: spec.shareUrl || 'https://world-travel-globe.globe-app.workers.dev/'
         });
@@ -356,7 +369,7 @@
       ['africa_antarctica', 'Afr/Ant']
     ];
     return renderPosterCanvas({
-      kicker: 'PRIVATE FOOTPRINT ARCHIVE · WORLD TRAVEL GLOBE',
+      kicker: 'PRIVATE FOOTPRINT ARCHIVE · KAIROS',
       coordsText: `${stats.visitedCount} / ${stats.citiesTotal} CITIES`,
       globeImg,
       title: t('archiveTitle'),
@@ -382,7 +395,7 @@
     const totalStops = (trip.days || []).reduce((s, d) => s + (d.stops ? d.stops.length : 0), 0);
     const totalBudget = (trip.budgetItems || []).reduce((s, b) => s + (Number(b.cost) || 0), 0) || Number(trip.budgetRmb || 0);
     return renderPosterCanvas({
-      kicker: 'SMART TRIP ITINERARY · WORLD TRAVEL GLOBE',
+      kicker: 'SMART TRIP ITINERARY · KAIROS',
       coordsText: `${(trip.days || []).length} DAYS · ${totalStops} STOPS`,
       globeImg,
       title: trip.name || trip.destName || 'Trip Itinerary',

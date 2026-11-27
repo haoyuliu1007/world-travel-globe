@@ -325,10 +325,15 @@
     };
 
     view.innerHTML = `
+      <div class="workspace-sticky-nav">
+        <button class="gallery-back-btn" id="ar-sticky-back-btn" type="button">${icon('chevronLeft', 14)} ${esc(t('archiveBack'))}</button>
+        <div class="workspace-sticky-title">KAIROS · ${esc(t('archiveTitle'))}</div>
+        <button class="secondary-btn" id="ar-help-btn" type="button" style="height:30px;padding:0 10px;">?</button>
+      </div>
       <div class="workspace-container">
         <div class="gallery-head">
           <div>
-            <span class="gallery-kicker">PRIVATE TRAVEL ARCHIVE · LOCAL-FIRST & OPTIONAL CLOUD SYNC</span>
+            <span class="gallery-kicker">KAIROS · PRIVATE TRAVEL ARCHIVE · LOCAL-FIRST &amp; OPTIONAL CLOUD SYNC</span>
             <h2>${esc(t('archiveTitle'))}</h2>
             <p class="gallery-lead">
               ${esc(sharedFootprint ? t('archiveSharedLead') : t('archiveLead'))}
@@ -526,6 +531,20 @@
       if (typeof global.setAppViewMode === 'function') global.setAppViewMode('map');
       applyFootprintLayer(map, true);
     });
+    const arStickyBack = view.querySelector('#ar-sticky-back-btn');
+    if (arStickyBack) {
+      arStickyBack.addEventListener('click', () => {
+        if (typeof global.setAppViewMode === 'function') global.setAppViewMode('map');
+      });
+    }
+    const arHelpBtn = view.querySelector('#ar-help-btn');
+    if (arHelpBtn) {
+      arHelpBtn.addEventListener('click', () => {
+        if (global.HelpCenter && typeof global.HelpCenter.openTopic === 'function') {
+          global.HelpCenter.openTopic('travel-archive');
+        }
+      });
+    }
 
     view.querySelector('#ar-create-list-btn').addEventListener('click', async () => {
       const name = view.querySelector('#ar-new-list-name').value.trim();

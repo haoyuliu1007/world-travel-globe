@@ -13,6 +13,106 @@
   let routeChart = null;
   let dragPayload = null;
   let lastRouteGeoJson = null;
+  let plannerDraft = {
+    mode: 'new',
+    selectedDestId: '',
+    destQuery: '',
+    origin: '',
+    days: 4,
+    budgetRmb: 12000,
+    month: new Date().getMonth() + 1,
+    transportMode: 'driving',
+    interest: 'all',
+    confirmPending: false
+  };
+
+  const CITY_ALIASES = {
+    beijing: ['cn-beijing', '北京'],
+    peking: ['cn-beijing', '北京'],
+    北京: ['cn-beijing'],
+    shanghai: ['cn-shanghai', '上海'],
+    tokyo: ['jp-kanto-tokyo', '东京'],
+    东京: ['jp-kanto-tokyo'],
+    kyoto: ['jp-kansai-kyoto', '京都'],
+    京都: ['jp-kansai-kyoto'],
+    paris: ['fr-paris', '巴黎'],
+    london: ['uk-london', '伦敦'],
+    'new york': ['us-east-nyc', '纽约'],
+    nyc: ['us-east-nyc', '纽约'],
+    zurich: ['ch-zurich-lucerne', '苏黎世'],
+    reykjavik: ['is-reykjavik-golden-circle', '雷克雅未克'],
+    kathmandu: ['np-bt-kathmandu-nagarkot', '加德满都']
+  };
+
+  function normalizeSearchText(s) {
+    return String(s || '')
+      .toLowerCase()
+      .replace(/[·•・,，.。()（）/\-_\s]+/g, ' ')
+      .trim();
+  }
+
+  function resolveDestinationMatches(query, allDest) {
+    const raw = String(query || '').trim();
+    const list = Array.isArray(allDest) ? allDest : [];
+    if (!raw || !list.length) return [];
+    const qNorm = normalizeSearchText(raw);
+    const qCompact = qNorm.replace(/\s+/g, '');
+
+    // Check explicit alias lookup first
+    const aliasHits = CITY_ALIASES[qNorm] || CITY_ALIASES[qCompact] || [];
+
+    const scored = [];
+    for (let i = 0; i < list.length; i++) {
+      const d = list[i];
+      if (!d) continue;
+      const zhName = String(d.name || '');
+      const zhShort = String(d.shortName || '');
+      const enName = tx(zhName);
+      const enShort = tx(zhShort);
+      const tradName = global.AppI18n && typeof global.AppI18n.toTraditional === 'function'
+        ? global.AppI18n.toTraditional(zhName)
+        : zhName;
+      const tradShort = global.AppI18n && typeof global.AppI18n.toTraditional === 'function'
+        ? global.AppI18n.toTraditional(zhShort)
+        : zhShort;
+
+      const fields = [d.id, zhShort, zhName, enShort, enName, tradShort, tradName, d.country, tx(d.country), d.province, tx(d.province)]
+        .filter(Boolean)
+        .map(normalizeSearchText);
+
+      let score = 0;
+      if (d.id.toLowerCase() === qNorm || aliasHits.includes(d.id)) {
+        score = 1000;
+      } else if (fields.slice(1, 7).some((f) => f === qNorm || f.replace(/\s+/g, '') === qCompact)) {
+        score = 900;
+      } else if (fields.slice(1, 7).some((f) => f.startsWith(qNorm) || f.split(' ').includes(qNorm))) {
+        score = 700;
+      } else if (fields.some((f) => f.includes(qNorm) || (qCompact.length >= 2 && f.replace(/\s+/g, '').includes(qCompact)))) {
+        score = 400;
+      }
+      if (score > 0) {
+        scored.push({ dest: d, score });
+      }
+    }
+    scored.sort((a, b) => b.score - a.score || (b.dest.priority || 0) - (a.dest.priority || 0));
+    return scored.map((s) => s.dest);
+  }
+
+  function resetDraftForNewTrip(defaults) {
+    plannerDraft = {
+      mode: 'new',
+      selectedDestId: (defaults && defaults.destId) || '',
+      destQuery: (defaults && defaults.destQuery) || '',
+      origin: (defaults && defaults.origin) || '',
+      days: Number(defaults && defaults.days) || 4,
+      budgetRmb: Number(defaults && defaults.budgetRmb) || 12000,
+      month: Number(defaults && defaults.month) || (new Date().getMonth() + 1),
+      transportMode: (defaults && defaults.transportMode) || 'driving',
+      interest: (defaults && defaults.interest) || 'all',
+      confirmPending: false
+    };
+    return plannerDraft;
+  }
 
   function esc(str) {
     return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -206,7 +306,7 @@
 
     const dName = dest ? (dest.shortName || dest.name) : L('全球', 'Global');
     return {
-      id: `trip_${Date.now().toString(36)}`,
+      id: `trip_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`,
       name: opts.name || L(`${dName} ${days}日深度行程`, `${tx(dName)} ${days}-Day Itinerary`),
       origin: opts.origin || L('出发地（本地/机场）', 'Origin (Home / Airport)'),
       destId: dest ? dest.id : '',
@@ -394,10 +494,8 @@
       }
     }
     const all = global.TRAVEL_ATLAS ? global.TRAVEL_ATLAS.getAll() : [];
-    const fallbackDest = (global.TRAVEL_ATLAS && global.TRAVEL_ATLAS.getById('jp-kanto-tokyo')) || all[0];
-    if (fallbackDest && global.TRAVEL_ATLAS && !fallbackDest.spots) {
-      await global.TRAVEL_ATLAS.ensureDetail(fallbackDest.id);
-    }
+    const baseFallback = (global.TRAVEL_ATLAS && global.TRAVEL_ATLAS.getById('jp-kanto-tokyo')) || all[0];
+    const fallbackDest = (baseFallback && global.TRAVEL_ATLAS && await global.TRAVEL_ATLAS.ensureDetail(baseFallback.id)) || baseFallback;
     activeTrip = generateTripPlan({ dest: fallbackDest, days: 3, budgetRmb: 15000, mode: 'driving' });
     if (global.StorageDB) await global.StorageDB.saveTrip(activeTrip);
     return activeTrip;
@@ -482,15 +580,43 @@
       }
     });
 
+    const draftDestVal = plannerDraft.mode === 'new'
+      ? plannerDraft.destQuery
+      : tx(activeTrip.destName);
+    const draftOriginVal = plannerDraft.mode === 'new'
+      ? (plannerDraft.origin || translatePlannerText(activeTrip.origin))
+      : translatePlannerText(activeTrip.origin);
+    const draftDaysVal = plannerDraft.mode === 'new'
+      ? plannerDraft.days
+      : (activeTrip.daysCount || (activeTrip.days || []).length);
+    const draftBudgetVal = plannerDraft.mode === 'new'
+      ? plannerDraft.budgetRmb
+      : (activeTrip.budgetRmb || 12000);
+    const draftMonthVal = plannerDraft.mode === 'new'
+      ? plannerDraft.month
+      : Number(activeTrip.month);
+    const draftModeVal = plannerDraft.mode === 'new'
+      ? plannerDraft.transportMode
+      : activeTrip.mode;
+    const draftInterestVal = plannerDraft.mode === 'new'
+      ? plannerDraft.interest
+      : activeTrip.interest;
+
     view.innerHTML = `
+      <div class="workspace-sticky-nav">
+        <button class="gallery-back-btn" id="tp-sticky-back-btn" type="button">${icon('chevronLeft', 14)} ${esc(t('plannerBack'))}</button>
+        <div class="workspace-sticky-title">KAIROS · ${esc(t('plannerTitle'))}</div>
+        <button class="secondary-btn" id="tp-help-btn" type="button" style="height:30px;padding:0 10px;">?</button>
+      </div>
       <div class="workspace-container">
         <div class="gallery-head">
           <div>
-            <span class="gallery-kicker">SMART TRIP PLANNER · REAL ROUTING & BUDGET</span>
+            <span class="gallery-kicker">KAIROS · SMART TRIP PLANNER · REAL ROUTING &amp; BUDGET</span>
             <h2>${esc(t('plannerTitle'))}</h2>
             <p class="gallery-lead">${esc(t('plannerLead'))}</p>
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="secondary-btn" id="tp-new-trip-btn" type="button">+ ${esc(L('新建行程', 'New Trip'))}</button>
             <button class="secondary-btn" id="tp-poster-btn" type="button">${icon('image', 14)} ${esc(t('posterBtn'))}</button>
             <button class="primary-btn" id="tp-preview-globe-btn" type="button">${icon('globe', 14)} ${esc(t('plannerPreviewGlobe'))}</button>
             <button class="gallery-back-btn" id="tp-back-btn" type="button">${icon('arrowUpRight', 14)} ${esc(t('plannerBack'))}</button>
@@ -500,7 +626,12 @@
         <div class="workspace-split">
           <div>
             <div class="panel-box">
-              <h3>${esc(t('plannerNewTitle'))}</h3>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                <h3 style="margin:0;">${esc(t('plannerNewTitle'))}</h3>
+                <span class="source-tag ${plannerDraft.mode === 'new' ? 'live' : 'empirical'}" id="tp-draft-badge">
+                  ${esc(plannerDraft.mode === 'new' ? L('新建草稿', 'New Draft') : L('编辑已存行程', 'Editing Saved'))}
+                </span>
+              </div>
               <div style="display:flex;flex-direction:column;gap:8px;">
                 <label class="form-field"><span>${esc(t('plannerSavedTrips'))}</span>
                   <select id="tp-trip-select" class="sim-input">
@@ -508,40 +639,42 @@
                   </select>
                 </label>
                 <label class="form-field"><span>${esc(t('plannerOrigin'))}</span>
-                  <input id="tp-origin" class="sim-input" type="text" value="${esc(translatePlannerText(activeTrip.origin))}" />
+                  <input id="tp-origin" class="sim-input" type="text" value="${esc(draftOriginVal)}" />
                 </label>
-                <label class="form-field"><span>${esc(t('plannerDest'))}</span>
-                  <input id="tp-dest-search" class="sim-input" list="tp-dest-datalist" value="${esc(tx(activeTrip.destName))}" placeholder="${esc(t('plannerDestPlaceholder'))}" />
-                  <datalist id="tp-dest-datalist">
-                    ${allDest.map((d) => `<option value="${esc(tx(d.shortName || d.name))}" data-id="${esc(d.id)}">${esc(tx(d.country))} · ${esc(tx(d.name))}</option>`).join('')}
-                  </datalist>
-                </label>
+                <div class="form-field" style="position:relative;">
+                  <span>${esc(t('plannerDest'))}</span>
+                  <input id="tp-dest-search" class="sim-input" type="text" autocomplete="off" value="${esc(draftDestVal)}" placeholder="${esc(t('plannerDestPlaceholder'))}" />
+                  <input id="tp-dest-id" type="hidden" value="${esc(plannerDraft.mode === 'new' ? plannerDraft.selectedDestId : (activeTrip.destId || ''))}" />
+                  <div id="tp-dest-suggestions" class="tp-suggestions is-hidden" role="listbox"></div>
+                </div>
                 <div class="form-grid-2">
-                  <label class="form-field"><span>${esc(t('plannerDays'))}</span><input id="tp-days" class="sim-input mono-num" type="number" min="1" max="14" value="${activeTrip.daysCount || (activeTrip.days || []).length}" /></label>
-                  <label class="form-field"><span>${esc(t('plannerTotalBudget'))}</span><input id="tp-budget" class="sim-input mono-num" type="number" min="500" step="500" value="${activeTrip.budgetRmb || 12000}" /></label>
+                  <label class="form-field"><span>${esc(t('plannerDays'))}</span><input id="tp-days" class="sim-input mono-num" type="number" min="1" max="14" value="${draftDaysVal}" /></label>
+                  <label class="form-field"><span>${esc(t('plannerTotalBudget'))}</span><input id="tp-budget" class="sim-input mono-num" type="number" min="500" step="500" value="${draftBudgetVal}" /></label>
                 </div>
                 <div class="form-grid-2">
                   <label class="form-field"><span>${esc(t('plannerMonth'))}</span>
                     <select id="tp-month" class="sim-input">
-                      ${Array.from({ length: 12 }, (_, m) => `<option value="${m + 1}" ${Number(activeTrip.month) === m + 1 ? 'selected' : ''}>${esc(t('monthFmt', { m: m + 1 }))}</option>`).join('')}
+                      ${Array.from({ length: 12 }, (_, m) => `<option value="${m + 1}" ${draftMonthVal === m + 1 ? 'selected' : ''}>${esc(t('monthFmt', { m: m + 1 }))}</option>`).join('')}
                     </select>
                   </label>
                   <label class="form-field"><span>${esc(t('plannerTransport'))}</span>
                     <select id="tp-mode" class="sim-input">
-                      <option value="driving" ${activeTrip.mode === 'driving' ? 'selected' : ''}>${esc(t('plannerModeDriving'))}</option>
-                      <option value="walking" ${activeTrip.mode === 'walking' ? 'selected' : ''}>${esc(t('plannerModeWalking'))}</option>
-                      <option value="cycling" ${activeTrip.mode === 'cycling' ? 'selected' : ''}>${esc(t('plannerModeCycling'))}</option>
+                      <option value="driving" ${draftModeVal === 'driving' ? 'selected' : ''}>${esc(t('plannerModeDriving'))}</option>
+                      <option value="walking" ${draftModeVal === 'walking' ? 'selected' : ''}>${esc(t('plannerModeWalking'))}</option>
+                      <option value="cycling" ${draftModeVal === 'cycling' ? 'selected' : ''}>${esc(t('plannerModeCycling'))}</option>
                     </select>
                   </label>
                 </div>
                 <label class="form-field"><span>${esc(t('plannerInterest'))}</span>
                   <select id="tp-interest" class="sim-input">
-                    <option value="all" ${activeTrip.interest === 'all' ? 'selected' : ''}>${esc(t('plannerIntAll'))}</option>
-                    <option value="nature" ${activeTrip.interest === 'nature' ? 'selected' : ''}>${esc(t('plannerIntNature'))}</option>
-                    <option value="architecture" ${activeTrip.interest === 'architecture' ? 'selected' : ''}>${esc(t('plannerIntArch'))}</option>
+                    <option value="all" ${draftInterestVal === 'all' ? 'selected' : ''}>${esc(t('plannerIntAll'))}</option>
+                    <option value="nature" ${draftInterestVal === 'nature' ? 'selected' : ''}>${esc(t('plannerIntNature'))}</option>
+                    <option value="architecture" ${draftInterestVal === 'architecture' ? 'selected' : ''}>${esc(t('plannerIntArch'))}</option>
                   </select>
                 </label>
-                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;">
+                <div id="tp-generate-confirm" class="tp-confirm-box" style="font-size:11.5px;color:var(--text-secondary);padding:7px 9px;border-radius:8px;background:var(--bg-hover);border:1px solid var(--border-hairline);"></div>
+                <div id="tp-generate-error" style="font-size:11.5px;color:#FB7185;min-height:14px;"></div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:2px;">
                   <button class="primary-btn" id="tp-generate-btn" type="button" style="flex:1;">${esc(t('plannerGenerateBtn'))}</button>
                   <button class="secondary-btn" id="tp-calc-route-btn" type="button">${esc(t('plannerCalcRouteBtn'))}</button>
                 </div>
@@ -640,6 +773,107 @@
     view.querySelector('#tp-back-btn').addEventListener('click', () => {
       if (typeof global.setAppViewMode === 'function') global.setAppViewMode('map');
     });
+    const stickyBack = view.querySelector('#tp-sticky-back-btn');
+    if (stickyBack) {
+      stickyBack.addEventListener('click', () => {
+        if (typeof global.setAppViewMode === 'function') global.setAppViewMode('map');
+      });
+    }
+    const tpHelpBtn = view.querySelector('#tp-help-btn');
+    if (tpHelpBtn) {
+      tpHelpBtn.addEventListener('click', () => {
+        if (global.HelpCenter && typeof global.HelpCenter.openTopic === 'function') {
+          global.HelpCenter.openTopic('trip-planner');
+        }
+      });
+    }
+    const newTripBtn = view.querySelector('#tp-new-trip-btn');
+    if (newTripBtn) {
+      newTripBtn.addEventListener('click', () => {
+        resetDraftForNewTrip({ origin: view.querySelector('#tp-origin').value.trim() });
+        renderWorkspace();
+        const inp = view.querySelector('#tp-dest-search');
+        if (inp) inp.focus();
+      });
+    }
+
+    const destInput = view.querySelector('#tp-dest-search');
+    const destIdHidden = view.querySelector('#tp-dest-id');
+    const sugBox = view.querySelector('#tp-dest-suggestions');
+    const confirmBox = view.querySelector('#tp-generate-confirm');
+    const errBox = view.querySelector('#tp-generate-error');
+
+    const updateConfirmPreview = () => {
+      if (!confirmBox) return;
+      const lockedDest = destIdHidden && destIdHidden.value ? allDest.find((d) => d.id === destIdHidden.value) : null;
+      const origTxt = (view.querySelector('#tp-origin').value || '').trim() || L('本地出发', 'Origin');
+      const dTxt = lockedDest
+        ? `${tx(lockedDest.shortName || lockedDest.name)} (${lockedDest.id})`
+        : ((destInput && destInput.value.trim()) || L('未选择目的地', 'No destination selected'));
+      const dDays = view.querySelector('#tp-days').value || 4;
+      const dBud = Number(view.querySelector('#tp-budget').value || 12000).toLocaleString();
+      const dMode = view.querySelector('#tp-mode').value;
+      confirmBox.textContent = `${origTxt} → ${dTxt} · ${dDays}${L('天', 'd')} · ${dMode} · ¥${dBud}`;
+    };
+    updateConfirmPreview();
+
+    const renderSuggestions = (matches) => {
+      if (!sugBox) return;
+      if (!matches.length) {
+        sugBox.classList.add('is-hidden');
+        sugBox.innerHTML = '';
+        return;
+      }
+      sugBox.classList.remove('is-hidden');
+      sugBox.innerHTML = matches
+        .slice(0, 8)
+        .map(
+          (d) => `<button class="tp-suggestion-item" type="button" data-dest-id="${esc(d.id)}" role="option">
+            <span><strong>${esc(tx(d.shortName || d.name))}</strong> <small style="opacity:0.7;">${esc(tx(d.country))}</small></span>
+            <span class="mono-num" style="font-size:10.5px;opacity:0.75;">${d.spotCount || (d.spots ? d.spots.length : 0)} spots</span>
+          </button>`
+        )
+        .join('');
+      sugBox.querySelectorAll('.tp-suggestion-item').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const picked = allDest.find((d) => d.id === btn.dataset.destId);
+          if (!picked) return;
+          destInput.value = tx(picked.shortName || picked.name);
+          destIdHidden.value = picked.id;
+          plannerDraft.selectedDestId = picked.id;
+          plannerDraft.destQuery = destInput.value;
+          sugBox.classList.add('is-hidden');
+          if (errBox) errBox.textContent = '';
+          updateConfirmPreview();
+        });
+      });
+    };
+
+    if (destInput) {
+      destInput.addEventListener('input', () => {
+        const q = destInput.value.trim();
+        plannerDraft.destQuery = q;
+        if (destIdHidden) destIdHidden.value = '';
+        plannerDraft.selectedDestId = '';
+        if (errBox) errBox.textContent = '';
+        if (!q) {
+          renderSuggestions([]);
+        } else {
+          renderSuggestions(resolveDestinationMatches(q, allDest));
+        }
+        updateConfirmPreview();
+      });
+      destInput.addEventListener('focus', () => {
+        const q = destInput.value.trim();
+        if (q && !destIdHidden.value) {
+          renderSuggestions(resolveDestinationMatches(q, allDest));
+        }
+      });
+    }
+    ['#tp-origin', '#tp-days', '#tp-budget', '#tp-mode'].forEach((sel) => {
+      const el = view.querySelector(sel);
+      if (el) el.addEventListener('change', updateConfirmPreview);
+    });
 
     const tpPosterBtn = view.querySelector('#tp-poster-btn');
     if (tpPosterBtn && global.PosterShare) {
@@ -663,32 +897,78 @@
       const found = allTrips.find((t) => t.id === e.target.value);
       if (found) {
         activeTrip = found;
+        plannerDraft.mode = 'edit';
+        plannerDraft.selectedDestId = found.destId || '';
+        plannerDraft.destQuery = tx(found.destName || '');
         renderWorkspace();
       }
     });
 
     view.querySelector('#tp-generate-btn').addEventListener('click', async () => {
-      const searchVal = view.querySelector('#tp-dest-search').value.trim();
-      const matched =
-        allDest.find((d) => (d.shortName || d.name) === searchVal || d.name === searchVal || d.id === searchVal) ||
-        allDest.find((d) => (d.name + d.shortName + d.country).toLowerCase().includes(searchVal.toLowerCase())) ||
-        allDest[0];
-      if (!matched) return;
-      if (!matched.spots && global.TRAVEL_ATLAS) {
-        await global.TRAVEL_ATLAS.ensureDetail(matched.id);
+      const searchVal = (destInput ? destInput.value : '').trim();
+      const lockedId = destIdHidden ? destIdHidden.value.trim() : '';
+      let matched = lockedId ? allDest.find((d) => d.id === lockedId) : null;
+
+      if (!matched) {
+        const candidates = resolveDestinationMatches(searchVal, allDest);
+        if (!candidates.length) {
+          if (errBox) {
+            errBox.textContent = L(
+              `未找到与「${searchVal || '空'}」匹配的目的地，请重新输入并从候选列表中选择（不会回退到旧行程）。`,
+              `No destination matched "${searchVal}". Please pick a valid destination from the list.`
+            );
+          }
+          return;
+        }
+        // Require explicit disambiguation if multiple candidates exist and top candidate is not an exact match
+        const qNorm = normalizeSearchText(searchVal);
+        const top = candidates[0];
+        const topExact =
+          top.id.toLowerCase() === qNorm ||
+          normalizeSearchText(top.shortName) === qNorm ||
+          normalizeSearchText(top.name) === qNorm ||
+          normalizeSearchText(tx(top.shortName)) === qNorm ||
+          normalizeSearchText(tx(top.name)) === qNorm ||
+          (CITY_ALIASES[qNorm] && CITY_ALIASES[qNorm].includes(top.id));
+
+        if (candidates.length > 1 && !topExact) {
+          renderSuggestions(candidates);
+          if (errBox) {
+            errBox.textContent = L(
+              `找到 ${candidates.length} 个相近目的地，请在下方候选中点选确认具体城市。`,
+              `Found ${candidates.length} similar matches — please select the exact city below.`
+            );
+          }
+          return;
+        }
+        matched = top;
       }
-      activeTrip = generateTripPlan({
+
+      if (errBox) errBox.textContent = '';
+      const fullDest = (global.TRAVEL_ATLAS ? await global.TRAVEL_ATLAS.ensureDetail(matched.id) : null) || matched;
+      const newTrip = generateTripPlan({
         origin: view.querySelector('#tp-origin').value.trim(),
-        dest: matched,
+        dest: fullDest,
         days: Number(view.querySelector('#tp-days').value),
         budgetRmb: Number(view.querySelector('#tp-budget').value),
         month: Number(view.querySelector('#tp-month').value),
         mode: view.querySelector('#tp-mode').value,
         interest: view.querySelector('#tp-interest').value
       });
+      newTrip.id = `trip_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`;
+      activeTrip = newTrip;
+      plannerDraft.mode = 'edit';
+      plannerDraft.selectedDestId = fullDest.id;
+      plannerDraft.destQuery = tx(fullDest.shortName || fullDest.name);
       if (global.StorageDB) await global.StorageDB.saveTrip(activeTrip);
-      await computeAllDayRoutes(activeTrip);
       renderWorkspace();
+      // Compute road/great-circle routes asynchronously without blocking immediate trip switch
+      computeAllDayRoutes(activeTrip).then(() => {
+        if (activeTrip && activeTrip.id === newTrip.id) {
+          const pv = document.getElementById('planner-view');
+          if (pv && !pv.classList.contains('is-hidden')) renderWorkspace();
+        }
+      }).catch(() => {});
     });
 
     view.querySelector('#tp-calc-route-btn').addEventListener('click', async (e) => {
@@ -856,6 +1136,8 @@
 
   return {
     generateTripPlan,
+    resolveDestinationMatches,
+    resetDraftForNewTrip,
     twoOptOptimize,
     orderDayStopsByLight,
     serializeTripToUrl,

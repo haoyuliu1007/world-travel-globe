@@ -1,0 +1,98 @@
+/* KAIROS. — World Travel Atlas Official Brand Tokens */
+:root {
+  --kairos-navy: #16283F;
+  --kairos-gold: #E8A33D;
+  --kairos-cream: #FAF8F4;
+  --kairos-cosmos: #09090B;
+}
+
+.kairos-brand-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: none;
+  padding: 2px 6px;
+  border-radius: var(--radius-pill, 999px);
+  cursor: pointer;
+  color: var(--text-primary);
+  text-decoration: none;
+  flex-shrink: 0;
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+.kairos-brand-link:hover {
+  opacity: 0.88;
+}
+.kairos-brand-link img,
+.kairos-brand-link svg {
+  display: block;
+  height: 22px;
+  width: auto;
+}
+.kairos-brand-symbol {
+  display: none;
+  height: 24px;
+  width: 24px;
+}
+
+/* Automatic light / dark lockup switching */
+html[data-theme="dark"] .kairos-logo-light,
+html:not([data-theme="light"]) .kairos-logo-light {
+  display: none;
+}
+html[data-theme="light"] .kairos-logo-dark {
+  display: none;
+}
+
+@media (max-width: 960px) {
+  .kairos-brand-wordmark {
+    display: none !important;
+  }
+  .kairos-brand-symbol {
+    display: block;
+  }
+}
+
+/* KAIROS Enso Brand Reveal Animation (prologue / splash) */
+.kairos-enso-anim {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 14px;
+  position: relative;
+}
+.kairos-enso-anim .kairos-enso-arc {
+  transform-origin: center;
+  animation: kairosEnsoReveal 1.05s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.kairos-enso-anim .kairos-enso-dot {
+  transform-origin: center;
+  animation: kairosDotPop 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.55s both;
+}
+@keyframes kairosEnsoReveal {
+  from {
+    opacity: 0;
+    transform: rotate(-38deg) scale(0.88);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
+  }
+}
+@keyframes kairosDotPop {
+  from {
+    opacity: 0;
+    transform: scale(0.25);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kairos-enso-anim .kairos-enso-arc,
+  .kairos-enso-anim .kairos-enso-dot {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}

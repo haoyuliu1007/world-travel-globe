@@ -76,6 +76,21 @@ async function main() {
     fs.cpSync(path.join(rootDir, 'assets', 'skyboxes'),
       path.join(distDir, 'assets', 'skyboxes'), { recursive: true });
   }
+  for (const bSub of ['svg', 'icons', 'social']) {
+    const bSrc = path.join(rootDir, 'assets', 'brand', bSub);
+    if (fs.existsSync(bSrc)) {
+      fs.cpSync(bSrc, path.join(distDir, 'assets', 'brand', bSub), { recursive: true });
+    }
+  }
+  const brandTokensSrc = path.join(rootDir, 'assets', 'brand', 'brand-tokens.css');
+  if (fs.existsSync(brandTokensSrc)) {
+    ensureDir(path.join(distDir, 'assets', 'brand'));
+    fs.copyFileSync(brandTokensSrc, path.join(distDir, 'assets', 'brand', 'brand-tokens.css'));
+  }
+  const favIcoSrc = path.join(rootDir, 'assets', 'brand', 'icons', 'favicon.ico');
+  if (fs.existsSync(favIcoSrc)) {
+    fs.copyFileSync(favIcoSrc, path.join(distDir, 'favicon.ico'));
+  }
 
   const workerSrcDir = path.join(rootDir, 'js', 'workers');
   if (fs.existsSync(workerSrcDir)) {
@@ -103,8 +118,8 @@ async function main() {
     fs.copyFileSync(enrichmentSrc, path.join(distDir, 'data', 'enrichment', 'atlas-enrichment.json'));
   }
 
-  // Bundle CSS files (maplibre-gl.css + styles.css + upgrades.css + prologue.css) into one CSS request
-  const cssParts = ['vendor/maplibre-gl.css', 'css/styles.css', 'css/upgrades.css', 'assets/prologue/prologue.css']
+  // Bundle CSS files (maplibre-gl.css + brand-tokens.css + styles.css + upgrades.css + prologue.css) into one CSS request
+  const cssParts = ['vendor/maplibre-gl.css', 'assets/brand/brand-tokens.css', 'css/styles.css', 'css/upgrades.css', 'assets/prologue/prologue.css']
     .filter((rel) => fs.existsSync(path.join(rootDir, rel)))
     .map((rel) => fs.readFileSync(path.join(rootDir, rel), 'utf8'));
   const cssBundle = cssParts.join('\n');
@@ -227,7 +242,7 @@ async function main() {
 
   // Replace CSS, intro scripts, vendor libs, data/*.js, and js/*.js blocks with consolidated bundles in dist/index.html
   const buildVer = Date.now().toString(36);
-  const cssBlockRe = /(?:\s*<link rel="stylesheet" href="(?:vendor\/maplibre-gl\.css|css\/[^"?]+|assets\/prologue\/prologue\.css)(?:\?v=\d+)?"\s*\/>\s*)+/;
+  const cssBlockRe = /(?:\s*<link rel="stylesheet" href="(?:vendor\/maplibre-gl\.css|assets\/brand\/brand-tokens\.css|css\/[^"?]+|assets\/prologue\/prologue\.css)(?:\?v=\d+)?"\s*\/>\s*)+/;
   const introBlockRe = /(?:\s*<script src="assets\/(?:prologue\/(?:bgm|prologue)|cosmic-intro\/player)\.js(?:\?v=\d+)?"><\/script>\s*)+/;
   const vendorBlockRe = /(?:\s*<script src="vendor\/(?:suncalc|fuse|supercluster|dexie|astronomy\.browser|minisearch|tz-lookup)\.min\.js"><\/script>\s*)+/;
   const dataBlockRe = /(?:\s*<script src="data\/[^"?]+(?:\?v=\d+)?"><\/script>\s*)+/;

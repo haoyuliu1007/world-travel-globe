@@ -428,6 +428,24 @@
       </div>
     </div>
 
+    <div class="popover-section" id="layer-meta-inspector" style="padding:8px 10px;border-radius:8px;background:rgba(255,255,255,0.03);border:1px solid var(--border-hairline);font-size:11px;line-height:1.5;margin-bottom:8px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;">
+        <strong id="layer-meta-title">Satellite &amp; Telemetry Inspector</strong>
+        <span class="source-tag realtime" id="layer-meta-badge">Live / Historical</span>
+      </div>
+      <div id="layer-meta-desc" style="color:var(--text-secondary);margin-top:3px;">Source: ESRI / NASA GIBS / NOAA OVATION / MapLibre DEM · Click any science layer to inspect cadence, resolution &amp; legend.</div>
+      <div id="layer-meta-legend" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;font-size:10.5px;color:var(--text-muted);">
+        <span>■ Radar/Cloud: RainViewer / GIBS</span>
+        <span>■ Aurora: NOAA Kp 0–9</span>
+        <span>■ Heat: Phenology 0–100</span>
+      </div>
+      <label style="display:flex;align-items:center;gap:6px;margin-top:6px;font-size:10.5px;color:var(--text-secondary);">
+        <span>Opacity</span>
+        <input id="layer-global-opacity" type="range" min="15" max="100" value="80" style="flex:1;" />
+        <span id="layer-global-opacity-val" class="mono-num">80%</span>
+      </label>
+    </div>
+
     <div class="popover-section layers-footer-row">
       <button class="layer-foot-btn" id="toggle-tile-cdn-btn" type="button" title="切换底图线路（标准 / 国内极速）" data-i18n-title="tileRouteAuto" data-i18n="tileRouteAuto">自动线路</button>
       <button class="layer-foot-btn" id="open-diagnostics-btn" type="button" aria-label="系统诊断与配置" data-i18n-aria="layerDiagnostics" title="系统诊断、质量审核与设置" data-i18n-title="layerDiagnostics">

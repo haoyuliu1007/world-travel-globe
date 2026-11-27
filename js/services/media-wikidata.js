@@ -76,6 +76,7 @@
       const author = stripHtml((meta.Artist && meta.Artist.value) || (meta.Credit && meta.Credit.value) || 'Wikimedia Commons Contributor');
       const license = stripHtml((meta.LicenseShortName && meta.LicenseShortName.value) || 'Wikimedia Commons License');
       const licenseUrl = (meta.LicenseUrl && meta.LicenseUrl.value) || '';
+      const rawDateStr = stripHtml((meta.DateTimeOriginal && meta.DateTimeOriginal.value) || (meta.DateTime && meta.DateTime.value) || '');
       const desc = stripHtml((meta.ImageDescription && meta.ImageDescription.value) || p.title || '');
       const titleClean = String(p.title || '').replace(/^File:/i, '').replace(/\.[^.]+$/, '');
       const aspect = info.width && info.height ? info.width / info.height : 1.5;
@@ -90,6 +91,7 @@
         author: author.slice(0, 80),
         license: license.slice(0, 50),
         licenseUrl,
+        capturedAt: rawDateStr.slice(0, 32),
         width: info.width || 0,
         height: info.height || 0,
         isPano: aspect >= 2.2,
@@ -166,6 +168,33 @@
   const US_STATE_NAMES_RE =
     /\b(arizona|texas|california|florida|ohio|nevada|utah|wyoming|alabama|alaska|indiana|kentucky|maryland|michigan|minnesota|missouri|nebraska|oregon|tennessee|vermont|wisconsin)\b/i;
 
+  const LANDSCAPE_ALLOW_RE =
+    /\b(?:rice terrace|rice terraces|rice paddy|rice paddies|rice field|rice fields|paddy field|terraced field|terraces|wild duck|mallard|duck lake|duck pond|tea plantation|tea terrace|orchard|vineyard|salt flat|mustard field|lotus pond)\b/i;
+  const EXPLICIT_CULINARY_RE =
+    /\b(?:fried rice|steamed rice|rice bowl|rice noodle|roast duck|peking duck|duck confit|curry|dish|meal|menu|plate|bowl|restaurant|recipe|cuisine)\b/i;
+
+  function extractPhotoSeason(photoOrMeta, lat) {
+    const raw = typeof photoOrMeta === 'string'
+      ? photoOrMeta
+      : (photoOrMeta && (photoOrMeta.capturedAt || photoOrMeta.DateTimeOriginal || photoOrMeta.DateTime || photoOrMeta.date)) || '';
+    const m = String(raw).match(/^\s*(\d{4})[-:./](\d{1,2})(?:[-:./]\d{1,2})?/);
+    if (!m) return { season: 'unknown', month: null, raw: raw || null };
+    const month = Number(m[2]);
+    if (!Number.isFinite(month) || month < 1 || month > 12) {
+      return { season: 'unknown', month: null, raw: raw || null };
+    }
+    const isSouth = Number.isFinite(Number(lat)) && Number(lat) < 0;
+    const northSeason = month >= 3 && month <= 5
+      ? 'spring'
+      : (month >= 6 && month <= 8 ? 'summer' : (month >= 9 && month <= 11 ? 'autumn' : 'winter'));
+    const southFlip = { spring: 'autumn', autumn: 'spring', summer: 'winter', winter: 'summer' };
+    return {
+      season: isSouth ? southFlip[northSeason] : northSeason,
+      month,
+      raw: m[0].trim()
+    };
+  }
+
   /**
    * Score Wikimedia Commons photo relevance for travel scenery & landmarks,
    * heavily penalizing food, logos, locator maps, state flags, portraits, and tickets.
@@ -176,9 +205,12 @@
     let score = 0;
     let isIrrelevant = false;
 
-    if (IRRELEVANT_PHOTO_RE.test(text)) {
+    const isAllowedLandscape = LANDSCAPE_ALLOW_RE.test(text) && !EXPLICIT_CULINARY_RE.test(text);
+    if (!isAllowedLandscape && IRRELEVANT_PHOTO_RE.test(text)) {
       score -= 80;
       isIrrelevant = true;
+    } else if (isAllowedLandscape) {
+      score += 14;
     }
 
     const countryStr = String(country || '');
@@ -498,7 +530,8 @@
     fetchPlacePhotos,
     verifyWithWikidata,
     scoreTravelPhoto,
-    rankAndFilterTravelPhotos
+    rankAndFilterTravelPhotos,
+    extractPhotoSeason
   };
 
   global.MediaWikidataService = api;

@@ -250,6 +250,7 @@
       <div style="font-size:11px;color:var(--text-secondary);margin-bottom:8px;line-height:1.45;">
         ${esc(layerObj.desc)}<br/>
         <span class="source-tag realtime">来源：NASA EOSDIS GIBS (Public Domain)</span> · <span class="mono-num">分辨率 ${esc(layerObj.resolution)}</span>
+        <div style="color:var(--text-muted);margin-top:2px;">说明：卫星过境受云层与高纬极夜影响，局部日期可能存在黑色空窗条带（绝不插值伪造影像）。</div>
       </div>
 
       <div class="form-grid-2" style="margin-bottom:8px;">
@@ -289,7 +290,12 @@
           ? `<div style="margin-top:8px;padding:8px;border-radius:8px;background:var(--bg-hover);">
               <div class="form-grid-2">
                 <label class="form-field"><span>对比日期 B</span><input id="tm-date-b" class="sim-input mono-num" type="date" max="${state.latestServerDate}" value="${state.dateB}" /></label>
-                <label class="form-field"><span>A ↔ B 混合 (${state.compareMix}%)</span><input id="tm-mix-range" type="range" min="0" max="100" value="${state.compareMix}" style="margin-top:8px;" /></label>
+                <label class="form-field"><span>分屏卷帘 / 混合 (${state.compareMix}%)</span><input id="tm-mix-range" type="range" min="0" max="100" value="${state.compareMix}" style="margin-top:8px;" /></label>
+              </div>
+              <div style="margin-top:6px;display:flex;justify-content:space-between;font-size:10.5px;color:var(--text-muted);">
+                <span>A: ${esc(state.dateA)} (${100 - state.compareMix}%)</span>
+                <span>◀ 分屏对比卷帘 ▶</span>
+                <span>B: ${esc(state.dateB)} (${state.compareMix}%)</span>
               </div>
             </div>`
           : ''

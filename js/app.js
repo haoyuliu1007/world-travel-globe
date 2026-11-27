@@ -2513,6 +2513,78 @@
       closeAllPopovers(null);
     });
 
+    if (layersEl) {
+      const LAYER_SPECS = {
+        'toggle-weather-layer-btn': {
+          title: 'Global Weather / Radar',
+          badge: 'Live (10–30m)',
+          desc: 'Source: RainViewer / NOAA Radar · Res: ~1–5km global · Reflectivity & cloud deck.'
+        },
+        'toggle-timemachine-btn': {
+          title: 'NASA GIBS Earth Time Machine',
+          badge: 'Historical Daily',
+          desc: 'Source: NASA EOSDIS GIBS (MODIS/VIIRS) · Res: 250m–1km · Daily archival compositing (cloud gaps possible).'
+        },
+        'toggle-nightlights-btn': {
+          title: 'NASA Black Marble Night Lights',
+          badge: 'Historical Mosaic',
+          desc: 'Source: NASA VIIRS Day/Night Band · Res: ~500m · Cloud-free artificial skyglow composite.'
+        },
+        'toggle-aurora-btn': {
+          title: 'NOAA OVATION Aurora Oval',
+          badge: 'Live Space Weather',
+          desc: 'Source: NOAA SWPC OVATION + Kp Index · Res: ~1° lat/lon · Updates every 15–30 min.'
+        },
+        'toggle-daynight-btn': {
+          title: 'Solar Terminator',
+          badge: 'Live Ephemeris',
+          desc: 'Source: SunCalc Astronomical Model · Exact subsolar point, twilight & polar circle boundary.'
+        },
+        'toggle-pheno-heat-btn': {
+          title: 'KAIROS Phenology Heatmap',
+          badge: 'Archive + Calibrated',
+          desc: 'Source: Atlas Curated Phenology + ERA5 Normals · Tier A/B/C seasonal suitability index (0–100).'
+        },
+        'toggle-terrain-btn': {
+          title: '3D Terrain Elevation',
+          badge: 'Static DEM',
+          desc: 'Source: Terrarium / Mapterhorn RGB DEM · Res: ~30–76m mesh · Adjustable exaggeration (1.0×–1.8×).'
+        },
+        'toggle-contour-btn': {
+          title: 'Topographic Contours',
+          badge: 'Static DEM',
+          desc: 'Source: MapLibre Contour Vector · Active at Zoom >= 9 · Elevation interval lines.'
+        }
+      };
+      layersEl.addEventListener('click', (ev) => {
+        const btn = ev.target.closest('button[id]');
+        const spec = btn && LAYER_SPECS[btn.id];
+        if (!spec) return;
+        const tEl = document.getElementById('layer-meta-title');
+        const bEl = document.getElementById('layer-meta-badge');
+        const dEl = document.getElementById('layer-meta-desc');
+        if (tEl) tEl.textContent = spec.title;
+        if (bEl) bEl.textContent = spec.badge;
+        if (dEl) dEl.textContent = spec.desc;
+      });
+      const opSlider = document.getElementById('layer-global-opacity');
+      const opVal = document.getElementById('layer-global-opacity-val');
+      if (opSlider) {
+        opSlider.addEventListener('input', () => {
+          const v = Number(opSlider.value) / 100;
+          if (opVal) opVal.textContent = `${opSlider.value}%`;
+          if (map && typeof map.getStyle === 'function') {
+            ['layer-gibs-a', 'layer-v4-phenology-heat', 'layer-daynight-terminator'].forEach((lid) => {
+              if (map.getLayer(lid)) {
+                const prop = lid.includes('heat') ? 'heatmap-opacity' : (lid.includes('terminator') ? 'fill-opacity' : 'raster-opacity');
+                try { map.setPaintProperty(lid, prop, v); } catch (e) { /* ignore */ }
+              }
+            });
+          }
+        });
+      }
+    }
+
     function updateLayersBadge() {
       const badge = document.getElementById('layers-active-badge');
       if (!badge) return;

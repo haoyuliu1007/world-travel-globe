@@ -143,31 +143,67 @@
         return;
       }
 
-      containerEl.innerHTML = `
-        <div class="media-strip-head">
-          <span>${icon('image', 13)} ${esc(t('mediaGalleryCount', { n: photos.length }))}</span>
-          <span class="source-tag realtime">${esc(t('mediaCommonsClickFull'))}</span>
-        </div>
-        <div class="media-strip-grid">
-          ${photos
-            .slice(0, 3)
-            .map(
-              (p, i) => `
-              <button class="media-thumb-card" data-photo-idx="${i}" type="button" title="${esc(p.title)} · ${esc(p.license)}">
-                <img src="${esc(p.thumbUrl)}" alt="${esc(p.title)}" loading="lazy" decoding="async" />
-                <span class="media-thumb-credit">${esc(p.license)} · ${esc(p.author)}</span>
-              </button>
-            `
-            )
-            .join('')}
-        </div>
-      `;
-
-      containerEl.querySelectorAll('.media-thumb-card').forEach((btn) => {
-        btn.addEventListener('click', () => {
-          openLightbox(photos, Number(btn.dataset.photoIdx || 0));
+      const lat = dest.coords && dest.coords[1];
+      let seasonFilter = 'all';
+      const renderGalleryState = () => {
+        if (!document.body.contains(containerEl)) return;
+        const seasonTagged = photos.map((p) => {
+          const sInfo = global.MediaWikidataService && typeof global.MediaWikidataService.extractPhotoSeason === 'function'
+            ? global.MediaWikidataService.extractPhotoSeason(p, lat)
+            : { season: 'unknown', month: null };
+          return { photo: p, season: sInfo.season, month: sInfo.month };
         });
-      });
+        const filtered = seasonFilter === 'all'
+          ? seasonTagged
+          : seasonTagged.filter((x) => x.season === seasonFilter);
+
+        const seasonTabs = [
+          { id: 'all', label: L('全部', 'All') },
+          { id: 'spring', label: L('春', 'Spring') },
+          { id: 'summer', label: L('夏', 'Summer') },
+          { id: 'autumn', label: L('秋', 'Autumn') },
+          { id: 'winter', label: L('冬', 'Winter') },
+          { id: 'unknown', label: L('未标日期', 'Undated') }
+        ];
+        const counts = {};
+        seasonTagged.forEach((x) => { counts[x.season] = (counts[x.season] || 0) + 1; });
+
+        containerEl.innerHTML = `
+          <div class="media-strip-head">
+            <span>${icon('image', 13)} ${esc(t('mediaGalleryCount', { n: filtered.length }))}</span>
+            <span class="source-tag realtime">${esc(t('mediaCommonsClickFull'))}</span>
+          </div>
+          <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;">
+            ${seasonTabs.map((tab) => {
+              const cnt = tab.id === 'all' ? photos.length : (counts[tab.id] || 0);
+              return `<button class="mini-action-pill mg-season-btn ${seasonFilter === tab.id ? 'active' : ''}" data-season="${tab.id}" type="button">${esc(tab.label)} (${cnt})</button>`;
+            }).join('')}
+          </div>
+          ${filtered.length ? `
+            <div class="media-strip-grid">
+              ${filtered.slice(0, 3).map((item, i) => `
+                <button class="media-thumb-card" data-photo-idx="${i}" type="button" title="${esc(item.photo.title)} · ${esc(item.photo.license)}">
+                  <img src="${esc(item.photo.thumbUrl)}" alt="${esc(item.photo.title)}" loading="lazy" decoding="async" />
+                  <span class="media-thumb-credit">${esc(item.season !== 'unknown' ? `${item.season.toUpperCase()} · ` : '')}${esc(item.photo.license)} · ${esc(item.photo.author)}</span>
+                </button>
+              `).join('')}
+            </div>
+          ` : `<div style="font-size:11.5px;color:var(--text-muted);padding:10px 0;">${esc(L('该季节暂无带 EXIF 拍摄日期的 Wikimedia 公开影像（绝不伪造季节标签）。', 'No Commons images with EXIF capture dates for this season (never fabricated).'))}</div>`}
+        `;
+
+        containerEl.querySelectorAll('.mg-season-btn').forEach((b) => {
+          b.addEventListener('click', () => {
+            seasonFilter = b.dataset.season;
+            renderGalleryState();
+          });
+        });
+        containerEl.querySelectorAll('.media-thumb-card').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            openLightbox(filtered.map((x) => x.photo), Number(btn.dataset.photoIdx || 0));
+          });
+        });
+      };
+      renderGalleryState();
     } catch (e) {
       if (document.body.contains(containerEl)) {
         containerEl.innerHTML = `

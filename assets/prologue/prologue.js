@@ -4,166 +4,226 @@
   const root = document.getElementById('story-prologue');
   if (!root) return;
 
-  const TOUR_SEEN_KEY = 'wtg_onboarding_v1_seen';
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   const clamp01 = (v) => Math.max(0, Math.min(1, v));
   const lerp = (a, b, t) => a + (b - a) * t;
-  const smoothstep = (e0, e1, x) => {
-    const t = clamp01((x - e0) / (e1 - e0));
-    return t * t * (3 - 2 * t);
-  };
 
   let built = false;
   let isOpen = false;
   let isClosing = false;
   let isReplayRun = false;
   let rafId = 0;
-  let smoothY = 0;
   let activeInst = 0;
   let instBlend = 0;
   let returnFocusEl = null;
   let bgmUnsub = null;
+  let revealObserver = null;
+  let countObserver = null;
+  let navRaf = 0;
   const inertNodes = new Set();
 
   let refs = {};
-  let heroChars = [];
 
   function buildDom() {
     if (built) return;
     built = true;
 
     root.innerHTML = `
-      <div class="sp-grain" aria-hidden="true"></div>
-      <div class="sp-hairline" id="sp-hairline"></div>
-      <div class="sp-top-controls">
-        <button class="sp-pill-btn sp-mute-btn" id="sp-mute" type="button" aria-label="静音">🔊</button>
-        <button class="sp-pill-btn" id="sp-skip" type="button">跳过，进入地球仪 <kbd style="opacity:.65;font-size:11px;margin-left:3px;">Esc</kbd></button>
-      </div>
+      <div class="sp-hairline" id="sp-hairline" aria-hidden="true"></div>
+
+      <header class="sp-nav" id="sp-nav">
+        <div class="sp-nav-inner">
+          <div class="sp-brand">
+            <span class="sp-brand-dot" aria-hidden="true"></span>
+            <span>World Travel Globe</span>
+          </div>
+          <nav class="sp-nav-links" aria-label="序章章节">
+            <button class="sp-nav-link" type="button" data-scroll-target="#sp-act-chapters">探索缘起</button>
+            <button class="sp-nav-link" type="button" data-scroll-target="#sp-act-instrument">天文仪器</button>
+            <button class="sp-nav-link" type="button" data-scroll-target="#sp-act-finale">即刻出发</button>
+          </nav>
+          <div class="sp-top-controls">
+            <button class="sp-pill-btn sp-mute-btn" id="sp-mute" type="button" aria-label="静音">🔊</button>
+            <button class="sp-pill-btn" id="sp-skip" type="button">跳过，进入地球仪 <kbd style="opacity:.65;font-size:11px;margin-left:3px;">Esc</kbd></button>
+          </div>
+        </div>
+      </header>
 
       <section class="sp-hero" id="sp-act-hero">
-        <img class="sp-photo" id="sp-hero-photo" src="assets/prologue/scene-1-origin.jpg?v=1" alt="" style="filter: brightness(1.18) contrast(1.05);" />
-        <div class="sp-vignette-hero" aria-hidden="true"></div>
-        <div class="sp-hero-copy" id="sp-hero-copy">
-          <div class="sp-kicker sp-kicker-anim">World Travel Globe</div>
-          <h1 class="sp-hero-title" id="sp-hero-title">世界，不止于平面。</h1>
-        </div>
-        <div class="sp-cue" id="sp-hero-cue" aria-hidden="true">
-          <div class="sp-cue-line"></div>
-          <span>向下轻滑</span>
-        </div>
-      </section>
+        <img class="sp-hero-photo" src="assets/prologue/scene-1-origin.jpg?v=1" alt="" />
+        <div class="sp-hero-grid" aria-hidden="true"></div>
+        <div class="sp-hero-glow" aria-hidden="true"></div>
 
-      <section class="sp-manifesto" id="sp-act-manifesto">
-        <div class="sp-manifesto-sticky">
-          <div class="sp-manifesto-bg" aria-hidden="true">
-            <img class="sp-photo" id="sp-bg-origin" src="assets/prologue/scene-1-origin.jpg?v=1" alt="" style="filter: brightness(1.12) contrast(1.04);" />
-            <img class="sp-photo" id="sp-bg-astrolabe" src="assets/prologue/scene-2-astrolabe.jpg?v=1" alt="" style="object-position: right center; filter: brightness(1.16) contrast(1.04);" />
-            <img class="sp-photo" id="sp-bg-earth-dim" src="assets/prologue/scene-3-earth.jpg?v=1" alt="" style="filter: brightness(0.92);" />
-            <div class="sp-manifesto-scrim"></div>
+        <div class="sp-hero-inner">
+          <div class="sp-badge sp-reveal" style="--sp-delay: 20ms;">
+            <span class="sp-badge-pill">3D 卫星图鉴</span>
+            <span>覆盖七大洲 137 国与 5,414 处光影机位</span>
           </div>
 
-          <div class="sp-breath-frame">
-            <div class="sp-breath-slide" data-breath="0">
-              <div class="sp-kicker">c. 1600 BCE · Nebra Sky Disc</div>
-              <div class="sp-breath-text sp-sheen">三千六百年前，人类第一次把星空与季节刻上青铜。</div>
-              <div class="sp-breath-rule"></div>
-              <div class="sp-breath-sub">只为读懂风向、物候，与出发的时刻</div>
-            </div>
+          <h1 class="sp-hero-title">
+            <span class="sp-line-clip"><span class="sp-line-inner" style="--sp-delay: 60ms;">世界，不止于平面</span></span>
+            <span class="sp-line-clip"><span class="sp-line-inner sp-accent-grad" style="--sp-delay: 130ms;">以天文学的精度去旅行</span></span>
+          </h1>
 
-            <div class="sp-breath-slide" data-breath="1">
-              <div class="sp-kicker">c. 240 BCE · Eratosthenes</div>
-              <div class="sp-breath-text sp-sheen">两千年前，仅凭正午 7.2° 的树影，便算出整颗星球的周长。</div>
-              <div class="sp-breath-rule"></div>
-              <div class="sp-breath-sub">人类第一次确信：脚下并非无尽平面，而是一颗完整的球</div>
-            </div>
+          <p class="sp-hero-sub sp-reveal" style="--sp-delay: 190ms;">
+            <span class="sp-phrase">从青铜星盘到近地轨道，</span><span class="sp-phrase">人类花了三千六百年才看清这颗星球的全貌。</span>
+            <span class="sp-phrase">现在，物候、日照与地形尺度，</span><span class="sp-phrase">重新交还到你的掌心。</span>
+          </p>
 
-            <div class="sp-breath-slide" data-breath="2">
-              <div class="sp-kicker">1987 · The Overview Effect</div>
-              <div class="sp-breath-text sp-sheen">直到飞离大气层回望，地图上的国界才第一次消失。</div>
-              <div class="sp-breath-rule"></div>
-              <div class="sp-breath-sub">宇航哲学称之为「总观效应」——万物共享同一道晨昏</div>
-            </div>
-
-            <div class="sp-breath-slide" data-breath="3">
-              <div class="sp-kicker">1977 · Yi-Fu Tuan · Space &amp; Place</div>
-              <div class="sp-breath-text sp-sheen">当你真正认识一处坐标，冷冰冰的“空间”，才成了“地方”。</div>
-              <div class="sp-breath-rule"></div>
-              <div class="sp-breath-sub">这正是我们造这颗地球仪的起点</div>
-            </div>
+          <div class="sp-hero-actions sp-reveal" style="--sp-delay: 250ms;">
+            <button class="sp-btn-primary" id="sp-hero-enter-btn" type="button">
+              <span>进入 3D 地球仪</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+            </button>
+            <button class="sp-btn-ghost" id="sp-hero-explore-btn" type="button">
+              <span>向下阅读序章</span>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+            </button>
           </div>
         </div>
       </section>
 
-      <section class="sp-earth" id="sp-act-earth">
-        <div class="sp-earth-sticky">
-          <div class="sp-earth-photo-wrap" aria-hidden="true">
-            <img class="sp-earth-photo" id="sp-earth-photo" src="assets/prologue/scene-3-earth.jpg?v=1" alt="" />
-            <div class="sp-earth-scrim"></div>
+      <div class="sp-metrics-wrap" id="sp-metrics">
+        <div class="sp-metrics-bar sp-reveal" style="--sp-delay: 120ms;">
+          <div class="sp-metric-cell">
+            <div class="sp-metric-val" data-count="137">0</div>
+            <div class="sp-metric-name">国家与地区</div>
           </div>
+          <div class="sp-metric-cell">
+            <div class="sp-metric-val" data-count="722">0</div>
+            <div class="sp-metric-name">精选目的地</div>
+          </div>
+          <div class="sp-metric-cell">
+            <div class="sp-metric-val is-accent" data-count="5414">0</div>
+            <div class="sp-metric-name">真实摄影机位</div>
+          </div>
+        </div>
+      </div>
 
-          <div class="sp-earth-moment" id="sp-moment-a">
-            <div class="sp-kicker">1845 · Alexander von Humboldt</div>
-            <h2 class="sp-earth-headline sp-sheen" id="sp-earth-headline">自然，是一张千万丝线<br />织成的网。</h2>
-            <p class="sp-earth-lead">
-              洪堡在《宇宙》中写下：海拔、洋流、花期与光影从未孤立。只是在碎片攻略的时代，一整颗活的星球被切成了互不相干的清单。
+      <section class="sp-section" id="sp-act-chapters">
+        <div class="sp-container">
+          <div class="sp-section-head">
+            <div class="sp-kicker sp-reveal" style="--sp-delay: 0ms;">Living Planetary Atlas</div>
+            <h2 class="sp-section-title sp-reveal" style="--sp-delay: 60ms;">
+              <span class="sp-phrase">不是碎片化的攻略清单，</span><br />
+              <span class="sp-phrase sp-accent-grad">而是一整颗呼吸着的星球。</span>
+            </h2>
+            <p class="sp-section-sub sp-reveal" style="--sp-delay: 120ms;">
+              <span class="sp-phrase">洪堡在《宇宙》中写下：</span><span class="sp-phrase">海拔、洋流、花期与光影从未孤立。</span>
+              <span class="sp-phrase">当你真正认识一处坐标，</span><span class="sp-phrase">冷冰冰的“空间”，才成了“地方”。</span>
             </p>
           </div>
 
-          <div class="sp-earth-moment" id="sp-moment-b" style="opacity: 0;">
-            <div class="sp-kicker" style="margin-bottom: 18px;">Living Planetary Atlas</div>
-            <div class="sp-monolith-box">
-              <div class="sp-rule-top" id="sp-rule-top"></div>
-              <div class="sp-monolith-metrics">
-                <div class="sp-metric-cell">
-                  <div class="sp-metric-val" id="sp-num-countries">137</div>
-                  <div class="sp-metric-name">国家与地区</div>
+          <div class="sp-bento">
+            <article class="sp-card sp-card--wide sp-reveal" style="--sp-delay: 40ms;">
+              <img class="sp-card-bg" src="assets/prologue/scene-3-earth.jpg?v=1" alt="" />
+              <div class="sp-card-scrim" aria-hidden="true"></div>
+              <div class="sp-card-body">
+                <div class="sp-card-era">1845 · Alexander von Humboldt · Kosmos</div>
+                <h3 class="sp-card-title">
+                  <span class="sp-phrase">自然，是一张千万丝线</span><span class="sp-phrase">织成的网。</span>
+                </h3>
+                <p class="sp-card-desc">
+                  <span class="sp-phrase">在碎片攻略的时代，地球被切成了互不相干的打卡点。</span>
+                  <span class="sp-phrase">我们把真实卫星地形、十二个月物候规律与太阳光影，</span><span class="sp-phrase">重新缝合回同一颗连续转动的 3D 球体。</span>
+                </p>
+              </div>
+              <div class="sp-card-visual">
+                <img src="assets/prologue/scene-3-earth.jpg?v=1" alt="从轨道回望地球晨昏线" />
+              </div>
+            </article>
+
+            <article class="sp-card sp-reveal" style="--sp-delay: 80ms;">
+              <img class="sp-card-bg" src="assets/prologue/scene-1-origin.jpg?v=1" alt="" />
+              <div class="sp-card-scrim" aria-hidden="true"></div>
+              <div class="sp-card-body">
+                <div class="sp-card-era">c. 1600 BCE · Nebra Sky Disc</div>
+                <h3 class="sp-card-title">
+                  <span class="sp-phrase">三千六百年前，人类第一次</span><span class="sp-phrase">把星空与季节刻上青铜。</span>
+                </h3>
+                <p class="sp-card-desc">
+                  <span class="sp-phrase">只为读懂风向、物候，与出发的准确时刻。</span>
+                </p>
+              </div>
+            </article>
+
+            <article class="sp-card sp-reveal" style="--sp-delay: 140ms;">
+              <img class="sp-card-bg" src="assets/prologue/scene-2-astrolabe.jpg?v=1" alt="" style="object-position: right center;" />
+              <div class="sp-card-scrim" aria-hidden="true"></div>
+              <div class="sp-card-body">
+                <div class="sp-card-era">c. 240 BCE · Eratosthenes</div>
+                <h3 class="sp-card-title">
+                  <span class="sp-phrase">两千年前，仅凭正午 7.2° 树影，</span><span class="sp-phrase">便算出整颗星球的周长。</span>
+                </h3>
+                <p class="sp-card-desc">
+                  <span class="sp-phrase">人类第一次确信：脚下并非无尽平面，而是一颗完整的球。</span>
+                </p>
+              </div>
+            </article>
+
+            <article class="sp-card sp-reveal" style="--sp-delay: 100ms;">
+              <div class="sp-card-body">
+                <div class="sp-card-era">1987 · Frank White · The Overview Effect</div>
+                <h3 class="sp-card-title">
+                  <span class="sp-phrase">直到飞离大气层回望，</span><span class="sp-phrase">地图上的国界才第一次消失。</span>
+                </h3>
+                <p class="sp-card-desc">
+                  <span class="sp-phrase">宇航哲学称之为「总观效应」——万物共享同一道晨昏线。</span>
+                </p>
+              </div>
+            </article>
+
+            <article class="sp-card sp-reveal" style="--sp-delay: 160ms;">
+              <div class="sp-card-body">
+                <div class="sp-card-era">1977 · Yi-Fu Tuan · Space &amp; Place</div>
+                <h3 class="sp-card-title">
+                  <span class="sp-phrase">当你真正认识一处坐标，</span><span class="sp-phrase">冷冰冰的“空间”，才成了“地方”。</span>
+                </h3>
+                <p class="sp-card-desc">
+                  <span class="sp-phrase">这正是我们造这颗 3D 地球仪的起点。</span>
+                </p>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="sp-section sp-section--soft" id="sp-act-instrument">
+        <div class="sp-container">
+          <div class="sp-section-head">
+            <div class="sp-kicker sp-reveal" style="--sp-delay: 0ms;">Precision Instrument</div>
+            <h2 class="sp-section-title sp-reveal" style="--sp-delay: 60ms;">
+              <span class="sp-phrase">以天文仪器的精度，</span><span class="sp-phrase sp-accent-grad">丈量下一次出发。</span>
+            </h2>
+          </div>
+
+          <div class="sp-inst-shell sp-reveal" style="--sp-delay: 120ms;">
+            <div class="sp-tabs-wrap">
+              <div class="sp-tabs" role="tablist" aria-label="核心仪器能力">
+                <button class="sp-tab active" data-inst="0" role="tab" aria-selected="true" type="button">物候刻度</button>
+                <button class="sp-tab" data-inst="1" role="tab" aria-selected="false" type="button">日照星盘</button>
+                <button class="sp-tab" data-inst="2" role="tab" aria-selected="false" type="button">环球航迹</button>
+              </div>
+            </div>
+
+            <div class="sp-dial-frame">
+              <canvas class="sp-inst-canvas" id="sp-inst-canvas" aria-hidden="true"></canvas>
+              <div class="sp-cap-bar">
+                <div class="sp-cap active" data-cap="0">
+                  <h3>十二个月物候刻度</h3>
+                  <p>按月份筛选全球最佳花期、雪季、秋叶与极光窗口，只在对的时间前往对的经纬。</p>
                 </div>
-                <div class="sp-metric-cell">
-                  <div class="sp-metric-val" id="sp-num-cities">722</div>
-                  <div class="sp-metric-name">精选目的地</div>
+                <div class="sp-cap" data-cap="1">
+                  <h3>SunCalc 黄金日照星盘</h3>
+                  <p>实时推演任意机位的日出方位、黄金时刻仰角与顺逆光轨迹，不再全凭天气撞大运。</p>
                 </div>
-                <div class="sp-metric-cell">
-                  <div class="sp-metric-val champagne" id="sp-num-spots">5,414</div>
-                  <div class="sp-metric-name">真实摄影机位</div>
+                <div class="sp-cap" data-cap="2">
+                  <h3>大圆航迹与足迹档案馆</h3>
+                  <p>自动编排多日动线与双档预算；点亮去过与心愿坐标，长出只属于你的世界版图。</p>
                 </div>
               </div>
-              <div class="sp-rule-bot" id="sp-rule-bot"></div>
-            </div>
-            <p class="sp-earth-lead">
-              我们把整颗地球的地形尺度、十二个月物候与太阳光线，重新交还到你的掌心。
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <section class="sp-instrument" id="sp-act-instrument">
-        <div class="sp-inst-head">
-          <div class="sp-kicker">Precision Instrument</div>
-          <h2 class="sp-inst-title sp-sheen" id="sp-inst-title">以天文仪器的精度，丈量下一次出发。</h2>
-        </div>
-
-        <div class="sp-dial-frame">
-          <canvas class="sp-inst-canvas" id="sp-inst-canvas" aria-hidden="true"></canvas>
-          <div class="sp-cap-bar">
-            <div class="sp-cap active" data-cap="0">
-              <h3>十二个月物候刻度</h3>
-              <p>按月份筛选全球最佳花期、雪季、秋叶与极光窗口，只在对的时间前往对的经纬。</p>
-            </div>
-            <div class="sp-cap" data-cap="1">
-              <h3>SunCalc 黄金日照星盘</h3>
-              <p>实时推演任意机位的日出方位、黄金时刻仰角与顺逆光轨迹，不再全凭天气撞大运。</p>
-            </div>
-            <div class="sp-cap" data-cap="2">
-              <h3>大圆航迹与足迹档案馆</h3>
-              <p>自动编排多日动线与双档预算；点亮去过与心愿坐标，长出只属于你的世界版图。</p>
             </div>
           </div>
-        </div>
-
-        <div class="sp-tabs" role="tablist" aria-label="核心仪器能力">
-          <button class="sp-tab active" data-inst="0" role="tab" aria-selected="true" type="button">物候刻度</button>
-          <button class="sp-tab" data-inst="1" role="tab" aria-selected="false" type="button">日照星盘</button>
-          <button class="sp-tab" data-inst="2" role="tab" aria-selected="false" type="button">环球航迹</button>
         </div>
       </section>
 
@@ -171,68 +231,40 @@
         <img class="sp-finale-bg" src="assets/prologue/scene-4-dawn.jpg?v=1" alt="" />
         <div class="sp-finale-scrim" aria-hidden="true"></div>
         <div class="sp-finale-inner">
-          <div class="sp-kicker" style="margin-bottom: 16px;">Ready for Departure</div>
-          <h2 class="sp-finale-title sp-sheen" id="sp-finale-title">出发之前，先与世界相遇。</h2>
-          <div class="sp-finale-sub">137 国 · 722 城 · 5,414 处光影坐标</div>
-          <button class="sp-cta" id="sp-enter-btn" type="button">
-            <span>进入 3D 地球仪</span>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
-          </button>
+          <div class="sp-kicker sp-reveal" style="--sp-delay: 0ms;">Ready for Departure</div>
+          <h2 class="sp-finale-title sp-reveal" style="--sp-delay: 70ms;">
+            <span class="sp-phrase">出发之前，</span><span class="sp-phrase sp-accent-grad">先与世界相遇。</span>
+          </h2>
+          <div class="sp-finale-sub sp-reveal" style="--sp-delay: 130ms;">137 国 · 722 城 · 5,414 处光影坐标</div>
+          <div class="sp-reveal" style="--sp-delay: 190ms;">
+            <button class="sp-btn-primary" id="sp-enter-btn" type="button">
+              <span>进入 3D 地球仪</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+            </button>
+          </div>
 
-          <div class="sp-footnotes">
+          <div class="sp-footnotes sp-reveal" style="--sp-delay: 240ms;">
             Nebra Sky Disc (c. 1600 BCE) · Eratosthenes (c. 240 BCE) · Alexander von Humboldt《Kosmos》(1845) · Yi-Fu Tuan《Space and Place》(1977) · Frank White《The Overview Effect》(1987)
           </div>
         </div>
       </section>
     `;
 
-    // Split Hero Title into masked kinetic characters
-    const titleEl = root.querySelector('#sp-hero-title');
-    const txt = titleEl.textContent.trim();
-    titleEl.textContent = '';
-    heroChars = [];
-    Array.from(txt).forEach((ch, idx) => {
-      const mask = document.createElement('span');
-      mask.className = 'sp-mask';
-      const span = document.createElement('span');
-      span.className = 'sp-char sp-sheen';
-      span.textContent = ch;
-      span.style.transitionDelay = `${100 + idx * 46}ms`;
-      mask.appendChild(span);
-      titleEl.appendChild(mask);
-      heroChars.push(span);
-    });
-
     refs = {
       hairline: root.querySelector('#sp-hairline'),
+      nav: root.querySelector('#sp-nav'),
       muteBtn: root.querySelector('#sp-mute'),
       skipBtn: root.querySelector('#sp-skip'),
+      heroEnterBtn: root.querySelector('#sp-hero-enter-btn'),
+      heroExploreBtn: root.querySelector('#sp-hero-explore-btn'),
       enterBtn: root.querySelector('#sp-enter-btn'),
-      heroAct: root.querySelector('#sp-act-hero'),
-      heroPhoto: root.querySelector('#sp-hero-photo'),
-      heroCopy: root.querySelector('#sp-hero-copy'),
-      heroCue: root.querySelector('#sp-hero-cue'),
-      manifestoAct: root.querySelector('#sp-act-manifesto'),
-      breaths: Array.from(root.querySelectorAll('.sp-breath-slide')),
-      bgOrigin: root.querySelector('#sp-bg-origin'),
-      bgAstrolabe: root.querySelector('#sp-bg-astrolabe'),
-      bgEarthDim: root.querySelector('#sp-bg-earth-dim'),
-      earthAct: root.querySelector('#sp-act-earth'),
-      earthPhoto: root.querySelector('#sp-earth-photo'),
-      earthHeadline: root.querySelector('#sp-earth-headline'),
-      momentA: root.querySelector('#sp-moment-a'),
-      momentB: root.querySelector('#sp-moment-b'),
-      ruleTop: root.querySelector('#sp-rule-top'),
-      ruleBot: root.querySelector('#sp-rule-bot'),
-      numCountries: root.querySelector('#sp-num-countries'),
-      numCities: root.querySelector('#sp-num-cities'),
-      numSpots: root.querySelector('#sp-num-spots'),
-      instTitle: root.querySelector('#sp-inst-title'),
-      finaleTitle: root.querySelector('#sp-finale-title'),
       instCanvas: root.querySelector('#sp-inst-canvas'),
       iCtx: root.querySelector('#sp-inst-canvas').getContext('2d'),
       tabs: Array.from(root.querySelectorAll('.sp-tab')),
-      caps: Array.from(root.querySelectorAll('.sp-cap'))
+      caps: Array.from(root.querySelectorAll('.sp-cap')),
+      navLinks: Array.from(root.querySelectorAll('.sp-nav-link')),
+      reveals: Array.from(root.querySelectorAll('.sp-reveal')),
+      counters: Array.from(root.querySelectorAll('[data-count]'))
     };
 
     refs.tabs.forEach((btn) => {
@@ -246,15 +278,143 @@
       });
     });
 
+    refs.navLinks.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const target = root.querySelector(btn.dataset.scrollTarget);
+        if (target) target.scrollIntoView({ behavior: reduced.matches ? 'auto' : 'smooth', block: 'start' });
+      });
+    });
+
+    refs.heroExploreBtn.addEventListener('click', () => {
+      const metrics = root.querySelector('#sp-metrics');
+      if (metrics) metrics.scrollIntoView({ behavior: reduced.matches ? 'auto' : 'smooth', block: 'center' });
+    });
+
     refs.skipBtn.addEventListener('click', () => close('skip'));
+    refs.heroEnterBtn.addEventListener('click', () => close('cta'));
     refs.enterBtn.addEventListener('click', () => close('cta'));
     refs.muteBtn.addEventListener('click', () => {
       if (global.CosmicBGM) global.CosmicBGM.toggleMute();
     });
 
+    root.addEventListener('scroll', onScroll, { passive: true });
     global.addEventListener('resize', () => {
       if (isOpen) resizeInst();
     });
+  }
+
+  function revealVisibleInViewport() {
+    if (!isOpen) return;
+    const h = root.clientHeight || global.innerHeight || 900;
+    refs.reveals.forEach((el) => {
+      if (el.classList.contains('is-visible')) return;
+      const r = el.getBoundingClientRect();
+      if (r.top < h * 1.05 && r.bottom > -40) {
+        el.classList.add('is-visible');
+        if (revealObserver) revealObserver.unobserve(el);
+      }
+    });
+    refs.counters.forEach((el) => {
+      if (el.dataset.counted === '1') return;
+      const r = el.getBoundingClientRect();
+      if (r.top < h * 1.02 && r.bottom > 0) {
+        animateCount(el);
+        if (countObserver) countObserver.unobserve(el);
+      }
+    });
+  }
+
+  function onScroll() {
+    if (!isOpen || navRaf) return;
+    navRaf = requestAnimationFrame(() => {
+      navRaf = 0;
+      const y = root.scrollTop;
+      const maxS = Math.max(1, root.scrollHeight - root.clientHeight);
+      if (refs.hairline) {
+        refs.hairline.style.transform = `scaleX(${clamp01(y / maxS).toFixed(4)})`;
+      }
+      if (refs.nav) {
+        refs.nav.classList.toggle('is-scrolled', y > 8);
+      }
+      revealVisibleInViewport();
+    });
+  }
+
+  function animateCount(el) {
+    if (el.dataset.counted === '1') return;
+    el.dataset.counted = '1';
+    const target = Number(el.dataset.count) || 0;
+    const format = (val) => val.toLocaleString('en-US');
+
+    if (reduced.matches) {
+      el.textContent = format(target);
+      return;
+    }
+
+    const dur = 900;
+    const start = performance.now();
+    const step = (now) => {
+      if (!isOpen) return;
+      const t = clamp01((now - start) / dur);
+      const eased = 1 - Math.pow(1 - t, 3);
+      el.textContent = format(Math.round(target * eased));
+      if (t < 1) requestAnimationFrame(step);
+      else el.textContent = format(target);
+    };
+    requestAnimationFrame(step);
+  }
+
+  function setupObservers() {
+    teardownObservers();
+
+    if (reduced.matches || typeof IntersectionObserver === 'undefined') {
+      refs.reveals.forEach((el) => el.classList.add('is-visible'));
+      refs.counters.forEach((el) => animateCount(el));
+      return;
+    }
+
+    refs.reveals.forEach((el) => el.classList.remove('is-visible'));
+    refs.counters.forEach((el) => {
+      el.dataset.counted = '0';
+      el.textContent = '0';
+    });
+
+    revealObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            revealObserver.unobserve(entry.target);
+          }
+        });
+      },
+      { root, threshold: 0.12, rootMargin: '0px 0px -30px 0px' }
+    );
+    refs.reveals.forEach((el) => revealObserver.observe(el));
+
+    countObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            animateCount(entry.target);
+            countObserver.unobserve(entry.target);
+          }
+        });
+      },
+      { root, threshold: 0.65 }
+    );
+    refs.counters.forEach((el) => countObserver.observe(el));
+  }
+
+  function teardownObservers() {
+    if (revealObserver) {
+      revealObserver.disconnect();
+      revealObserver = null;
+    }
+    if (countObserver) {
+      countObserver.disconnect();
+      countObserver = null;
+    }
   }
 
   function resizeInst() {
@@ -291,112 +451,13 @@
     inertNodes.clear();
   }
 
-  function sectionProgress(el, y) {
-    const top = el.offsetTop;
-    const span = Math.max(1, el.offsetHeight - root.clientHeight);
-    return clamp01((y - top) / span);
-  }
-
-  function breathCurve(p, start, peakStart, peakEnd, end) {
-    const fadeIn = start === peakStart ? 1 : smoothstep(start, peakStart, p);
-    const fadeOut = 1 - smoothstep(peakEnd, end, p);
-    return fadeIn * fadeOut;
-  }
-
-  function updateHero(t, y) {
-    const p = clamp01(y / Math.max(1, refs.heroAct.offsetHeight));
-    refs.heroPhoto.style.transform = `scale(${lerp(1.06, 1.0, p).toFixed(4)}) translate3d(0, ${(-p * 18).toFixed(1)}px, 0)`;
-    refs.heroPhoto.style.opacity = String(lerp(1.0, 0.42, p).toFixed(3));
-    const copyOp = clamp01(1 - p * 1.5);
-    refs.heroCopy.style.opacity = copyOp.toFixed(3);
-    refs.heroCopy.style.transform = `translate3d(0, ${(-p * 34).toFixed(1)}px, 0)`;
-    refs.heroCue.style.opacity = clamp01(1 - p * 3.2).toFixed(3);
-
-    const sheenPos = reduced.matches ? 50 : ((18 + Math.sin(t * 0.45) * 28 + p * 60) % 100);
-    heroChars.forEach((ch, idx) => {
-      ch.style.setProperty('--sheen-pos', `${(sheenPos + idx * 3).toFixed(1)}%`);
-    });
-  }
-
-  function updateManifesto(y) {
-    const p = sectionProgress(refs.manifestoAct, y);
-    const ranges = [
-      [0.00, 0.00, 0.21, 0.28],
-      [0.24, 0.31, 0.46, 0.53],
-      [0.49, 0.56, 0.71, 0.78],
-      [0.74, 0.81, 0.94, 1.00]
-    ];
-
-    refs.breaths.forEach((el, i) => {
-      const [s, ps, pe, e] = ranges[i];
-      const op = breathCurve(p, s, ps, pe, e);
-      const localT = clamp01((p - s) / Math.max(0.001, e - s));
-      const scale = lerp(0.985, 1.015, localT);
-      const blurPx = reduced.matches ? 0 : (1 - op) * 8;
-
-      el.style.opacity = op.toFixed(3);
-      el.style.transform = `translate3d(0, ${((1 - op) * 10).toFixed(1)}px, 0) scale(${scale.toFixed(4)})`;
-      el.style.filter = `blur(${blurPx.toFixed(2)}px)`;
-
-      const lineEl = el.querySelector('.sp-breath-text');
-      const ruleEl = el.querySelector('.sp-breath-rule');
-      if (!reduced.matches) {
-        lineEl.style.letterSpacing = `calc(-0.03em + ${(lerp(0.075, 0, op)).toFixed(4)}em)`;
-      }
-      lineEl.style.setProperty('--sheen-pos', `${lerp(15, 88, localT).toFixed(1)}%`);
-      ruleEl.style.transform = `scaleX(${op.toFixed(3)})`;
-      ruleEl.style.opacity = op.toFixed(3);
-    });
-
-    const originOp = (1 - smoothstep(0.22, 0.34, p)) * 0.76;
-    const astroOp = breathCurve(p, 0.20, 0.32, 0.54, 0.64) * 0.90;
-    const earthOp = smoothstep(0.48, 0.60, p) * 0.72;
-
-    refs.bgOrigin.style.opacity = originOp.toFixed(3);
-    refs.bgOrigin.style.transform = `scale(${lerp(1.04, 1.0, p).toFixed(4)})`;
-    refs.bgAstrolabe.style.opacity = astroOp.toFixed(3);
-    refs.bgAstrolabe.style.transform = `scale(${lerp(1.06, 1.0, p).toFixed(4)})`;
-    refs.bgEarthDim.style.opacity = earthOp.toFixed(3);
-  }
-
-  function updateEarth(y) {
-    const p = sectionProgress(refs.earthAct, y);
-    const scale = lerp(1.12, 1.0, p);
-    const shiftX = lerp(11, 7, p);
-    refs.earthPhoto.style.transform = `translate3d(${shiftX.toFixed(2)}%, ${lerp(3, -2, p).toFixed(2)}%, 0) scale(${scale.toFixed(4)})`;
-    refs.earthPhoto.style.opacity = lerp(0.88, 1.0, smoothstep(0.0, 0.25, p)).toFixed(3);
-
-    const aOp = breathCurve(p, 0.00, 0.00, 0.38, 0.48);
-    refs.momentA.style.opacity = aOp.toFixed(3);
-    refs.momentA.style.transform = `translate3d(0, ${lerp(0, -10, clamp01(p / 0.5)).toFixed(1)}px, 0)`;
-    refs.momentA.style.filter = `blur(${(reduced.matches ? 0 : (1 - aOp) * 5).toFixed(2)}px)`;
-    refs.earthHeadline.style.setProperty('--sheen-pos', `${lerp(20, 82, clamp01(p / 0.48)).toFixed(1)}%`);
-
-    const bOp = breathCurve(p, 0.48, 0.60, 0.92, 1.00);
-    refs.momentB.style.opacity = bOp.toFixed(3);
-    refs.momentB.style.transform = `translate3d(0, ${lerp(22, 0, smoothstep(0.48, 0.62, p)).toFixed(1)}px, 0)`;
-    refs.momentB.style.filter = `blur(${(reduced.matches ? 0 : (1 - bOp) * 5).toFixed(2)}px)`;
-
-    const countT = smoothstep(0.49, 0.72, p);
-    const ruleT = smoothstep(0.48, 0.66, p);
-    refs.ruleTop.style.transform = `scaleX(${ruleT.toFixed(3)})`;
-    refs.ruleBot.style.transform = `scaleX(${ruleT.toFixed(3)})`;
-
-    const cVal = Math.round(137 * (reduced.matches ? 1 : countT));
-    const cityVal = Math.round(722 * (reduced.matches ? 1 : countT));
-    const spotVal = Math.round(5414 * (reduced.matches ? 1 : countT));
-    refs.numCountries.textContent = String(cVal);
-    refs.numCities.textContent = String(cityVal);
-    refs.numSpots.textContent = spotVal.toLocaleString('en-US');
-  }
-
   function renderInstrument(t) {
-    instBlend += (activeInst - instBlend) * (reduced.matches ? 1 : 0.09);
+    instBlend += (activeInst - instBlend) * (reduced.matches ? 1 : 0.12);
     const { w, h } = resizeInst();
     const ctx = refs.iCtx;
     ctx.clearRect(0, 0, w, h);
 
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.09)';
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
     ctx.lineWidth = 0.5;
     for (let x = 80; x < w; x += 80) {
       ctx.beginPath();
@@ -422,7 +483,7 @@
       const activeIdx = reduced.matches ? 3 : ((t * 0.55) % 12);
       const seasonTags = ['雪', '雾', '樱', '春', '夏', '绿', '星', '山', '秋', '枫', '光', '雪'];
 
-      ctx.font = '400 11px "Noto Sans SC", sans-serif';
+      ctx.font = '500 11px "PingFang SC", "Microsoft YaHei", sans-serif';
       ctx.textAlign = 'center';
 
       for (let m = 0; m < 12; m++) {
@@ -487,7 +548,7 @@
         ctx.stroke();
       }
 
-      ctx.font = '400 10px "Noto Sans SC", sans-serif';
+      ctx.font = '500 10px "PingFang SC", "Microsoft YaHei", sans-serif';
       ctx.fillStyle = 'rgba(245, 245, 247, 0.58)';
       ctx.textAlign = 'center';
       ctx.fillText('N', cx, cy - rad - 8);
@@ -512,7 +573,7 @@
       ctx.fill();
 
       const deg = Math.round((((sweep * 180) / Math.PI) + 450) % 360);
-      ctx.font = '400 11px "Noto Sans SC", sans-serif';
+      ctx.font = '500 11px "PingFang SC", "Microsoft YaHei", sans-serif';
       ctx.fillStyle = '#e0c38e';
       ctx.fillText(`黄金时刻 · AZIMUTH ${deg}°`, cx, cy + 4);
       ctx.restore();
@@ -527,7 +588,7 @@
         { x: w * 0.84, y: h * 0.56, name: '皇后镇 · QUEENSTOWN' }
       ];
 
-      ctx.font = '400 11px "Noto Sans SC", sans-serif';
+      ctx.font = '500 11px "PingFang SC", "Microsoft YaHei", sans-serif';
       for (let i = 0; i < nodes.length - 1; i++) {
         const p1 = nodes[i];
         const p2 = nodes[i + 1];
@@ -567,21 +628,7 @@
       return;
     }
     const t = reduced.matches ? 0 : now * 0.001;
-    const targetY = root.scrollTop;
-    smoothY = reduced.matches ? targetY : lerp(smoothY, targetY, 0.09);
-
-    const maxS = Math.max(1, root.scrollHeight - root.clientHeight);
-    refs.hairline.style.transform = `scaleX(${clamp01(smoothY / maxS).toFixed(4)})`;
-
-    updateHero(t, smoothY);
-    updateManifesto(smoothY);
-    updateEarth(smoothY);
     renderInstrument(t);
-
-    const ambientSheen = reduced.matches ? 50 : (20 + (Math.sin(t * 0.55) * 0.5 + 0.5) * 60);
-    refs.instTitle.style.setProperty('--sheen-pos', `${ambientSheen.toFixed(1)}%`);
-    refs.finaleTitle.style.setProperty('--sheen-pos', `${(100 - ambientSheen).toFixed(1)}%`);
-
     rafId = requestAnimationFrame(tick);
   }
 
@@ -594,14 +641,12 @@
     }
   }
 
-  function shouldChainTour() {
+  function shouldChainTour(reason) {
     if (isReplayRun) return false;
     if (global.location && (global.location.search || global.location.hash)) return false;
-    try {
-      return global.localStorage.getItem(TOUR_SEEN_KEY) !== '1';
-    } catch {
-      return false;
-    }
+    if (!global.OnboardingTour) return false;
+    if (reason === 'cta') return true;
+    return typeof global.OnboardingTour.hasSeen === 'function' ? !global.OnboardingTour.hasSeen() : true;
   }
 
   function open(opts = {}) {
@@ -618,9 +663,11 @@
     root.classList.add('is-entering');
     root.hidden = false;
     root.scrollTop = 0;
-    smoothY = 0;
+    if (refs.hairline) refs.hairline.style.transform = 'scaleX(0)';
+    if (refs.nav) refs.nav.classList.remove('is-scrolled');
     lockBackground();
     resizeInst();
+    setupObservers();
 
     if (!opts.keepBgm && global.CosmicBGM) {
       global.CosmicBGM.start(0.58);
@@ -637,7 +684,10 @@
 
     requestAnimationFrame(() => {
       root.classList.remove('is-entering');
-      requestAnimationFrame(() => root.classList.add('k-ready'));
+      requestAnimationFrame(() => {
+        root.classList.add('k-ready');
+        revealVisibleInViewport();
+      });
     });
 
     if (!rafId) rafId = requestAnimationFrame(tick);
@@ -648,7 +698,7 @@
     isClosing = true;
     document.removeEventListener('keydown', onKeydown, true);
 
-    const willRunTour = shouldChainTour() && Boolean(global.OnboardingTour);
+    const willRunTour = shouldChainTour(reason);
     if (global.CosmicBGM) {
       if (willRunTour) {
         global.CosmicBGM.duck(0.36, 700);
@@ -664,6 +714,11 @@
         cancelAnimationFrame(rafId);
         rafId = 0;
       }
+      if (navRaf) {
+        cancelAnimationFrame(navRaf);
+        navRaf = 0;
+      }
+      teardownObservers();
       if (bgmUnsub) {
         bgmUnsub();
         bgmUnsub = null;
@@ -673,7 +728,10 @@
       unlockBackground();
       document.documentElement.dataset.introState = 'map';
       document.documentElement.dataset.introReason = reason;
-      if (returnFocusEl && typeof returnFocusEl.focus === 'function') {
+
+      if (willRunTour && global.OnboardingTour) {
+        global.OnboardingTour.start(false);
+      } else if (returnFocusEl && typeof returnFocusEl.focus === 'function') {
         try { returnFocusEl.focus({ preventScroll: true }); } catch {}
       }
     };
@@ -682,7 +740,7 @@
       finalize();
     } else {
       root.classList.add('is-exiting');
-      setTimeout(finalize, 540);
+      setTimeout(finalize, 480);
     }
   }
 

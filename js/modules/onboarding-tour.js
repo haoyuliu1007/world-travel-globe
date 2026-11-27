@@ -1,12 +1,14 @@
 (function (global) {
   'use strict';
 
-  const SEEN_KEY = 'wtg_onboarding_v1_seen';
+  const SEEN_KEY = 'wtg_onboarding_v2_seen';
 
   let rootEl = null;
   let spotlightEl = null;
   let welcomeOverlayEl = null;
   let coachmarkEl = null;
+  let bgmBtnEl = null;
+  let bgmUnsub = null;
   let currentStep = -1; // -1 = closed, 0 = welcome, 1..5 = steps
   let active = false;
   let introObserver = null;
@@ -109,6 +111,7 @@
     rootEl.setAttribute('aria-label', t('tourReplay'));
 
     rootEl.innerHTML = `
+      <button class="tour-bgm-btn is-hidden" id="tour-bgm-btn" type="button" aria-label="静音"></button>
       <div class="tour-spotlight" id="tour-spotlight"></div>
       <div class="tour-welcome-overlay" id="tour-welcome-overlay">
         <div class="tour-welcome-card">
@@ -139,6 +142,13 @@
     spotlightEl = rootEl.querySelector('#tour-spotlight');
     welcomeOverlayEl = rootEl.querySelector('#tour-welcome-overlay');
     coachmarkEl = rootEl.querySelector('#tour-coachmark');
+    bgmBtnEl = rootEl.querySelector('#tour-bgm-btn');
+
+    if (bgmBtnEl) {
+      bgmBtnEl.addEventListener('click', () => {
+        if (global.CosmicBGM) global.CosmicBGM.toggleMute();
+      });
+    }
 
     rootEl.querySelector('#tour-start-btn').addEventListener('click', () => goToStep(1));
     rootEl.querySelector('#tour-welcome-skip-btn').addEventListener('click', () => close());
@@ -367,6 +377,17 @@
     positionStep(nextStep);
   }
 
+  function syncBgmBtn() {
+    if (!bgmBtnEl) return;
+    const bgm = global.CosmicBGM;
+    const show = Boolean(active && bgm && bgm.isActive());
+    bgmBtnEl.classList.toggle('is-hidden', !show);
+    if (!show) return;
+    const muted = bgm.isMuted();
+    bgmBtnEl.textContent = muted ? '🔇' : '🔊';
+    bgmBtnEl.setAttribute('aria-label', muted ? '取消静音' : '静音');
+  }
+
   function start(isReplay) {
     if (startTimer) {
       clearTimeout(startTimer);
@@ -385,8 +406,11 @@
     ensureDom();
     active = true;
     rootEl.classList.remove('is-hidden');
+    if (global.CosmicBGM && !bgmUnsub) {
+      bgmUnsub = global.CosmicBGM.onChange(syncBgmBtn);
+    }
+    syncBgmBtn();
     goToStep(0);
-    if (!isReplay) markSeen();
   }
 
   function close() {
@@ -394,7 +418,12 @@
     active = false;
     currentStep = -1;
     markSeen();
+    if (bgmUnsub) {
+      bgmUnsub();
+      bgmUnsub = null;
+    }
     if (global.CosmicBGM) global.CosmicBGM.fadeOutAndStop(1600);
+    syncBgmBtn();
     if (rootEl) {
       rootEl.classList.add('is-hidden');
       if (spotlightEl) spotlightEl.style.opacity = '0';
@@ -406,7 +435,7 @@
   }
 
   function init() {
-    if (hasSeen()) return;
+    if (active || hasSeen()) return;
     if (global.location && (global.location.search || global.location.hash)) return;
 
     const mapBtn = document.getElementById('mode-map-btn');
@@ -427,7 +456,7 @@
         if (document.documentElement.dataset.introState === 'map') {
           introObserver.disconnect();
           introObserver = null;
-          scheduleStart(550);
+          if (!active && !hasSeen()) scheduleStart(550);
         }
       });
       introObserver.observe(document.documentElement, {
@@ -441,6 +470,7 @@
     init,
     start,
     close,
+    hasSeen,
     isOpen: () => active
   };
 })(window);

@@ -1,21 +1,24 @@
-# World Travel Globe V4.5 · 系统架构说明 (ARCHITECTURE)
+# KAIROS. V5.0 — 系统架构说明 (ARCHITECTURE)
 
-## 一、设计原则
+## 一、核心架构原则
 
-1. **零服务器成本、本地优先**：纯原生模块化 JS + `build-dist.js` 单命令行静态构建，同时部署于 Cloudflare Workers（边缘代理 + 可选 D1/R2 + 静态 SEO 落地页 + 722 张 PNG OG 卡片）与 GitHub Pages 静态镜像。
-2. **原始地理数据集只读保护**：55 个区域数据模块与 `data/registry.js` 严格保持只读，增强数据与质量审计结果全部写入独立无损层 `data/enrichment/atlas-enrichment.json` 与 `data/audit-report.json`。
-3. **科学可信与边界透明**：所有天文、时区、气象、地形计算严格区分 `tz-lookup + Intl` IANA 时区、`SunCalc / Astronomy Engine` 星历、`ERA5` 再分析、`Terrarium/Mapterhorn` 栅格 DEM 与经验参考值；局限性完整披露于 [KNOWN_LIMITATIONS.md](KNOWN_LIMITATIONS.md)。
-4. **工程级自适应与优雅降级**：渲染引擎根据硬件能力与前后台切换实时调整 DPR、标签密度与星穹负载；WebGL 上下文丢失或初始化失败时平滑进入 2D 图鉴浏览模式。
+1. **轻量边缘架构 + 按需代码拆分**：
+   - 主运行时仍采用纯原生 UMD 模块打包 (`build-dist.js`) 运行于 Cloudflare Workers 与静态边缘托管，**不引入重型 SPA 构建框架**。
+   - V5 新增重量级 UI 与导出模块全部拆分至 `js/lazy/`（`account-center.js`、`collab-space.js`、`expense-splitter.js`、`dest-compare.js`、`export-service.js`、`share-center.js`、`help-center.js`）及按需 JSON 资产（`data/transport/hubs.json`、`data/docs/manual-*.json`），使核心首屏 `js/app.bundle.min.js` 仅从 V4.5.0 基线 `202.1 KB` gzip 温和增长至 **`239.4 KB` gzip**。
+2. **基线数据只读与历史兼容性**：
+   - `data/registry.js` 与 55 个区域数据模块（722 城 / 5,414 机位 / 137 国）只读保护。
+   - IndexedDB `WorldTravelGlobeDB`、历史键 `wtg_*`、V4 D1 表（`user_profiles` / `photo_metadata` / `profile_backups`）、传统 `/api/*` 与深链 `?focus=` / `?trip=` / `?footprint=` / `?embed=` 保持 100% 向后兼容。
+3. **免注册可用、本地优先 & 可选云同步**：
+   - 基础地球仪、搜索、科学模拟与单机行程离线可用；登录后通过 Cloudflare D1 (`migrations/0003_v5_accounts_collab.sql`) 启用跨端同步与多人协作。
 
 ---
 
-## 二、核心引擎分层
+## 二、系统模块分层
 
-| 引擎 | 核心模块 | 职责边界 |
+| 层级 | 核心文件 | 职责边界 |
 |---|---|---|
-| **1. 地球仪与自适应三维渲染引擎** | `js/app.js`, `js/modules/terrain-3d.js`, `js/modules/bright-stars.js`, `js/modules/diagnostics.js`, `js/modules/solar-terminator.js` | MapLibre GL v5 3D 球体、`high/balanced/eco` 自适应渲染与低帧率看门狗、`visibilitychange` 后台降耗、WebGL context loss/fallback 2D 兜底、Mapterhorn 主源 + AWS Terrarium 自动回退、`SolarTerminator` 反太阳真球冠与 Sutherland-Hodgman 跨日界线晨昏阴影 |
-| **2. 全球时区与专业摄影取景引擎** | `js/services/timezone-service.js`, `js/modules/photo-simulator.js`, `js/modules/viewfinder-3d.js` | `tz-lookup`（CC0）+ `Intl.DateTimeFormat` 按所选日期解析全球 IANA 时区/夏令时/半小时/45 分钟偏移（海洋回退 `Est. UTC±X`）、SunCalc + Astronomy Engine 星历、14–600mm 视场与 WebGL `18°–65°` 光学裁切模拟、360° DEM 地形遮挡射线追踪 |
-| **3. 360° 沉浸式实景与 EPIC 实拍引擎** | `js/modules/streetview.js`, `js/modules/media-gallery.js`, `js/modules/epic-earth.js` | Panoramax 免密钥 360° WebGL 全景漫游、Wikimedia Commons 去美食地标优选与 Wikidata 交叉核验、NASA DSCOVR EPIC 1080px 全盘实拍与自动轮播 |
-| **4. Geo Intelligence 搜索与物候引擎** | `js/modules/geo-intelligence.js`, `js/command-palette.js`, `js/modules/phenology-engine.js`, `js/modules/aesthetic-index.js`, `js/modules/earth-timemachine.js` | MiniSearch v7.1.1 中英文分词检索与自然语言约束解析、分景观物候预测模型、7 维追美指数、NASA GIBS 多时相双日期对比 |
-| **5. 智能行程规划与多端 CRDT 档案** | `js/modules/trip-planner.js`, `js/services/routing-service.js`, `js/services/storage-db.js`, `js/services/crdt-merge.js`, `js/modules/travel-archive.js` | 2-opt 路径优化、OSRM/FOSSGIS 真实路网距离、Dexie IndexedDB 离线存储、严格满足交换律/结合律/幂等性的 LWW + 字段级墓碑 CRDT 同步、敏感凭据隔离 |
-| **6. 边缘代理、API 弹性层与静态 SEO 管线** | `worker/index.js`, `js/services/api-client.js`, `scripts/build-seo-pages.js`, `build-dist.js` | `ApiClient` 指数退避 + `Retry-After` + `AbortSignal` + 11 路健康表；Worker 12s 超时与 `frame-ancestors *` CSP 嵌入头；`@resvg/resvg-js` + SHA-256 增量缓存（`.cache/og/`）并行生成 722 张 `1200×630` PNG OG 卡片与静态页面 |
+| **1. 三维地球渲染与空间 UI 层** | `js/app.js`, `js/detail-panel.js`, `js/command-palette.js`, `css/upgrades.css`, `assets/brand/**` | MapLibre GL v5 3D 球体、KAIROS 矢量品牌与明暗高对比配色、移动底部导航 (`<=768px`)、吸顶工作区返回栏、History API 状态恢复、图层元信息检查器 |
+| **2. 账号安全与多端协作后台层** | `worker/index.js`, `worker/auth.js`, `worker/collab.js`, `migrations/0003_v5_accounts_collab.sql`, `js/services/auth-service.js`, `js/lazy/account-center.js`, `js/lazy/collab-space.js`, `js/services/crdt-merge.js` | Web Crypto `PBKDF2-SHA256` 认证、`HttpOnly` Cookie 会话、CSRF 防护、RBAC (`owner/editor/viewer`)、限时/可撤销邀请、投票留言快照、CRDT 墓碑合并、`/api/fx` & `/api/epic?date=` |
+| **3. 多式联运规划与 AA 分账层** | `js/modules/trip-planner.js`, `js/services/transport-service.js`, `js/services/routing-service.js`, `data/transport/hubs.json`, `js/lazy/expense-splitter.js` | OurAirports 722 城门户枢纽 + 铁路走廊评估、大圆航线诚实推演、OSRM/FOSSGIS 路网、锁点重排、时间线/日历/冲突检测、9 类多币种预算 2.0、最少转账 AA 清算 |
+| **4. 科学物候、光影取景与搜索层** | `js/modules/phenology-engine.js`, `scripts/validate-phenology.js`, `js/modules/photo-simulator.js`, `js/modules/viewfinder-3d.js`, `js/modules/geo-intelligence.js`, `js/lazy/dest-compare.js` | Tier A/B/C 物候（23 城样本外校验）、独立空间天气极光卡、8 场景拍摄机会指数 + >14 天天气边界隔离、日照金山对比、3D 取景器九宫格/倾角/裁切框、10 维相似推荐与对比 |
+| **5. 遥感实景、私密档案与分享手册层** | `js/modules/earth-timemachine.js`, `js/modules/epic-earth.js`, `js/services/media-wikidata.js`, `js/modules/media-gallery.js`, `js/modules/streetview.js`, `js/modules/travel-archive.js`, `js/lazy/export-service.js`, `js/lazy/share-center.js`, `js/lazy/help-center.js`, `sw.js` | GIBS 分屏混合对比、EPIC 历史日期、Commons 四季 EXIF 筛选、Panoramax 罗盘同步、默认私密档案与 EXIF GPS 剥离、8 格式导出、12 类 6 比例海报与本地 QR、30 章三语手册与 PWA 离线包 |

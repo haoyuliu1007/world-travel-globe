@@ -172,7 +172,6 @@
         : '';
 
     const orientLabel = state.orientation === 'portrait' ? L('竖构图', 'Portrait') : L('横构图', 'Landscape');
-    const map = typeof global.getGlobeMap === 'function' ? global.getGlobeMap() : null;
     const pitchDeg = map && typeof map.getPitch === 'function' ? Math.round(map.getPitch()) : 75;
     const cropModeChip = proj.mode === 'webgl-digital-crop'
       ? `<span class="vf-mode-chip tele">${esc(L(`WebGL 数码裁切 · 光学视场 ${proj.appliedMapVFov.toFixed(0)}°`, `WebGL Digital Crop · Optical FOV ${proj.appliedMapVFov.toFixed(0)}°`))}</span>`

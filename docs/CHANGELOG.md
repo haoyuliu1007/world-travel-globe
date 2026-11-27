@@ -1,5 +1,32 @@
 # 更新日志 (CHANGELOG)
 
+## [5.0.0] - 2026-11-28 · KAIROS. World Travel Atlas — 全链路旅行决策闭环升级
+
+### 重大品牌与闭环体验升级 (Added & Upgraded)
+- **Batch 1 · KAIROS. 品牌系统 & 用户真实反馈修复 (`assets/brand/**`, `js/modules/trip-planner.js`, `css/upgrades.css`, `js/app.js`)**：
+  - 无损归档 9 张原始品牌设计稿并生成 10 个纯矢量 SVG（含跨横画无连接 `Λ` 与金色圆点）、全套 Favicon/App Icons 及 722 张 KAIROS V5 `1200×630` PNG OG 卡片。
+  - 彻底修复「输入北京误出东京」行程串台缺陷（显式 `plannerDraft` 状态管理、中英文/别名匹配与严格禁止静默兜底）；新增各工作区吸顶返回条、手机端 44px+ 底部导航栏、History API `popstate` 恢复与浅色模式高对比度适配。
+- **Batch 2 · 可选账号体系与 Cloudflare D1 Schema V5 (`migrations/0003_v5_accounts_collab.sql`, `worker/auth.js`, `js/services/auth-service.js`, `js/lazy/account-center.js`)**：
+  - 全量保留 `WorldTravelGlobeDB`、V4 D1 旧表与 `/api/*` 接口；新增 14 张 V5 关系表与 Web Crypto `PBKDF2-SHA256`（100k 迭代）、`HttpOnly; SameSite=Lax; Secure` 会话 Cookie、CSRF 校验、跨账号隔离、一键全量 JSON 导出、级联注销删除及本地档案安全迁移（先备份再导入）。
+- **Batch 3 · 三层多式联运智能行程规划 2.0 (`scripts/build-transport-hubs.js`, `data/transport/hubs.json`, `js/services/transport-service.js`, `js/modules/trip-planner.js`, `worker/index.js`)**：
+  - 接入 OurAirports 公开数据集建立全球 722 城门户机场与区域铁路枢纽索引；提供 A 层（飞机/高铁/铁路/大巴/自驾/渡轮对比）、B 层（机场接驳）、C 层（市内交通）三层联运推荐与 `/api/fx`（Frankfurter ECB 汇率代理）。
+  - 支持多城串联、站点锁定 (`locked`) 与 `reoptimizeUnlockedDays`、时间线/日历视图切换、日程冲突检测、9 类多币种预算 2.0（预估 vs 实花）与行前准备/插头电压/官方签证提示清单。
+- **Batch 4 · 多人协同、RBAC 权限与最少转账 AA 分账 (`worker/collab.js`, `js/services/crdt-merge.js`, `js/services/qr-code.js`, `js/lazy/collab-space.js`, `js/lazy/expense-splitter.js`)**：
+  - 实现 `owner / editor / viewer` 权限控制、限时及可随时撤销的协同邀请码、景点留言、民主投票与历史版本快照回滚；拓展 `mergeTripDocuments` 满足 CRDT 墓碑消歧收敛；集成纯本地 SVG 二维码生成与贪心最少转账次数 AA 结算引擎。
+- **Batch 5 · 三级物候验证、拍摄机会指数与 10 维地理比较 (`scripts/validate-phenology.js`, `scripts/build-enrichment.js`, `js/modules/phenology-engine.js`, `js/modules/photo-simulator.js`, `js/modules/viewfinder-3d.js`, `js/modules/geo-intelligence.js`, `js/lazy/dest-compare.js`)**：
+  - 新增 `atlas-enrichment.json` (Schema 5.0.0) 逐条数据溯源 (`provenance`) 与 `Tier A/B/C` 分级；建立 23 城樱花/红叶交叉验证子集（樱花样本外 MAE `2.89d`，秋叶 MAE `4.84d`），清晰分离极光空间天气模块。
+  - 摄影模拟新增 8 大题材拍摄机会指数与 **>14 天天气预报隔离保护**（绝不伪造远期预报）及日照金山主峰提前受光对比；3D 取景器加入九宫格开关、实测俯仰倾角仪表与光学/数码裁切指示；新增 10 维特征向量、条件相似检索及 `DestCompare` 2–4 城对比弹窗。
+- **Batch 6 · 图层检查器、时光机分屏对比、四季媒体与私密档案 2.0 (`index.html`, `js/app.js`, `js/modules/earth-timemachine.js`, `js/modules/epic-earth.js`, `js/services/media-wikidata.js`, `js/modules/media-gallery.js`, `js/modules/streetview.js`, `js/modules/travel-archive.js`)**：
+  - 图层中心新增实时/历史数据源元信息与全局透明度调节；NASA GIBS 支持双日期分屏混合滑块；`/api/epic?date=YYYY-MM-DD` 支持按日查看（缺失日期诚实回退最近实拍）。
+  - 修复 Wikimedia 风景滤镜误杀 `rice terrace / wild duck` 等景观问题，同时保留菜品照屏蔽并新增基于 EXIF 日期的春夏秋冬/未标日期筛查；个人档案默认完全私密，增加旅途游记打卡、年度报告海报联动及 Canvas 默认剥离 EXIF GPS 隐私声明。
+- **Batch 7 · 8 格式开放导出、全球分享中心、30 章三语手册与 PWA 离线包 (`js/lazy/export-service.js`, `js/lazy/share-center.js`, `js/lazy/help-center.js`, `scripts/build-manual-docs.js`, `data/docs/manual-*.json`, `js/modules/poster-share.js`, `sw.js`)**：
+  - 新增 JSON / CSV / ICS (RFC 5545) / GPX 1.1 / KML 2.2 / GeoJSON / Print PDF 开放格式导出及 IndexedDB 目的地离线旅行包（带明确缓存时间戳，严禁批量盗刷地图瓦片）。
+  - 全球分享中心支持 12 类分享对象、6 种海报比例（1:1 / 3:4 / 4:5 / 9:16 / 16:9 / 1200×630）与纯本地二维码 SVG；生成内置 30 章三语用户手册（`zh-CN` / `zh-TW` / `en`）及 `?` 快捷键唤起。
+- **Batch 8 · 全量 E2E（8 视口 + 3 上下文）、安全性能审核与 V5 发布文档 (`e2e/globe.spec.mjs`, `docs/V5_*.md`, `docs/OPEN_SOURCE_INTEGRATION.md`, `.modal-backdrop` CSS 修复)**：
+  - 代码按需拆包后 `js/app.bundle.min.js` 仅 `239.4 KB` gzip；全部 **66/66 单元测试** 与 **15 场景 / 8 视口 Playwright E2E** 零错误通过。
+
+---
+
 ## [4.5.0] - 2026-11-27 · Engineering Hardening, Full-Disk EPIC, IANA Timezones & E2E Release Readiness
 
 ### 修复与工程可靠性升级 (Hardening & Upgraded)

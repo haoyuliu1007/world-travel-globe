@@ -96,9 +96,9 @@
     const shareUrl = (ctx && ctx.shareUrl) || buildDeepLink(ctx);
     const title = (ctx && ctx.title) || (ctx && ctx.dest ? (ctx.dest.shortName || ctx.dest.name) : 'KAIROS. — World Travel Atlas');
     const caption = (ctx && ctx.caption) || `${title} · KAIROS. World Travel Atlas\n${shareUrl}`;
-    const qrSvg = global.KairosQR && typeof global.KairosQR.toSvg === 'function'
-      ? global.KairosQR.toSvg(shareUrl, 136)
-      : '';
+    const qrSvg = (global.QRCodeService && typeof global.QRCodeService.renderSvg === 'function')
+      ? global.QRCodeService.renderSvg(shareUrl, 136)
+      : (global.KairosQR && typeof global.KairosQR.toSvg === 'function' ? global.KairosQR.toSvg(shareUrl, 136) : '');
 
     const intents = buildSocialIntents(title, shareUrl);
     const isSignedIn = Boolean(global.AuthService && typeof global.AuthService.getCurrentUser === 'function' && global.AuthService.getCurrentUser());

@@ -1436,7 +1436,14 @@
         await global.LazyLoader.loadScript('js/lazy/share-center.js').catch(() => {});
       }
       if (global.ShareCenter && typeof global.ShareCenter.open === 'function') {
-        global.ShareCenter.open({ type: 'trip', trip: activeTrip });
+        const shareUrl = serializeTripToUrl(activeTrip);
+        global.ShareCenter.open({
+          type: 'trip',
+          title: activeTrip.name,
+          shareUrl,
+          dest: primaryDestObj,
+          trip: activeTrip
+        });
         return;
       }
       const shareUrl = serializeTripToUrl(activeTrip);

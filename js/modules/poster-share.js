@@ -147,8 +147,10 @@
   }
 
   async function renderPosterCanvas(spec) {
-    const W = 1080;
-    const H = 1620;
+    const W = Number(spec.width) || 1080;
+    const H = Number(spec.height) || 1620;
+    const sY = H / 1620;
+    const sX = W / 1080;
     const canvas = document.createElement('canvas');
     canvas.width = W;
     canvas.height = H;
@@ -171,19 +173,20 @@
     // Kicker header
     ctx.fillStyle = '#E8A33D';
     ctx.font = '600 22px "Inter", "PingFang SC", sans-serif';
-    ctx.fillText(spec.kicker || 'KAIROS. · WORLD TRAVEL ATLAS', 72, 92);
+    ctx.fillText(spec.kicker || 'KAIROS. · WORLD TRAVEL ATLAS', 72, Math.round(92 * Math.max(0.75, sY)));
 
     ctx.fillStyle = 'rgba(226, 232, 240, 0.55)';
     ctx.font = '500 20px "IBM Plex Mono", monospace';
     ctx.textAlign = 'right';
-    ctx.fillText(spec.coordsText || 'GEO INTELLIGENCE', W - 72, 92);
+    ctx.fillText(spec.coordsText || 'GEO INTELLIGENCE', W - 72, Math.round(92 * Math.max(0.75, sY)));
     ctx.textAlign = 'left';
 
-    // Globe viewport snapshot box
+    // Globe viewport snapshot box (scales proportionally across 1:1 / 3:4 / 4:5 / 9:16 / 16:9 / 1200x630)
+    const isWide = W > H;
     const imgX = 72;
-    const imgY = 128;
-    const imgW = W - 144;
-    const imgH = 620;
+    const imgY = Math.round(118 * Math.max(0.75, sY));
+    const imgW = isWide ? Math.round((W - 168) * 0.48) : (W - 144);
+    const imgH = isWide ? (H - imgY - 128) : Math.max(240, Math.round(620 * Math.min(1.05, sY)));
     ctx.save();
     drawRoundedRect(ctx, imgX, imgY, imgW, imgH, 24);
     ctx.clip();
@@ -202,7 +205,7 @@
     } else {
       drawProceduralGlobeFallback(ctx, imgX, imgY, imgW, imgH, spec.coords);
     }
-    const overlay = ctx.createLinearGradient(0, imgY + imgH - 180, 0, imgY + imgH);
+    const overlay = ctx.createLinearGradient(0, imgY + imgH - 160, 0, imgY + imgH);
     overlay.addColorStop(0, 'rgba(7, 11, 22, 0)');
     overlay.addColorStop(1, 'rgba(7, 11, 22, 0.88)');
     ctx.fillStyle = overlay;
@@ -214,65 +217,71 @@
     drawRoundedRect(ctx, imgX, imgY, imgW, imgH, 24);
     ctx.stroke();
 
+    const textX = isWide ? (imgX + imgW + 36) : 72;
+    const textW = isWide ? (W - textX - 72) : (W - 144);
+    const titleStartY = isWide ? (imgY + 52) : (imgY + imgH + Math.round(64 * Math.min(1, sY)));
+
     // Title & Subtitle
     ctx.fillStyle = '#F8FAFC';
-    ctx.font = '700 54px "Inter", "PingFang SC", "Microsoft YaHei", sans-serif';
-    let curY = wrapCanvasText(ctx, spec.title || '', 72, 830, W - 144, 68, 2);
+    ctx.font = `700 ${isWide ? 42 : Math.round(52 * Math.min(1, sY + 0.12))}px "Inter", "PingFang SC", "Microsoft YaHei", sans-serif`;
+    let curY = wrapCanvasText(ctx, spec.title || '', textX, titleStartY, textW, isWide ? 52 : 64, 2);
 
     ctx.fillStyle = '#94A3B8';
-    ctx.font = '400 28px "Inter", "PingFang SC", "Microsoft YaHei", sans-serif';
-    curY = wrapCanvasText(ctx, spec.subtitle || '', 72, curY + 12, W - 144, 42, 3);
+    ctx.font = `400 ${isWide ? 22 : 26}px "Inter", "PingFang SC", "Microsoft YaHei", sans-serif`;
+    curY = wrapCanvasText(ctx, spec.subtitle || '', textX, curY + 10, textW, isWide ? 32 : 38, 2);
 
     // Metric pills row
     const pills = Array.isArray(spec.metrics) ? spec.metrics.slice(0, 3) : [];
-    const pillY = Math.max(curY + 24, 1060);
-    const gap = 18;
-    const pillW = pills.length ? Math.floor((W - 144 - gap * (pills.length - 1)) / pills.length) : 0;
+    const pillY = Math.min(H - 250, Math.max(curY + 18, isWide ? curY + 24 : Math.round(1060 * sY)));
+    const gap = 16;
+    const pillW = pills.length ? Math.floor((textW - gap * (pills.length - 1)) / pills.length) : 0;
     pills.forEach((m, idx) => {
-      const px = 72 + idx * (pillW + gap);
+      const px = textX + idx * (pillW + gap);
       ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
-      drawRoundedRect(ctx, px, pillY, pillW, 110, 16);
+      drawRoundedRect(ctx, px, pillY, pillW, 96, 16);
       ctx.fill();
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
       ctx.stroke();
 
       ctx.fillStyle = '#94A3B8';
-      ctx.font = '500 20px "Inter", "PingFang SC", sans-serif';
-      ctx.fillText(m.label, px + 22, pillY + 38);
+      ctx.font = '500 18px "Inter", "PingFang SC", sans-serif';
+      ctx.fillText(m.label, px + 18, pillY + 34);
 
       ctx.fillStyle = '#E2C07D';
-      ctx.font = '700 30px "IBM Plex Mono", "Inter", sans-serif';
-      ctx.fillText(m.value, px + 22, pillY + 82);
+      ctx.font = '700 26px "IBM Plex Mono", "Inter", sans-serif';
+      ctx.fillText(m.value, px + 18, pillY + 74);
     });
 
-    // Bottom bars or highlights
-    const chartY = pillY + 146;
-    ctx.fillStyle = '#CBD5E1';
-    ctx.font = '600 22px "Inter", "PingFang SC", sans-serif';
-    ctx.fillText(spec.sectionTitle || '12-MONTH PHENOLOGY & HIGHLIGHTS', 72, chartY);
-
-    if (Array.isArray(spec.bars) && spec.bars.length) {
-      const barBaseY = chartY + 170;
-      const maxH = 120;
-      const bw = Math.floor((W - 144 - (spec.bars.length - 1) * 14) / spec.bars.length);
-      spec.bars.forEach((b, idx) => {
-        const bx = 72 + idx * (bw + 14);
-        const bh = Math.max(10, Math.round((Math.min(100, b.pct) / 100) * maxH));
-        ctx.fillStyle = b.color || (b.pct >= 80 ? '#E2C07D' : '#38BDF8');
-        drawRoundedRect(ctx, bx, barBaseY - bh, bw, bh, 6);
-        ctx.fill();
-        ctx.fillStyle = '#94A3B8';
-        ctx.font = '500 18px "IBM Plex Mono", sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText(b.label, bx + bw / 2, barBaseY + 28);
-      });
-      ctx.textAlign = 'left';
-    } else if (Array.isArray(spec.lines) && spec.lines.length) {
+    // Bottom bars or highlights (skip only if compact horizontal height leaves little room)
+    const chartY = pillY + 132;
+    if (chartY < H - 150) {
       ctx.fillStyle = '#CBD5E1';
-      ctx.font = '400 24px "Inter", "PingFang SC", sans-serif';
-      spec.lines.slice(0, 5).forEach((ln, idx) => {
-        ctx.fillText(ln, 72, chartY + 46 + idx * 40);
-      });
+      ctx.font = '600 20px "Inter", "PingFang SC", sans-serif';
+      ctx.fillText(spec.sectionTitle || '12-MONTH PHENOLOGY & HIGHLIGHTS', textX, chartY);
+
+      if (Array.isArray(spec.bars) && spec.bars.length && H - chartY > 230) {
+        const barBaseY = Math.min(H - 140, chartY + 150);
+        const maxH = 100;
+        const bw = Math.floor((textW - (spec.bars.length - 1) * 10) / spec.bars.length);
+        spec.bars.forEach((b, idx) => {
+          const bx = textX + idx * (bw + 10);
+          const bh = Math.max(8, Math.round((Math.min(100, b.pct) / 100) * maxH));
+          ctx.fillStyle = b.color || (b.pct >= 80 ? '#E2C07D' : '#38BDF8');
+          drawRoundedRect(ctx, bx, barBaseY - bh, bw, bh, 6);
+          ctx.fill();
+          ctx.fillStyle = '#94A3B8';
+          ctx.font = '500 16px "IBM Plex Mono", sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(b.label, bx + bw / 2, barBaseY + 24);
+        });
+        ctx.textAlign = 'left';
+      } else if (Array.isArray(spec.lines) && spec.lines.length) {
+        ctx.fillStyle = '#CBD5E1';
+        ctx.font = '400 22px "Inter", "PingFang SC", sans-serif';
+        spec.lines.slice(0, 3).forEach((ln, idx) => {
+          ctx.fillText(ln, textX, chartY + 38 + idx * 34);
+        });
+      }
     }
 
     // Footer
@@ -441,6 +450,7 @@
           <button id="poster-sys-share-btn" class="primary-btn" type="button">${icon('share', 14)} ${isEn ? 'System Share' : '调起系统分享'}</button>
           <a id="poster-download-btn" class="secondary-btn" href="${poster.dataUrl}" download="${esc(poster.filename)}" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;">${icon('download', 14)} ${isEn ? 'Download PNG' : '保存 PNG 海报'}</a>
           <button id="poster-copy-link-btn" class="secondary-btn" type="button">${isEn ? 'Copy Link' : '复制直达链接'}</button>
+          <button id="poster-open-center-btn" class="secondary-btn" type="button">${isEn ? '6 Ratios & QR' : '6种比例 / 二维码'}</button>
         </div>
         <div id="poster-share-status" style="font-size:11.5px;color:var(--accent-primary);text-align:center;min-height:16px;"></div>
       </div>
@@ -480,6 +490,15 @@
       }
       if (statusEl) statusEl.textContent = isEn ? 'Deep link copied!' : '已复制目的地直达链接！';
     });
+    const centerBtn = modal.querySelector('#poster-open-center-btn');
+    if (centerBtn) {
+      centerBtn.addEventListener('click', () => {
+        closeModal();
+        if (global.ShareCenter && typeof global.ShareCenter.open === 'function') {
+          global.ShareCenter.open({ title: poster.title, shareUrl: poster.shareUrl, caption: poster.text });
+        }
+      });
+    }
   }
 
   return {

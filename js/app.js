@@ -2351,6 +2351,12 @@
     if (state.mode !== 'map') params.set('mode', state.mode);
     else params.delete('mode');
 
+    if (global.AppI18n && typeof global.AppI18n.getLang === 'function') {
+      const lngCode = global.AppI18n.getLang();
+      if (lngCode && lngCode !== 'zh-CN') params.set('lang', lngCode);
+      else params.delete('lang');
+    }
+
     params.delete('instant');
 
     const nextHref = `${url.pathname}${params.toString() ? '?' + params.toString() : ''}${url.hash}`;
@@ -2382,6 +2388,18 @@
     const mode = params.get('mode');
     if (mode === 'gallery' || mode === 'planner' || mode === 'archive') state.mode = mode;
 
+    const urlLang = params.get('lang');
+    if ((urlLang === 'zh-CN' || urlLang === 'zh-TW' || urlLang === 'en') && global.AppI18n && typeof global.AppI18n.setLang === 'function') {
+      global.AppI18n.setLang(urlLang, { persist: false });
+    }
+
+    const spotRaw = params.get('spot');
+    const spotIdx = spotRaw !== null && spotRaw !== '' && Number.isFinite(Number(spotRaw)) ? Number(spotRaw) : null;
+    const camRaw = params.get('cam');
+    const camBearing = camRaw !== null && camRaw !== '' && Number.isFinite(Number(camRaw)) ? Number(camRaw) : null;
+    const dateStr = params.get('date') || null;
+    const layersParam = params.get('layers') ? params.get('layers').split(',').filter(Boolean) : [];
+
     const embed = params.get('embed');
     return {
       focusId: params.get('focus') || params.get('dest') || (embed && embed !== 'global' ? embed : null),
@@ -2390,7 +2408,11 @@
       chromeOff: params.get('chrome') === 'off',
       autoSpin: params.get('spin') === '1',
       autoDayNight: params.get('daynight') === '1',
-      autoTerrain: params.get('terrain') === '1'
+      autoTerrain: params.get('terrain') === '1',
+      spotIdx,
+      camBearing,
+      dateStr,
+      layers: layersParam
     };
   }
 
@@ -2419,6 +2441,19 @@
       });
     }
 
+    // Lazy proxies for V5 HelpCenter & ShareCenter so every module entry works on first click
+    if (!global.HelpCenter && global.LazyLoader && typeof global.LazyLoader.loadScript === 'function') {
+      global.HelpCenter = {
+        open: (slug) => global.LazyLoader.loadScript('js/lazy/help-center.js').then(() => global.HelpCenter && global.HelpCenter.open(slug)).catch(() => {}),
+        openTopic: (slug) => global.LazyLoader.loadScript('js/lazy/help-center.js').then(() => global.HelpCenter && global.HelpCenter.openTopic(slug)).catch(() => {})
+      };
+    }
+    if (!global.ShareCenter && global.LazyLoader && typeof global.LazyLoader.loadScript === 'function') {
+      global.ShareCenter = {
+        open: (ctx) => global.LazyLoader.loadScript('js/lazy/share-center.js').then(() => global.ShareCenter && global.ShareCenter.open(ctx)).catch(() => {})
+      };
+    }
+
     // Account Center & Help Center triggers
     const accBtn = document.getElementById('account-btn');
     if (accBtn) {
@@ -2428,6 +2463,24 @@
         }
       });
     }
+    const helpBtn = document.getElementById('help-btn');
+    if (helpBtn) {
+      helpBtn.addEventListener('click', () => {
+        if (global.HelpCenter && typeof global.HelpCenter.open === 'function') {
+          global.HelpCenter.open('quick-start');
+        }
+      });
+    }
+    document.addEventListener('keydown', (e) => {
+      if (e.key === '?' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        const tag = (e.target && e.target.tagName) || '';
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (e.target && e.target.isContentEditable)) return;
+        e.preventDefault();
+        if (global.HelpCenter && typeof global.HelpCenter.open === 'function') {
+          global.HelpCenter.open('keyboard-and-feedback');
+        }
+      }
+    });
     global.syncAccountBadgeUI = () => {
       const btn = document.getElementById('account-btn');
       if (!btn || !global.AuthService) return;
@@ -3767,8 +3820,77 @@
         global.DiagnosticsModule.startWatchdog();
       }
     }
+    // Offline Travel Pack helper (IndexedDB cache with explicit timestamp, zero bulk tile scraping)
+    global.saveOfflineTravelPack = async function (destId) {
+      if (!global.StorageDB || !global.TRAVEL_ATLAS) return { ok: false };
+      const dest = (await global.TRAVEL_ATLAS.ensureDetail(destId)) || global.TRAVEL_ATLAS.getAll().find((d) => d.id === destId);
+      if (!dest) return { ok: false };
+      let hub = null;
+      try {
+        const res = await fetch('data/transport/hubs.json');
+        if (res.ok) {
+          const j = await res.json();
+          hub = j && j.byId ? j.byId[destId] : null;
+        }
+      } catch (e) { /* ignore offline hub fetch */ }
+      const enr = global.PhenologyEngine && typeof global.PhenologyEngine.getEnrichmentMap === 'function'
+        ? (global.PhenologyEngine.getEnrichmentMap() || {})[destId] || null
+        : null;
+      const pack = {
+        destId,
+        cachedAt: new Date().toISOString(),
+        dest,
+        hub,
+        enrichment: enr,
+        note: 'Offline pack stores itinerary, destination metadata, spots & gateways (does not bulk-scrape map tiles).'
+      };
+      await global.StorageDB.setCache(`offline_pack:${destId}`, pack, 30 * 24 * 3600 * 1000);
+      return { ok: true, cachedAt: pack.cachedAt, destId };
+    };
+
+    // PWA install prompt & SW update listener
+    let deferredInstallPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredInstallPrompt = e;
+      const topbar = document.getElementById('topbar');
+      if (topbar && !document.getElementById('pwa-install-btn')) {
+        const instBtn = document.createElement('button');
+        instBtn.id = 'pwa-install-btn';
+        instBtn.type = 'button';
+        instBtn.className = 'capsule-icon-btn';
+        instBtn.title = 'Install KAIROS App';
+        instBtn.setAttribute('aria-label', 'Install KAIROS App');
+        instBtn.textContent = '⊕';
+        instBtn.addEventListener('click', async () => {
+          if (!deferredInstallPrompt) return;
+          deferredInstallPrompt.prompt();
+          await deferredInstallPrompt.userChoice.catch(() => {});
+          deferredInstallPrompt = null;
+          instBtn.remove();
+        });
+        topbar.appendChild(instBtn);
+      }
+    });
+
     if (global.navigator && 'serviceWorker' in global.navigator && global.location && (global.location.protocol === 'https:' || global.location.hostname === '127.0.0.1' || global.location.hostname === 'localhost')) {
-      global.navigator.serviceWorker.register('sw.js').catch(() => {});
+      global.navigator.serviceWorker.register('sw.js').then((reg) => {
+        if (!reg) return;
+        reg.addEventListener('updatefound', () => {
+          const nw = reg.installing;
+          if (!nw) return;
+          nw.addEventListener('statechange', () => {
+            if (nw.state === 'installed' && global.navigator.serviceWorker.controller) {
+              const toast = document.getElementById('subspot-toast');
+              const txt = document.getElementById('subspot-toast-text');
+              if (toast && txt) {
+                txt.textContent = 'KAIROS V5.0 updated — reload anytime for latest build';
+                toast.classList.remove('is-hidden');
+              }
+            }
+          });
+        });
+      }).catch(() => {});
     }
   }
 

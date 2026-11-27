@@ -62,20 +62,19 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Navigation requests (HTML shell): stale-while-revalidate for instant repeat visits
+  // Navigation requests (HTML shell): network-first so updates take effect immediately, cache as offline fallback
   if (req.mode === 'navigate') {
     event.respondWith(
       caches.open(CACHE_NAME).then(async (cache) => {
-        const hit = (await cache.match('./index.html')) || (await cache.match('./'));
-        const netPromise = fetch(req)
-          .then((res) => {
-            if (res && res.ok) {
-              cache.put('./index.html', res.clone());
-            }
-            return res;
-          })
-          .catch(() => null);
-        return hit || (await netPromise);
+        try {
+          const res = await fetch(req);
+          if (res && res.ok) {
+            cache.put('./index.html', res.clone());
+          }
+          return res;
+        } catch {
+          return (await cache.match('./index.html')) || (await cache.match('./'));
+        }
       })
     );
     return;

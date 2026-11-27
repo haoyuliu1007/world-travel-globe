@@ -4,6 +4,7 @@
 
   const intro = document.querySelector('#cosmic-intro');
   const video = document.querySelector('#cosmic-film');
+  const loadingText = document.querySelector('#cosmic-loading-text');
   const progress = document.querySelector('#cosmic-progress');
   const play = document.querySelector('#cosmic-play');
   const mute = document.querySelector('#cosmic-mute');
@@ -13,7 +14,8 @@
   const credits = document.querySelector('#cosmic-credits');
   const options = replay.closest('.cosmic-options');
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
-  const storageKey = 'wtg-cosmic-intro-v6-seen';
+  const countKey = 'wtg-cosmic-intro-v7-plays';
+  const MAX_AUTO_PLAYS = 3;
   const supportedVideo = [
     ['assets/cosmic-intro/cosmic-slow-tour.mp4?v=6', 'video/mp4; codecs="avc1.640028"']
   ].filter(([, type]) => video.canPlayType(type) || video.canPlayType('video/mp4')).map(([url]) => url);
@@ -24,12 +26,12 @@
   let motionTimer;
   let introStatus = 'map';
 
-  function seen() {
-    try { return localStorage.getItem(storageKey) === '1'; } catch { return false; }
+  function getPlayCount() {
+    try { return parseInt(localStorage.getItem(countKey) || '0', 10) || 0; } catch { return 0; }
   }
 
-  function markSeen() {
-    try { localStorage.setItem(storageKey, '1'); } catch {}
+  function incrementPlayCount() {
+    try { localStorage.setItem(countKey, String(getPlayCount() + 1)); } catch {}
   }
 
   function publish(status, reason = '') {
@@ -45,7 +47,7 @@
   function canMatch(map) {
     if (!map?.isStyleLoaded() || !map.areTilesLoaded() || !map.getLayer('layer-satellite')
         || map.getLayoutProperty('layer-satellite', 'visibility') === 'none'
-        || document.getElementById('mode-map-btn').getAttribute('aria-selected') !== 'true') return false;
+        || document.getElementById('mode-map-btn')?.getAttribute('aria-selected') !== 'true') return false;
     return true;
   }
 
@@ -78,15 +80,15 @@
   }
 
   const strings = {
-    'zh': ['宇宙开场', '重播宇宙开场', '影像来源', '跳过', '播放进度', '播放', '暂停', '静音', '取消静音', '🔊 点击开启声音'],
-    'zh-tw': ['宇宙開場', '重播宇宙開場', '影像來源', '略過', '播放進度', '播放', '暫停', '靜音', '取消靜音', '🔊 點擊開啟聲音'],
-    en: ['Opening film', 'Replay opening film', 'Film credits', 'Skip', 'Playback position', 'Play', 'Pause', 'Mute', 'Unmute', '🔊 Click to enable sound'],
-    ja: ['オープニング映像', 'オープニングを再生', '映像クレジット', 'スキップ', '再生位置', '再生', '一時停止', 'ミュート', 'ミュート解除', '🔊 クリックで音声オン'],
-    ko: ['오프닝 영상', '오프닝 다시 보기', '영상 출처', '건너뛰기', '재생 위치', '재생', '일시 정지', '음소거', '음소거 해제', '🔊 클릭하여 소리 켜기'],
-    fr: ['Film d’ouverture', 'Revoir le film', 'Crédits du film', 'Passer', 'Position de lecture', 'Lire', 'Pause', 'Muet', 'Activer le son', '🔊 Cliquer pour activer le son'],
-    de: ['Eröffnungsfilm', 'Eröffnungsfilm erneut ansehen', 'Bildnachweise', 'Überspringen', 'Wiedergabeposition', 'Abspielen', 'Pause', 'Stumm', 'Ton an', '🔊 Klicken für Ton'],
-    es: ['Vídeo de apertura', 'Repetir la apertura', 'Créditos del vídeo', 'Omitir', 'Posición de reproducción', 'Reproducir', 'Pausa', 'Silenciar', 'Activar sonido', '🔊 Haz clic para activar el sonido'],
-    ru: ['Вступительный ролик', 'Повторить вступление', 'Источники видео', 'Пропустить', 'Позиция воспроизведения', 'Воспроизвести', 'Пауза', 'Без звука', 'Включить звук', '🔊 Нажмите для звука']
+    'zh': ['宇宙开场', '重播宇宙开场', '影像来源', '跳过', '播放进度', '播放', '暂停', '静音', '取消静音', '🔊 点击开启声音', '正在进入宇宙视界…'],
+    'zh-tw': ['宇宙開場', '重播宇宙開場', '影像來源', '略過', '播放進度', '播放', '暫停', '靜音', '取消靜音', '🔊 點擊開啟聲音', '正在進入宇宙視界…'],
+    en: ['Opening film', 'Replay opening film', 'Film credits', 'Skip', 'Playback position', 'Play', 'Pause', 'Mute', 'Unmute', '🔊 Click to enable sound', 'Entering cosmic view…'],
+    ja: ['オープニング映像', 'オープニングを再生', '映像クレジット', 'スキップ', '再生位置', '再生', '一時停止', 'ミュート', 'ミュート解除', '🔊 クリックで音声オン', '宇宙ビューを起動中…'],
+    ko: ['오프닝 영상', '오프닝 다시 보기', '영상 출처', '건너뛰기', '재생 위치', '재생', '일시 정지', '음소거', '음소거 해제', '🔊 클릭하여 소리 켜기', '우주 뷰 여는 중…'],
+    fr: ['Film d’ouverture', 'Revoir le film', 'Crédits du film', 'Passer', 'Position de lecture', 'Lire', 'Pause', 'Muet', 'Activer le son', '🔊 Cliquer pour activer le son', 'Entrée en vue cosmique…'],
+    de: ['Eröffnungsfilm', 'Eröffnungsfilm erneut ansehen', 'Bildnachweise', 'Überspringen', 'Wiedergabeposition', 'Abspielen', 'Pause', 'Stumm', 'Ton an', '🔊 Klicken für Ton', 'Kosmische Ansicht wird geladen…'],
+    es: ['Vídeo de apertura', 'Repetir la apertura', 'Créditos del vídeo', 'Omitir', 'Posición de reproducción', 'Reproducir', 'Pausa', 'Silenciar', 'Activar sonido', '🔊 Haz clic para activar el sonido', 'Entrando en vista cósmica…'],
+    ru: ['Вступительный ролик', 'Повторить вступление', 'Источники видео', 'Пропустить', 'Позиция воспроизведения', 'Воспроизвести', 'Пауза', 'Без звука', 'Включить звук', '🔊 Нажмите для звука', 'Запуск космического обзора…']
   };
   let labels = strings.en;
   function localize() {
@@ -99,6 +101,7 @@
     skip.querySelector('span').textContent = skipLabel;
     progress.setAttribute('aria-label', progressLabel);
     if (unmuteHint) unmuteHint.textContent = labels[9];
+    if (loadingText) loadingText.textContent = labels[10];
     playButton();
     muteButton();
   }
@@ -124,14 +127,26 @@
     run.frameId = 0;
   }
 
-  function matchesViewport(map) {
-    const scale = Math.max(innerWidth / 1920, innerHeight / 1080);
-    return matchLandmarks.every(([coordinates, reference]) => {
-      const point = map.project(coordinates);
-      const x = innerWidth / 2 + (reference[0] - 960) * scale;
-      const y = innerHeight / 2 + (reference[1] - 540) * scale;
-      return Math.hypot(point.x - x, point.y - y) <= 4;
+  function lockBackground(run) {
+    if (playback !== run || run.finishing) return;
+    Array.from(document.body.children).forEach(node => {
+      if (node !== intro && node.tagName !== 'SCRIPT' && !node.inert) {
+        node.inert = true;
+        run.inertNodes.add(node);
+      }
     });
+  }
+
+  function revealIntro(run) {
+    if (run.activated) return;
+    run.activated = true;
+    intro.inert = false;
+    document.body.classList.add('intro-active');
+    lockBackground(run);
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => lockBackground(run), { once: true, signal: run.events.signal });
+    }
+    skip.focus({ preventScroll: true });
   }
 
   function finish(run, reason) {
@@ -141,7 +156,10 @@
     clearTimeout(run.stallTimer);
     cancelFrame(run);
     run.events.abort();
-    markSeen();
+    if (!run.isReplay && !run.counted && (reason === 'complete' || reason === 'skip' || reason === 'escape')) {
+      run.counted = true;
+      incrementPlayCount();
+    }
     const map = currentMap();
     const matched = reason === 'complete' && !reducedMotion.matches && canMatch(map);
     if (matched) prepareMap(map);
@@ -158,47 +176,43 @@
       intro.hidden = true;
       if (unmuteHint) unmuteHint.hidden = true;
       run.inertNodes.forEach(node => { node.inert = false; });
-      intro.classList.remove('is-exiting', 'is-warming');
-    intro.inert = false;
+      run.inertNodes.clear();
+      intro.classList.remove('is-exiting', 'is-exiting-fast', 'is-playing');
+      document.documentElement.classList.remove('cosmic-intro-boot');
+      intro.inert = false;
       document.body.classList.remove('intro-active');
       publish('map', reason);
       playback = null;
       revealMap();
       if (hadFocus) (run.returnFocus || document.querySelector('#open-palette-btn'))?.focus({ preventScroll: true });
     };
-    if (matched) {
-      intro.classList.add('is-exiting');
+    if (matched || !reducedMotion.matches) {
+      const fadeDuration = matched ? 480 : 280;
+      const exitDelay = matched ? 520 : 360;
+      intro.classList.add(matched ? 'is-exiting' : 'is-exiting-fast');
       if (unmuteHint) unmuteHint.hidden = true;
       const startVol = video.volume;
       const fadeStart = performance.now();
       run.audioFadeTimer = setInterval(() => {
-        const t = Math.min(1, (performance.now() - fadeStart) / 480);
+        const t = Math.min(1, (performance.now() - fadeStart) / fadeDuration);
         video.volume = Math.max(0, startVol * (1 - t));
       }, 30);
-      setTimeout(release, 520);
-    } else release();
-  }
-
-  function revealIntro(run) {
-    if (run.activated) return;
-    run.activated = true;
-    intro.classList.remove('is-warming');
-    intro.inert = false;
-    document.body.classList.add('intro-active');
-    run.inertNodes = Array.from(document.body.children)
-      .filter(node => node !== intro && node.tagName !== 'SCRIPT' && !node.inert);
-    run.inertNodes.forEach(node => { node.inert = true; });
-    skip.focus({ preventScroll: true });
+      setTimeout(release, exitDelay);
+    } else {
+      release();
+    }
   }
 
   function start(isReplay) {
     if (playback || !supportedVideo.length) return;
     restorePending?.();
     clearTimeout(motionTimer);
-    document.documentElement.classList.remove('cosmic-motion');
+    document.documentElement.classList.remove('cosmic-motion', 'cosmic-intro-boot');
     const run = {
+      isReplay: Boolean(isReplay),
+      counted: false,
       returnFocus: isReplay ? document.activeElement : null,
-      inertNodes: [],
+      inertNodes: new Set(),
       events: new AbortController(),
       frameId: 0,
       started: performance.now(),
@@ -208,9 +222,8 @@
     };
     playback = run;
     intro.hidden = false;
-    intro.classList.toggle('is-warming', !isReplay);
-    intro.inert = !isReplay;
-    if (isReplay) revealIntro(run);
+    intro.classList.remove('is-playing', 'is-exiting', 'is-exiting-fast');
+    revealIntro(run);
     progress.value = 0;
     progress.disabled = true;
     play.disabled = true;
@@ -265,7 +278,7 @@
       }
       clearTimeout(run.startupTimer);
       run.startupTimer = setTimeout(() => finish(run, 'startup-timeout'),
-        Math.min(4500, Math.max(0, 8000 - (performance.now() - run.started))));
+        Math.min(4500, Math.max(0, 9000 - (performance.now() - run.started))));
       trySource();
     });
     on('loadedmetadata', () => {
@@ -276,7 +289,11 @@
       clearTimeout(run.startupTimer);
       clearTimeout(run.stallTimer);
       run.played = true;
-      revealIntro(run);
+      if (!run.isReplay && !run.counted) {
+        run.counted = true;
+        incrementPlayCount();
+      }
+      intro.classList.add('is-playing');
       video.classList.add('has-frame');
       play.disabled = false;
       if (mute) mute.disabled = false;
@@ -301,27 +318,18 @@
     });
     on('ended', () => finish(run, 'complete'));
 
-    run.startupTimer = setTimeout(() => finish(run, 'startup-timeout'), 7000);
+    run.startupTimer = setTimeout(() => finish(run, 'startup-timeout'), 9000);
     trySource();
   }
 
   document.addEventListener('keydown', event => {
     if (!playback) return;
-    if (!playback.activated) {
-      finish(playback, event.key === 'Escape' ? 'escape' : 'interacted');
-      return;
-    }
     event.stopPropagation();
     if (event.key === 'Escape') {
       event.preventDefault();
       finish(playback, 'escape');
     }
   });
-  for (const event of ['pointerdown', 'wheel', 'touchstart']) {
-    document.addEventListener(event, () => {
-      if (playback && !playback.activated) finish(playback, 'interacted');
-    }, { capture: true, passive: true });
-  }
   skip.addEventListener('click', () => playback && finish(playback, 'skip'));
   replay.addEventListener('click', () => start(true));
   play.addEventListener('click', () => {
@@ -363,6 +371,10 @@
   localize();
   new MutationObserver(localize).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
   options.hidden = !supportedVideo.length;
-  publish('map');
-  if (landing && desktop.matches && !seen() && !reducedMotion.matches) start(false);
+  if (landing && desktop.matches && getPlayCount() < MAX_AUTO_PLAYS && !reducedMotion.matches && supportedVideo.length) {
+    start(false);
+  } else {
+    document.documentElement.classList.remove('cosmic-intro-boot');
+    publish('map');
+  }
 })();

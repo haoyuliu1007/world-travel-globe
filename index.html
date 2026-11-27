@@ -16,8 +16,21 @@
   <link rel="stylesheet" href="vendor/maplibre-gl.css" />
   <link rel="stylesheet" href="css/styles.css?v=36" />
   <link rel="stylesheet" href="css/upgrades.css?v=36" />
-  <link rel="stylesheet" href="assets/cosmic-intro/player.css?v=6" />
-  <script defer src="assets/cosmic-intro/player.js?v=6"></script>
+  <link rel="stylesheet" href="assets/cosmic-intro/player.css?v=7" />
+  <script>
+  (function () {
+    try {
+      var plays = parseInt(localStorage.getItem('wtg-cosmic-intro-v7-plays') || '0', 10) || 0;
+      var landing = !location.search && !location.hash;
+      var desktop = matchMedia('(min-width: 800px) and (pointer: fine)').matches;
+      var reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (landing && desktop && !reduced && plays < 3) {
+        document.documentElement.classList.add('cosmic-intro-boot');
+        document.documentElement.dataset.introState = 'loading';
+      }
+    } catch (e) {}
+  })();
+  </script>
   <script type="application/ld+json" id="dest-jsonld">{}</script>
 </head>
 <body>
@@ -45,7 +58,11 @@
   </button>
 
   <section id="cosmic-intro" aria-label="宇宙开场" role="dialog" aria-modal="true" hidden>
-    <video id="cosmic-film" playsinline preload="none" disablepictureinpicture></video>
+    <video id="cosmic-film" playsinline preload="auto" poster="assets/cosmic-intro/poster.jpg?v=7" disablepictureinpicture></video>
+    <div id="cosmic-loading" aria-live="polite">
+      <span class="cosmic-loading-ring" aria-hidden="true"></span>
+      <span id="cosmic-loading-text">正在进入宇宙视界…</span>
+    </div>
     <button id="cosmic-unmute-hint" type="button" hidden>🔊 点击开启声音</button>
     <div class="cosmic-film-controls">
       <button id="cosmic-play" type="button" aria-label="暂停">Ⅱ</button>
@@ -142,6 +159,7 @@
       </button>
     </div>
   </section>
+  <script src="assets/cosmic-intro/player.js?v=7"></script>
 
   <!-- 3-Language Selector Popover -->
   <section class="studio-popover lang-popover is-hidden" id="lang-popover" role="dialog" aria-label="界面语言选择">

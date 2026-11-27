@@ -14,7 +14,7 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <title>World Travel Globe · 全球旅行地理图鉴</title>
   <link rel="stylesheet" href="vendor/maplibre-gl.css" />
-  <link rel="stylesheet" href="css/styles.css?v=38" />
+  <link rel="stylesheet" href="css/styles.css?v=39" />
   <link rel="stylesheet" href="css/upgrades.css?v=38" />
   <link rel="stylesheet" href="assets/prologue/prologue.css?v=5" />
   <link rel="stylesheet" href="assets/cosmic-intro/player.css?v=8" />
@@ -42,8 +42,10 @@
   <script type="application/ld+json" id="dest-jsonld">{}</script>
 </head>
 <body>
-  <!-- Restrained Deep Space Backdrop & 3D-Linked Starfield -->
+  <!-- Crisp Deep Space Parallax Backdrop & 3D-Linked Starfield -->
   <div id="space-backdrop" aria-hidden="true">
+    <div class="skybox-layer" id="skybox-layer-a"></div>
+    <div class="skybox-layer" id="skybox-layer-b"></div>
     <canvas id="starfield-canvas" aria-hidden="true"></canvas>
   </div>
 
@@ -586,6 +588,6 @@
   <script src="js/detail-panel.js?v=36"></script>
   <script src="js/command-palette.js?v=36"></script>
   <script src="js/gallery.js?v=36"></script>
-  <script src="js/app.js?v=40"></script>
+  <script src="js/app.js?v=41"></script>
 </body>
 </html>

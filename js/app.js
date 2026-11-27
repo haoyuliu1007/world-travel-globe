@@ -227,43 +227,33 @@
     return Boolean(global.matchMedia && global.matchMedia('(prefers-reduced-motion: reduce)').matches);
   }
 
-  // WebGL 3D Spherical Skybox + Multi-Scale Starfield (zero idle CPU, 2D Canvas fallback)
-  const SKYBOX_KEY = 'wtg_skybox_v1';
+  // Crisp 1:1 Parallax Backdrop + Transparent Retina-Crisp 3D Starfield (zero idle CPU)
+  const SKYBOX_KEY = 'wtg_skybox_v2';
   const SKYBOX_PRESETS = [
-    { id: 'milkyway', labelKey: 'skyMilkyway', url: 'assets/skyboxes/milkyway.jpg', exposure: 1.05, starBoost: 1.0, tiltDeg: 26 },
-    { id: 'nebula', labelKey: 'skyNebula', url: 'assets/skyboxes/nebula.jpg', exposure: 0.96, starBoost: 1.05, tiltDeg: 18 },
-    { id: 'aurora', labelKey: 'skyAurora', url: 'assets/skyboxes/aurora.jpg', exposure: 0.94, starBoost: 1.0, tiltDeg: 14 },
-    { id: 'starfield', labelKey: 'skyStarfield', url: null, exposure: 1.0, starBoost: 1.45, tiltDeg: 24 }
+    { id: 'nebula', labelKey: 'skyNebula', url: 'assets/skyboxes/nebula.jpg', starCount: 900, starBoost: 0.92 },
+    { id: 'milkyway', labelKey: 'skyMilkyway', url: 'assets/skyboxes/milkyway.jpg', starCount: 750, starBoost: 0.85 },
+    { id: 'aurora', labelKey: 'skyAurora', url: 'assets/skyboxes/aurora.jpg', starCount: 950, starBoost: 0.95 },
+    { id: 'starfield', labelKey: 'skyStarfield', url: null, starCount: 1700, starBoost: 1.25 }
   ];
 
   const starfield = (() => {
-    const STAR_COUNT = 1900;
+    const MAX_STARS = 1700;
     const DEG2RAD = Math.PI / 180;
-    const FADE_MS = 550;
 
     let canvas = null;
-    let gl = null;
-    let ctx2d = null;
-    let useWebGL = false;
+    let ctx = null;
+    let layerA = null;
+    let layerB = null;
+    let activeLayerSlot = 0; // 0 -> layerA, 1 -> layerB
+    let layerToken = 0;
+    const loadedUrls = new Set();
+
+    let starsData = null;
     let width = 0;
     let height = 0;
     let dpr = 1;
     let rafId = 0;
     let isBlank = true;
-
-    let skyProg = null;
-    let starProg = null;
-    let quadBuf = null;
-    let starBuf = null;
-    let starsData = null;
-
-    const texCache = new Map();
-    const loadingUrls = new Set();
-
-    let slotA = null;
-    let slotB = null;
-    let fadeStart = 0;
-    let isFading = false;
 
     function getPresetMeta(id) {
       return SKYBOX_PRESETS.find((p) => p.id === id) || SKYBOX_PRESETS[0];
@@ -276,12 +266,10 @@
       } catch (e) {
         // ignore
       }
-      return 'milkyway';
+      return 'nebula';
     }
 
     let currentPresetId = loadInitialPresetId();
-    slotA = getPresetMeta(currentPresetId);
-    slotB = slotA;
 
     function createRng(seed) {
       let s = seed >>> 0;
@@ -295,278 +283,87 @@
 
     function buildStarCatalog() {
       const rand = createRng(20260722);
-      const list = new Array(STAR_COUNT);
+      const list = new Array(MAX_STARS);
       const spectral = [
-        [0.74, 0.85, 1.00], // B/A cool sapphire-white
-        [0.92, 0.95, 1.00], // A/F pure pearl
-        [1.00, 0.96, 0.88], // F/G pale champagne
-        [1.00, 0.86, 0.70]  // G/K warm amber-white
+        [204, 224, 255], // cool sapphire-white
+        [242, 246, 255], // pure pearl
+        [255, 245, 224], // pale champagne
+        [255, 226, 186]  // warm amber-white
       ];
 
-      for (let i = 0; i < STAR_COUNT; i++) {
-        // 35% gently biased near galactic equator, 65% full-sphere
-        let u;
-        if (rand() < 0.35) {
-          u = (rand() + rand() - 1) * 0.35;
-        } else {
-          u = rand() * 2 - 1;
-        }
+      for (let i = 0; i < MAX_STARS; i++) {
+        const u = rand() * 2 - 1;
         const theta = rand() * Math.PI * 2;
         const s = Math.sqrt(Math.max(0, 1 - u * u));
         const tier = rand();
-        let size;
+        let r;
         let alpha;
-        if (tier < 0.72) {
-          size = 1.1 + rand() * 0.6;
-          alpha = 0.24 + rand() * 0.22;
-        } else if (tier < 0.94) {
-          size = 1.7 + rand() * 0.8;
-          alpha = 0.48 + rand() * 0.26;
+        let isAnchor = false;
+        if (tier < 0.76) {
+          r = 0.45 + rand() * 0.30;
+          alpha = 0.18 + rand() * 0.20;
+        } else if (tier < 0.96) {
+          r = 0.75 + rand() * 0.30;
+          alpha = 0.40 + rand() * 0.24;
         } else {
-          size = 2.6 + rand() * 1.4;
-          alpha = 0.76 + rand() * 0.20;
+          r = 1.05 + rand() * 0.30;
+          alpha = 0.66 + rand() * 0.19;
+          isAnchor = true;
         }
 
         const spPick = rand();
-        const col = spPick < 0.28
+        const rgb = spPick < 0.26
           ? spectral[0]
-          : (spPick < 0.68 ? spectral[1] : (spPick < 0.88 ? spectral[2] : spectral[3]));
+          : (spPick < 0.68 ? spectral[1] : (spPick < 0.89 ? spectral[2] : spectral[3]));
 
         list[i] = {
           x: s * Math.cos(theta),
           y: u,
           z: s * Math.sin(theta),
-          size,
+          r,
           alpha,
-          r: col[0],
-          g: col[1],
-          b: col[2]
+          isAnchor,
+          rgb: `${rgb[0]},${rgb[1]},${rgb[2]}`
         };
       }
       return list;
     }
 
-    function compileShader(type, src) {
-      const sh = gl.createShader(type);
-      gl.shaderSource(sh, src);
-      gl.compileShader(sh);
-      if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) {
-        gl.deleteShader(sh);
-        return null;
+    function applyBackdropLayer(meta) {
+      if (!layerA || !layerB) {
+        layerA = document.getElementById('skybox-layer-a');
+        layerB = document.getElementById('skybox-layer-b');
       }
-      return sh;
-    }
+      if (!layerA || !layerB) return;
 
-    function linkProgram(vsSrc, fsSrc) {
-      const vs = compileShader(gl.VERTEX_SHADER, vsSrc);
-      const fs = compileShader(gl.FRAGMENT_SHADER, fsSrc);
-      if (!vs || !fs) return null;
-      const prog = gl.createProgram();
-      gl.attachShader(prog, vs);
-      gl.attachShader(prog, fs);
-      gl.linkProgram(prog);
-      gl.deleteShader(vs);
-      gl.deleteShader(fs);
-      if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
-        gl.deleteProgram(prog);
-        return null;
+      const token = ++layerToken;
+      if (!meta || !meta.url) {
+        layerA.classList.remove('is-active');
+        layerB.classList.remove('is-active');
+        return;
       }
-      return prog;
-    }
 
-    function initWebGL() {
-      try {
-        gl = canvas.getContext('webgl', {
-          alpha: false,
-          antialias: false,
-          depth: false,
-          stencil: false,
-          powerPreference: 'low-power'
-        });
-      } catch (e) {
-        gl = null;
+      const activate = () => {
+        if (token !== layerToken) return;
+        const nextSlot = activeLayerSlot === 0 ? 1 : 0;
+        const incoming = nextSlot === 0 ? layerA : layerB;
+        const outgoing = nextSlot === 0 ? layerB : layerA;
+        incoming.style.backgroundImage = `url("${meta.url}")`;
+        incoming.classList.add('is-active');
+        outgoing.classList.remove('is-active');
+        activeLayerSlot = nextSlot;
+      };
+
+      if (loadedUrls.has(meta.url)) {
+        activate();
+        return;
       }
-      if (!gl) return false;
-
-      const skyVS = `
-        attribute vec2 aPos;
-        varying vec2 vNdc;
-        void main() {
-          vNdc = aPos;
-          gl_Position = vec4(aPos, 0.0, 1.0);
-        }
-      `;
-      const skyFS = `
-        precision highp float;
-        varying vec2 vNdc;
-        uniform vec2 uResolution;
-        uniform vec3 uRight;
-        uniform vec3 uUp;
-        uniform vec3 uForward;
-        uniform float uFocal;
-        uniform sampler2D uTexA;
-        uniform sampler2D uTexB;
-        uniform float uHasA;
-        uniform float uHasB;
-        uniform float uMix;
-        uniform float uExpA;
-        uniform float uExpB;
-        uniform float uTiltSinA;
-        uniform float uTiltCosA;
-        uniform float uTiltSinB;
-        uniform float uTiltCosB;
-        uniform float uZoomFade;
-
-        vec3 tiltDir(vec3 d, float s, float c) {
-          return vec3(d.x, d.y * c - d.z * s, d.y * s + d.z * c);
-        }
-
-        vec2 dirToEquirect(vec3 d) {
-          float u = fract(atan(d.z, d.x) / 6.28318530718 + 0.5);
-          float v = acos(clamp(d.y, -1.0, 1.0)) / 3.14159265359;
-          return vec2(u, v);
-        }
-
-        vec3 voidFallback(vec3 d) {
-          float band = exp(-abs(d.y) * 5.0);
-          return mix(vec3(0.012, 0.018, 0.036), vec3(0.028, 0.052, 0.102), band);
-        }
-
-        vec3 sampleSlot(vec3 ray, sampler2D tex, float hasTex, float expVal, float ts, float tc) {
-          vec3 d = normalize(tiltDir(ray, ts, tc));
-          if (hasTex > 0.5) {
-            return texture2D(tex, dirToEquirect(d)).rgb * expVal;
-          }
-          return voidFallback(d);
-        }
-
-        void main() {
-          vec2 halfRes = uResolution * 0.5;
-          vec3 ray = normalize(uForward * uFocal + uRight * (vNdc.x * halfRes.x) + uUp * (vNdc.y * halfRes.y));
-          vec3 colA = sampleSlot(ray, uTexA, uHasA, uExpA, uTiltSinA, uTiltCosA);
-          vec3 colB = sampleSlot(ray, uTexB, uHasB, uExpB, uTiltSinB, uTiltCosB);
-          vec3 col = mix(colA, colB, uMix);
-
-          float r2 = dot(vNdc, vNdc);
-          col += vec3(0.016, 0.038, 0.082) * exp(-r2 * 2.2);
-          float vig = smoothstep(1.55, 0.45, sqrt(r2));
-          col *= mix(0.76, 1.0, vig) * uZoomFade;
-          gl_FragColor = vec4(col, 1.0);
-        }
-      `;
-
-      const starVS = `
-        attribute vec3 aDir;
-        attribute float aSize;
-        attribute float aAlpha;
-        attribute vec3 aColor;
-        uniform vec2 uResolution;
-        uniform vec3 uRight;
-        uniform vec3 uUp;
-        uniform vec3 uForward;
-        uniform float uFocal;
-        uniform float uDpr;
-        uniform float uTiltSin;
-        uniform float uTiltCos;
-        uniform float uStarBoost;
-        uniform float uZoomFade;
-        varying float vAlpha;
-        varying vec3 vColor;
-
-        void main() {
-          // Inverse tilt of the celestial sphere so stars match tilted panorama
-          vec3 d = vec3(aDir.x, aDir.y * uTiltCos + aDir.z * uTiltSin, -aDir.y * uTiltSin + aDir.z * uTiltCos);
-          float zCam = dot(d, uForward);
-          if (zCam <= 0.12) {
-            gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
-            gl_PointSize = 0.0;
-            vAlpha = 0.0;
-            vColor = aColor;
-            return;
-          }
-          float xCam = dot(d, uRight);
-          float yCam = dot(d, uUp);
-          vec2 halfRes = uResolution * 0.5;
-          float ndcX = (xCam / zCam) * (uFocal / max(1.0, halfRes.x));
-          float ndcY = (yCam / zCam) * (uFocal / max(1.0, halfRes.y));
-          gl_Position = vec4(ndcX, ndcY, 0.0, 1.0);
-          gl_PointSize = clamp(aSize * uDpr, 1.0, 10.0);
-          vAlpha = min(1.0, aAlpha * uStarBoost * uZoomFade);
-          vColor = aColor;
-        }
-      `;
-      const starFS = `
-        precision mediump float;
-        varying float vAlpha;
-        varying vec3 vColor;
-        void main() {
-          vec2 p = gl_PointCoord * 2.0 - 1.0;
-          float d2 = dot(p, p);
-          if (d2 > 1.0) discard;
-          float core = exp(-d2 * 4.2);
-          float halo = exp(-d2 * 1.4) * 0.28;
-          float a = clamp(core + halo, 0.0, 1.0) * vAlpha;
-          gl_FragColor = vec4(vColor, a);
-        }
-      `;
-
-      skyProg = linkProgram(skyVS, skyFS);
-      starProg = linkProgram(starVS, starFS);
-      if (!skyProg || !starProg) return false;
-
-      quadBuf = gl.createBuffer();
-      gl.bindBuffer(gl.ARRAY_BUFFER, quadBuf);
-      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
-
-      const packed = new Float32Array(STAR_COUNT * 8);
-      for (let i = 0; i < starsData.length; i++) {
-        const st = starsData[i];
-        const o = i * 8;
-        packed[o] = st.x;
-        packed[o + 1] = st.y;
-        packed[o + 2] = st.z;
-        packed[o + 3] = st.size;
-        packed[o + 4] = st.alpha;
-        packed[o + 5] = st.r;
-        packed[o + 6] = st.g;
-        packed[o + 7] = st.b;
-      }
-      starBuf = gl.createBuffer();
-      gl.bindBuffer(gl.ARRAY_BUFFER, starBuf);
-      gl.bufferData(gl.ARRAY_BUFFER, packed, gl.STATIC_DRAW);
-
-      useWebGL = true;
-      return true;
-    }
-
-    function requestTexture(meta) {
-      if (!useWebGL || !gl || !meta || !meta.url) return;
-      if (texCache.has(meta.url) || loadingUrls.has(meta.url)) return;
-      loadingUrls.add(meta.url);
 
       const img = new Image();
       img.decoding = 'async';
       img.onload = () => {
-        loadingUrls.delete(meta.url);
-        if (!gl) return;
-        const tex = gl.createTexture();
-        gl.bindTexture(gl.TEXTURE_2D, tex);
-        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, img);
-        texCache.set(meta.url, tex);
-
-        if (slotB && slotB.url === meta.url && !prefersReducedMotion()) {
-          fadeStart = performance.now();
-          isFading = true;
-        }
-        scheduleRender();
-      };
-      img.onerror = () => {
-        loadingUrls.delete(meta.url);
+        loadedUrls.add(meta.url);
+        activate();
       };
       img.src = meta.url;
     }
@@ -574,14 +371,14 @@
     function ensureCanvas() {
       if (!canvas) {
         canvas = document.getElementById('starfield-canvas');
+        layerA = document.getElementById('skybox-layer-a');
+        layerB = document.getElementById('skybox-layer-b');
         if (!canvas) return false;
+        ctx = canvas.getContext('2d');
         starsData = buildStarCatalog();
-        if (!initWebGL()) {
-          ctx2d = canvas.getContext('2d');
-        }
-        if (slotB && slotB.url) requestTexture(slotB);
+        applyBackdropLayer(getPresetMeta(currentPresetId));
       }
-      return Boolean(useWebGL ? gl : ctx2d);
+      return Boolean(ctx);
     }
 
     function resize() {
@@ -595,20 +392,11 @@
         canvas.width = targetW;
         canvas.height = targetH;
       }
-      if (useWebGL && gl) {
-        gl.viewport(0, 0, targetW, targetH);
-      } else if (ctx2d) {
-        ctx2d.setTransform(dpr, 0, 0, dpr, 0, 0);
-      }
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       scheduleRender();
     }
 
-    function computeCameraBasis() {
-      const fixed = prefersReducedMotion() || !map || typeof map.getCenter !== 'function';
-      const center = fixed ? { lng: 108, lat: 24 } : map.getCenter();
-      const bearing = fixed ? 0 : map.getBearing();
-      const pitch = fixed ? 0 : map.getPitch();
-
+    function computeCameraBasis(center, bearing, pitch) {
       const latR = center.lat * DEG2RAD;
       const lngR = center.lng * DEG2RAD;
       const bR = bearing * DEG2RAD;
@@ -649,39 +437,21 @@
       };
     }
 
-    function render2DFallback(cam, zoomFade) {
-      ctx2d.clearRect(0, 0, width, height);
-      const g = ctx2d.createRadialGradient(width * 0.5, height * 0.5, 0, width * 0.5, height * 0.5, Math.max(width, height) * 0.72);
-      g.addColorStop(0, '#0d192e');
-      g.addColorStop(0.55, '#070d1b');
-      g.addColorStop(1, '#03050b');
-      ctx2d.fillStyle = g;
-      ctx2d.fillRect(0, 0, width, height);
-
-      const cx = width * 0.5;
-      const cy = height * 0.5;
-      const focal = Math.max(width, height) * 0.92;
-      const boost = (slotB ? slotB.starBoost : 1.0) * 1.15;
-
-      for (let i = 0; i < starsData.length; i++) {
-        const st = starsData[i];
-        const zCam = st.x * cam.forward[0] + st.y * cam.forward[1] + st.z * cam.forward[2];
-        if (zCam <= 0.14) continue;
-        const xCam = st.x * cam.right[0] + st.y * cam.right[1] + st.z * cam.right[2];
-        const yCam = st.x * cam.up[0] + st.y * cam.up[1] + st.z * cam.up[2];
-        const sx = cx + (xCam / zCam) * focal;
-        const sy = cy - (yCam / zCam) * focal;
-        if (sx < -4 || sx > width + 4 || sy < -4 || sy > height + 4) continue;
-
-        const a = Math.min(0.95, st.alpha * boost * zoomFade);
-        ctx2d.fillStyle = `rgba(${Math.round(st.r * 255)},${Math.round(st.g * 255)},${Math.round(st.b * 255)},${a.toFixed(3)})`;
-        ctx2d.beginPath();
-        ctx2d.arc(sx, sy, st.size * 0.48, 0, Math.PI * 2);
-        ctx2d.fill();
+    function updateParallax(center, pitch, reduced) {
+      if (!layerA || !layerB) return;
+      if (reduced) {
+        layerA.style.transform = 'translate3d(0, 0, 0)';
+        layerB.style.transform = 'translate3d(0, 0, 0)';
+        return;
       }
+      const tx = Math.sin(center.lng * DEG2RAD * 1.25) * (width * 0.024);
+      const ty = (Math.sin(center.lat * DEG2RAD * 1.5) * 0.7 + Math.sin(pitch * DEG2RAD) * 0.3) * (height * 0.024);
+      const xf = `translate3d(${tx.toFixed(2)}px, ${ty.toFixed(2)}px, 0)`;
+      layerA.style.transform = xf;
+      layerB.style.transform = xf;
     }
 
-    function render(now) {
+    function render() {
       rafId = 0;
       if (!ensureCanvas()) return;
       if (!width || !height) {
@@ -692,114 +462,65 @@
       const zoom = map && typeof map.getZoom === 'function' ? map.getZoom() : 1.8;
       if (zoom >= 5.2) {
         if (!isBlank) {
-          if (useWebGL && gl) {
-            gl.clearColor(0.012, 0.018, 0.036, 1.0);
-            gl.clear(gl.COLOR_BUFFER_BIT);
-          } else if (ctx2d) {
-            ctx2d.clearRect(0, 0, width, height);
-          }
+          ctx.clearRect(0, 0, width, height);
           isBlank = true;
         }
         return;
       }
 
+      ctx.clearRect(0, 0, width, height);
       isBlank = false;
-      const cam = computeCameraBasis();
+
+      const reduced = prefersReducedMotion() || !map || typeof map.getCenter !== 'function';
+      const center = reduced ? { lng: 108, lat: 24 } : map.getCenter();
+      const bearing = reduced ? 0 : map.getBearing();
+      const pitch = reduced ? 0 : map.getPitch();
+
+      updateParallax(center, pitch, reduced);
+
+      const cam = computeCameraBasis(center, bearing, pitch);
+      const cx = width * 0.5;
+      const cy = height * 0.5;
       const focal = Math.max(width, height) * 0.92;
       const zoomFade = zoom <= 3.6 ? 1 : Math.max(0, 1 - (zoom - 3.6) / 1.6);
 
-      if (!useWebGL || !gl) {
-        render2DFallback(cam, zoomFade);
-        return;
-      }
+      const meta = getPresetMeta(currentPresetId);
+      const count = Math.min(MAX_STARS, meta.starCount || MAX_STARS);
+      const boost = meta.starBoost || 1.0;
 
-      let mixT = 1.0;
-      if (isFading) {
-        const rawT = Math.max(0, Math.min(1, ((now || performance.now()) - fadeStart) / FADE_MS));
-        mixT = rawT * rawT * (3 - 2 * rawT);
-        if (rawT >= 1) {
-          isFading = false;
-          slotA = slotB;
-          mixT = 1.0;
+      for (let i = 0; i < count; i++) {
+        const st = starsData[i];
+        const zCam = st.x * cam.forward[0] + st.y * cam.forward[1] + st.z * cam.forward[2];
+        if (zCam <= 0.14) continue;
+
+        const xCam = st.x * cam.right[0] + st.y * cam.right[1] + st.z * cam.right[2];
+        const yCam = st.x * cam.up[0] + st.y * cam.up[1] + st.z * cam.up[2];
+        const sx = cx + (xCam / zCam) * focal;
+        const sy = cy - (yCam / zCam) * focal;
+
+        if (sx < -6 || sx > width + 6 || sy < -6 || sy > height + 6) continue;
+
+        const a = Math.min(0.95, st.alpha * boost * zoomFade);
+        if (st.isAnchor) {
+          const haloR = st.r * 3.2;
+          const grad = ctx.createRadialGradient(sx, sy, 0, sx, sy, haloR);
+          grad.addColorStop(0, `rgba(${st.rgb},${Math.min(0.32, a * 0.24).toFixed(3)})`);
+          grad.addColorStop(1, `rgba(${st.rgb},0)`);
+          ctx.fillStyle = grad;
+          ctx.beginPath();
+          ctx.arc(sx, sy, haloR, 0, Math.PI * 2);
+          ctx.fill();
         }
-      }
 
-      const texA = slotA && slotA.url ? texCache.get(slotA.url) : null;
-      const texB = slotB && slotB.url ? texCache.get(slotB.url) : null;
-      const tiltAR = ((slotA && slotA.tiltDeg) || 0) * DEG2RAD;
-      const tiltBR = ((slotB && slotB.tiltDeg) || 0) * DEG2RAD;
-
-      gl.disable(gl.BLEND);
-      gl.useProgram(skyProg);
-      gl.bindBuffer(gl.ARRAY_BUFFER, quadBuf);
-      const aPosLoc = gl.getAttribLocation(skyProg, 'aPos');
-      gl.enableVertexAttribArray(aPosLoc);
-      gl.vertexAttribPointer(aPosLoc, 2, gl.FLOAT, false, 0, 0);
-
-      gl.uniform2f(gl.getUniformLocation(skyProg, 'uResolution'), width, height);
-      gl.uniform3fv(gl.getUniformLocation(skyProg, 'uRight'), cam.right);
-      gl.uniform3fv(gl.getUniformLocation(skyProg, 'uUp'), cam.up);
-      gl.uniform3fv(gl.getUniformLocation(skyProg, 'uForward'), cam.forward);
-      gl.uniform1f(gl.getUniformLocation(skyProg, 'uFocal'), focal);
-
-      gl.activeTexture(gl.TEXTURE0);
-      gl.bindTexture(gl.TEXTURE_2D, texA || texB || null);
-      gl.uniform1i(gl.getUniformLocation(skyProg, 'uTexA'), 0);
-      gl.uniform1f(gl.getUniformLocation(skyProg, 'uHasA'), texA ? 1.0 : 0.0);
-
-      gl.activeTexture(gl.TEXTURE1);
-      gl.bindTexture(gl.TEXTURE_2D, texB || texA || null);
-      gl.uniform1i(gl.getUniformLocation(skyProg, 'uTexB'), 1);
-      gl.uniform1f(gl.getUniformLocation(skyProg, 'uHasB'), texB ? 1.0 : 0.0);
-
-      gl.uniform1f(gl.getUniformLocation(skyProg, 'uMix'), mixT);
-      gl.uniform1f(gl.getUniformLocation(skyProg, 'uExpA'), (slotA && slotA.exposure) || 1.0);
-      gl.uniform1f(gl.getUniformLocation(skyProg, 'uExpB'), (slotB && slotB.exposure) || 1.0);
-      gl.uniform1f(gl.getUniformLocation(skyProg, 'uTiltSinA'), Math.sin(tiltAR));
-      gl.uniform1f(gl.getUniformLocation(skyProg, 'uTiltCosA'), Math.cos(tiltAR));
-      gl.uniform1f(gl.getUniformLocation(skyProg, 'uTiltSinB'), Math.sin(tiltBR));
-      gl.uniform1f(gl.getUniformLocation(skyProg, 'uTiltCosB'), Math.cos(tiltBR));
-      gl.uniform1f(gl.getUniformLocation(skyProg, 'uZoomFade'), zoomFade);
-
-      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-
-      // Pass 2: 1,900 multi-scale crisp 3D stars
-      const starBoost = ((slotA && slotA.starBoost) || 1.0) * (1 - mixT) + ((slotB && slotB.starBoost) || 1.0) * mixT;
-      gl.enable(gl.BLEND);
-      gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
-      gl.useProgram(starProg);
-      gl.bindBuffer(gl.ARRAY_BUFFER, starBuf);
-
-      const STRIDE = 32;
-      const locDir = gl.getAttribLocation(starProg, 'aDir');
-      const locSize = gl.getAttribLocation(starProg, 'aSize');
-      const locAlpha = gl.getAttribLocation(starProg, 'aAlpha');
-      const locCol = gl.getAttribLocation(starProg, 'aColor');
-      gl.enableVertexAttribArray(locDir);
-      gl.vertexAttribPointer(locDir, 3, gl.FLOAT, false, STRIDE, 0);
-      gl.enableVertexAttribArray(locSize);
-      gl.vertexAttribPointer(locSize, 1, gl.FLOAT, false, STRIDE, 12);
-      gl.enableVertexAttribArray(locAlpha);
-      gl.vertexAttribPointer(locAlpha, 1, gl.FLOAT, false, STRIDE, 16);
-      gl.enableVertexAttribArray(locCol);
-      gl.vertexAttribPointer(locCol, 3, gl.FLOAT, false, STRIDE, 20);
-
-      gl.uniform2f(gl.getUniformLocation(starProg, 'uResolution'), width, height);
-      gl.uniform3fv(gl.getUniformLocation(starProg, 'uRight'), cam.right);
-      gl.uniform3fv(gl.getUniformLocation(starProg, 'uUp'), cam.up);
-      gl.uniform3fv(gl.getUniformLocation(starProg, 'uForward'), cam.forward);
-      gl.uniform1f(gl.getUniformLocation(starProg, 'uFocal'), focal);
-      gl.uniform1f(gl.getUniformLocation(starProg, 'uDpr'), dpr);
-      gl.uniform1f(gl.getUniformLocation(starProg, 'uTiltSin'), Math.sin(tiltBR));
-      gl.uniform1f(gl.getUniformLocation(starProg, 'uTiltCos'), Math.cos(tiltBR));
-      gl.uniform1f(gl.getUniformLocation(starProg, 'uStarBoost'), starBoost);
-      gl.uniform1f(gl.getUniformLocation(starProg, 'uZoomFade'), zoomFade);
-
-      gl.drawArrays(gl.POINTS, 0, STAR_COUNT);
-      gl.disable(gl.BLEND);
-
-      if (isFading) {
-        scheduleRender();
+        ctx.fillStyle = `rgba(${st.rgb},${a.toFixed(3)})`;
+        if (st.r <= 0.72) {
+          const sz = st.r * 1.55;
+          ctx.fillRect(sx - sz * 0.5, sy - sz * 0.5, sz, sz);
+        } else {
+          ctx.beginPath();
+          ctx.arc(sx, sy, st.r, 0, Math.PI * 2);
+          ctx.fill();
+        }
       }
     }
 
@@ -827,17 +548,7 @@
       } catch (e) {
         // ignore
       }
-      slotA = slotB || slotA;
-      slotB = nextMeta;
-      if (nextMeta.url) requestTexture(nextMeta);
-
-      if (prefersReducedMotion()) {
-        slotA = nextMeta;
-        isFading = false;
-      } else {
-        fadeStart = performance.now();
-        isFading = true;
-      }
+      applyBackdropLayer(nextMeta);
       syncPresetUI();
       scheduleRender();
     }

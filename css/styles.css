@@ -149,19 +149,37 @@ input:focus-visible {
   outline-offset: 2px;
 }
 
-/* Restrained Deep Space Obsidian Void + 3D-Linked Starfield Canvas */
+/* Crisp Deep Space Parallax Backdrop & 3D-Linked Starfield Canvas */
 #space-backdrop {
   position: fixed;
   inset: 0;
   z-index: 0;
   pointer-events: none;
   overflow: hidden;
-  background: radial-gradient(circle at 50% 50%, #0b1220 0%, #060912 46%, #03050a 100%);
+  background: radial-gradient(circle at 50% 50%, #091120 0%, #050812 50%, #02040a 100%);
+}
+
+.skybox-layer {
+  position: absolute;
+  inset: -3.5%;
+  z-index: 1;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0;
+  transform: translate3d(0, 0, 0);
+  transition: opacity 600ms var(--ease-out);
+  will-change: transform, opacity;
+}
+
+.skybox-layer.is-active {
+  opacity: 1;
 }
 
 #starfield-canvas {
   position: absolute;
   inset: 0;
+  z-index: 2;
   width: 100%;
   height: 100%;
   display: block;
@@ -537,23 +555,15 @@ input:focus-visible {
 }
 
 .skybox-thumb-milkyway {
-  background:
-    radial-gradient(ellipse 95% 42% at 50% 54%, rgba(226, 206, 178, 0.55) 0%, rgba(114, 152, 214, 0.34) 42%, transparent 78%),
-    linear-gradient(150deg, #040710 0%, #0b162c 55%, #04060d 100%);
+  background: #040710 url('../assets/skyboxes/milkyway.jpg') center / cover no-repeat;
 }
 
 .skybox-thumb-nebula {
-  background:
-    radial-gradient(ellipse 80% 56% at 36% 48%, rgba(86, 138, 240, 0.52) 0%, transparent 65%),
-    radial-gradient(ellipse 72% 48% at 68% 58%, rgba(154, 118, 218, 0.42) 0%, transparent 66%),
-    linear-gradient(155deg, #040611 0%, #0a1026 55%, #050712 100%);
+  background: #040710 url('../assets/skyboxes/nebula.jpg') center / cover no-repeat;
 }
 
 .skybox-thumb-aurora {
-  background:
-    radial-gradient(ellipse 85% 50% at 45% 50%, rgba(56, 204, 198, 0.52) 0%, transparent 64%),
-    radial-gradient(ellipse 64% 46% at 72% 42%, rgba(218, 186, 128, 0.34) 0%, transparent 66%),
-    linear-gradient(150deg, #040914 0%, #081b2a 55%, #040710 100%);
+  background: #040914 url('../assets/skyboxes/aurora.jpg') center / cover no-repeat;
 }
 
 .skybox-thumb-starfield {

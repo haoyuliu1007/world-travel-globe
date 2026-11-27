@@ -11,9 +11,6 @@ permissions:
 jobs:
   audit-and-test:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: globe-app
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -40,5 +37,5 @@ jobs:
         with:
           name: geo-governance-reports
           path: |
-            globe-app/data/audit-report.json
-            globe-app/data/enrichment/atlas-enrichment.json
+            data/audit-report.json
+            data/enrichment/atlas-enrichment.json

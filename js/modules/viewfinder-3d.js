@@ -1,7 +1,7 @@
 (function (global) {
   'use strict';
 
-  const FOCAL_LIST = [14, 24, 35, 50, 85, 135, 200];
+  const FOCAL_LIST = [14, 24, 35, 50, 85, 135, 200, 400];
   let active = false;
   let savedCamera = null;
   let savedTerrainState = false;
@@ -17,7 +17,10 @@
     minutes: new Date().getHours() * 60 + new Date().getMinutes(),
     sensorKey: 'fullFrame',
     focalMm: 24,
-    bearing: 0
+    orientation: 'landscape',
+    aspectOverride: 'native',
+    bearing: 0,
+    utcOffsetMin: null
   };
 
   function esc(str) {
@@ -29,11 +32,15 @@
   }
 
   function applyMapFov(map, vFov) {
-    if (!map || !map.transform || typeof map.transform.fov !== 'number') return;
+    if (!map) return;
     const clamped = Math.max(18, Math.min(65, Number(vFov) || 40));
     try {
-      map.transform.fov = clamped;
-      if (typeof map.triggerRepaint === 'function') map.triggerRepaint();
+      if (typeof map.setVerticalFieldOfView === 'function') {
+        map.setVerticalFieldOfView(clamped);
+      } else if (map.transform && typeof map.transform.fov === 'number') {
+        map.transform.fov = clamped;
+        if (typeof map.triggerRepaint === 'function') map.triggerRepaint();
+      }
     } catch (e) {
       // ignore
     }
@@ -54,13 +61,13 @@
       markers.push({ az: sim.sunPos.azimuth, label: `☀ ${Math.round(sim.sunPos.altitude)}°`, kind: 'sun' });
     }
     if (sim && sim.sunrisePos) {
-      markers.push({ az: sim.sunrisePos.azimuth, label: '↗日出', kind: 'sunrise' });
+      markers.push({ az: sim.sunrisePos.azimuth, label: '↗Sunrise', kind: 'sunrise' });
     }
     if (sim && sim.sunsetPos) {
-      markers.push({ az: sim.sunsetPos.azimuth, label: '↘日落', kind: 'sunset' });
+      markers.push({ az: sim.sunsetPos.azimuth, label: '↘Sunset', kind: 'sunset' });
     }
     if (sim && sim.astroExtras && sim.astroExtras.available) {
-      markers.push({ az: sim.astroExtras.gcAzimuth, label: `✦银心 ${Math.round(sim.astroExtras.gcAltitude)}°`, kind: 'mw' });
+      markers.push({ az: sim.astroExtras.gcAzimuth, label: `✦GC ${Math.round(sim.astroExtras.gcAltitude)}°`, kind: 'mw' });
     }
 
     const span = Math.max(hFov * 1.3, 60);
@@ -74,6 +81,32 @@
       .join('');
   }
 
+  function currentLens() {
+    if (global.PhotoSimulator) {
+      return global.PhotoSimulator.computeLensFov(state.focalMm, state.sensorKey, {
+        orientation: state.orientation,
+        aspectOverride: state.aspectOverride
+      });
+    }
+    return { hFov: 73.7, vFov: 53.1, eqFocalMm: state.focalMm, sensorLabel: 'Full Frame 35mm', aspect: '3:2', aspectRatio: 1.5 };
+  }
+
+  function currentProjection(lens) {
+    const vw = typeof global.innerWidth === 'number' ? global.innerWidth : 1280;
+    const vh = typeof global.innerHeight === 'number' ? global.innerHeight : 720;
+    if (global.PhotoSimulator && typeof global.PhotoSimulator.computeViewfinderProjection === 'function') {
+      return global.PhotoSimulator.computeViewfinderProjection(lens, vw, vh, 18, 65);
+    }
+    return {
+      appliedMapVFov: Math.max(18, Math.min(65, lens.vFov || 40)),
+      isTelephotoCrop: false,
+      isWideApproximation: false,
+      cropPct: 100,
+      frameW: 640,
+      frameH: 426
+    };
+  }
+
   function renderHud() {
     const hud = document.getElementById('viewfinder-hud');
     if (!hud || !active) return;
@@ -82,14 +115,20 @@
     const bearing = map ? Math.round(((map.getBearing() % 360) + 360) % 360) : state.bearing;
     state.bearing = bearing;
 
-    const lens = global.PhotoSimulator
-      ? global.PhotoSimulator.computeLensFov(state.focalMm, state.sensorKey)
-      : { hFov: 73.7, vFov: 53.1, eqFocalMm: state.focalMm, sensorLabel: '全画幅 35mm', aspect: '3:2' };
+    const lens = currentLens();
+    const proj = currentProjection(lens);
 
-    const simKey = `${state.coords[1].toFixed(4)},${state.coords[0].toFixed(4)}|${state.dateStr}|${state.minutes}`;
+    const simKey = `${state.coords[1].toFixed(4)},${state.coords[0].toFixed(4)}|${state.dateStr}|${state.minutes}|${state.utcOffsetMin}`;
     if (global.PhotoSimulator) {
       if (simKey !== cachedSimKey || !cachedSim) {
-        cachedSim = global.PhotoSimulator.computeSimulation(state.coords[1], state.coords[0], state.dateStr, state.minutes, bearing);
+        cachedSim = global.PhotoSimulator.computeSimulation(
+          state.coords[1],
+          state.coords[0],
+          state.dateStr,
+          state.minutes,
+          bearing,
+          state.utcOffsetMin
+        );
         cachedSimKey = simKey;
       }
     }
@@ -101,11 +140,16 @@
     const elevM = map && global.Terrain3DModule ? global.Terrain3DModule.queryElevation(map, state.coords[0], state.coords[1]) : null;
     const elevLabel = elevM !== null ? `${elevM}m` : ((state.spot && state.spot.elevation) || state.dest.elevation || '--');
     const timeText = `${String(Math.floor(state.minutes / 60)).padStart(2, '0')}:${String(state.minutes % 60).padStart(2, '0')}`;
+    const tzBadge = (sim && sim.utcOffsetLabel) || 'Local';
     const title = state.spot
       ? `${state.dest.shortName || state.dest.name} · ${state.spot.name}`
       : (state.dest.shortName || state.dest.name);
 
-    const frameRatio = lens.aspect === '4:3' ? '4 / 3' : '3 / 2';
+    const optModeChip = proj.isTelephotoCrop
+      ? `<span class="vf-mode-chip tele">光学裁切 · 真实视角 ${proj.cropPct}% (WebGL 下限 18°)</span>`
+      : proj.isWideApproximation
+        ? `<span class="vf-mode-chip wide">超广角近似 · 视口上限 65°</span>`
+        : '';
 
     hud.innerHTML = `
       <div class="vf-top-bar">
@@ -122,7 +166,7 @@
       </div>
 
       <div class="vf-frame-stage">
-        <div class="vf-reticle-box" style="aspect-ratio:${frameRatio};">
+        <div class="vf-reticle-box" style="width:${proj.frameW}px;height:${proj.frameH}px;">
           <span class="vf-corner tl"></span>
           <span class="vf-corner tr"></span>
           <span class="vf-corner bl"></span>
@@ -131,10 +175,11 @@
           <div class="vf-thirds-h2"></div>
           <div class="vf-thirds-v1"></div>
           <div class="vf-thirds-v2"></div>
-          <div class="vf-hud-meta-tl mono-num">${state.focalMm}mm · ${esc(lens.sensorLabel)}</div>
+          <div class="vf-hud-meta-tl mono-num">${state.focalMm}mm · ${esc(lens.sensorLabel)} · ${state.orientation === 'portrait' ? '竖构图' : '横构图'} (${esc(lens.aspect)})</div>
           <div class="vf-hud-meta-tr mono-num">FOV ${lens.hFov.toFixed(1)}° × ${lens.vFov.toFixed(1)}° · 等效 ${lens.eqFocalMm}mm</div>
           <div class="vf-hud-meta-bl" id="vf-light-badge">${lightRel ? `${esc(lightRel.badge)} · ${esc(lightRel.label)}` : ''}</div>
-          <div class="vf-hud-meta-br mono-num">海拔 ${esc(elevLabel)} · 基于 DEM 与几何透视示意</div>
+          <div class="vf-hud-meta-br mono-num">海拔 ${esc(elevLabel)} · ${esc(tzBadge)}</div>
+          ${optModeChip ? `<div class="vf-hud-opt-chip">${optModeChip}</div>` : ''}
         </div>
       </div>
 
@@ -146,9 +191,21 @@
             <option value="m43" ${state.sensorKey === 'm43' ? 'selected' : ''}>M4/3</option>
             <option value="medium" ${state.sensorKey === 'medium' ? 'selected' : ''}>中画幅</option>
           </select>
+          <select id="vf-aspect-select" class="vf-select" aria-label="构图比">
+            <option value="native" ${state.aspectOverride === 'native' ? 'selected' : ''}>原生画幅</option>
+            <option value="3:2" ${state.aspectOverride === '3:2' ? 'selected' : ''}>3:2</option>
+            <option value="4:3" ${state.aspectOverride === '4:3' ? 'selected' : ''}>4:3</option>
+            <option value="16:9" ${state.aspectOverride === '16:9' ? 'selected' : ''}>16:9</option>
+            <option value="1:1" ${state.aspectOverride === '1:1' ? 'selected' : ''}>1:1</option>
+          </select>
+          <button id="vf-orient-btn" class="vf-focal-btn ${state.orientation === 'portrait' ? 'active' : ''}" type="button">
+            ${state.orientation === 'portrait' ? '竖构图' : '横构图'}
+          </button>
           ${FOCAL_LIST.map((f) => `<button class="vf-focal-btn ${state.focalMm === f ? 'active' : ''}" data-focal="${f}" type="button">${f}mm</button>`).join('')}
         </div>
         <div class="vf-time-row">
+          <span class="mono-num vf-focal-readout">${state.focalMm}mm</span>
+          <input id="vf-focal-slider" class="vf-focal-slider" type="range" min="14" max="600" step="1" value="${Math.min(600, state.focalMm)}" aria-label="自定义焦距" />
           <input id="vf-date-input" class="vf-date-input mono-num" type="date" value="${esc(state.dateStr)}" aria-label="日期" />
           <span class="mono-num vf-time-val">${timeText}</span>
           <input id="vf-time-range" class="vf-time-range" type="range" min="0" max="1439" step="5" value="${state.minutes}" aria-label="时刻" />
@@ -157,19 +214,33 @@
     `;
 
     hud.querySelector('#vf-close-btn').addEventListener('click', close);
+    const applyAndRedraw = () => {
+      const nextLens = currentLens();
+      const nextProj = currentProjection(nextLens);
+      applyMapFov(map, nextProj.appliedMapVFov);
+      renderHud();
+    };
     hud.querySelector('#vf-sensor-select').addEventListener('change', (e) => {
       state.sensorKey = e.target.value;
-      const nextLens = global.PhotoSimulator.computeLensFov(state.focalMm, state.sensorKey);
-      applyMapFov(map, nextLens.vFov);
-      renderHud();
+      applyAndRedraw();
     });
-    hud.querySelectorAll('.vf-focal-btn').forEach((btn) => {
+    hud.querySelector('#vf-aspect-select').addEventListener('change', (e) => {
+      state.aspectOverride = e.target.value;
+      applyAndRedraw();
+    });
+    hud.querySelector('#vf-orient-btn').addEventListener('click', () => {
+      state.orientation = state.orientation === 'landscape' ? 'portrait' : 'landscape';
+      applyAndRedraw();
+    });
+    hud.querySelectorAll('.vf-focal-btn[data-focal]').forEach((btn) => {
       btn.addEventListener('click', () => {
         state.focalMm = Number(btn.dataset.focal) || 24;
-        const nextLens = global.PhotoSimulator.computeLensFov(state.focalMm, state.sensorKey);
-        applyMapFov(map, nextLens.vFov);
-        renderHud();
+        applyAndRedraw();
       });
+    });
+    hud.querySelector('#vf-focal-slider').addEventListener('input', (e) => {
+      state.focalMm = Number(e.target.value) || 24;
+      applyAndRedraw();
     });
     hud.querySelector('#vf-date-input').addEventListener('change', (e) => {
       if (e.target.value) {
@@ -192,12 +263,15 @@
     if (!Array.isArray(coords) || coords.length < 2) return;
 
     if (!active) {
+      const curFov = typeof map.getVerticalFieldOfView === 'function'
+        ? map.getVerticalFieldOfView()
+        : (map.transform && typeof map.transform.fov === 'number' ? map.transform.fov : 36.87);
       savedCamera = {
         center: map.getCenter(),
         zoom: map.getZoom(),
         pitch: map.getPitch(),
         bearing: map.getBearing(),
-        fov: map.transform && typeof map.transform.fov === 'number' ? map.transform.fov : 36.87
+        fov: curFov
       };
       savedTerrainState = global.Terrain3DModule ? global.Terrain3DModule.getState().terrain : false;
     }
@@ -206,22 +280,27 @@
     state.dest = dest;
     state.spot = spot || null;
     state.coords = coords;
+    state.utcOffsetMin = global.PhotoSimulator
+      ? global.PhotoSimulator.estimateUtcOffsetMinutes(coords[0], opts && opts.utcOffsetSec)
+      : null;
     if (opts) {
       if (opts.dateStr) state.dateStr = opts.dateStr;
       if (Number.isFinite(opts.minutes)) state.minutes = opts.minutes;
       if (opts.sensorKey) state.sensorKey = opts.sensorKey;
       if (Number.isFinite(opts.focalMm)) state.focalMm = opts.focalMm;
+      if (opts.orientation) state.orientation = opts.orientation;
+      if (opts.aspectOverride) state.aspectOverride = opts.aspectOverride;
       if (Number.isFinite(opts.bearing)) state.bearing = opts.bearing;
+      if (Number.isFinite(opts.utcOffsetMin)) state.utcOffsetMin = opts.utcOffsetMin;
     }
 
     if (global.Terrain3DModule && !savedTerrainState) {
       global.Terrain3DModule.toggleTerrain(map, true);
     }
 
-    const lens = global.PhotoSimulator
-      ? global.PhotoSimulator.computeLensFov(state.focalMm, state.sensorKey)
-      : { vFov: 53.1 };
-    applyMapFov(map, lens.vFov);
+    const lens = currentLens();
+    const proj = currentProjection(lens);
+    applyMapFov(map, proj.appliedMapVFov);
 
     map.flyTo({
       center: coords,
@@ -249,7 +328,7 @@
         if (bChip) bChip.textContent = `${b}°`;
         if (global.PhotoSimulator && cachedSim) {
           if (tape) {
-            const curLens = global.PhotoSimulator.computeLensFov(state.focalMm, state.sensorKey);
+            const curLens = currentLens();
             tape.innerHTML = `<div class="vf-tape-center"></div>${buildCompassMarkers(b, curLens.hFov, cachedSim)}`;
           }
           if (lightEl) {

@@ -1,5 +1,25 @@
 # 更新日志 (CHANGELOG)
 
+## [4.2.0] - 2026-11-27 · CRDT Reliability, Optical Viewfinder, Destination Timezones & Global UX
+
+### 修复与深化升级 (Fixed & Upgraded)
+- **CRDT 删除墓碑、逻辑时钟、字段级合并与密钥隔离 (`js/services/crdt-merge.js`, `js/services/storage-db.js`, `js/modules/travel-archive.js`, `worker/index.js`)**：
+  - 引入跨设备 `tombstones` 删除墓碑与 Lamport 逻辑时钟，结合 `mode === 'crdt'` 本地写入，彻底杜绝多设备离线删除后数据复活。
+  - 新增 `travelStatus` 字段级合并（`status` / `notes` / `rating` / `visitedAt` 独立时间戳）、规范化 JSON 顺序无关决胜、云同步前自动本地快照备份与一键恢复，并严格剥离 `cloudSyncPassphrase`、`mapillaryToken`、`orsApiKey` 等敏感本地配置。
+- **地球标签与聚合圈碰撞避让、平滑缩放与可点击悬停卡 (`js/app.js`)**：
+  - 将可见 Supercluster 聚合圈边界框注入文字碰撞占位集合，扩大聚合半径至 `54`、边缘自动左右翻转并预留视口安全边距，英文模式下纯 CJK 城市名自动规范化回退为英文标题格式。
+  - 右侧 `+` / `-` 缩放按钮升级为 `±0.35` 级连击目标累加阻尼过渡；地图悬停浮窗增加 `180ms` 移入缓冲与点击直达目的地详情抽屉。
+- **全界面三语国际化覆盖 (`js/i18n.js`, `detail-panel.js`, `media-gallery.js`, `travel-archive.js`, `trip-planner.js`, `command-palette.js`)**：
+  - 统一抽离状态按钮、机位操作胶囊、实景画廊标题、规划页与档案页工作区至 `AppI18n`，并实现 `document.title` 随语言切换实时更新。
+- **专业 3D 取景器光学裁切与画幅纵横比 (`js/modules/viewfinder-3d.js`, `photo-simulator.js`, `css/upgrades.css`)**：
+  - 新增 `14–600mm` 连续焦段滑块、横/竖构图切换、以及 `原生 / 3:2 / 4:3 / 16:9 / 1:1` 构图比例；当长焦垂直 FOV 低于 MapLibre WebGL 18° 下限时，基于正切几何比精确收缩取景框并标示裁切百分比。
+- **目的地当地时间基准与多分辨率 DEM 地平线 (`photo-simulator.js`, `terrain-3d.js`)**：
+  - 修复天文星历/日出日落及银河窗口使用浏览器本地时区的偏差，统一基于目的地经度/Open-Meteo `utc_offset_seconds` 计算并展示 `UTC±X 当地时间`。
+  - 升级地形射线追踪为 `z12 近场 + z11 远场` 多分辨率采样与机位高度偏置（1.6m），明确区分“观测点遮挡日出”与“远处主峰日照金山”。
+- **自然语言搜索相关性、硬约束、ERA5 诚信标注与 CI 修复**：
+  - 命令面板默认榜单改为六大洲均衡精选；`GeoIntelligence` 新增负向排除（`不要海滩`）、类比平替（`像瑞士但更便宜`）与预算硬约束过滤；精确地名搜索收敛噪点。
+  - 将 `ERA5 实测气候` 更正为 `ERA5 再分析气候`；强化跨大洲旗帜/地名错配图像过滤并升级缓存前缀；修复 `.github/workflows/data-governance.yml` 仓库路径与 `docs/DATA_SOURCES.md` 相对路径。
+
 ## [4.1.0] - 2026-11-27 · UI Polish, Scenery Filtering & 60fps Perf
 
 ### 修复与体验优化 (Fixed & Optimized)

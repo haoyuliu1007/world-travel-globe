@@ -29,7 +29,7 @@
     });
     fuseInstance = new global.Fuse(records, {
       includeScore: true,
-      threshold: 0.36,
+      threshold: 0.24,
       ignoreLocation: true,
       minMatchCharLength: 2,
       keys: [
@@ -166,11 +166,62 @@
     return { score, matchedSpot, matchedSpotIdx };
   }
 
-  const NL_EXAMPLES = [
+  const NL_EXAMPLES_ZH = [
     '10月 欧洲 雪山 湖泊 少雨',
-    '预算8000 7天 少雨 自然风光',
-    '冬季 银河 雪山 星空'
+    '预算8000 7天 少雨 不要海滩',
+    '像瑞士但更便宜 雪山 湖泊'
   ];
+  const NL_EXAMPLES_EN = [
+    'October Europe mountain lake dry',
+    'Budget 8000 7 days no beach',
+    'Winter Milky Way stargazing'
+  ];
+
+  function selectGlobalFeatured(entries, limit) {
+    const order = ['europe', 'asia', 'north_america', 'oceania', 'south_america', 'africa_antarctica'];
+    const buckets = new Map(order.map((c) => [c, []]));
+    for (let i = 0; i < entries.length; i++) {
+      const e = entries[i];
+      const d = e && e.dest;
+      if (!d || d.priority !== 1) continue;
+      const b = buckets.get(d.continent);
+      if (b) b.push(e);
+    }
+    // Diversify Asia so non-China hubs appear alongside flagship Chinese hubs
+    const asiaList = buckets.get('asia') || [];
+    const asiaSorted = [];
+    const seenCountries = new Set();
+    for (let i = 0; i < asiaList.length; i++) {
+      const c = asiaList[i].dest.country || '';
+      if (!seenCountries.has(c)) {
+        seenCountries.add(c);
+        asiaSorted.push(asiaList[i]);
+      }
+    }
+    for (let i = 0; i < asiaList.length; i++) {
+      if (!asiaSorted.includes(asiaList[i])) asiaSorted.push(asiaList[i]);
+    }
+    buckets.set('asia', asiaSorted);
+
+    const out = [];
+    const usedIds = new Set();
+    let round = 0;
+    while (out.length < (limit || 12) && round < 10) {
+      let added = false;
+      for (let i = 0; i < order.length && out.length < (limit || 12); i++) {
+        const list = buckets.get(order[i]) || [];
+        const pick = list[round];
+        if (pick && !usedIds.has(pick.dest.id)) {
+          usedIds.add(pick.dest.id);
+          out.push(pick);
+          added = true;
+        }
+      }
+      if (!added) break;
+      round++;
+    }
+    return out;
+  }
 
   function renderResults(rawQuery) {
     const container = document.getElementById('palette-results');
@@ -179,12 +230,11 @@
 
     const q = (rawQuery || '').trim();
     const qLower = q.toLowerCase();
+    const lang = global.AppI18n ? global.AppI18n.getLang() : 'zh-CN';
+    const examples = lang === 'en' ? NL_EXAMPLES_EN : NL_EXAMPLES_ZH;
 
     if (!qLower) {
-      // Show natural language inspiration pills + curated flagship recommendations
-      const featured = searchIndexRef
-        .filter((e) => e.dest.priority === 1)
-        .slice(0, 12);
+      const featured = selectGlobalFeatured(searchIndexRef, 12);
       currentEntries = featured.map((e) => ({ dest: e.dest, matchedSpot: null, matchedSpotIdx: -1 }));
       selectedIdx = 0;
 
@@ -192,10 +242,10 @@
 
       container.innerHTML = `
         <div class="palette-nl-examples">
-          <span class="palette-nl-label">Geo Intelligence 自然语言试试：</span>
-          ${NL_EXAMPLES.map((ex) => `<button class="mini-action-pill palette-nl-chip" data-query="${escapeHtml(ex)}" type="button">${escapeHtml(ex)}</button>`).join('')}
+          <span class="palette-nl-label">${escapeHtml(t('paletteNlPrompt'))}</span>
+          ${examples.map((ex) => `<button class="mini-action-pill palette-nl-chip" data-query="${escapeHtml(ex)}" type="button">${escapeHtml(ex)}</button>`).join('')}
         </div>
-        <div class="palette-section-title">${t('paletteAllCount', { n: searchIndexRef.length })}</div>
+        <div class="palette-section-title">${escapeHtml(t('paletteGlobalFeatured', { n: searchIndexRef.length }))}</div>
         ${currentEntries.map((item, i) => buildItemHtml(item, '', i)).join('')}
       `;
       container.querySelectorAll('.palette-nl-chip').forEach((chip) => {
@@ -260,7 +310,7 @@
         } else {
           container.innerHTML = `
             ${chipsHtml}
-            <div class="palette-section-title">Geo Intelligence 推荐 (${currentEntries.length})</div>
+            <div class="palette-section-title">${escapeHtml(t('paletteGiRecs', { n: currentEntries.length }))}</div>
             ${currentEntries.map((item, i) => buildItemHtml(item, q, i)).join('')}
           `;
           bindResultClicks(container);
@@ -270,7 +320,7 @@
     }
 
     const tokens = qLower.split(/\s+/).filter(Boolean);
-    const hits = [];
+    let hits = [];
     for (let i = 0; i < searchIndexRef.length; i++) {
       const res = scoreDestination(searchIndexRef[i], qLower, tokens);
       if (res && res.score > 0) {
@@ -285,12 +335,15 @@
 
     hits.sort((a, b) => b.score - a.score);
 
-    // Fuse.js fuzzy fallback/augmentation for typos & bilingual queries
-    if (hits.length < 18) {
+    // If an exact city/country match exists, keep results tight & high-precision
+    if (hits.length > 0 && hits[0].score >= 160) {
+      hits = hits.filter((h) => h.score >= 30).slice(0, 8);
+    } else if (hits.length < 5) {
+      // Tight Fuse.js fallback only when exact substring hits are sparse
       const fuse = ensureFuse();
       if (fuse) {
         const seenIds = new Set(hits.map((h) => h.dest.id));
-        const fuzzyHits = fuse.search(q, { limit: 20 });
+        const fuzzyHits = fuse.search(q, { limit: 10 });
         for (let i = 0; i < fuzzyHits.length; i++) {
           const item = fuzzyHits[i].item;
           if (!item || !item.entry || seenIds.has(item.entry.dest.id)) continue;
@@ -305,7 +358,7 @@
       }
     }
 
-    currentEntries = hits.slice(0, 28);
+    currentEntries = hits.slice(0, 20);
     selectedIdx = 0;
 
     if (statsEl) statsEl.textContent = t('paletteHitsCount', { n: hits.length });

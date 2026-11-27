@@ -9,7 +9,7 @@ function corsHeaders(extra) {
     {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Sync-Key'
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Sync-Key, X-Base-Updated-At'
     },
     extra || {}
   );

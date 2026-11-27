@@ -442,8 +442,8 @@
       if (dest && dest._detailFailed) {
         return `
           <div style="padding:24px 4px;color:var(--text-secondary);font-size:12.5px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-            <span>详情分片加载超时，请重试</span>
-            <button id="retry-detail-btn" class="text-btn" type="button" style="border:1px solid var(--border-strong);padding:4px 10px;border-radius:999px;">重新加载</button>
+            <span>${t('detailRetryTip')}</span>
+            <button id="retry-detail-btn" class="text-btn" type="button" style="border:1px solid var(--border-strong);padding:4px 10px;border-radius:999px;">${t('detailRetryBtn')}</button>
           </div>
         `;
       }
@@ -487,10 +487,10 @@
                     <div class="spot-field"><strong>${t('realScene')}</strong>${escapeHtml(tx(sp.scene))}</div>
                     <div class="spot-tips">${linkifyHtml(tx(sp.tips))}</div>
                     <div class="spot-actions-row">
-                      <button class="mini-action-pill spot-sim-btn" data-idx="${i}" type="button">${icon('sun', 12)} 光影模拟</button>
-                      <button class="mini-action-pill spot-vf-btn" data-idx="${i}" type="button">${icon('camera', 12)} 3D 取景</button>
-                      <button class="mini-action-pill spot-sv-btn" data-idx="${i}" type="button">${icon('eye', 12)} 360° 全景</button>
-                      <button class="mini-action-pill spot-plan-btn" data-idx="${i}" type="button">${icon('route', 12)} 加入行程</button>
+                      <button class="mini-action-pill spot-sim-btn" data-idx="${i}" type="button">${icon('sun', 12)} ${t('spotLightSim')}</button>
+                      <button class="mini-action-pill spot-vf-btn" data-idx="${i}" type="button">${icon('camera', 12)} ${t('spotViewfinder3d')}</button>
+                      <button class="mini-action-pill spot-sv-btn" data-idx="${i}" type="button">${icon('eye', 12)} ${t('spotStreetView')}</button>
+                      <button class="mini-action-pill spot-plan-btn" data-idx="${i}" type="button">${icon('route', 12)} ${t('spotAddTrip')}</button>
                     </div>
                   </div>
                 </div>

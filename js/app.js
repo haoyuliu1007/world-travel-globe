@@ -222,6 +222,9 @@
   let labelCtx = null;
   let drawnLabelBoxes = [];
   const labelWidthCache = new Map();
+  let targetButtonZoom = null;
+  let lastZoomBtnAt = 0;
+  let hoverCloseTimer = null;
 
   function prefersReducedMotion() {
     return Boolean(global.matchMedia && global.matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -1158,7 +1161,7 @@
         }
       });
     }
-    clusterIndex = new global.Supercluster({ radius: 44, maxZoom: 5, minPoints: 3 });
+    clusterIndex = new global.Supercluster({ radius: 54, maxZoom: 5, minPoints: 3 });
     clusterIndex.load(matchedPts);
   }
 
@@ -1266,6 +1269,31 @@
     });
   }
 
+  function formatGlobeLabel(dest) {
+    if (!dest) return '';
+    const lang = I18n ? I18n.getLang() : 'zh-CN';
+    const shortLabel = tx(dest.shortName || dest.name);
+    if (lang !== 'en') return shortLabel;
+    if (!/[\u4e00-\u9fff]/.test(shortLabel)) return shortLabel;
+    const fullLabel = tx(dest.name);
+    if (fullLabel && !/[\u4e00-\u9fff]/.test(fullLabel)) return fullLabel;
+    const rawId = String(dest.id || '').replace(/^[a-z]{2}-/, '');
+    if (!rawId) return shortLabel;
+    return rawId
+      .split('-')
+      .map((part) => (part ? part[0].toUpperCase() + part.slice(1) : ''))
+      .join(' ');
+  }
+
+  function boxesOverlap(ax, ay, aw, ah, b, padX, padY) {
+    return (
+      ax < b.x + b.w + padX &&
+      ax + aw + padX > b.x &&
+      ay < b.y + b.h + padY &&
+      ay + ah + padY > b.y
+    );
+  }
+
   function layoutVisibleLabels() {
     if (!map || !labelCanvas || !labelCtx) return;
     resizeLabelCanvas();
@@ -1273,10 +1301,12 @@
     const h = global.innerHeight;
     labelCtx.clearRect(0, 0, w, h);
     drawnLabelBoxes = [];
+    const occupiedBoxes = [];
 
     if (state.mode === 'gallery' || state.mode === 'planner' || state.mode === 'archive') return;
 
-    // Draw Supercluster count badges on HiDPI 2D canvas (no MapLibre glyphs needed)
+    // Draw Supercluster count badges on HiDPI 2D canvas and reserve their bounding boxes
+    // so city labels never collide with cluster circles.
     if (drawnClusters.length && state.clustering && !state.selectedId && map.getZoom() < 4.5) {
       const cCenter = map.getCenter();
       labelCtx.font = '600 11px "IBM Plex Mono", "Inter", sans-serif';
@@ -1289,6 +1319,14 @@
         if (state.isGlobe && !isPointOnFrontHemisphere(coords, cCenter.lng, cCenter.lat)) continue;
         const pt = map.project(coords);
         if (pt.x < 10 || pt.x > w - 10 || pt.y < 10 || pt.y > h - 10) continue;
+        const ptCount = Number(cf.properties.point_count || 0);
+        const radius = (ptCount >= 30 ? 22 : ptCount >= 10 ? 18 : 15) + 7;
+        occupiedBoxes.push({
+          x: pt.x - radius,
+          y: pt.y - radius,
+          w: radius * 2,
+          h: radius * 2
+        });
         labelCtx.fillStyle = '#09090B';
         labelCtx.fillText(String(cf.properties.point_count_abbreviated || cf.properties.point_count), pt.x, pt.y + 0.5);
       }
@@ -1322,7 +1360,7 @@
       }
 
       const pt = map.project(d.coords);
-      if (pt.x < 16 || pt.x > w - 16 || pt.y < 64 || pt.y > h - 68) continue;
+      if (pt.x < 16 || pt.x > w - 16 || pt.y < 68 || pt.y > h - 76) continue;
 
       const rank = (isSelected ? 1000 : 0) + (state.favorites.has(d.id) ? 200 : 0) + (d.priority === 1 ? 80 : 0) + (d.allWeather ? 20 : 0);
       candidates.push({ dest: d, x: pt.x, y: pt.y, rank, isSelected });
@@ -1341,21 +1379,28 @@
     let used = 0;
     for (let i = 0; i < candidates.length && used < maxLabels; i++) {
       const c = candidates[i];
-      const text = tx(c.dest.shortName || c.dest.name);
+      const text = formatGlobeLabel(c.dest);
       let estW = labelWidthCache.get(text);
       if (estW === undefined) {
         estW = Math.ceil(labelCtx.measureText(text).width) + 4;
         labelWidthCache.set(text, estW);
       }
       const estH = 18;
-      const lx = Math.round(c.x + 9);
+      let lx = Math.round(c.x + 9);
       const ly = Math.round(c.y);
+      // Flip label to the left of the pin if near right edge, and enforce viewport margins
+      if (lx + estW > w - 18 && c.x - 10 - estW >= 16) {
+        lx = Math.round(c.x - 10 - estW);
+      }
+      if (!c.isSelected && (lx < 16 || lx + estW > w - 16 || ly - 9 < 66 || ly + 9 > h - 74)) {
+        continue;
+      }
 
+      const boxY = ly - 9;
       if (!state.forceAllLabels && !c.isSelected) {
         let collides = false;
-        for (let j = 0; j < drawnLabelBoxes.length; j++) {
-          const b = drawnLabelBoxes[j];
-          if (lx < b.x + b.w + 8 && lx + estW + 8 > b.x && ly - 9 < b.y + 9 + 4 && ly + 9 + 4 > b.y - 9) {
+        for (let j = 0; j < occupiedBoxes.length; j++) {
+          if (boxesOverlap(lx, boxY, estW, estH, occupiedBoxes[j], 8, 4)) {
             collides = true;
             break;
           }
@@ -1363,6 +1408,7 @@
         if (collides) continue;
       }
 
+      occupiedBoxes.push({ x: lx, y: boxY, w: estW, h: estH });
       drawnLabelBoxes.push({ id: c.dest.id, x: lx, y: ly, w: estW, h: estH });
       used++;
 
@@ -2637,12 +2683,22 @@
 
     document.getElementById('fly-global-btn').addEventListener('click', () => switchContinent('global'));
 
-    document.getElementById('zoom-in-btn').addEventListener('click', () => {
-      if (map) map.zoomIn({ duration: 280, easing: easeInOutCubic });
-    });
-    document.getElementById('zoom-out-btn').addEventListener('click', () => {
-      if (map) map.zoomOut({ duration: 280, easing: easeInOutCubic });
-    });
+    const stepZoomBy = (delta) => {
+      if (!map) return;
+      const now = Date.now();
+      const minZ = typeof map.getMinZoom === 'function' ? map.getMinZoom() : 0.8;
+      const maxZ = typeof map.getMaxZoom === 'function' ? map.getMaxZoom() : 18;
+      const base = (targetButtonZoom !== null && now - lastZoomBtnAt < 360) ? targetButtonZoom : map.getZoom();
+      lastZoomBtnAt = now;
+      targetButtonZoom = Math.max(minZ, Math.min(maxZ, base + delta));
+      map.easeTo({
+        zoom: targetButtonZoom,
+        duration: 240,
+        easing: easeInOutCubic
+      });
+    };
+    document.getElementById('zoom-in-btn').addEventListener('click', () => stepZoomBy(0.35));
+    document.getElementById('zoom-out-btn').addEventListener('click', () => stepZoomBy(-0.35));
 
     document.getElementById('back-to-city-overview').addEventListener('click', () => {
       const dest = ATLAS.getById(state.selectedId);
@@ -2926,21 +2982,51 @@
       if (!hoverPopup) {
         hoverPopup = new maplibregl.Popup({ closeButton: false, closeOnClick: false, offset: 14 });
       }
+      if (hoverCloseTimer) {
+        clearTimeout(hoverCloseTimer);
+        hoverCloseTimer = null;
+      }
       const badge = dest.allWeather ? t('badgeAllWeather') : t('badgeSeasonal');
       const locLabel = (dest.country && dest.country !== '中国') ? `${tx(dest.country)} · ${tx(dest.province)}` : tx(dest.province);
       const isLight = Theme && Theme.getState().mode === 'light';
       const titleCol = isLight ? '#18181B' : '#F5F5F7';
       const subCol = isLight ? '#52525B' : '#A1A1AA';
       const accentCol = (Theme && Theme.getState().accentHex) || '#E2C07D';
+      const safeId = String(dest.id).replace(/&/g, '&amp;').replace(/"/g, '&quot;');
       hoverPopup
         .setLngLat(dest.coords)
         .setHTML(`
-          <div style="font-weight:500;font-size:13px;margin-bottom:2px;color:${titleCol};">${tx(dest.name)}</div>
-          <div style="color:${subCol};font-size:11px;margin-bottom:4px;">${locLabel} · ${badge}</div>
-          <div style="color:${subCol};font-size:11.5px;line-height:1.45;">${tx(dest.subtitle)}</div>
-          <div style="color:${accentCol};font-size:11px;margin-top:5px;">${t('hoverAction', { n: dest.spotCount || (dest.spots ? dest.spots.length : 0) })}</div>
+          <div class="hover-popup-card" data-dest-id="${safeId}" style="cursor:pointer;">
+            <div style="font-weight:500;font-size:13px;margin-bottom:2px;color:${titleCol};">${tx(dest.name)}</div>
+            <div style="color:${subCol};font-size:11px;margin-bottom:4px;">${locLabel} · ${badge}</div>
+            <div style="color:${subCol};font-size:11.5px;line-height:1.45;">${tx(dest.subtitle)}</div>
+            <div style="color:${accentCol};font-size:11px;margin-top:5px;">${t('hoverAction', { n: dest.spotCount || (dest.spots ? dest.spots.length : 0) })}</div>
+          </div>
         `)
         .addTo(map);
+      const popupEl = typeof hoverPopup.getElement === 'function' ? hoverPopup.getElement() : null;
+      if (popupEl && !popupEl.dataset.boundClick) {
+        popupEl.dataset.boundClick = '1';
+        popupEl.addEventListener('mouseenter', () => {
+          if (hoverCloseTimer) {
+            clearTimeout(hoverCloseTimer);
+            hoverCloseTimer = null;
+          }
+        });
+        popupEl.addEventListener('mouseleave', () => {
+          hoverCloseTimer = setTimeout(() => {
+            if (hoverPopup) hoverPopup.remove();
+          }, 160);
+        });
+        popupEl.addEventListener('click', (ev) => {
+          const card = popupEl.querySelector('.hover-popup-card');
+          const destId = card && card.dataset.destId;
+          if (!destId) return;
+          ev.stopPropagation();
+          if (hoverPopup) hoverPopup.remove();
+          selectDestination(destId);
+        });
+      }
     });
 
     map.on('mouseleave', 'atlas-hit', () => {
@@ -2949,7 +3035,10 @@
         map.setFeatureState({ source: 'atlas-points', id: hoveredFeatureId }, { hover: false });
         hoveredFeatureId = null;
       }
-      if (hoverPopup) hoverPopup.remove();
+      if (hoverCloseTimer) clearTimeout(hoverCloseTimer);
+      hoverCloseTimer = setTimeout(() => {
+        if (hoverPopup) hoverPopup.remove();
+      }, 180);
     });
 
     map.on('click', (e) => {
@@ -3080,6 +3169,7 @@
   }
 
   function refreshAllTexts() {
+    labelWidthCache.clear();
     const all = ATLAS.getAll();
     const totalSpots = all.reduce(
       (sum, d) => sum + (d.spotCount != null ? d.spotCount : (d.spots ? d.spots.length : 0)),
@@ -3112,6 +3202,12 @@
     }
     if (state.mode === 'gallery' && global.AestheticGallery) {
       global.AestheticGallery.render();
+    }
+    if (state.mode === 'planner' && global.TripPlanner) {
+      global.TripPlanner.renderWorkspace();
+    }
+    if (state.mode === 'archive' && global.TravelArchive) {
+      global.TravelArchive.renderWorkspace();
     }
     if (global.AmbientRadio && typeof global.AmbientRadio.refreshLocale === 'function') {
       global.AmbientRadio.refreshLocale();

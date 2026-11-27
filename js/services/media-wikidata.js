@@ -158,16 +158,19 @@
   }
 
   const IRRELEVANT_PHOTO_RE =
-    /\b(curry|food|dish|meal|soup|noodle|rice|salad|vegetable|fruit|dessert|menu|plate|bowl|restaurant|cuisine|cooking|eating|breakfast|lunch|dinner|snack|beverage|drink|cocktail|logo|flag|coat of arms|emblem|seal of|map of|locator|diagram|chart|graph|portrait|selfie|headshot|ticket|stamp|coin|banknote|qr code|screenshot|signpost|gravestone|tombstone|kaeng|khao soi|pad thai|som tam)\b/i;
+    /(?:\b(?:curry|food|dish|meal|soup|noodle|rice|salad|vegetable|fruit|dessert|menu|plate|bowl|restaurant|cuisine|cooking|eating|breakfast|lunch|dinner|snack|beverage|drink|cocktail|logo|flag|state flag|coat of arms|emblem|seal of|map of|locator|diagram|chart|graph|portrait|selfie|headshot|ticket|stamp|coin|banknote|qr code|screenshot|signpost|gravestone|tombstone|kaeng|khao soi|pad thai|som tam)\b|flag_of|coat_of_arms|seal_of|locator_map|blank_map|emblem_of|us_state)/i;
 
   const SCENERY_PHOTO_RE =
-    /\b(temple|wat|mountain|peak|lake|sunset|sunrise|view|panorama|skyline|bridge|palace|cathedral|church|castle|fjord|glacier|coast|beach|valley|old town|night|aerial|landscape|river|forest|park|garden|pagoda|shrine|monastery|harbor|bay|canyon|waterfall|cliff|summit|island|arch|square|plaza|cityscape)\b/i;
+    /\b(temple|wat|mountain|peak|lake|sunset|sunrise|view|panorama|skyline|bridge|palace|cathedral|church|castle|fjord|glacier|coast|beach|valley|old town|night|aerial|landscape|river|forest|park|garden|pagoda|shrine|monastery|harbor|bay|canyon|waterfall|cliff|summit|island|arch|square|plaza|cityscape|hall|chapel|library)\b/i;
+
+  const US_STATE_NAMES_RE =
+    /\b(arizona|texas|california|florida|ohio|nevada|utah|wyoming|alabama|alaska|indiana|kentucky|maryland|michigan|minnesota|missouri|nebraska|oregon|tennessee|vermont|wisconsin)\b/i;
 
   /**
    * Score Wikimedia Commons photo relevance for travel scenery & landmarks,
-   * heavily penalizing food, logos, locator maps, portraits, and tickets.
+   * heavily penalizing food, logos, locator maps, state flags, portraits, and tickets.
    */
-  function scoreTravelPhoto(photo, placeName) {
+  function scoreTravelPhoto(photo, placeName, country) {
     if (!photo || typeof photo !== 'object') return { score: -999, isIrrelevant: true };
     const text = `${photo.title || ''} ${photo.description || ''}`;
     let score = 0;
@@ -175,6 +178,14 @@
 
     if (IRRELEVANT_PHOTO_RE.test(text)) {
       score -= 80;
+      isIrrelevant = true;
+    }
+
+    const countryStr = String(country || '');
+    const placeStr = String(placeName || '');
+    const isAsianOrNonUs = Boolean(countryStr) && !/美国|united states|usa|america/i.test(countryStr);
+    if (isAsianOrNonUs && US_STATE_NAMES_RE.test(text) && !US_STATE_NAMES_RE.test(placeStr)) {
+      score -= 120;
       isIrrelevant = true;
     }
 
@@ -197,10 +208,10 @@
     return { score, isIrrelevant };
   }
 
-  function rankAndFilterTravelPhotos(photos, placeName, limit) {
+  function rankAndFilterTravelPhotos(photos, placeName, limit, country) {
     if (!Array.isArray(photos) || !photos.length) return [];
     const scored = photos.map((p) => {
-      const r = scoreTravelPhoto(p, placeName);
+      const r = scoreTravelPhoto(p, placeName, country);
       return { photo: p, score: r.score, isIrrelevant: r.isIrrelevant };
     });
     scored.sort((a, b) => b.score - a.score);
@@ -217,7 +228,7 @@
     const radiusM = Math.min(10000, o.radiusM || 3500);
     const Api = global.ApiClient;
     const caps = Api ? await Api.detectWorkerCapabilities() : { available: false };
-    const cachePrefix = caps && caps.available && caps.features && caps.features.img ? 'photos:v3p' : 'photos:v3';
+    const cachePrefix = caps && caps.available && caps.features && caps.features.img ? 'photos:v4p' : 'photos:v4';
     const cacheKey = `${cachePrefix}:${o.id || ''}:${lat.toFixed(3)},${lng.toFixed(3)}:${cleanQueryName(o.name)}:${limit}`;
 
     if (global.StorageDB) {
@@ -246,7 +257,7 @@
       // fall through to text search
     }
 
-    const cleanCount = photos.filter((p) => !scoreTravelPhoto(p, o.name).isIrrelevant).length;
+    const cleanCount = photos.filter((p) => !scoreTravelPhoto(p, o.name, o.country).isIrrelevant).length;
     if (cleanCount < 2 && o.name) {
       try {
         const q = `${cleanQueryName(o.name)} ${cleanQueryName(o.country || '')}`.trim();
@@ -302,7 +313,7 @@
       }
     }
 
-    const result = rankAndFilterTravelPhotos(photos, o.name, limit);
+    const result = rankAndFilterTravelPhotos(photos, o.name, limit, o.country);
     if (global.StorageDB && result.length) {
       await global.StorageDB.setCache(cacheKey, result, SEVEN_DAYS_MS, 'Wikimedia Commons');
     }

@@ -221,10 +221,10 @@
           month: m,
           suitability: Math.max(8, sc),
           peakWindowText: formatPeakMonths(dest, enr),
-          dataSource: 'era5-observed',
+          dataSource: 'era5-reanalysis',
           confidence: 'high',
-          explanation: `ERA5 5 年实测 ${m} 月降雪/积雪率 ${clim.snowProbPct}%，均温 ${clim.tempMean}°C。`,
-          limitations: '高海拔山峰局部积雪可能早于山谷气象站格点。'
+          explanation: `ERA5 5 年再分析 ${m} 月降雪/积雪率 ${clim.snowProbPct}%，均温 ${clim.tempMean}°C。`,
+          limitations: '再分析网格均值非气象站实测，高海拔山峰局部积雪可能早于山谷网格。'
         };
       }
       const effectiveT = tempC !== null ? tempC : (24 - Math.abs(lat) * 0.45 - elevM * 0.004);
@@ -254,7 +254,7 @@
         month: m,
         suitability: Math.max(5, Math.min(100, sc)),
         peakWindowText: hasAut ? formatPeakMonths(dest, enr) : (lat >= 0 ? '9月下旬–11月中旬' : '4月–5月'),
-        dataSource: clim ? 'era5-observed' : 'archive-statistical',
+        dataSource: clim ? 'era5-reanalysis' : 'archive-statistical',
         confidence: hasAut ? 'medium' : 'indicative',
         explanation: `${hasAut ? '包含典型秋色/落叶林景观' : '综合气候推演'} · ${m} 月适温匹配度 ${tempFit}/100。`,
         limitations: '红叶转色受当年初霜与降水影响，实际峰值通常存在 ±1–2 周年际波动。'
@@ -273,7 +273,7 @@
         month: m,
         suitability: Math.max(5, Math.min(100, sc)),
         peakWindowText: hasBlossom ? formatPeakMonths(dest, enr) : (lat >= 0 ? '3月–5月（随纬度海拔北移）' : '9月–11月'),
-        dataSource: clim ? 'era5-observed' : 'archive-statistical',
+        dataSource: clim ? 'era5-reanalysis' : 'archive-statistical',
         confidence: hasBlossom ? 'medium' : 'indicative',
         explanation: `${hasBlossom ? '拥有春花/花海打卡记录' : '按春温梯次推演'} · ${m} 月花期适温 ${tempFit}/100。`,
         limitations: '花期对春季积温极敏感，请结合出发前 14 天当地实况预报。'
@@ -287,7 +287,7 @@
       month: m,
       suitability: baseSuit,
       peakWindowText: formatPeakMonths(dest, enr),
-      dataSource: clim ? 'era5-observed' : 'archive-statistical',
+      dataSource: clim ? 'era5-reanalysis' : 'archive-statistical',
       confidence: clim ? 'high' : 'medium',
       explanation: `${m} 月档案推荐度 ${archiveScore}★${mo && mo.highlight ? ` · ${mo.highlight}` : ''}。`,
       limitations: '综合实地季节档案与气候特征，实时出行请留意短期气象变化。'
@@ -390,7 +390,7 @@
 
       const srcLabel = ev.dataSource === 'astronomy'
         ? 'Astronomy 星历'
-        : (ev.dataSource === 'era5-observed' ? 'ERA5 实测' : '实地统计物候');
+        : (ev.dataSource === 'era5-reanalysis' ? 'ERA5 再分析' : '实地统计物候');
 
       containerEl.innerHTML = `
         <div class="pheno-engine-card">

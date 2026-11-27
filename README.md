@@ -1,10 +1,10 @@
 <div align="center">
 
-# 🌍 World Travel Globe · 全球旅行地理图鉴 (v4.1 — Geo Intelligence)
+# 🌍 World Travel Globe · 全球旅行地理图鉴 (v4.2 — Geo Intelligence)
 
 **覆盖七大洲 · 137 个国家/地区 · 722 座精选目的地 · 5,414 个精准摄影机位的全球地理智能与三维探索平台**
 
-[![Version](https://img.shields.io/badge/Version-v4.1.0-e0c38e?style=flat-square&labelColor=0b101b)](docs/CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Version-v4.2.0-e0c38e?style=flat-square&labelColor=0b101b)](docs/CHANGELOG.md)
 [![Countries](https://img.shields.io/badge/Countries%20%26%20Regions-137-4f8cff?style=flat-square&labelColor=0b101b)](#核心功能矩阵)
 [![Destinations](https://img.shields.io/badge/Destinations-722-5b5ff9?style=flat-square&labelColor=0b101b)](#核心功能矩阵)
 [![Photo Spots](https://img.shields.io/badge/Photo%20Spots-5%2C414-8b5cf6?style=flat-square&labelColor=0b101b)](#核心功能矩阵)

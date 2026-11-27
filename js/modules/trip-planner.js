@@ -22,6 +22,14 @@
     return global.AppIcons ? global.AppIcons.svg(name, size || 14) : '';
   }
 
+  function t(key, vars) {
+    return global.AppI18n ? global.AppI18n.t(key, vars) : key;
+  }
+
+  function tx(str) {
+    return global.AppI18n ? global.AppI18n.tx(str) : (str || '');
+  }
+
   function haversineKm(a, b) {
     const r = Math.PI / 180;
     const dLat = (b[1] - a[1]) * r;
@@ -435,86 +443,86 @@
         <div class="gallery-head">
           <div>
             <span class="gallery-kicker">SMART TRIP PLANNER · REAL ROUTING & BUDGET</span>
-            <h2>智能旅行规划系统</h2>
-            <p class="gallery-lead">基于 722 座目的地与 5,414 个摄影机位，支持真实路网路线、拖拽排程、账单编辑、3D 地球仪联动与多格式导出。</p>
+            <h2>${esc(t('plannerTitle'))}</h2>
+            <p class="gallery-lead">${esc(t('plannerLead'))}</p>
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <button class="primary-btn" id="tp-preview-globe-btn" type="button">${icon('globe', 14)} 在地球上预览路线</button>
-            <button class="gallery-back-btn" id="tp-back-btn" type="button">${icon('arrowUpRight', 14)} 返回地球</button>
+            <button class="primary-btn" id="tp-preview-globe-btn" type="button">${icon('globe', 14)} ${esc(t('plannerPreviewGlobe'))}</button>
+            <button class="gallery-back-btn" id="tp-back-btn" type="button">${icon('arrowUpRight', 14)} ${esc(t('plannerBack'))}</button>
           </div>
         </div>
 
         <div class="workspace-split">
           <div>
             <div class="panel-box">
-              <h3>新建 / 自动生成行程</h3>
+              <h3>${esc(t('plannerNewTitle'))}</h3>
               <div style="display:flex;flex-direction:column;gap:8px;">
-                <label class="form-field"><span>已保存行程</span>
+                <label class="form-field"><span>${esc(t('plannerSavedTrips'))}</span>
                   <select id="tp-trip-select" class="sim-input">
                     ${allTrips.map((tr) => `<option value="${esc(tr.id)}" ${tr.id === activeTrip.id ? 'selected' : ''}>${esc(tr.name)}</option>`).join('')}
                   </select>
                 </label>
-                <label class="form-field"><span>出发地</span>
+                <label class="form-field"><span>${esc(t('plannerOrigin'))}</span>
                   <input id="tp-origin" class="sim-input" type="text" value="${esc(activeTrip.origin)}" />
                 </label>
-                <label class="form-field"><span>目标目的地（支持搜索）</span>
-                  <input id="tp-dest-search" class="sim-input" list="tp-dest-datalist" value="${esc(activeTrip.destName)}" placeholder="输入城市名如 东京、京都、冰岛…" />
+                <label class="form-field"><span>${esc(t('plannerDest'))}</span>
+                  <input id="tp-dest-search" class="sim-input" list="tp-dest-datalist" value="${esc(tx(activeTrip.destName))}" placeholder="${esc(t('plannerDestPlaceholder'))}" />
                   <datalist id="tp-dest-datalist">
-                    ${allDest.map((d) => `<option value="${esc(d.shortName || d.name)}" data-id="${esc(d.id)}">${esc(d.country)} · ${esc(d.name)}</option>`).join('')}
+                    ${allDest.map((d) => `<option value="${esc(tx(d.shortName || d.name))}" data-id="${esc(d.id)}">${esc(tx(d.country))} · ${esc(tx(d.name))}</option>`).join('')}
                   </datalist>
                 </label>
                 <div class="form-grid-2">
-                  <label class="form-field"><span>天数</span><input id="tp-days" class="sim-input mono-num" type="number" min="1" max="14" value="${activeTrip.daysCount || (activeTrip.days || []).length}" /></label>
-                  <label class="form-field"><span>总预算 (RMB)</span><input id="tp-budget" class="sim-input mono-num" type="number" min="500" step="500" value="${activeTrip.budgetRmb || 12000}" /></label>
+                  <label class="form-field"><span>${esc(t('plannerDays'))}</span><input id="tp-days" class="sim-input mono-num" type="number" min="1" max="14" value="${activeTrip.daysCount || (activeTrip.days || []).length}" /></label>
+                  <label class="form-field"><span>${esc(t('plannerTotalBudget'))}</span><input id="tp-budget" class="sim-input mono-num" type="number" min="500" step="500" value="${activeTrip.budgetRmb || 12000}" /></label>
                 </div>
                 <div class="form-grid-2">
-                  <label class="form-field"><span>出行月份</span>
+                  <label class="form-field"><span>${esc(t('plannerMonth'))}</span>
                     <select id="tp-month" class="sim-input">
-                      ${Array.from({ length: 12 }, (_, m) => `<option value="${m + 1}" ${Number(activeTrip.month) === m + 1 ? 'selected' : ''}>${m + 1} 月</option>`).join('')}
+                      ${Array.from({ length: 12 }, (_, m) => `<option value="${m + 1}" ${Number(activeTrip.month) === m + 1 ? 'selected' : ''}>${esc(t('monthFmt', { m: m + 1 }))}</option>`).join('')}
                     </select>
                   </label>
-                  <label class="form-field"><span>交通方式</span>
+                  <label class="form-field"><span>${esc(t('plannerTransport'))}</span>
                     <select id="tp-mode" class="sim-input">
-                      <option value="driving" ${activeTrip.mode === 'driving' ? 'selected' : ''}>🚗 自驾</option>
-                      <option value="walking" ${activeTrip.mode === 'walking' ? 'selected' : ''}>🚶 步行</option>
-                      <option value="cycling" ${activeTrip.mode === 'cycling' ? 'selected' : ''}>🚲 骑行</option>
+                      <option value="driving" ${activeTrip.mode === 'driving' ? 'selected' : ''}>${esc(t('plannerModeDriving'))}</option>
+                      <option value="walking" ${activeTrip.mode === 'walking' ? 'selected' : ''}>${esc(t('plannerModeWalking'))}</option>
+                      <option value="cycling" ${activeTrip.mode === 'cycling' ? 'selected' : ''}>${esc(t('plannerModeCycling'))}</option>
                     </select>
                   </label>
                 </div>
-                <label class="form-field"><span>兴趣偏好</span>
+                <label class="form-field"><span>${esc(t('plannerInterest'))}</span>
                   <select id="tp-interest" class="sim-input">
-                    <option value="all" ${activeTrip.interest === 'all' ? 'selected' : ''}>全能摄影精华</option>
-                    <option value="nature" ${activeTrip.interest === 'nature' ? 'selected' : ''}>自然风光优先</option>
-                    <option value="architecture" ${activeTrip.interest === 'architecture' ? 'selected' : ''}>人文建筑优先</option>
+                    <option value="all" ${activeTrip.interest === 'all' ? 'selected' : ''}>${esc(t('plannerIntAll'))}</option>
+                    <option value="nature" ${activeTrip.interest === 'nature' ? 'selected' : ''}>${esc(t('plannerIntNature'))}</option>
+                    <option value="architecture" ${activeTrip.interest === 'architecture' ? 'selected' : ''}>${esc(t('plannerIntArch'))}</option>
                   </select>
                 </label>
                 <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;">
-                  <button class="primary-btn" id="tp-generate-btn" type="button" style="flex:1;">智能生成逐日计划</button>
-                  <button class="secondary-btn" id="tp-calc-route-btn" type="button">计算真实路网</button>
+                  <button class="primary-btn" id="tp-generate-btn" type="button" style="flex:1;">${esc(t('plannerGenerateBtn'))}</button>
+                  <button class="secondary-btn" id="tp-calc-route-btn" type="button">${esc(t('plannerCalcRouteBtn'))}</button>
                 </div>
               </div>
             </div>
 
             <div class="panel-box">
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-                <h3 style="margin:0;">预算账单 (¥ ${totalBudget.toLocaleString()})</h3>
-                <span class="mono-num" style="font-size:11.5px;color:var(--text-secondary);">日均 ¥ ${perDayBudget.toLocaleString()}</span>
+                <h3 style="margin:0;">${esc(t('plannerBudgetTitle', { total: totalBudget.toLocaleString() }))}</h3>
+                <span class="mono-num" style="font-size:11.5px;color:var(--text-secondary);">${esc(t('plannerPerDay', { amt: perDayBudget.toLocaleString() }))}</span>
               </div>
               <div id="tp-budget-list">
                 ${(activeTrip.budgetItems || [])
                   .map(
                     (b, idx) => `
                   <div style="display:grid;grid-template-columns:80px 1fr 78px 26px;gap:5px;align-items:center;margin-bottom:6px;">
-                    <input class="sim-input tp-bi-cat" data-idx="${idx}" value="${esc(b.category)}" style="height:28px;font-size:11px;" />
-                    <input class="sim-input tp-bi-det" data-idx="${idx}" value="${esc(b.detail)}" style="height:28px;font-size:11px;" />
+                    <input class="sim-input tp-bi-cat" data-idx="${idx}" value="${esc(tx(b.category))}" style="height:28px;font-size:11px;" />
+                    <input class="sim-input tp-bi-det" data-idx="${idx}" value="${esc(tx(b.detail))}" style="height:28px;font-size:11px;" />
                     <input class="sim-input mono-num tp-bi-cost" data-idx="${idx}" type="number" value="${b.cost}" style="height:28px;font-size:11px;" />
-                    <button class="icon-btn tp-bi-del" data-idx="${idx}" type="button" title="删除">${icon('trash', 12)}</button>
+                    <button class="icon-btn tp-bi-del" data-idx="${idx}" type="button">${icon('trash', 12)}</button>
                   </div>
                 `
                   )
                   .join('')}
               </div>
-              <button class="secondary-btn" id="tp-add-budget-btn" type="button" style="width:100%;margin-top:6px;">+ 添加账单明细</button>
+              <button class="secondary-btn" id="tp-add-budget-btn" type="button" style="width:100%;margin-top:6px;">${esc(t('plannerAddBudgetBtn'))}</button>
               <div class="echarts-box" id="tp-budget-chart" style="height:180px;"></div>
             </div>
           </div>
@@ -525,15 +533,15 @@
                 <div>
                   <h3 style="margin:0;">${esc(activeTrip.name)}</h3>
                   <div style="font-size:11.5px;color:var(--text-secondary);margin-top:3px;">
-                    <span class="source-tag routing">真实路网：${totalRoutedKm} km · 约 ${totalMin} 分钟 (${esc(activeTrip.mode)})</span>
-                    ${totalAirKm > 0 ? `<span class="source-tag empirical">跨海/未通段直线参考：${totalAirKm} km</span>` : ''}
+                    <span class="source-tag routing">OSRM: ${totalRoutedKm} km · ${totalMin} min (${esc(activeTrip.mode)})</span>
+                    ${totalAirKm > 0 ? `<span class="source-tag empirical">Air ref: ${totalAirKm} km</span>` : ''}
                   </div>
                 </div>
                 <div style="display:flex;gap:6px;flex-wrap:wrap;">
                   <button class="mini-action-pill" id="tp-exp-json" type="button">${icon('download', 12)} JSON</button>
                   <button class="mini-action-pill" id="tp-exp-csv" type="button">${icon('download', 12)} CSV</button>
                   <button class="mini-action-pill" id="tp-exp-pdf" type="button">${icon('download', 12)} PDF</button>
-                  <button class="mini-action-pill" id="tp-share-url" type="button">${icon('share', 12)} 分享链接</button>
+                  <button class="mini-action-pill" id="tp-share-url" type="button">${icon('share', 12)} ${esc(t('plannerShareLink'))}</button>
                 </div>
               </div>
               <div id="tp-share-msg" style="font-size:11px;color:var(--accent-primary);margin-top:6px;"></div>
@@ -544,9 +552,9 @@
                 (dy, dIdx) => `
               <div class="day-card" data-day-idx="${dIdx}">
                 <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
-                  <strong>Day ${dy.day} · ${esc(dy.title)}</strong>
+                  <strong>Day ${dy.day} · ${esc(tx(dy.title))}</strong>
                   <span class="mono-num" style="font-size:11px;color:var(--text-secondary);">
-                    ${dy.routeSummary ? `路网 ${dy.routeSummary.totalRoutedKm} km · ${dy.routeSummary.totalMinutes} 分钟` : `${dy.stops.length} 个站点`}
+                    ${dy.routeSummary ? `${dy.routeSummary.totalRoutedKm} km · ${dy.routeSummary.totalMinutes} min` : `${dy.stops.length} stops`}
                   </span>
                 </div>
                 <div class="day-stops-dropzone" data-day-idx="${dIdx}">
@@ -557,20 +565,20 @@
                             (st, sIdx) => `
                         <div class="stop-drag-item" draggable="true" data-day-idx="${dIdx}" data-stop-idx="${sIdx}">
                           <div style="min-width:0;">
-                            <div style="font-size:12.5px;font-weight:500;">${sIdx + 1}. ${esc(st.name)}</div>
-                            ${st.bestTime ? `<div style="font-size:11px;color:var(--text-muted);">${esc(st.bestTime)}</div>` : ''}
+                            <div style="font-size:12.5px;font-weight:500;">${sIdx + 1}. ${esc(tx(st.name))}</div>
+                            ${st.bestTime ? `<div style="font-size:11px;color:var(--text-muted);">${esc(tx(st.bestTime))}</div>` : ''}
                           </div>
                           <div style="display:flex;gap:4px;flex-shrink:0;">
-                            <button class="icon-btn tp-move-up" data-day="${dIdx}" data-stop="${sIdx}" type="button" title="上移">↑</button>
-                            <button class="icon-btn tp-move-down" data-day="${dIdx}" data-stop="${sIdx}" type="button" title="下移">↓</button>
-                            <button class="icon-btn tp-fly-stop" data-day="${dIdx}" data-stop="${sIdx}" type="button" title="定位">${icon('target', 12)}</button>
-                            <button class="icon-btn tp-del-stop" data-day="${dIdx}" data-stop="${sIdx}" type="button" title="移除">${icon('x', 12)}</button>
+                            <button class="icon-btn tp-move-up" data-day="${dIdx}" data-stop="${sIdx}" type="button">↑</button>
+                            <button class="icon-btn tp-move-down" data-day="${dIdx}" data-stop="${sIdx}" type="button">↓</button>
+                            <button class="icon-btn tp-fly-stop" data-day="${dIdx}" data-stop="${sIdx}" type="button">${icon('target', 12)}</button>
+                            <button class="icon-btn tp-del-stop" data-day="${dIdx}" data-stop="${sIdx}" type="button">${icon('x', 12)}</button>
                           </div>
                         </div>
                       `
                           )
                           .join('')
-                      : `<div style="padding:12px;text-align:center;color:var(--text-muted);font-size:11.5px;border:1px dashed var(--border-hairline);border-radius:8px;margin-top:6px;">可将其他天景点拖拽至此</div>`
+                      : `<div style="padding:12px;text-align:center;color:var(--text-muted);font-size:11.5px;border:1px dashed var(--border-hairline);border-radius:8px;margin-top:6px;">${esc(t('plannerDropHint'))}</div>`
                   }
                 </div>
               </div>

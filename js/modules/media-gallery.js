@@ -19,6 +19,10 @@
     return global.AppIcons ? global.AppIcons.svg(name, size || 14) : '';
   }
 
+  function t(key, vars) {
+    return global.AppI18n ? global.AppI18n.t(key, vars) : key;
+  }
+
   function openLightbox(items, startIdx) {
     if (!Array.isArray(items) || !items.length) return;
     lightboxItems = items;
@@ -47,10 +51,10 @@
         <img src="${esc(item.fullUrl || item.thumbUrl)}" alt="${esc(item.title || '')}" />
       </div>
       <div class="lightbox-caption">
-        <div style="font-weight:600;margin-bottom:4px;">${esc(item.title || '实景影像')} <span class="mono-num" style="opacity:0.7;">(${lightboxIndex + 1}/${lightboxItems.length})</span></div>
+        <div style="font-weight:600;margin-bottom:4px;">${esc(item.title || t('mediaEmptyTitle'))} <span class="mono-num" style="opacity:0.7;">(${lightboxIndex + 1}/${lightboxItems.length})</span></div>
         <div style="opacity:0.86;font-size:11.5px;">
-          摄影 / 来源：${esc(item.author || 'Wikimedia Commons')} · 协议：${esc(item.license || 'Open License')}
-          ${item.sourceUrl ? ` · <a href="${esc(item.sourceUrl)}" target="_blank" rel="noopener noreferrer">查看原图档案 ↗</a>` : ''}
+          ${esc(t('mediaLightboxCredit', { author: item.author || 'Wikimedia Commons', license: item.license || 'Open License' }))}
+          ${item.sourceUrl ? ` · <a href="${esc(item.sourceUrl)}" target="_blank" rel="noopener noreferrer">${esc(t('mediaViewOriginal'))}</a>` : ''}
         </div>
       </div>
     `;
@@ -94,8 +98,8 @@
     if (!dest || !containerEl || !global.MediaWikidataService) return;
     containerEl.innerHTML = `
       <div class="media-strip-head">
-        <span>${icon('image', 13)} 真实实景影像 (Wikimedia Commons)</span>
-        <span class="source-tag realtime">按需加载</span>
+        <span>${icon('image', 13)} ${esc(t('mediaLoadingTitle'))}</span>
+        <span class="source-tag realtime">${esc(t('mediaOnDemand'))}</span>
       </div>
       <div class="media-strip-grid">
         <div class="media-skeleton"></div>
@@ -119,8 +123,8 @@
       if (!photos.length) {
         containerEl.innerHTML = `
           <div class="media-strip-head">
-            <span>${icon('image', 13)} 实景影像</span>
-            <span class="source-tag empirical">暂无公开 geotag 照片</span>
+            <span>${icon('image', 13)} ${esc(t('mediaEmptyTitle'))}</span>
+            <span class="source-tag empirical">${esc(t('mediaNoGeotag'))}</span>
           </div>
         `;
         return;
@@ -128,8 +132,8 @@
 
       containerEl.innerHTML = `
         <div class="media-strip-head">
-          <span>${icon('image', 13)} 真实实景画廊 (${photos.length})</span>
-          <span class="source-tag realtime">Wikimedia Commons · 点击全屏</span>
+          <span>${icon('image', 13)} ${esc(t('mediaGalleryCount', { n: photos.length }))}</span>
+          <span class="source-tag realtime">${esc(t('mediaCommonsClickFull'))}</span>
         </div>
         <div class="media-strip-grid">
           ${photos
@@ -155,8 +159,8 @@
       if (document.body.contains(containerEl)) {
         containerEl.innerHTML = `
           <div class="media-strip-head">
-            <span>${icon('image', 13)} 实景影像</span>
-            <span class="source-tag empirical">网络受限 · 已跳过媒体请求</span>
+            <span>${icon('image', 13)} ${esc(t('mediaEmptyTitle'))}</span>
+            <span class="source-tag empirical">${esc(t('mediaOffline'))}</span>
           </div>
         `;
       }

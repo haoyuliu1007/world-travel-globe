@@ -15,7 +15,7 @@
     { id: 'aurora', label: '极光/极夜', re: /极光|aurora|northern lights|borealis|kp/i },
     { id: 'milkyway', label: '银河/星空/暗夜', re: /银河|星空|星轨|暗夜|观星|milky way|stargaz|stars|night sky/i },
     { id: 'lake', label: '湖泊/倒影', re: /湖|海子|镜湖|盐湖|lake|lagoon|loch|tarn|reflection/i },
-    { id: 'coast', label: '海岸/海岛/悬崖海景', re: /海|海岸|海岛|礁|沙滩|灯塔|海湾|coast|island|beach|cliff|sea|ocean/i },
+    { id: 'coast', label: '海岸/海岛/悬崖海景', re: /海岸|海岛|海滨|海滩|沙滩|海湾|大海|海洋|礁石|灯塔|coast|island|beach|cliff|\bsea\b|ocean/i },
     { id: 'desert', label: '沙漠/戈壁/雅丹', re: /沙漠|沙丘|戈壁|雅丹|丹霞|荒漠|desert|dune|canyon|badlands/i },
     { id: 'forest', label: '森林/雨林/秘境', re: /森林|林海|雨林|原始林|竹海|红杉|forest|rainforest|woodland|redwood/i },
     { id: 'cloudsea', label: '云海/晨雾/日照金山', re: /云海|晨雾|佛光|平流雾|日照金山|cloud sea|mist|fog|inversion/i },
@@ -100,24 +100,46 @@
     return null;
   }
 
+  const ANALOGY_PRESETS = [
+    { re: /(?:像|类似|平替|like|similar to)\s*(瑞士|switzerland)/i, excludeCountry: '瑞士', tags: ['snow', 'mountain', 'lake'], label: '阿尔卑斯雪峰湖泊系' },
+    { re: /(?:像|类似|平替|like|similar to)\s*(冰岛|iceland)/i, excludeCountry: '冰岛', tags: ['glacier', 'aurora', 'volcano'], label: '极光冰川火山系' },
+    { re: /(?:像|类似|平替|like|similar to)\s*(日本|japan|京都|kyoto)/i, excludeCountry: '日本', tags: ['blossom', 'autumn', 'architecture'], label: '东亚四季花叶古建系' },
+    { re: /(?:像|类似|平替|like|similar to)\s*(挪威|norway)/i, excludeCountry: '挪威', tags: ['glacier', 'coast', 'mountain'], label: '峡湾海岸雪山系' }
+  ];
+
   /**
-   * Parse natural-language travel query into structured constraints & intent signals.
+   * Parse natural-language travel query into structured hard/soft constraints,
+   * negative exclusions, and analogy preferences.
    */
   function parseNaturalQuery(rawQuery) {
     const raw = String(rawQuery || '').trim();
     const q = raw.toLowerCase();
 
+    // Extract negative clauses first (e.g. "不要海滩", "避开雪山", "no beach", "avoid coast")
+    const excludeTags = [];
+    const negRe = /(?:不要|避开|别去|不想看|不含|别太|avoid|without|exclude|no\s+)([^，,;；。]+)/gi;
+    let cleanedForPositive = q;
+    let mNeg;
+    while ((mNeg = negRe.exec(q)) !== null) {
+      const negClause = mNeg[1] || '';
+      const negLands = classifyLandscapesFromText(negClause);
+      negLands.forEach((tid) => {
+        if (!excludeTags.includes(tid)) excludeTags.push(tid);
+      });
+      cleanedForPositive = cleanedForPositive.replace(mNeg[0], ' ');
+    }
+
     let month = null;
-    const numMonthMatch = q.match(/(?:^|[^\d])(1[0-2]|[1-9])\s*月份?/);
+    const numMonthMatch = cleanedForPositive.match(/(?:^|[^\d])(1[0-2]|[1-9])\s*月份?/);
     if (numMonthMatch) {
       month = Number(numMonthMatch[1]);
     } else {
-      const cnMonthMatch = q.match(/(十一|十二|[一二三四五六七八九十])\s*月份?/);
+      const cnMonthMatch = cleanedForPositive.match(/(十一|十二|[一二三四五六七八九十])\s*月份?/);
       if (cnMonthMatch && MONTH_CN_NUM[cnMonthMatch[1]]) {
         month = MONTH_CN_NUM[cnMonthMatch[1]];
       } else {
         for (let i = 0; i < MONTH_NAMES_EN.length; i++) {
-          if (new RegExp(`\\b${MONTH_NAMES_EN[i].slice(0, 3)}(?:[a-z]*)\\b`, 'i').test(q)) {
+          if (new RegExp(`\\b${MONTH_NAMES_EN[i].slice(0, 3)}(?:[a-z]*)\\b`, 'i').test(cleanedForPositive)) {
             month = i + 1;
             break;
           }
@@ -126,57 +148,77 @@
     }
 
     let season = null;
-    if (/春|spring/i.test(q)) season = 'spring';
-    else if (/夏|summer/i.test(q)) season = 'summer';
-    else if (/秋|金秋|autumn|fall/i.test(q)) season = 'autumn';
-    else if (/冬|winter/i.test(q)) season = 'winter';
+    if (/春|spring/i.test(cleanedForPositive)) season = 'spring';
+    else if (/夏|summer/i.test(cleanedForPositive)) season = 'summer';
+    else if (/秋|金秋|autumn|fall/i.test(cleanedForPositive)) season = 'autumn';
+    else if (/冬|winter/i.test(cleanedForPositive)) season = 'winter';
 
     let maxBudgetRmb = null;
-    const wanMatch = q.match(/(\d+(?:\.\d+)?)\s*万(?:元|块|rmb)?/);
-    const rmbMatch = q.match(/(?:预算|不超过|低于|以内|<=|under|budget)?\s*(\d{3,6})\s*(?:元|rmb|cny|块)?/);
-    const usdMatch = q.match(/\$\s*(\d{2,5})|(\d{2,5})\s*(?:usd|美元)/i);
+    const wanMatch = cleanedForPositive.match(/(\d+(?:\.\d+)?)\s*万(?:元|块|rmb)?/);
+    const rmbMatch = cleanedForPositive.match(/(?:预算|不超过|低于|以内|<=|under|budget)?\s*(\d{3,6})\s*(?:元|rmb|cny|块)?/);
+    const usdMatch = cleanedForPositive.match(/\$\s*(\d{2,5})|(\d{2,5})\s*(?:usd|美元)/i);
     if (usdMatch) {
       maxBudgetRmb = Math.round(Number(usdMatch[1] || usdMatch[2]) * 7.2);
     } else if (wanMatch) {
       maxBudgetRmb = Math.round(Number(wanMatch[1]) * 10000);
-    } else if (rmbMatch && /预算|元|块|rmb|cny|不超过|低于|以内|under|budget/i.test(q)) {
+    } else if (rmbMatch && /预算|元|块|rmb|cny|不超过|低于|以内|under|budget/i.test(cleanedForPositive)) {
       maxBudgetRmb = Number(rmbMatch[1]);
     }
 
     let days = null;
-    const daysMatch = q.match(/(\d{1,2})\s*(?:天|日|days?)/i);
+    const daysMatch = cleanedForPositive.match(/(\d{1,2})\s*(?:天|日|days?)/i);
     if (daysMatch) {
       days = Number(daysMatch[1]);
     } else {
-      const cnDayMatch = q.match(/([一二两三四五六七八九十])\s*(?:天|日)/);
+      const cnDayMatch = cleanedForPositive.match(/([一二两三四五六七八九十])\s*(?:天|日)/);
       if (cnDayMatch && CN_DIGITS[cnDayMatch[1]]) days = CN_DIGITS[cnDayMatch[1]];
     }
 
     let continent = null;
     let continentLabel = '';
     for (let i = 0; i < CONTINENT_PATTERNS.length; i++) {
-      if (CONTINENT_PATTERNS[i].re.test(q)) {
+      if (CONTINENT_PATTERNS[i].re.test(cleanedForPositive)) {
         continent = CONTINENT_PATTERNS[i].id;
         continentLabel = CONTINENT_PATTERNS[i].label;
         break;
       }
     }
 
-    const landscapeTags = classifyLandscapesFromText(q);
-    const preferDry = /少雨|晴朗|干爽|不下雨|晴天|通透|dry|sunny|clear/i.test(q);
-    const preferWarm = /温暖|暖和|暖冬|热带|warm/i.test(q);
-    const preferCool = /避暑|凉爽|清凉|cool/i.test(q);
+    const landscapeTags = classifyLandscapesFromText(cleanedForPositive).filter((t) => !excludeTags.includes(t));
+    let analogy = null;
+    const cheaperPreference = /更便宜|平替|性价比|低预算|cheaper|affordable/i.test(q);
+    for (let i = 0; i < ANALOGY_PRESETS.length; i++) {
+      if (ANALOGY_PRESETS[i].re.test(q)) {
+        analogy = ANALOGY_PRESETS[i];
+        analogy.tags.forEach((tid) => {
+          if (!excludeTags.includes(tid) && !landscapeTags.includes(tid)) {
+            landscapeTags.push(tid);
+          }
+        });
+        break;
+      }
+    }
+
+    const preferDry = /少雨|晴朗|干爽|不下雨|晴天|通透|dry|sunny|clear/i.test(cleanedForPositive);
+    const preferWarm = /温暖|暖和|暖冬|热带|warm/i.test(cleanedForPositive);
+    const preferCool = /避暑|凉爽|清凉|cool/i.test(cleanedForPositive);
 
     const summaryChips = [];
     if (month) summaryChips.push(`${month}月`);
     else if (season) summaryChips.push({ spring: '春季', summer: '夏季', autumn: '秋季', winter: '冬季' }[season]);
     if (continentLabel) summaryChips.push(continentLabel);
-    if (maxBudgetRmb) summaryChips.push(`预算 ≤ ¥${maxBudgetRmb.toLocaleString()}`);
+    if (maxBudgetRmb) summaryChips.push(`硬约束 ≤ ¥${maxBudgetRmb.toLocaleString()}`);
     if (days) summaryChips.push(`${days}天行程`);
     landscapeTags.slice(0, 4).forEach((tagId) => {
       const rule = LANDSCAPE_RULES.find((r) => r.id === tagId);
       if (rule) summaryChips.push(rule.label.split('/')[0]);
     });
+    excludeTags.forEach((tagId) => {
+      const rule = LANDSCAPE_RULES.find((r) => r.id === tagId);
+      if (rule) summaryChips.push(`排除：${rule.label.split('/')[0]}`);
+    });
+    if (analogy) summaryChips.push(analogy.label);
+    if (cheaperPreference) summaryChips.push('高性价比优先');
     if (preferDry) summaryChips.push('少雨晴朗偏好');
     if (preferWarm) summaryChips.push('温暖偏好');
     if (preferCool) summaryChips.push('避暑清凉偏好');
@@ -190,6 +232,8 @@
       preferDry ||
       preferWarm ||
       preferCool ||
+      excludeTags.length > 0 ||
+      analogy ||
       landscapeTags.length >= 2 ||
       (raw.length >= 8 && landscapeTags.length >= 1)
     );
@@ -203,6 +247,9 @@
       days,
       continent,
       landscapeTags,
+      excludeTags,
+      analogy,
+      cheaperPreference,
       preferDry,
       preferWarm,
       preferCool,
@@ -293,7 +340,9 @@
 
     const msScores = new Map();
     if (ms && intent.raw) {
-      const msHits = ms.search(intent.raw);
+      const msHits = intent.hasIntent
+        ? ms.search(intent.raw)
+        : ms.search(intent.raw, { combineWith: 'AND', fuzzy: 0.12 });
       for (let i = 0; i < msHits.length; i++) {
         msScores.set(msHits[i].id, msHits[i].score);
       }
@@ -311,12 +360,36 @@
       const msScore = msScores.get(dest.id) || 0;
 
       if (!intent.hasIntent) {
-        if (msScore <= 0 && !(`${dest.name} ${dest.shortName} ${dest.country} ${dest.id}`).toLowerCase().includes(qLower)) {
+        const directHay = (`${dest.name} ${dest.shortName} ${dest.country} ${dest.id}`).toLowerCase();
+        if (msScore <= 0 && !directHay.includes(qLower)) {
           continue;
         }
       }
 
       if (intent.hasIntent && intent.continent && dest.continent !== intent.continent && msScore < 5) {
+        continue;
+      }
+
+      if (intent.analogy && intent.cheaperPreference && String(dest.country || '').includes(intent.analogy.excludeCountry)) {
+        continue;
+      }
+
+      const destLands = getDestLandscapes(dest, enr);
+      // Hard negative constraint exclusion
+      if (intent.excludeTags && intent.excludeTags.length) {
+        let excluded = false;
+        for (let ex = 0; ex < intent.excludeTags.length; ex++) {
+          if (destLands.includes(intent.excludeTags[ex])) {
+            excluded = true;
+            break;
+          }
+        }
+        if (excluded) continue;
+      }
+
+      // Hard budget cap exclusion
+      const comfortRmb = (enr && enr.comfortBudgetRmb) || estimateComfortBudget(dest);
+      if (intent.maxBudgetRmb && comfortRmb !== null && comfortRmb > intent.maxBudgetRmb * 1.15) {
         continue;
       }
 
@@ -337,8 +410,6 @@
         if (cRule) reasons.push(`位于${cRule.label}`);
       }
 
-      // Landscape tags overlap
-      const destLands = getDestLandscapes(dest, enr);
       if (intent.landscapeTags.length) {
         let hits = 0;
         const matchedLabels = [];
@@ -395,22 +466,25 @@
         }
       }
 
-      // Budget reference check
-      const comfortRmb = (enr && enr.comfortBudgetRmb) || estimateComfortBudget(dest);
+      // Budget reference check & cheaper preference bonus
       if (intent.maxBudgetRmb) {
         if (comfortRmb !== null) {
           if (comfortRmb <= intent.maxBudgetRmb) {
             total += 18;
             reasons.push(`参考预算 ¥${comfortRmb.toLocaleString()} ≤ ¥${intent.maxBudgetRmb.toLocaleString()}`);
-          } else if (comfortRmb <= intent.maxBudgetRmb * 1.2) {
-            total += 4;
-            caveats.push(`参考预算略高 (¥${comfortRmb.toLocaleString()})`);
           } else {
-            total -= 16;
-            caveats.push(`参考预算 ¥${comfortRmb.toLocaleString()} 超出目标`);
+            total += 4;
+            caveats.push(`参考预算接近上限 (¥${comfortRmb.toLocaleString()})`);
           }
         } else {
-          caveats.push('暂无结构化预算基准');
+          caveats.push('预算缺失（待核实）');
+        }
+      } else if (intent.cheaperPreference && comfortRmb !== null) {
+        if (comfortRmb <= 10000) {
+          total += 16;
+          reasons.push(`高性价比参考预算 ¥${comfortRmb.toLocaleString()}`);
+        } else if (comfortRmb > 18000) {
+          total -= 12;
         }
       }
 

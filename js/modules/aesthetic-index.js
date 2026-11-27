@@ -186,7 +186,7 @@
   }
 
   function sourceBadgeHtml(src) {
-    if (src === 'realtime') return '<span class="source-tag realtime">ERA5 实测气候</span>';
+    if (src === 'realtime') return '<span class="source-tag realtime">ERA5 再分析气候</span>';
     if (src === 'astronomy') return '<span class="source-tag astronomy">SunCalc 天文</span>';
     if (src === 'estimated') return '<span class="source-tag empirical">参考估算 · 非实时</span>';
     return '<span class="source-tag empirical">实地档案经验</span>';
@@ -213,7 +213,7 @@
           <span class="mono-num" style="font-size:15px;font-weight:700;color:var(--accent-primary);">${res.total} / 100 (${res.stars}★)</span>
         </div>
         <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">
-          严格区分 Open-Meteo ERA5 实测气候、SunCalc 天文光影与人工实地档案；未缓存历史气候时点击「气候」页签可加载 5 年真实气候数据。
+          严格区分 Open-Meteo ERA5 再分析气候、SunCalc 天文光影与人工实地档案；未缓存历史气候时点击「气候」页签可加载 5 年再分析网格均值。
         </div>
         ${res.dimensions
           .map(

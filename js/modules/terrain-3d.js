@@ -28,7 +28,7 @@
   let contourDemSource = null;
   let contourProtocolRegistered = false;
   const tileCache = new Map();
-  const MAX_TILE_CACHE = 24;
+  const MAX_TILE_CACHE = 48;
 
   function esc(str) {
     return String(str || '')
@@ -89,8 +89,11 @@
     const maxDistM = Number((opts && opts.maxDistM) || 30000);
     const distSteps = Math.max(8, Number((opts && opts.distSteps) || 28));
 
+    const observerHeightM = Number.isFinite(Number(opts && opts.observerHeightM))
+      ? Number(opts.observerHeightM)
+      : 1.6;
     const centerSample = sampleElevationFn(lat, lng);
-    const observerElevation = Number.isFinite(centerSample) ? centerSample : 0;
+    const observerElevation = (Number.isFinite(centerSample) ? centerSample : 0) + observerHeightM;
 
     const distances = [];
     for (let s = 0; s < distSteps; s++) {
@@ -156,9 +159,9 @@
 
   /**
    * Estimate terrain-obstructed sunrise and sunset times by scanning the solar trajectory
-   * against the 360° horizon elevation profile.
+   * against the 360° horizon elevation profile in the destination's local timezone.
    */
-  function estimateTerrainAdjustedSunTimes(lat, lng, dateStr, profile, sunCalcRef) {
+  function estimateTerrainAdjustedSunTimes(lat, lng, dateStr, profile, sunCalcRef, utcOffsetMin) {
     const SC = sunCalcRef || global.SunCalc;
     if (!SC || !Array.isArray(profile) || !profile.length) return null;
 
@@ -166,8 +169,11 @@
     const yr = y || 2026;
     const mo = (m || 6) - 1;
     const dy = d || 21;
+    const offsetMin = Number.isFinite(Number(utcOffsetMin))
+      ? Number(utcOffsetMin)
+      : Math.max(-720, Math.min(840, Math.round((Number(lng) || 0) / 15) * 60));
 
-    const noonDt = new Date(yr, mo, dy, 12, 0, 0);
+    const noonDt = new Date(Date.UTC(yr, mo, dy, 0, 12 * 60 - offsetMin, 0));
     const times = SC.getTimes(noonDt, lat, lng);
     const geomSunrise = times && times.sunrise instanceof Date && !Number.isNaN(times.sunrise.getTime()) ? times.sunrise : null;
     const geomSunset = times && times.sunset instanceof Date && !Number.isNaN(times.sunset.getTime()) ? times.sunset : null;
@@ -177,7 +183,7 @@
     let prevClear = false;
 
     for (let min = 0; min < 1440; min += 2) {
-      const dt = new Date(yr, mo, dy, Math.floor(min / 60), min % 60, 0);
+      const dt = new Date(Date.UTC(yr, mo, dy, 0, min - offsetMin, 0));
       const pos = SC.getPosition(dt, lat, lng);
       const obsDeg = interpolateHorizonAngle(profile, pos.azimuth);
       const isClear = pos.altitude > Math.max(-0.833, obsDeg);
@@ -248,47 +254,76 @@
   }
 
   /**
-   * Browser-side real Terrarium DEM 360° horizon obstruction analysis (z=11, 3x3 tile window).
+   * Browser-side multi-resolution Terrarium DEM 360° horizon obstruction analysis:
+   * z12 (~38m/px) near-field center tile + z11 (~76m/px) 3x3 far-field window.
    */
   async function computeTerrainHorizon(lat, lng, opts) {
     if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
       return { available: false, reason: 'Invalid coordinates' };
     }
-    const z = 11;
-    const centerTile = lngLatToTileXY(lng, lat, z);
-    const n = Math.pow(2, z);
-    const tileMap = new Map();
+    const z11 = 11;
+    const centerTile11 = lngLatToTileXY(lng, lat, z11);
+    const n11 = Math.pow(2, z11);
+    const tileMap11 = new Map();
     const loads = [];
 
     for (let dx = -1; dx <= 1; dx++) {
       for (let dy = -1; dy <= 1; dy++) {
-        const tx = ((centerTile.x + dx) % n + n) % n;
-        const ty = centerTile.y + dy;
-        if (ty < 0 || ty >= n) continue;
+        const tx = ((centerTile11.x + dx) % n11 + n11) % n11;
+        const ty = centerTile11.y + dy;
+        if (ty < 0 || ty >= n11) continue;
         const k = `${tx}/${ty}`;
         loads.push(
-          loadDemTilePixels(z, tx, ty)
-            .then((data) => tileMap.set(k, data))
+          loadDemTilePixels(z11, tx, ty)
+            .then((data) => tileMap11.set(k, data))
+            .catch(() => null)
+        );
+      }
+    }
+
+    const z12 = 12;
+    const centerTile12 = lngLatToTileXY(lng, lat, z12);
+    const n12 = Math.pow(2, z12);
+    const tileMap12 = new Map();
+    const nearDx = centerTile12.px < 96 ? [-1, 0] : centerTile12.px > 160 ? [0, 1] : [0];
+    const nearDy = centerTile12.py < 96 ? [-1, 0] : centerTile12.py > 160 ? [0, 1] : [0];
+    for (let i = 0; i < nearDx.length; i++) {
+      for (let j = 0; j < nearDy.length; j++) {
+        const tx = ((centerTile12.x + nearDx[i]) % n12 + n12) % n12;
+        const ty = centerTile12.y + nearDy[j];
+        if (ty < 0 || ty >= n12) continue;
+        const k = `${tx}/${ty}`;
+        loads.push(
+          loadDemTilePixels(z12, tx, ty)
+            .then((data) => tileMap12.set(k, data))
             .catch(() => null)
         );
       }
     }
 
     await Promise.all(loads);
-    if (!tileMap.has(`${centerTile.x}/${centerTile.y}`)) {
+    if (!tileMap11.has(`${centerTile11.x}/${centerTile11.y}`)) {
       return { available: false, reason: 'Terrarium DEM tiles unavailable (offline or blocked)' };
     }
 
     const sampler = (sLat, sLng) => {
-      const tc = lngLatToTileXY(sLng, sLat, z);
-      const pxData = tileMap.get(`${tc.x}/${tc.y}`);
-      if (!pxData) return null;
-      const idx = (tc.py * 256 + tc.px) * 4;
-      return decodeTerrariumElevation(pxData[idx], pxData[idx + 1], pxData[idx + 2]);
+      const tc12 = lngLatToTileXY(sLng, sLat, z12);
+      const px12 = tileMap12.get(`${tc12.x}/${tc12.y}`);
+      if (px12) {
+        const idx12 = (tc12.py * 256 + tc12.px) * 4;
+        return decodeTerrariumElevation(px12[idx12], px12[idx12 + 1], px12[idx12 + 2]);
+      }
+      const tc11 = lngLatToTileXY(sLng, sLat, z11);
+      const px11 = tileMap11.get(`${tc11.x}/${tc11.y}`);
+      if (!px11) return null;
+      const idx11 = (tc11.py * 256 + tc11.px) * 4;
+      return decodeTerrariumElevation(px11[idx11], px11[idx11 + 1], px11[idx11 + 2]);
     };
 
     const res = computeHorizonFromSampler(lat, lng, sampler, opts);
-    res.demSource = 'AWS Mapzen Terrarium (z11)';
+    res.demSource = tileMap12.size > 0
+      ? 'AWS Terrarium DEM (z12 近场 + z11 远场)'
+      : 'AWS Mapzen Terrarium (z11)';
     return res;
   }
 

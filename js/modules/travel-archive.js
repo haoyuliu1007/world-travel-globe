@@ -19,6 +19,14 @@
     return global.AppIcons ? global.AppIcons.svg(name, size || 14) : '';
   }
 
+  function t(key, vars) {
+    return global.AppI18n ? global.AppI18n.t(key, vars) : key;
+  }
+
+  function tx(str) {
+    return global.AppI18n ? global.AppI18n.tx(str) : (str || '');
+  }
+
   async function hashSyncKey(passphrase) {
     const enc = new TextEncoder().encode(`wtg_sync_v1:${passphrase}`);
     if (global.crypto && global.crypto.subtle) {
@@ -147,17 +155,17 @@
     const curStatus = rec ? rec.status : '';
 
     const items = [
-      ['visited', '✓ 已去过'],
-      ['planned', '📅 计划中'],
-      ['wishlist', '★ 想去']
+      ['visited', t('statusVisited')],
+      ['planned', t('statusPlanned')],
+      ['wishlist', t('statusWishlist')]
     ];
     containerEl.innerHTML = items
       .map(
         ([st, lbl]) => `
-        <button class="status-pill-btn ${curStatus === st ? 'active' : ''}" data-status="${st}" type="button">${lbl}</button>
+        <button class="status-pill-btn ${curStatus === st ? 'active' : ''}" data-status="${st}" type="button">${esc(lbl)}</button>
       `
       )
-      .join('') + `<button class="status-pill-btn" id="drawer-add-trip-quick" type="button">+ 加入行程</button>`;
+      .join('') + `<button class="status-pill-btn" id="drawer-add-trip-quick" type="button">${esc(t('addToTrip'))}</button>`;
 
     containerEl.querySelectorAll('.status-pill-btn[data-status]').forEach((btn) => {
       btn.addEventListener('click', async () => {
@@ -279,12 +287,13 @@
     const view = document.getElementById('archive-view');
     if (!view || !global.StorageDB) return;
 
-    const [statuses, lists, photos, expenses, syncKeySaved] = await Promise.all([
+    const [statuses, lists, photos, expenses, syncKeySaved, backupSnap] = await Promise.all([
       global.StorageDB.getAllTravelStatuses(),
       global.StorageDB.getCustomLists(),
       global.StorageDB.getUserPhotos(),
       global.StorageDB.getExpenses(),
-      global.StorageDB.getSetting('cloudSyncPassphrase', '')
+      global.StorageDB.getSetting('cloudSyncPassphrase', ''),
+      global.StorageDB.getSetting('preSyncBackup', null)
     ]);
 
     const allDests = global.TRAVEL_ATLAS ? global.TRAVEL_ATLAS.getAll() : [];
@@ -293,39 +302,44 @@
     const stats = computeExplorationStats(activeStatuses, allDests);
     const totalSpent = expenses.reduce((s, e) => s + (Number(e.amountRmb) || 0), 0);
     const caps = global.ApiClient ? await global.ApiClient.detectWorkerCapabilities() : { available: false, features: {} };
+    const statusLabelMap = {
+      visited: t('statusVisited').replace(/^[✓\s]+/, ''),
+      planned: t('statusPlanned').replace(/^[📅\s]+/, ''),
+      wishlist: t('statusWishlist').replace(/^[★\s]+/, '')
+    };
 
     view.innerHTML = `
       <div class="workspace-container">
         <div class="gallery-head">
           <div>
             <span class="gallery-kicker">PRIVATE TRAVEL ARCHIVE · LOCAL-FIRST & OPTIONAL CLOUD SYNC</span>
-            <h2>私人旅行档案与全球足迹</h2>
+            <h2>${esc(t('archiveTitle'))}</h2>
             <p class="gallery-lead">
-              ${sharedFootprint ? '当前正在查看他人分享的只读足迹视图。' : '无需登录即可完整使用的本地旅行档案（IndexedDB 持久化），支持足迹统计、摄影上传、真实消费记录与可选加密口令云同步。'}
+              ${esc(sharedFootprint ? t('archiveSharedLead') : t('archiveLead'))}
             </p>
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            ${sharedFootprint ? `<button class="secondary-btn" id="ar-exit-shared-btn" type="button">返回我的档案</button>` : ''}
-            <button class="primary-btn" id="ar-footprint-globe-btn" type="button">${icon('globe', 14)} 在地球上点亮足迹</button>
-            <button class="gallery-back-btn" id="ar-back-btn" type="button">${icon('arrowUpRight', 14)} 返回地球</button>
+            ${sharedFootprint ? `<button class="secondary-btn" id="ar-exit-shared-btn" type="button">${esc(t('archiveExitShared'))}</button>` : ''}
+            <button class="primary-btn" id="ar-footprint-globe-btn" type="button">${icon('globe', 14)} ${esc(t('archiveFootprintGlobe'))}</button>
+            <button class="gallery-back-btn" id="ar-back-btn" type="button">${icon('arrowUpRight', 14)} ${esc(t('archiveBack'))}</button>
           </div>
         </div>
 
         <div class="weather-kpi-grid" style="margin-bottom:16px;">
           <div class="panel-box" style="margin:0;">
-            <div class="weather-kpi-label">已去过目的地</div>
+            <div class="weather-kpi-label">${esc(t('archiveKpiVisited'))}</div>
             <div style="font-size:22px;font-weight:700;color:#34D399;" class="mono-num">${stats.visitedCount} <span style="font-size:12px;color:var(--text-muted);">/ ${stats.citiesTotal}</span></div>
           </div>
           <div class="panel-box" style="margin:0;">
-            <div class="weather-kpi-label">国家 / 大洲覆盖</div>
-            <div style="font-size:22px;font-weight:700;" class="mono-num">${stats.countriesVisited}<span style="font-size:12px;color:var(--text-muted);">/${stats.countriesTotal}国 · ${stats.continentsVisited}/6洲</span></div>
+            <div class="weather-kpi-label">${esc(t('archiveKpiCoverage'))}</div>
+            <div style="font-size:22px;font-weight:700;" class="mono-num">${stats.countriesVisited}<span style="font-size:12px;color:var(--text-muted);">/${stats.countriesTotal} · ${stats.continentsVisited}/6</span></div>
           </div>
           <div class="panel-box" style="margin:0;">
-            <div class="weather-kpi-label">计划中 / 想去清单</div>
-            <div style="font-size:22px;font-weight:700;color:#60A5FA;" class="mono-num">${stats.plannedCount} <span style="font-size:12px;color:var(--text-muted);">计划 · ${stats.wishlistCount} 想去</span></div>
+            <div class="weather-kpi-label">${esc(t('archiveKpiPlanWish'))}</div>
+            <div style="font-size:22px;font-weight:700;color:#60A5FA;" class="mono-num">${stats.plannedCount} <span style="font-size:12px;color:var(--text-muted);">· ${stats.wishlistCount}</span></div>
           </div>
           <div class="panel-box" style="margin:0;">
-            <div class="weather-kpi-label">全球探索完成度 · 累计消费</div>
+            <div class="weather-kpi-label">${esc(t('archiveKpiCompletion'))}</div>
             <div style="font-size:22px;font-weight:700;color:var(--accent-primary);" class="mono-num">${stats.completionPct}% <span style="font-size:12px;color:var(--text-muted);">· ¥${totalSpent.toLocaleString()}</span></div>
           </div>
         </div>
@@ -333,10 +347,10 @@
         <div class="workspace-split">
           <div>
             <div class="panel-box">
-              <h3>自定义旅行清单 (${lists.length})</h3>
+              <h3>${esc(t('archiveListsTitle', { n: lists.length }))}</h3>
               <div style="display:flex;gap:6px;margin-bottom:8px;">
-                <input id="ar-new-list-name" class="sim-input" type="text" placeholder="新清单名称（如：2026 秋季红叶线）" />
-                <button id="ar-create-list-btn" class="primary-btn" type="button">创建</button>
+                <input id="ar-new-list-name" class="sim-input" type="text" placeholder="${esc(t('archiveListPlaceholder'))}" />
+                <button id="ar-create-list-btn" class="primary-btn" type="button">${esc(t('archiveCreateBtn'))}</button>
               </div>
               <div style="display:flex;flex-direction:column;gap:6px;">
                 ${lists.length
@@ -346,35 +360,36 @@
                     <div style="display:flex;justify-content:space-between;align-items:center;padding:8px;border-radius:8px;background:var(--bg-hover);">
                       <div>
                         <div style="font-weight:600;font-size:12.5px;">${esc(l.name)}</div>
-                        <div style="font-size:11px;color:var(--text-muted);">${(l.destIds || []).length} 座目的地</div>
+                        <div style="font-size:11px;color:var(--text-muted);">${esc(t('archiveDestCount', { n: (l.destIds || []).length }))}</div>
                       </div>
-                      <button class="icon-btn ar-del-list" data-id="${esc(l.id)}" type="button" title="删除清单">${icon('trash', 13)}</button>
+                      <button class="icon-btn ar-del-list" data-id="${esc(l.id)}" type="button">${icon('trash', 13)}</button>
                     </div>
                   `
                       )
                       .join('')
-                  : `<div style="font-size:11.5px;color:var(--text-muted);">暂无自定义清单。</div>`}
+                  : `<div style="font-size:11.5px;color:var(--text-muted);">${esc(t('archiveNoLists'))}</div>`}
               </div>
             </div>
 
             <div class="panel-box">
-              <h3>隐私数据导出、导入与设备同步</h3>
+              <h3>${esc(t('archiveSyncTitle'))}</h3>
               <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">
-                <button class="mini-action-pill" id="ar-export-json" type="button">${icon('download', 12)} 导出全量 JSON</button>
-                <label class="mini-action-pill" style="cursor:pointer;">${icon('upload', 12)} 导入 JSON<input id="ar-import-json" type="file" accept="application/json" style="display:none;" /></label>
-                <button class="mini-action-pill" id="ar-share-footprint" type="button">${icon('share', 12)} 分享足迹地图</button>
-                <button class="mini-action-pill" id="ar-wipe-all" type="button" style="color:#FB7185;">${icon('trash', 12)} 清空本地档案</button>
+                <button class="mini-action-pill" id="ar-export-json" type="button">${icon('download', 12)} ${esc(t('archiveExportJson'))}</button>
+                <label class="mini-action-pill" style="cursor:pointer;">${icon('upload', 12)} ${esc(t('archiveImportJson'))}<input id="ar-import-json" type="file" accept="application/json" style="display:none;" /></label>
+                <button class="mini-action-pill" id="ar-share-footprint" type="button">${icon('share', 12)} ${esc(t('archiveShareFootprint'))}</button>
+                <button class="mini-action-pill" id="ar-wipe-all" type="button" style="color:#FB7185;">${icon('trash', 12)} ${esc(t('archiveWipeAll'))}</button>
               </div>
               <div id="ar-share-msg" style="font-size:11px;color:var(--accent-primary);margin-bottom:8px;"></div>
               <div style="padding-top:8px;border-top:1px solid var(--border-hairline);">
-                <div style="font-size:12px;font-weight:600;margin-bottom:4px;">可选云端同步 (Cloudflare D1 隐私隔离)</div>
+                <div style="font-size:12px;font-weight:600;margin-bottom:4px;">${esc(t('archiveCloudTitle'))}</div>
                 <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px;">
-                  ${caps && caps.available && caps.features && caps.features.d1 ? '当前已连接 Cloudflare D1 云同步服务端。' : '当前为纯静态本地模式（GitHub Pages 或未绑定 D1）。仅当绑定 Cloudflare D1 时可同步至云端。'}
+                  ${esc(caps && caps.available && caps.features && caps.features.d1 ? t('archiveCloudConnected') : t('archiveCloudStatic'))}
                 </div>
-                <div style="display:flex;gap:6px;">
-                  <input id="ar-sync-pass" class="sim-input" type="password" value="${esc(syncKeySaved)}" placeholder="输入私人同步口令 (SHA-256 隔离)" />
-                  <button class="secondary-btn" id="ar-cloud-push" type="button">上传</button>
-                  <button class="secondary-btn" id="ar-cloud-pull" type="button">拉取</button>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                  <input id="ar-sync-pass" class="sim-input" type="password" value="${esc(syncKeySaved)}" placeholder="${esc(t('archiveSyncPlaceholder'))}" />
+                  <button class="secondary-btn" id="ar-cloud-push" type="button">${esc(t('archivePushBtn'))}</button>
+                  <button class="secondary-btn" id="ar-cloud-pull" type="button">${esc(t('archivePullBtn'))}</button>
+                  ${backupSnap ? `<button class="mini-action-pill" id="ar-restore-backup" type="button">${esc(t('archiveRestoreBackup'))}</button>` : ''}
                 </div>
                 <div id="ar-sync-msg" style="font-size:11px;color:var(--text-secondary);margin-top:4px;"></div>
               </div>
@@ -383,39 +398,39 @@
 
           <div>
             <div class="panel-box">
-              <h3>年度旅行足迹统计</h3>
+              <h3>${esc(t('archiveAnnualTitle'))}</h3>
               <div class="echarts-box" id="ar-report-chart" style="height:200px;"></div>
             </div>
 
             <div class="panel-box">
-              <h3>足迹目的地列表 (${activeStatuses.length})</h3>
+              <h3>${esc(t('archiveDestListTitle', { n: activeStatuses.length }))}</h3>
               <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;">
                 ${activeStatuses.length
                   ? activeStatuses
                       .map((s) => {
                         const d = destMap.get(s.destId);
                         if (!d) return '';
-                        const stTag = s.status === 'visited' ? '已去过' : s.status === 'planned' ? '计划中' : '想去';
+                        const stTag = statusLabelMap[s.status] || s.status;
                         return `
                           <button class="stop-drag-item ar-fly-dest" data-id="${esc(d.id)}" type="button" style="text-align:left;width:100%;cursor:pointer;">
                             <div style="min-width:0;">
-                              <div style="font-weight:600;font-size:12.5px;">${esc(d.shortName || d.name)}</div>
-                              <div style="font-size:11px;color:var(--text-muted);">${esc(d.country)} · ${stTag}</div>
+                              <div style="font-weight:600;font-size:12.5px;">${esc(tx(d.shortName || d.name))}</div>
+                              <div style="font-size:11px;color:var(--text-muted);">${esc(tx(d.country))} · ${esc(stTag)}</div>
                             </div>
                             ${icon('arrowUpRight', 13)}
                           </button>
                         `;
                       })
                       .join('')
-                  : `<div style="font-size:12px;color:var(--text-muted);">在地球仪目的地详情页点击「已去过 / 计划中 / 想去」即可自动收录。</div>`}
+                  : `<div style="font-size:12px;color:var(--text-muted);">${esc(t('archiveDestListEmpty'))}</div>`}
               </div>
             </div>
 
             <div class="panel-box">
               <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
-                <h3 style="margin:0;">个人摄影作品库 (${photos.length})</h3>
+                <h3 style="margin:0;">${esc(t('archivePhotosTitle', { n: photos.length }))}</h3>
                 <label class="primary-btn" style="cursor:pointer;height:30px;font-size:11.5px;">
-                  ${icon('upload', 13)} 上传个人摄影作品
+                  ${icon('upload', 13)} ${esc(t('archiveUploadPhoto'))}
                   <input id="ar-photo-upload" type="file" accept="image/*" style="display:none;" />
                 </label>
               </div>
@@ -427,24 +442,24 @@
                     <div style="border-radius:8px;overflow:hidden;border:1px solid var(--border-hairline);background:var(--bg-hover);">
                       <img class="ar-user-photo-img" data-idx="${idx}" src="${esc(p.thumbUrl || p.dataUrl)}" alt="${esc(p.caption || '')}" style="width:100%;height:105px;object-fit:cover;display:block;cursor:zoom-in;" />
                       <div style="padding:6px 8px;display:flex;justify-content:space-between;align-items:center;font-size:11px;">
-                        <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(p.caption || p.destId || '旅拍作品')}</span>
+                        <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(p.caption || p.destId || 'Photo')}</span>
                         <button class="icon-btn ar-del-photo" data-id="${esc(p.id)}" type="button">${icon('trash', 12)}</button>
                       </div>
                     </div>
                   `
                       )
                       .join('')
-                  : `<div style="font-size:12px;color:var(--text-muted);">支持压缩后本地保存于 IndexedDB（若部署 Cloudflare R2 也可自动上传云端）。</div>`}
+                  : `<div style="font-size:12px;color:var(--text-muted);">${esc(t('archivePhotosEmpty'))}</div>`}
               </div>
             </div>
 
             <div class="panel-box">
-              <h3>实际旅行消费记录 (合计 ¥${totalSpent.toLocaleString()})</h3>
+              <h3>${esc(t('archiveExpensesTitle', { total: totalSpent.toLocaleString() }))}</h3>
               <div style="display:grid;grid-template-columns:100px 1fr 90px 76px;gap:6px;margin-bottom:8px;">
                 <input id="ar-exp-date" class="sim-input mono-num" type="date" value="${new Date().toISOString().slice(0, 10)}" />
-                <input id="ar-exp-note" class="sim-input" type="text" placeholder="城市/消费说明" />
-                <input id="ar-exp-amt" class="sim-input mono-num" type="number" placeholder="金额RMB" />
-                <button id="ar-exp-add" class="primary-btn" type="button">记一笔</button>
+                <input id="ar-exp-note" class="sim-input" type="text" placeholder="${esc(t('archiveExpPlaceholder'))}" />
+                <input id="ar-exp-amt" class="sim-input mono-num" type="number" placeholder="${esc(t('archiveAmtPlaceholder'))}" />
+                <button id="ar-exp-add" class="primary-btn" type="button">${esc(t('archiveAddExpBtn'))}</button>
               </div>
               ${expenses
                 .slice(0, 20)
@@ -619,19 +634,22 @@
               const pullRes = await fetch('/api/profile', { headers: { 'X-Sync-Key': keyHash } });
               const pullJson = await pullRes.json().catch(() => null);
               if (pullRes.ok && pullJson && pullJson.data) {
+                await global.StorageDB.createLocalBackupSnapshot();
                 const { merged, stats } = global.ProfileCRDT.mergeUserProfiles(payload, pullJson.data);
-                await global.StorageDB.importAllUserData(merged, 'merge');
+                const cleanMerged = global.ProfileCRDT.sanitizeProfileForSync(merged);
+                await global.StorageDB.importAllUserData(cleanMerged, 'crdt');
                 const retryRes = await fetch('/api/profile', {
                   method: 'PUT',
                   headers: { 'Content-Type': 'application/json', 'X-Sync-Key': keyHash, 'X-Base-Updated-At': String(pullJson.updatedAt || 0) },
-                  body: JSON.stringify(merged)
+                  body: JSON.stringify(cleanMerged)
                 });
                 const retryJson = await retryRes.json().catch(() => ({}));
                 if (retryRes.ok && retryJson.updatedAt && global.localStorage) {
                   global.localStorage.setItem('wtg_cloud_updated_at', String(retryJson.updatedAt));
                 }
+                const tombNote = stats.deletedByTombstone ? ` · 删除同步 ${stats.deletedByTombstone}` : '';
                 msgEl.textContent = retryRes.ok
-                  ? `CRDT 无损合并完成（新增 ${stats.addedFromRemote} · 解决冲突 ${stats.conflictsResolved}）并已安全推送至云端。`
+                  ? `CRDT 无损合并完成（新增 ${stats.addedFromRemote} · 解决冲突 ${stats.conflictsResolved}${tombNote}）并已安全推送至云端。`
                   : `CRDT 合并后推送失败 (${retryRes.status})`;
                 renderWorkspace();
                 return;
@@ -648,10 +666,13 @@
           if (res.ok && j.data) {
             if (j.updatedAt && global.localStorage) global.localStorage.setItem('wtg_cloud_updated_at', String(j.updatedAt));
             if (global.ProfileCRDT) {
+              await global.StorageDB.createLocalBackupSnapshot();
               const localPayload = await global.StorageDB.exportAllUserData();
               const { merged, stats } = global.ProfileCRDT.mergeUserProfiles(localPayload, j.data);
-              await global.StorageDB.importAllUserData(merged, 'merge');
-              msgEl.textContent = `已通过 CRDT 无损合并云端档案（新增 ${stats.addedFromRemote} · 冲突消解 ${stats.conflictsResolved}）。`;
+              const cleanMerged = global.ProfileCRDT.sanitizeProfileForSync(merged);
+              await global.StorageDB.importAllUserData(cleanMerged, 'crdt');
+              const tombNote = stats.deletedByTombstone ? ` · 删除同步 ${stats.deletedByTombstone}` : '';
+              msgEl.textContent = `已通过 CRDT 无损合并云端档案（新增 ${stats.addedFromRemote} · 冲突消解 ${stats.conflictsResolved}${tombNote}）。`;
             } else {
               await global.StorageDB.importAllUserData(j.data, 'merge');
               msgEl.textContent = '已从云端合并恢复档案！';
@@ -667,6 +688,13 @@
     };
     view.querySelector('#ar-cloud-push').addEventListener('click', () => handleSync('push'));
     view.querySelector('#ar-cloud-pull').addEventListener('click', () => handleSync('pull'));
+    const restoreBackupBtn = view.querySelector('#ar-restore-backup');
+    if (restoreBackupBtn) {
+      restoreBackupBtn.addEventListener('click', async () => {
+        const ok = await global.StorageDB.restoreLatestBackupSnapshot();
+        if (ok) renderWorkspace();
+      });
+    }
   }
 
   function restoreFootprintFromUrl() {

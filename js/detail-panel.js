@@ -379,6 +379,15 @@
             this.setTab('photo');
           });
         });
+        body.querySelectorAll('.spot-vf-btn').forEach((btn) => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const idx = Number(btn.dataset.idx);
+            if (global.Viewfinder3D && Array.isArray(dest.spots) && dest.spots[idx]) {
+              global.Viewfinder3D.open(dest, dest.spots[idx], { spotIdx: idx });
+            }
+          });
+        });
         body.querySelectorAll('.spot-sv-btn').forEach((btn) => {
           btn.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -474,7 +483,8 @@
                     <div class="spot-tips">${linkifyHtml(tx(sp.tips))}</div>
                     <div class="spot-actions-row">
                       <button class="mini-action-pill spot-sim-btn" data-idx="${i}" type="button">${icon('sun', 12)} 光影模拟</button>
-                      <button class="mini-action-pill spot-sv-btn" data-idx="${i}" type="button">${icon('eye', 12)} 街景/实景</button>
+                      <button class="mini-action-pill spot-vf-btn" data-idx="${i}" type="button">${icon('camera', 12)} 3D 取景</button>
+                      <button class="mini-action-pill spot-sv-btn" data-idx="${i}" type="button">${icon('eye', 12)} 360° 全景</button>
                       <button class="mini-action-pill spot-plan-btn" data-idx="${i}" type="button">${icon('route', 12)} 加入行程</button>
                     </div>
                   </div>

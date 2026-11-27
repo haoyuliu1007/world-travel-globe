@@ -4,10 +4,18 @@
 |---|---|---|---|
 | **MapLibre GL JS** | v5 (`vendor/maplibre-gl.js`) | BSD-3-Clause | 3D 球体与 2D 地图 WebGL 渲染引擎 |
 | **SunCalc** | v2.1.4 (`vendor/suncalc.min.js`) | BSD-2-Clause | 太阳方位角/高度角、日出日落、黄金蓝调时刻与月相计算 |
+| **Astronomy Engine** | v2.1.19 (`vendor/astronomy.browser.min.js`) | MIT | 高精度天文星历、天文暮光 (-18°) 与银河核心位置推算 |
+| **MapLibre Contour** | v0.1.0 (`vendor/maplibre-contour.min.js`) | BSD-3-Clause | 基于 DEM 瓦片浏览器端实时生成矢量等高线 |
 | **Fuse.js** | v7.5.0 (`vendor/fuse.min.js`) | Apache-2.0 | 全局中英文模糊检索与拼写容错 |
 | **Supercluster** | v9.1.0 (`vendor/supercluster.min.js`) | ISC | 722 座目的地低缩放空间聚合 |
 | **Dexie.js** | v4.4.7 (`vendor/dexie.min.js`) | Apache-2.0 | IndexedDB 本地离线缓存与私人档案持久化 |
 | **Apache ECharts** | v6.1.0 (`vendor/echarts.min.js`) | Apache-2.0 | 懒加载气象统计、行程预算饼图与年度足迹图表 |
+| **AWS / Mapzen Terrarium DEM** | Public Elevation Tiles | Public Domain / CC0 | 全球 3D 真实地形起伏、等高线与前端山体遮挡射线计算 |
+| **OpenFreeMap** | Planet Vector Tiles | ODbL / CC0 | 3D 城市建筑轮廓与高度渲染（`fill-extrusion`） |
+| **Panoramax** | STAC Search API | Etalab-2.0 / CC BY-SA / 开放许可 | 免密钥开放 360° 全景与街景序列浏览（保留作者与协议署名） |
+| **NOAA SWPC OVATION & Kp** | Public JSON Feeds | Public Domain | 全球 30 分钟实时极光椭圆带预测与地磁 Kp 指数 |
+| **NASA VIIRS Black Marble** | GIBS WMTS | Public Domain (NASA) | 全球夜间灯光分布辅助参考图层 |
+| **Hipparcos / Yale Bright Star Catalog** | J2000 精选子集 | Public Domain | 3D 天球真实导航亮星、星座连线与银河核心定位 |
 | **Open-Meteo** | REST API v1 | CC BY 4.0（非商用免费） | 实时天气、7 日预报与 ERA5 历史再分析气候；界面已明确标注来源 |
 | **RainViewer** | Public Weather Maps API | 免费公开气象瓦片（非商用） | 全球实时降雨雷达与红外云图叠加 |
 | **Wikimedia Commons & Wikipedia** | MediaWiki API | CC BY / CC BY-SA / Public Domain 等 | 逐张图片在画廊与灯箱内展示作者、具体协议名称与原图链接 |

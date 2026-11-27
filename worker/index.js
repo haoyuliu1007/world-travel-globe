@@ -83,6 +83,9 @@ async function handleApi(request, env) {
         tile: true,
         route: true,
         streetview: Boolean(env && (env.MAPILLARY_CLIENT_TOKEN || env.MAPILLARY_TOKEN)),
+        terrain: true,
+        aurora: true,
+        panoramax: true,
         pois: true, // Overpass fallback works without a key; OTM key only enhances it
         poisEnhanced: Boolean(env && env.OTM_API_KEY),
         d1: Boolean(env && env.DB),
@@ -184,7 +187,9 @@ async function handleApi(request, env) {
       natgeo: `https://services.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/${z}/${y}/${x}`,
       physical: `https://services.arcgisonline.com/ArcGIS/rest/services/World_Physical_Map/MapServer/tile/${z}/${y}/${x}`,
       labels: `https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/${z}/${y}/${x}`,
-      dark: `https://a.basemaps.cartocdn.com/dark_all/${z}/${x}/${y}.png`
+      dark: `https://a.basemaps.cartocdn.com/dark_all/${z}/${x}/${y}.png`,
+      terrarium: `https://s3.amazonaws.com/elevation-tiles-prod/terrarium/${z}/${x}/${y}.png`,
+      blackmarble: `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/VIIRS_Black_Marble/default/2016-01-01/GoogleMapsCompatible_Level8/${z}/${y}/${x}.png`
     };
     const upstream = tileTemplates[skin];
     if (!upstream) {
@@ -401,6 +406,64 @@ async function handleApi(request, env) {
     const q = `[out:json][timeout:10];(node["tourism"~"attraction|viewpoint|museum"](around:${radius},${lat},${lon}););out center 15;`;
     const opUrl = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(q)}`;
     return cachedUpstreamJson(request.url, opUrl, 86400);
+  }
+
+  if (p === '/api/aurora') {
+    const kind = url.searchParams.get('type') || 'both';
+    if (kind === 'kp') {
+      return cachedUpstreamJson(
+        request.url,
+        'https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json',
+        900
+      );
+    }
+    if (kind === 'ovation') {
+      return cachedUpstreamJson(
+        request.url,
+        'https://services.swpc.noaa.gov/json/ovation_aurora_latest.json',
+        900
+      );
+    }
+    const cache = typeof caches !== 'undefined' ? caches.default : null;
+    const cacheReq = new Request(request.url, { method: 'GET' });
+    if (cache) {
+      const hit = await cache.match(cacheReq);
+      if (hit) return hit;
+    }
+    const [ovRes, kpRes] = await Promise.all([
+      fetch('https://services.swpc.noaa.gov/json/ovation_aurora_latest.json'),
+      fetch('https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json')
+    ]);
+    if (!ovRes.ok) {
+      return jsonResponse({ ok: false, error: 'NOAA aurora upstream unavailable' }, 502);
+    }
+    const ovation = await ovRes.json().catch(() => null);
+    const kp = kpRes.ok ? await kpRes.json().catch(() => null) : null;
+    const out = jsonResponse({ ok: true, ovation, kp }, 200, 'public, max-age=900');
+    if (cache) {
+      await cache.put(cacheReq, out.clone());
+    }
+    return out;
+  }
+
+  if (p === '/api/panoramax') {
+    const bbox = url.searchParams.get('bbox') || '';
+    const parts = bbox.split(',').map(Number);
+    if (
+      parts.length !== 4 ||
+      parts.some((n) => !Number.isFinite(n)) ||
+      parts[0] < -180 || parts[2] > 180 ||
+      parts[1] < -90 || parts[3] > 90 ||
+      parts[0] >= parts[2] || parts[1] >= parts[3]
+    ) {
+      return jsonResponse({ ok: false, error: 'Invalid bbox' }, 400);
+    }
+    const rawLimit = Number(url.searchParams.get('limit') || 10);
+    const limit = Number.isFinite(rawLimit) ? Math.min(12, Math.max(1, Math.round(rawLimit))) : 10;
+    const upstream = `https://api.panoramax.xyz/api/search?bbox=${encodeURIComponent(parts.map((n) => n.toFixed(6)).join(','))}&limit=${limit}`;
+    return cachedUpstreamJson(request.url, upstream, 3600, {
+      headers: { 'User-Agent': 'WorldTravelGlobe/4.0 (https://world-travel-globe.globe-app.workers.dev)' }
+    });
   }
 
   return jsonResponse({ ok: false, error: 'Not found' }, 404);

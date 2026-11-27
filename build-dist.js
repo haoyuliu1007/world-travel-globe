@@ -52,6 +52,7 @@ function main() {
   const assetCopies = [
     ['vendor/maplibre-gl.js', 'vendor/maplibre-gl.js'],
     ['vendor/echarts.min.js', 'vendor/echarts.min.js'],
+    ['vendor/maplibre-contour.min.js', 'vendor/maplibre-contour.min.js'],
     ['manifest.webmanifest', 'manifest.webmanifest']
   ];
   for (const [srcRel, dstRel] of assetCopies) {
@@ -115,7 +116,8 @@ function main() {
     'vendor/suncalc.min.js',
     'vendor/fuse.min.js',
     'vendor/supercluster.min.js',
-    'vendor/dexie.min.js'
+    'vendor/dexie.min.js',
+    'vendor/astronomy.browser.min.js'
   ].map((rel) => fs.readFileSync(path.join(rootDir, rel), 'utf8').trim());
   const vendorBundle = vendorLibParts.join('\n;\n') + '\n';
   fs.writeFileSync(path.join(distDir, 'vendor', 'libs.bundle.min.js'), vendorBundle, 'utf8');
@@ -218,7 +220,7 @@ function main() {
   const buildVer = Date.now().toString(36);
   const cssBlockRe = /(?:\s*<link rel="stylesheet" href="(?:vendor\/maplibre-gl\.css|css\/[^"?]+|assets\/prologue\/prologue\.css)(?:\?v=\d+)?"\s*\/>\s*)+/;
   const introBlockRe = /(?:\s*<script src="assets\/(?:prologue\/(?:bgm|prologue)|cosmic-intro\/player)\.js(?:\?v=\d+)?"><\/script>\s*)+/;
-  const vendorBlockRe = /(?:\s*<script src="vendor\/(?:suncalc|fuse|supercluster|dexie)\.min\.js"><\/script>\s*)+/;
+  const vendorBlockRe = /(?:\s*<script src="vendor\/(?:suncalc|fuse|supercluster|dexie|astronomy\.browser)\.min\.js"><\/script>\s*)+/;
   const dataBlockRe = /(?:\s*<script src="data\/[^"?]+(?:\?v=\d+)?"><\/script>\s*)+/;
   const appBlockRe = /(?:\s*<script src="js\/[^"?]+(?:\?v=\d+)?"><\/script>\s*)+/;
   if (!cssBlockRe.test(indexHtml) || !vendorBlockRe.test(indexHtml) || !dataBlockRe.test(indexHtml) || !appBlockRe.test(indexHtml)) {

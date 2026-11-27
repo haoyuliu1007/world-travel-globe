@@ -73,10 +73,21 @@
     });
   }
 
+  function ensureMaplibreContour() {
+    if (global.mlcontour && global.mlcontour.DemSource) return Promise.resolve(global.mlcontour);
+    return loadScript('vendor/maplibre-contour.min.js').then(() => {
+      if (!global.mlcontour || !global.mlcontour.DemSource) {
+        throw new Error('maplibre-contour unavailable');
+      }
+      return global.mlcontour;
+    });
+  }
+
   global.LazyLoader = {
     loadScript,
     loadStyle,
     ensureECharts,
-    ensureMapillary
+    ensureMapillary,
+    ensureMaplibreContour
   };
 })(window);

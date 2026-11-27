@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
 const zlib = require('zlib');
+const { buildSeoPages } = require('./scripts/build-seo-pages.js');
 
 const rootDir = __dirname;
 const distDir = path.join(rootDir, 'dist');
@@ -295,8 +296,16 @@ function main() {
 
 /vendor/*
   Cache-Control: public, max-age=31536000, immutable
+
+/og/*
+  Cache-Control: public, max-age=86400
+
+/p/*
+  Cache-Control: public, max-age=3600, must-revalidate
 `;
   fs.writeFileSync(path.join(distDir, '_headers'), headersContent, 'utf8');
+
+  const seoSummary = buildSeoPages(all, distDir, { rootDir });
 
   // Count dist files
   let fileCount = 0;
@@ -320,6 +329,7 @@ function main() {
   console.log(`  atlas-index.min.js: ${(rawBytes / 1024).toFixed(1)} KB raw (${rawBytes} bytes) -> ${(gzBytes / 1024).toFixed(1)} KB gzip (${gzBytes} bytes)`);
   console.log(`  Lazy region chunks: ${regionBuckets.size} files in data/regions/`);
   if (i18nCount > 0) console.log(`  Lazy i18n chunks: ${i18nCount} files in data/i18n/`);
+  console.log(`  SEO landing pages: ${seoSummary.pagesCount} pages in p/, ${seoSummary.ogCardsCount} OG cards in og/, sitemap.xml (${seoSummary.sitemapUrls} URLs)`);
   console.log(`  Total dist/ files: ${fileCount}`);
 }
 

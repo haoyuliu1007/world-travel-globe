@@ -1,5 +1,19 @@
 # 更新日志 (CHANGELOG)
 
+## [4.3.0] - 2026-11-27 · Living Earth, 722 SEO Pages, Poster Share & Embed Widget
+
+### 新增与深化升级 (Added & Upgraded)
+- **太阳驱动「真·昼夜晨昏地球」 (`js/modules/solar-terminator.js`)**：
+  - 纯天文离线实时计算太阳直射点、晨昏线（0° / -6° / -12° 三带球面阴影）及柔光金橙晨昏晕，并联动 MapLibre `setLight` 太阳方向照明与自动开启夜面 NASA Black Marble 灯光；附带 24 小时 UTC 时间轴拖拽推演悬浮条。
+- **722 城构建期静态 SEO 落地页 + 专属 OG 卡片 + Sitemap (`scripts/build-seo-pages.js`, `build-dist.js`)**：
+  - 每次构建在 `dist/p/<id>/index.html` 生成 722 个独立可收录 HTML 页面（含 `canonical`、OG 元信息、`TouristDestination` JSON-LD、12 月物候图、全量机位与“在 3D 地球仪探索”深链），以及 `dist/p/index.html` 目录页、`dist/og/<id>.svg` 信息卡、`dist/og/cover.png`（1200×630 PNG 兜底封面）、`dist/sitemap.xml` 与 `dist/robots.txt`。
+- **Retina 旅行海报一键导出 + Web Share API (`js/modules/poster-share.js`)**：
+  - 支持目的地详情、个人足迹档案与智能行程三大场景导出 `1080×1620` Retina PNG 海报（通过 `map.once('render')` 无损截取当前 3D 地球视口并合成排版），移动端优先调起系统 `navigator.share({ files })` 分享面板。
+- **可嵌入迷你地球小部件 (`?embed=<id>&chrome=off`)**：
+  - 新增纯净嵌入模式，自动隐藏顶部灵动岛与外围面板，仅保留底部玻璃态标题条与回链；在详情抽屉右上角提供一键复制 `<iframe>` 嵌入代码。
+- **Mapterhorn 512px WebP 地形 + Open-Meteo AQI/UV/花粉 + NASA DSCOVR EPIC**：
+  - `Terrain3DModule` 新增免密钥 Mapterhorn WebP 主 DEM 源（AWS Terrarium 作为兜底）；`WeatherService` 接入 Open-Meteo `air-quality-api` 展示 US AQI、PM2.5、UV 指数与花粉提示；`worker/index.js` 与 `EpicEarthModule` 接入 NASA L1 拉格朗日点今日真地球实拍彩蛋。
+
 ## [4.2.0] - 2026-11-27 · CRDT Reliability, Optical Viewfinder, Destination Timezones & Global UX
 
 ### 修复与深化升级 (Fixed & Upgraded)

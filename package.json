@@ -1,6 +1,6 @@
 {
   "name": "world-travel-globe",
-  "version": "4.2.0",
+  "version": "4.3.0",
   "private": true,
   "description": "World Travel Globe V4.0 — Geo Intelligence: 3D terrain DEM, contours, buildings, Astronomy Engine, 3D viewfinder, Panoramax 360, MiniSearch natural-language search, phenology engine, 2-opt planner & CRDT sync.",
   "scripts": {

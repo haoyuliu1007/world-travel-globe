@@ -11,6 +11,7 @@
   const RAD2DEG = 180 / Math.PI;
   const EARTH_RADIUS_M = 6371000;
   const TERRARIUM_URL = 'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png';
+  const MAPTERHORN_URL = 'https://tiles.mapterhorn.com/{z}/{x}/{y}.webp';
   const BLACK_MARBLE_URL =
     'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/VIIRS_Black_Marble/default/2016-01-01/GoogleMapsCompatible_Level8/{z}/{y}/{x}.png';
   const OPENFREEMAP_URL = 'https://tiles.openfreemap.org/planet';
@@ -18,6 +19,7 @@
   const state = {
     terrain: false,
     exaggeration: 1.35,
+    demProvider: 'mapterhorn',
     contours: false,
     buildings: false,
     nightLights: false,
@@ -353,15 +355,31 @@
   function ensureDemSource(map) {
     if (!map) return;
     if (!map.getSource('aws-terrarium-dem')) {
+      const useMapterhorn = state.demProvider === 'mapterhorn';
       map.addSource('aws-terrarium-dem', {
         type: 'raster-dem',
-        tiles: [TERRARIUM_URL],
+        tiles: [useMapterhorn ? MAPTERHORN_URL : TERRARIUM_URL],
         encoding: 'terrarium',
-        tileSize: 256,
-        maxzoom: 15,
-        attribution: 'Mapzen / AWS Terrarium DEM'
+        tileSize: useMapterhorn ? 512 : 256,
+        maxzoom: useMapterhorn ? 12 : 15,
+        attribution: useMapterhorn ? '© Mapterhorn (CC BY 4.0) / Open Data' : 'Mapzen / AWS Terrarium DEM'
       });
     }
+  }
+
+  function setDemProvider(map, provider) {
+    const next = provider === 'aws-terrarium' ? 'aws-terrarium' : 'mapterhorn';
+    if (state.demProvider === next) return state.demProvider;
+    state.demProvider = next;
+    if (map && map.getSource && map.getSource('aws-terrarium-dem')) {
+      const wasTerrain = state.terrain;
+      const hadHillshade = Boolean(map.getLayer('layer-v4-hillshade'));
+      if (wasTerrain) map.setTerrain(null);
+      if (hadHillshade) map.removeLayer('layer-v4-hillshade');
+      map.removeSource('aws-terrarium-dem');
+      if (wasTerrain) toggleTerrain(map, true);
+    }
+    return state.demProvider;
   }
 
   function toggleTerrain(map, forceState) {
@@ -751,6 +769,8 @@
   }
 
   return {
+    TERRARIUM_URL,
+    MAPTERHORN_URL,
     decodeTerrariumElevation,
     lngLatToTileXY,
     destPointMeters,
@@ -758,6 +778,7 @@
     estimateTerrainAdjustedSunTimes,
     computeTerrainHorizon,
     parseAuroraData,
+    setDemProvider,
     toggleTerrain,
     setTerrainExaggeration,
     queryElevation,

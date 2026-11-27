@@ -176,6 +176,75 @@
     return monthly;
   }
 
+  async function fetchAirQuality(lat, lng) {
+    const la = Number(lat).toFixed(2);
+    const lo = Number(lng).toFixed(2);
+    const cacheKey = `om:aq:${la},${lo}`;
+    return requestWeatherEndpoint(
+      'https://air-quality-api.open-meteo.com/v1/air-quality',
+      {
+        latitude: la,
+        longitude: lo,
+        current: 'us_aqi,european_aqi,pm2_5,pm10,uv_index,alder_pollen,birch_pollen,grass_pollen,ragweed_pollen',
+        timezone: 'auto'
+      },
+      cacheKey,
+      THIRTY_MIN_MS,
+      'Open-Meteo Air Quality'
+    );
+  }
+
+  function classifyAirQuality(aqRaw) {
+    const cur = (aqRaw && aqRaw.current) || aqRaw || {};
+    const aqi = Number(cur.us_aqi);
+    const pm25 = Number(cur.pm2_5);
+    const uv = Number(cur.uv_index);
+    const pollens = [
+      Number(cur.alder_pollen),
+      Number(cur.birch_pollen),
+      Number(cur.grass_pollen),
+      Number(cur.ragweed_pollen)
+    ].filter(Number.isFinite);
+    const peakPollen = pollens.length ? Math.max(...pollens) : null;
+
+    let aqiLevel = '通透优';
+    let aqiColor = '#34D399';
+    if (!Number.isFinite(aqi)) {
+      aqiLevel = '--';
+      aqiColor = '#A1A1AA';
+    } else if (aqi > 150) {
+      aqiLevel = '雾霾强遮蔽';
+      aqiColor = '#FB7185';
+    } else if (aqi > 100) {
+      aqiLevel = '轻度灰霾';
+      aqiColor = '#F59E0B';
+    } else if (aqi > 50) {
+      aqiLevel = '良好通透';
+      aqiColor = '#38BDF8';
+    }
+
+    let uvLevel = '--';
+    if (Number.isFinite(uv)) {
+      uvLevel = uv >= 8 ? '极强防晒' : uv >= 5 ? '中等强' : uv >= 2 ? '适中' : '微弱';
+    }
+
+    let pollenLabel = '无显著花粉';
+    if (peakPollen !== null) {
+      pollenLabel = peakPollen >= 50 ? '花粉偏高' : peakPollen >= 10 ? '轻度花粉' : '低花粉';
+    }
+
+    return {
+      aqi: Number.isFinite(aqi) ? Math.round(aqi) : null,
+      aqiLevel,
+      aqiColor,
+      pm25: Number.isFinite(pm25) ? Number(pm25.toFixed(1)) : null,
+      uv: Number.isFinite(uv) ? Number(uv.toFixed(1)) : null,
+      uvLevel,
+      peakPollen: peakPollen !== null ? Math.round(peakPollen) : null,
+      pollenLabel
+    };
+  }
+
   async function fetchRainViewerMeta() {
     const Api = global.ApiClient;
     const url = 'https://api.rainviewer.com/public/weather-maps.json';
@@ -191,10 +260,17 @@
     return res.json();
   }
 
-  global.WeatherService = {
+  const api = {
     describeWmoCode,
     fetchLiveWeather,
     fetchMonthlyClimate,
+    fetchAirQuality,
+    classifyAirQuality,
     fetchRainViewerMeta
   };
-})(window);
+
+  global.WeatherService = api;
+  if (typeof module === 'object' && module.exports) {
+    module.exports = api;
+  }
+})(typeof window !== 'undefined' ? window : globalThis);

@@ -91,6 +91,7 @@
 
     let live = null;
     let monthly = null;
+    let airQuality = null;
     let liveErr = null;
 
     await Promise.all([
@@ -99,7 +100,12 @@
         .catch((e) => { liveErr = e; }),
       global.WeatherService.fetchMonthlyClimate(lat, lng)
         .then((d) => { monthly = d; })
-        .catch(() => {})
+        .catch(() => {}),
+      typeof global.WeatherService.fetchAirQuality === 'function'
+        ? global.WeatherService.fetchAirQuality(lat, lng)
+            .then((d) => { airQuality = d; })
+            .catch(() => {})
+        : Promise.resolve()
     ]);
 
     if (!document.body.contains(containerEl)) return;
@@ -120,6 +126,17 @@
     const cur = (live && live.current) || {};
     const daily = (live && live.daily) || {};
     const daysCount = Array.isArray(daily.time) ? Math.min(7, daily.time.length) : 0;
+    const aqInfo = airQuality && typeof global.WeatherService.classifyAirQuality === 'function'
+      ? global.WeatherService.classifyAirQuality(airQuality)
+      : null;
+    const aqHtml = aqInfo && (aqInfo.aqi !== null || aqInfo.uv !== null)
+      ? `<div class="weather-aq-strip">
+          <span>🌫️ US AQI <strong class="mono-num" style="color:${aqInfo.aqiColor};">${aqInfo.aqi ?? '--'}</strong> (${esc(aqInfo.aqiLevel)})</span>
+          ${aqInfo.pm25 !== null ? `<span class="mono-num">PM2.5 ${aqInfo.pm25} μg/m³</span>` : ''}
+          ${aqInfo.uv !== null ? `<span>☀️ UV <strong class="mono-num">${aqInfo.uv}</strong> (${esc(aqInfo.uvLevel)})</span>` : ''}
+          ${aqInfo.peakPollen !== null ? `<span>🌸 ${esc(aqInfo.pollenLabel)}</span>` : ''}
+        </div>`
+      : '';
 
     const forecastHtml = daysCount
       ? `<div class="forecast-strip">
@@ -157,6 +174,7 @@
               </div>`
             : ''
         }
+        ${aqHtml}
         ${forecastHtml}
         ${
           monthly && monthly.length === 12

@@ -1,10 +1,11 @@
-# World Travel Globe V4.0 · 系统架构说明 (ARCHITECTURE)
+# World Travel Globe V4.3 · 系统架构说明 (ARCHITECTURE)
 
 ## 一、设计原则
 
-1. **零服务器成本、本地优先**：纯原生模块化 JS + 单脚本 `build-dist.js` 静态打包，同时运行于 Cloudflare Workers（边缘代理 + 可选 D1/R2）与 GitHub Pages 静态镜像。
+1. **零服务器成本、本地优先**：纯原生模块化 JS + 单脚本 `build-dist.js` 静态打包，同时运行于 Cloudflare Workers（边缘代理 + 可选 D1/R2 + 静态 SEO 落地页）与 GitHub Pages 静态镜像。
 2. **原始地理数据集只读保护**：55 个区域模块与 `data/registry.js` 保持只读，V4 新增的物候、海拔解析、景观分类与质量标记全部通过离线流水线写入独立无损层 `data/enrichment/atlas-enrichment.json`。
-3. **优雅降级与诚实标注**：所有计算严格区分 `Astronomy / SunCalc 星历`、`ERA5 实测气候`、`Terrarium DEM 高程` 与 `实地档案经验/参考估算`，任何外部 API 离线均不阻塞核心地球仪与档案功能。
+3. **优雅降级与诚实标注**：所有计算严格区分 `Astronomy / SunCalc 星历`、`ERA5 再分析气候`、`Terrarium/Mapterhorn DEM 高程` 与 `实地档案经验/参考估算`，任何外部 API 离线均不阻塞核心地球仪与档案功能。
+4. **无 Cookie Web Analytics**：在 Cloudflare Pages/Dashboard 开启 Cloudflare Web Analytics 自动注入即可零代码采集真实访问与 Core Web Vitals（不内置无效占位 Token）。
 
 ---
 

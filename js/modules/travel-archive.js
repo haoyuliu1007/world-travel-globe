@@ -320,6 +320,7 @@
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
             ${sharedFootprint ? `<button class="secondary-btn" id="ar-exit-shared-btn" type="button">${esc(t('archiveExitShared'))}</button>` : ''}
+            <button class="secondary-btn" id="ar-poster-btn" type="button">${icon('image', 14)} ${esc(t('posterBtn'))}</button>
             <button class="primary-btn" id="ar-footprint-globe-btn" type="button">${icon('globe', 14)} ${esc(t('archiveFootprintGlobe'))}</button>
             <button class="gallery-back-btn" id="ar-back-btn" type="button">${icon('arrowUpRight', 14)} ${esc(t('archiveBack'))}</button>
           </div>
@@ -494,6 +495,14 @@
       exitSharedBtn.addEventListener('click', () => {
         sharedFootprint = null;
         renderWorkspace();
+      });
+    }
+    const posterBtn = view.querySelector('#ar-poster-btn');
+    if (posterBtn && global.PosterShare) {
+      posterBtn.addEventListener('click', async () => {
+        const m = typeof global.getGlobeMap === 'function' ? global.getGlobeMap() : null;
+        const poster = await global.PosterShare.generateFootprintPoster(stats, activeStatuses, allDests, m);
+        if (poster) global.PosterShare.openPosterModal(poster);
       });
     }
     view.querySelector('#ar-footprint-globe-btn').addEventListener('click', () => {

@@ -2195,6 +2195,7 @@
     }
 
     if (!skipUrl) syncUrlState(false);
+    if (global.SolarTerminator) global.SolarTerminator.reapplyAfterStyleLoad(map);
   }
 
   /* Delta-Time Smooth Auto Spin */
@@ -2354,9 +2355,15 @@
     const mode = params.get('mode');
     if (mode === 'gallery') state.mode = 'gallery';
 
+    const embed = params.get('embed');
     return {
-      focusId: params.get('focus'),
-      instant: params.get('instant') === '1'
+      focusId: params.get('focus') || params.get('dest') || (embed && embed !== 'global' ? embed : null),
+      instant: params.get('instant') === '1' || Boolean(embed),
+      embed,
+      chromeOff: params.get('chrome') === 'off',
+      autoSpin: params.get('spin') === '1',
+      autoDayNight: params.get('daynight') === '1',
+      autoTerrain: params.get('terrain') === '1'
     };
   }
 
@@ -2635,6 +2642,19 @@
         if (global.PhenologyEngine) global.PhenologyEngine.toggleSeasonHeatmap(map, state.month);
       });
     }
+    const dayNightBtn = document.getElementById('toggle-daynight-btn');
+    if (dayNightBtn) {
+      dayNightBtn.addEventListener('click', () => {
+        if (global.SolarTerminator) global.SolarTerminator.toggle(map);
+      });
+    }
+    const epicBtn = document.getElementById('open-epic-earth-btn');
+    if (epicBtn) {
+      epicBtn.addEventListener('click', () => {
+        closeAllPopovers(null);
+        if (global.EpicEarthModule) global.EpicEarthModule.open();
+      });
+    }
 
     const tourReplayBtn = document.getElementById('onboarding-replay-btn');
     if (tourReplayBtn) {
@@ -2717,6 +2737,31 @@
     const expandBtn = document.getElementById('drawer-expand-btn');
     if (expandBtn) {
       expandBtn.addEventListener('click', () => Panel.cycleSheetState());
+    }
+
+    const posterBtn = document.getElementById('poster-dest-btn');
+    if (posterBtn) {
+      posterBtn.addEventListener('click', async () => {
+        if (!state.selectedId || !global.PosterShare) return;
+        const dest = ATLAS.getById(state.selectedId);
+        if (!dest) return;
+        const res = await global.PosterShare.generateDestinationPoster(dest, map);
+        if (res) global.PosterShare.openPosterModal(res);
+      });
+    }
+    const embedBtn = document.getElementById('embed-dest-btn');
+    if (embedBtn) {
+      embedBtn.addEventListener('click', async () => {
+        if (!state.selectedId || !global.PosterShare) return;
+        const dest = ATLAS.getById(state.selectedId);
+        if (!dest) return;
+        const code = global.PosterShare.buildEmbedIframeCode(dest);
+        if (global.navigator && global.navigator.clipboard) {
+          await global.navigator.clipboard.writeText(code).catch(() => {});
+        }
+        if (Icons) embedBtn.innerHTML = Icons.svg('check', 14);
+        setTimeout(() => { if (Icons) embedBtn.innerHTML = Icons.svg('globe', 14); }, 1800);
+      });
     }
 
     // Share destination deep link
@@ -3352,12 +3397,48 @@
 
       syncGeoJsonSource();
       syncMapThemeAndAccent();
+      if (global.SolarTerminator) global.SolarTerminator.reapplyAfterStyleLoad(map);
       if (state.skin !== 'satellite') switchSkin(state.skin, true);
       if (state.mode === 'gallery') setViewMode('gallery', true);
       scheduleLabelLayout();
       initAutoTileRoute();
       if (global.PhenologyEngine) global.PhenologyEngine.loadEnrichment();
-      if (global.OnboardingTour) global.OnboardingTour.init();
+      if (global.OnboardingTour && !initialParams.embed) global.OnboardingTour.init();
+
+      if (initialParams.autoTerrain && global.Terrain3DModule) {
+        global.Terrain3DModule.toggleTerrain(map, true);
+      }
+      if (initialParams.autoDayNight && global.SolarTerminator) {
+        global.SolarTerminator.toggle(map, true);
+      }
+      if (initialParams.autoSpin) {
+        startSpin();
+      }
+
+      if (initialParams.embed) {
+        document.body.classList.add('embed-mode');
+        const bar = document.getElementById('embed-chrome-bar');
+        const base = (global.location.origin && global.location.origin !== 'null')
+          ? `${global.location.origin}${global.location.pathname}`
+          : 'https://world-travel-globe.globe-app.workers.dev/';
+        const openUrl = focusDest ? `${base}?focus=${encodeURIComponent(focusDest.id)}` : base;
+        if (bar) {
+          bar.classList.remove('is-hidden');
+          const titleTxt = focusDest
+            ? `${tx(focusDest.name)} · ${tx(focusDest.country || '')}`
+            : 'World Travel Globe · 722 Destinations';
+          bar.innerHTML = `
+            <span class="embed-bar-title">${String(titleTxt).replace(/&/g, '&amp;').replace(/</g, '&lt;')}</span>
+            <a class="embed-bar-link" href="${openUrl}" target="_blank" rel="noopener noreferrer">Open in World Travel Globe ↗</a>
+          `;
+        }
+        if (focusDest) {
+          state.selectedId = focusDest.id;
+          updateActiveBeacon(focusDest);
+          syncGeoJsonSource();
+        }
+        return;
+      }
 
       if (focusDest) {
         if (initialParams.instant || prefersReducedMotion()) {

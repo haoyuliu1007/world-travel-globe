@@ -84,8 +84,11 @@ async function handleApi(request, env) {
         route: true,
         streetview: Boolean(env && (env.MAPILLARY_CLIENT_TOKEN || env.MAPILLARY_TOKEN)),
         terrain: true,
+        mapterhorn: true,
         aurora: true,
         panoramax: true,
+        epic: true,
+        airQuality: true,
         pois: true, // Overpass fallback works without a key; OTM key only enhances it
         poisEnhanced: Boolean(env && env.OTM_API_KEY),
         d1: Boolean(env && env.DB),
@@ -96,7 +99,11 @@ async function handleApi(request, env) {
 
   if (p === '/api/weather') {
     const endpoint = url.searchParams.get('endpoint') || 'https://api.open-meteo.com/v1/forecast';
-    if (!endpoint.startsWith('https://api.open-meteo.com/') && !endpoint.startsWith('https://archive-api.open-meteo.com/')) {
+    if (
+      !endpoint.startsWith('https://api.open-meteo.com/') &&
+      !endpoint.startsWith('https://archive-api.open-meteo.com/') &&
+      !endpoint.startsWith('https://air-quality-api.open-meteo.com/')
+    ) {
       return jsonResponse({ ok: false, error: 'Disallowed weather endpoint' }, 400);
     }
     const qs = new URLSearchParams(url.searchParams);
@@ -140,7 +147,7 @@ async function handleApi(request, env) {
     } catch (e) {
       return jsonResponse({ ok: false, error: 'Invalid image URL' }, 400);
     }
-    if (parsed.protocol !== 'https:' || parsed.hostname !== 'upload.wikimedia.org') {
+    if (parsed.protocol !== 'https:' || (parsed.hostname !== 'upload.wikimedia.org' && parsed.hostname !== 'epic.gsfc.nasa.gov')) {
       return jsonResponse({ ok: false, error: 'Disallowed image host' }, 400);
     }
     const cache = typeof caches !== 'undefined' ? caches.default : null;
@@ -189,6 +196,7 @@ async function handleApi(request, env) {
       labels: `https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/${z}/${y}/${x}`,
       dark: `https://a.basemaps.cartocdn.com/dark_all/${z}/${x}/${y}.png`,
       terrarium: `https://s3.amazonaws.com/elevation-tiles-prod/terrarium/${z}/${x}/${y}.png`,
+      mapterhorn: `https://tiles.mapterhorn.com/${z}/${x}/${y}.webp`,
       blackmarble: `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/VIIRS_Black_Marble/default/2016-01-01/GoogleMapsCompatible_Level8/${z}/${y}/${x}.png`
     };
     const upstream = tileTemplates[skin];
@@ -464,6 +472,42 @@ async function handleApi(request, env) {
     return cachedUpstreamJson(request.url, upstream, 3600, {
       headers: { 'User-Agent': 'WorldTravelGlobe/4.0 (https://world-travel-globe.globe-app.workers.dev)' }
     });
+  }
+
+  if (p === '/api/epic') {
+    const cache = typeof caches !== 'undefined' ? caches.default : null;
+    const cacheReq = new Request(request.url, { method: 'GET' });
+    if (cache) {
+      const hit = await cache.match(cacheReq);
+      if (hit) return hit;
+    }
+    const res = await fetch('https://epic.gsfc.nasa.gov/api/natural', {
+      headers: { 'User-Agent': 'WorldTravelGlobe/4.3 (https://world-travel-globe.globe-app.workers.dev)' }
+    });
+    if (!res.ok) {
+      return jsonResponse({ ok: false, error: 'NASA EPIC upstream unavailable' }, 502);
+    }
+    const raw = await res.json().catch(() => []);
+    const frames = (Array.isArray(raw) ? raw : []).slice(0, 8).map((item) => {
+      const datePart = String(item.date || '').split(' ')[0].replace(/-/g, '/');
+      const imgName = item.image || '';
+      const thumbUrl = `https://epic.gsfc.nasa.gov/archive/natural/${datePart}/thumbs/${imgName}.jpg`;
+      const fullUrl = `https://epic.gsfc.nasa.gov/archive/natural/${datePart}/png/${imgName}.png`;
+      return {
+        identifier: item.identifier,
+        caption: item.caption || 'NASA DSCOVR EPIC Natural Color Earth',
+        date: item.date,
+        centroid: item.centroid_coordinates || null,
+        dscovrPos: item.dscovr_j2000_position || null,
+        thumbUrl,
+        fullUrl
+      };
+    });
+    const out = jsonResponse({ ok: true, source: 'NASA DSCOVR EPIC', frames }, 200, 'public, max-age=21600');
+    if (cache && frames.length) {
+      await cache.put(cacheReq, out.clone());
+    }
+    return out;
   }
 
   return jsonResponse({ ok: false, error: 'Not found' }, 404);

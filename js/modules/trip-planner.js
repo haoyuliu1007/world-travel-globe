@@ -447,6 +447,7 @@
             <p class="gallery-lead">${esc(t('plannerLead'))}</p>
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="secondary-btn" id="tp-poster-btn" type="button">${icon('image', 14)} ${esc(t('posterBtn'))}</button>
             <button class="primary-btn" id="tp-preview-globe-btn" type="button">${icon('globe', 14)} ${esc(t('plannerPreviewGlobe'))}</button>
             <button class="gallery-back-btn" id="tp-back-btn" type="button">${icon('arrowUpRight', 14)} ${esc(t('plannerBack'))}</button>
           </div>
@@ -595,6 +596,15 @@
     view.querySelector('#tp-back-btn').addEventListener('click', () => {
       if (typeof global.setAppViewMode === 'function') global.setAppViewMode('map');
     });
+
+    const tpPosterBtn = view.querySelector('#tp-poster-btn');
+    if (tpPosterBtn && global.PosterShare) {
+      tpPosterBtn.addEventListener('click', async () => {
+        const m = typeof global.getGlobeMap === 'function' ? global.getGlobeMap() : null;
+        const poster = await global.PosterShare.generateTripPoster(activeTrip, m);
+        if (poster) global.PosterShare.openPosterModal(poster);
+      });
+    }
 
     view.querySelector('#tp-preview-globe-btn').addEventListener('click', () => {
       const bounds = drawTripOnGlobe(activeTrip);

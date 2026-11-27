@@ -7,6 +7,7 @@
 | **Astronomy Engine** | v2.1.19 (`vendor/astronomy.browser.min.js`) | MIT | 高精度天文星历、天文暮光 (-18°) 与银河核心位置推算 |
 | **MapLibre Contour** | v0.1.0 (`vendor/maplibre-contour.min.js`) | BSD-3-Clause | 基于 DEM 瓦片浏览器端实时生成矢量等高线 |
 | **Fuse.js** | v7.5.0 (`vendor/fuse.min.js`) | Apache-2.0 | 全局中英文模糊检索与拼写容错 |
+| **MiniSearch** | v7.1.1 (`vendor/minisearch.min.js`) | MIT | V4 Geo Intelligence 中英文分词与多字段全文索引 |
 | **Supercluster** | v9.1.0 (`vendor/supercluster.min.js`) | ISC | 722 座目的地低缩放空间聚合 |
 | **Dexie.js** | v4.4.7 (`vendor/dexie.min.js`) | Apache-2.0 | IndexedDB 本地离线缓存与私人档案持久化 |
 | **Apache ECharts** | v6.1.0 (`vendor/echarts.min.js`) | Apache-2.0 | 懒加载气象统计、行程预算饼图与年度足迹图表 |

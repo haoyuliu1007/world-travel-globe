@@ -1775,6 +1775,9 @@
       btn.addEventListener('click', () => {
         state.month = btn.dataset.month;
         applyFilterUpdates();
+        if (global.PhenologyEngine && global.PhenologyEngine.isHeatmapEnabled()) {
+          global.PhenologyEngine.updateSeasonHeatmap(map, state.month);
+        }
         if (state.selectedId && state.month !== 'all') {
           const dest = ATLAS.getById(state.selectedId);
           if (dest) Panel.open(dest, state.month);
@@ -2379,7 +2382,8 @@
         t3dState.contours ||
         t3dState.buildings ||
         t3dState.nightLights ||
-        t3dState.aurora
+        t3dState.aurora ||
+        (global.PhenologyEngine && global.PhenologyEngine.isHeatmapEnabled())
       );
       badge.classList.toggle('is-hidden', !anyActive);
     }
@@ -2394,7 +2398,8 @@
         'toggle-contour-btn',
         'toggle-buildings-btn',
         'toggle-nightlights-btn',
-        'toggle-aurora-btn'
+        'toggle-aurora-btn',
+        'toggle-pheno-heat-btn'
       ].forEach((id) => {
         const el = document.getElementById(id);
         if (el) layerObserver.observe(el, { attributes: true, attributeFilter: ['class'] });
@@ -2561,6 +2566,12 @@
     if (auroraBtn) {
       auroraBtn.addEventListener('click', () => {
         if (global.Terrain3DModule) global.Terrain3DModule.toggleAurora(map);
+      });
+    }
+    const phenoHeatBtn = document.getElementById('toggle-pheno-heat-btn');
+    if (phenoHeatBtn) {
+      phenoHeatBtn.addEventListener('click', () => {
+        if (global.PhenologyEngine) global.PhenologyEngine.toggleSeasonHeatmap(map, state.month);
       });
     }
 
@@ -3234,6 +3245,7 @@
       if (state.mode === 'gallery') setViewMode('gallery', true);
       scheduleLabelLayout();
       initAutoTileRoute();
+      if (global.PhenologyEngine) global.PhenologyEngine.loadEnrichment();
       if (global.OnboardingTour) global.OnboardingTour.init();
 
       if (focusDest) {

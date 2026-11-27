@@ -614,6 +614,29 @@
           });
           const j = await res.json();
           if (res.status === 409) {
+            if (global.ProfileCRDT) {
+              msgEl.textContent = '检测到云端更新，正在执行 CRDT 无损合并并重推…';
+              const pullRes = await fetch('/api/profile', { headers: { 'X-Sync-Key': keyHash } });
+              const pullJson = await pullRes.json().catch(() => null);
+              if (pullRes.ok && pullJson && pullJson.data) {
+                const { merged, stats } = global.ProfileCRDT.mergeUserProfiles(payload, pullJson.data);
+                await global.StorageDB.importAllUserData(merged, 'merge');
+                const retryRes = await fetch('/api/profile', {
+                  method: 'PUT',
+                  headers: { 'Content-Type': 'application/json', 'X-Sync-Key': keyHash, 'X-Base-Updated-At': String(pullJson.updatedAt || 0) },
+                  body: JSON.stringify(merged)
+                });
+                const retryJson = await retryRes.json().catch(() => ({}));
+                if (retryRes.ok && retryJson.updatedAt && global.localStorage) {
+                  global.localStorage.setItem('wtg_cloud_updated_at', String(retryJson.updatedAt));
+                }
+                msgEl.textContent = retryRes.ok
+                  ? `CRDT 无损合并完成（新增 ${stats.addedFromRemote} · 解决冲突 ${stats.conflictsResolved}）并已安全推送至云端。`
+                  : `CRDT 合并后推送失败 (${retryRes.status})`;
+                renderWorkspace();
+                return;
+              }
+            }
             msgEl.textContent = '云端档案已被另一台设备更新，本地未覆盖云端。请先点“从云端拉取”合并，再重新推送。';
             return;
           }
@@ -624,8 +647,15 @@
           const j = await res.json();
           if (res.ok && j.data) {
             if (j.updatedAt && global.localStorage) global.localStorage.setItem('wtg_cloud_updated_at', String(j.updatedAt));
-            await global.StorageDB.importAllUserData(j.data, 'merge');
-            msgEl.textContent = '已从云端合并恢复档案！';
+            if (global.ProfileCRDT) {
+              const localPayload = await global.StorageDB.exportAllUserData();
+              const { merged, stats } = global.ProfileCRDT.mergeUserProfiles(localPayload, j.data);
+              await global.StorageDB.importAllUserData(merged, 'merge');
+              msgEl.textContent = `已通过 CRDT 无损合并云端档案（新增 ${stats.addedFromRemote} · 冲突消解 ${stats.conflictsResolved}）。`;
+            } else {
+              await global.StorageDB.importAllUserData(j.data, 'merge');
+              msgEl.textContent = '已从云端合并恢复档案！';
+            }
             renderWorkspace();
           } else {
             msgEl.textContent = `拉取失败 (${res.status}): ${j.error || '未找到数据或 D1 未配置'}`;

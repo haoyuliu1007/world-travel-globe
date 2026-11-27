@@ -1,8 +1,8 @@
 {
   "name": "world-travel-globe",
-  "version": "3.8.0",
+  "version": "4.0.0",
   "private": true,
-  "description": "3D interactive travel globe with 722 destinations, 5414 photography spots, live weather, SunCalc simulator, NASA GIBS time machine, trip planner and local-first archive.",
+  "description": "World Travel Globe V4.0 — Geo Intelligence: 3D terrain DEM, contours, buildings, Astronomy Engine, 3D viewfinder, Panoramax 360, MiniSearch natural-language search, phenology engine, 2-opt planner & CRDT sync.",
   "scripts": {
     "build": "node build-dist.js",
     "audit": "node scripts/audit-data.js",

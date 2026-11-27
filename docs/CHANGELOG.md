@@ -1,5 +1,27 @@
 # 更新日志 (CHANGELOG)
 
+## [4.0.0] - 2026-11-27 · Geo Intelligence
+
+### 新增 (Added)
+- **3D 真实地形、矢量等高线、3D 建筑、暗夜灯光与实时极光 (`Terrain3DModule` + `BrightStars`)**：
+  - 图层面板新增「3D 地形与天文奇观」分组：接入 AWS Terrarium DEM 真实地形（含 `1.0× / 1.35× / 1.8×` 起伏倍率与山体阴影）、懒加载 `maplibre-contour` 矢量等高线、OpenFreeMap 3D 建筑轮廓 (`fill-extrusion`)、NASA VIIRS Black Marble 夜间灯光、NOAA SWPC OVATION 30 分钟实时极光预测带及全球季节物候热力图。
+  - 新增 Hipparcos/Yale J2000 真实亮星表与格林尼治恒星时（GMST）投影，使背景亮星、经典星座连线与银河核心对齐地球真实方位。
+- **专业摄影引擎与第一人称 3D 取景器 (`PhotoSimulator` + `Viewfinder3D`)**：
+  - 集成 `Astronomy Engine v2.1.19`，精确计算银河核心 (Sgr A*) 方位/仰角、天文黑夜 (`-18°`) 起止及当晚最佳银心窗口。
+  - 新增传感器画幅（全画幅 / APS-C / M4/3 / 中画幅）与焦段（`14mm–200mm`）真实几何视场计算。
+  - 实现前端 Terrarium DEM 360° 地形遮挡射线追踪，输出山体地平线剖面与遮挡修正后的真实日出/日落时刻。
+  - 新增全屏透明 HUD 3D 机位取景器，联动地图相机 FOV 与实时方位标尺。
+- **Panoramax 免密钥 360° 全景探索 (`StreetViewModule`)**：
+  - 优先检索 Panoramax 开放街景，内置原生 WebGL 等距柱状 360° 全景浏览器与上下站漫游，保留 `Panoramax → Mapillary → Wikimedia → 外部地图` 优雅降级链路。
+- **Geo Intelligence 自然语言搜索与全球科学物候引擎 (`GeoIntelligence` + `PhenologyEngine`)**：
+  - 集成 `MiniSearch v7.1.1` 中英文分词全文检索与结构化自然语言意图解析，输出可解释推荐理由、不确定性提示与轻量地理知识图谱关联。
+  - 新增 `scripts/build-enrichment.js` 与 `.github/workflows/data-governance.yml`，在不破坏 55 个原始数据模块的前提下生成 722 城无损增强层 `data/enrichment/atlas-enrichment.json`。
+  - 新增分景观物候评估模型（春花 / 秋叶 / 冰雪 / 极光地磁纬 / 银河星历）与地球仪季节前沿热力图。
+- **行程 2-opt 优化 & CRDT 多设备无损同步 (`TripPlanner` + `ProfileCRDT`)**：
+  - 智能行程生成器新增 2-opt 路径优化、早晚光影时段排序与预算估算标记；私人档案云同步新增 LWW-Element-Set CRDT 冲突自动合并闭环。
+- **Cloudflare Worker 边缘代理扩展与 V4 全套自动化测试**：
+  - `worker/index.js` 新增 `/api/aurora`、`/api/panoramax` 与 `/api/tile/{terrarium,blackmarble}` 代理；新增 `tests/v4-phase1.test.js` 与 `tests/v4-phase2-3.test.js`（总测试数达 22 项）。
+
 ## [3.8.0] - 2026-11-27
 
 ### 新增 (Added)

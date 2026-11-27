@@ -100,6 +100,23 @@ async function main() {
       }
     }
   }
+  // Copy code-split lazy JS modules (NOT bundled into app.bundle.min.js)
+  const lazySrcDir = path.join(rootDir, 'js', 'lazy');
+  if (fs.existsSync(lazySrcDir)) {
+    ensureDir(path.join(distDir, 'js', 'lazy'));
+    for (const ent of fs.readdirSync(lazySrcDir, { withFileTypes: true })) {
+      if (ent.isFile() && ent.name.endsWith('.js')) {
+        fs.copyFileSync(path.join(lazySrcDir, ent.name), path.join(distDir, 'js', 'lazy', ent.name));
+      }
+    }
+  }
+  // Copy lazy JSON data assets (transport hubs, trilingual manual)
+  for (const dataSub of ['transport', 'docs']) {
+    const dSrc = path.join(rootDir, 'data', dataSub);
+    if (fs.existsSync(dSrc)) {
+      fs.cpSync(dSrc, path.join(distDir, 'data', dataSub), { recursive: true });
+    }
+  }
   // Copy vendor/fuse.min.js and vendor/supercluster.min.js separately for atlas-worker.js importScripts('../vendor/...')
   for (const wVendor of ['vendor/fuse.min.js', 'vendor/supercluster.min.js']) {
     const srcAbs = path.join(rootDir, wVendor);

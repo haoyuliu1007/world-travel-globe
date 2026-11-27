@@ -2419,6 +2419,23 @@
       });
     }
 
+    // Account Center & Help Center triggers
+    const accBtn = document.getElementById('account-btn');
+    if (accBtn) {
+      accBtn.addEventListener('click', () => {
+        if (global.AuthService && typeof global.AuthService.openAccountCenter === 'function') {
+          global.AuthService.openAccountCenter();
+        }
+      });
+    }
+    global.syncAccountBadgeUI = () => {
+      const btn = document.getElementById('account-btn');
+      if (!btn || !global.AuthService) return;
+      const u = global.AuthService.getCurrentUser();
+      btn.classList.toggle('active', Boolean(u));
+      if (u) btn.title = `${u.displayName || u.email}`;
+    };
+
     // Gallery sticky back + help
     const galStickyBack = document.getElementById('gallery-sticky-back-btn');
     if (galStickyBack) galStickyBack.addEventListener('click', () => setViewMode('map'));

@@ -1,4 +1,5 @@
-/* World Travel Globe — Cloudflare Workers Edge API Proxy & Optional D1/R2 Adapter */
+/* KAIROS V5.0 (World Travel Globe) — Cloudflare Workers Edge API Proxy, Auth, Collab & D1/R2 Adapter */
+import { handleAuthRequest } from './auth.js';
 
 const RATE_WINDOW_MS = 60_000;
 const RATE_LIMIT_MAX = 90;
@@ -71,10 +72,15 @@ async function handleApi(request, env) {
 
   const p = url.pathname;
 
+  if (p.startsWith('/api/auth/') || p.startsWith('/api/account')) {
+    return handleAuthRequest(request, env);
+  }
+
   if (p === '/api/health') {
     return jsonResponse({
       ok: true,
       runtime: 'cloudflare-worker',
+      version: '5.0.0',
       features: {
         weather: true,
         commons: true,
@@ -93,7 +99,12 @@ async function handleApi(request, env) {
         pois: true, // Overpass fallback works without a key; OTM key only enhances it
         poisEnhanced: Boolean(env && env.OTM_API_KEY),
         d1: Boolean(env && env.DB),
-        r2: Boolean(env && env.PHOTOS_BUCKET)
+        r2: Boolean(env && env.PHOTOS_BUCKET),
+        auth: Boolean(env && env.DB),
+        oauthGoogle: Boolean(env && env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET),
+        emailDelivery: Boolean(env && env.RESEND_API_KEY),
+        collab: Boolean(env && env.DB),
+        fx: true
       }
     });
   }
@@ -536,7 +547,10 @@ export default {
       const ct = assetRes.headers.get('content-type') || '';
       if (ct.includes('text/html') || url.pathname === '/' || url.pathname.endsWith('/')) {
         const hdrs = new Headers(assetRes.headers);
-        if (!hdrs.has('Content-Security-Policy')) {
+        const modeParam = url.searchParams.get('mode');
+        if (modeParam === 'account' || modeParam === 'archive') {
+          hdrs.set('Content-Security-Policy', "frame-ancestors 'none'");
+        } else if (!hdrs.has('Content-Security-Policy')) {
           hdrs.set('Content-Security-Policy', 'frame-ancestors *');
         }
         if (!hdrs.has('X-Content-Type-Options')) {

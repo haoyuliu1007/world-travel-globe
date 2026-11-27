@@ -303,7 +303,7 @@
       } else if (this.activeTab === 'photo') {
         contentHtml = `<div id="photo-simulator-mount"></div>`;
       } else if (this.activeTab === 'months') {
-        contentHtml = `${this.buildMonthsHtml(dest)}<div id="aesthetic-index-mount"></div>`;
+        contentHtml = `${this.buildMonthsHtml(dest)}<div id="phenology-engine-mount"></div><div id="aesthetic-index-mount"></div>`;
       } else if (this.activeTab === 'weather') {
         contentHtml = `<div id="live-weather-mount"></div>${this.buildWeatherHtml(dest)}`;
       } else if (this.activeTab === 'budget') {
@@ -332,8 +332,13 @@
       if (this.activeTab === 'weather' && global.WeatherPanel) {
         global.WeatherPanel.mount(dest, body.querySelector('#live-weather-mount'));
       }
-      if (this.activeTab === 'months' && global.AestheticIndex) {
-        global.AestheticIndex.mountDrawerBreakdown(dest, this.selectedMonth, body.querySelector('#aesthetic-index-mount'));
+      if (this.activeTab === 'months') {
+        if (global.PhenologyEngine) {
+          global.PhenologyEngine.mountDrawerCard(dest, this.selectedMonth, body.querySelector('#phenology-engine-mount'));
+        }
+        if (global.AestheticIndex) {
+          global.AestheticIndex.mountDrawerBreakdown(dest, this.selectedMonth, body.querySelector('#aesthetic-index-mount'));
+        }
       }
 
       if (this.activeTab === 'spots') {
@@ -377,6 +382,15 @@
             e.stopPropagation();
             this.expandedSpotIndex = Number(btn.dataset.idx);
             this.setTab('photo');
+          });
+        });
+        body.querySelectorAll('.spot-vf-btn').forEach((btn) => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const idx = Number(btn.dataset.idx);
+            if (global.Viewfinder3D && Array.isArray(dest.spots) && dest.spots[idx]) {
+              global.Viewfinder3D.open(dest, dest.spots[idx], { spotIdx: idx });
+            }
           });
         });
         body.querySelectorAll('.spot-sv-btn').forEach((btn) => {
@@ -474,7 +488,8 @@
                     <div class="spot-tips">${linkifyHtml(tx(sp.tips))}</div>
                     <div class="spot-actions-row">
                       <button class="mini-action-pill spot-sim-btn" data-idx="${i}" type="button">${icon('sun', 12)} 光影模拟</button>
-                      <button class="mini-action-pill spot-sv-btn" data-idx="${i}" type="button">${icon('eye', 12)} 街景/实景</button>
+                      <button class="mini-action-pill spot-vf-btn" data-idx="${i}" type="button">${icon('camera', 12)} 3D 取景</button>
+                      <button class="mini-action-pill spot-sv-btn" data-idx="${i}" type="button">${icon('eye', 12)} 360° 全景</button>
                       <button class="mini-action-pill spot-plan-btn" data-idx="${i}" type="button">${icon('route', 12)} 加入行程</button>
                     </div>
                   </div>

@@ -537,6 +537,89 @@
           ctx.fill();
         }
       }
+
+      // Overlay real J2000 bright stars, constellations & Galactic Center aligned to live GMST
+      if (global.BrightStars && typeof global.BrightStars.getProjectedStars === 'function') {
+        const now = new Date();
+        const gcVec = global.BrightStars.getGalacticCenterVector(now);
+        const gcZ = gcVec[0] * cam.forward[0] + gcVec[1] * cam.forward[1] + gcVec[2] * cam.forward[2];
+        if (gcZ > 0.16 && zoom < 4.5) {
+          const gcX = cx + ((gcVec[0] * cam.right[0] + gcVec[1] * cam.right[1] + gcVec[2] * cam.right[2]) / gcZ) * focal;
+          const gcY = cy - ((gcVec[0] * cam.up[0] + gcVec[1] * cam.up[1] + gcVec[2] * cam.up[2]) / gcZ) * focal;
+          const gcRad = Math.min(width, height) * 0.22;
+          if (gcX > -gcRad && gcX < width + gcRad && gcY > -gcRad && gcY < height + gcRad) {
+            const gcGrad = ctx.createRadialGradient(gcX, gcY, 0, gcX, gcY, gcRad);
+            gcGrad.addColorStop(0, `rgba(226,192,125,${(0.11 * zoomFade).toFixed(3)})`);
+            gcGrad.addColorStop(0.45, `rgba(148,180,255,${(0.05 * zoomFade).toFixed(3)})`);
+            gcGrad.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = gcGrad;
+            ctx.beginPath();
+            ctx.arc(gcX, gcY, gcRad, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+
+        const realStars = global.BrightStars.getProjectedStars(now);
+        const projected = new Array(realStars.length);
+        for (let i = 0; i < realStars.length; i++) {
+          const rs = realStars[i];
+          const zCam = rs.x * cam.forward[0] + rs.y * cam.forward[1] + rs.z * cam.forward[2];
+          if (zCam <= 0.14) continue;
+          const sx = cx + ((rs.x * cam.right[0] + rs.y * cam.right[1] + rs.z * cam.right[2]) / zCam) * focal;
+          const sy = cy - ((rs.x * cam.up[0] + rs.y * cam.up[1] + rs.z * cam.up[2]) / zCam) * focal;
+          if (sx >= -12 && sx <= width + 12 && sy >= -12 && sy <= height + 12) {
+            projected[i] = { sx, sy, rs };
+          }
+        }
+
+        const lines = global.BrightStars.CONSTELLATIONS || [];
+        ctx.strokeStyle = `rgba(226,192,125,${(0.16 * zoomFade).toFixed(3)})`;
+        ctx.lineWidth = 0.75;
+        ctx.beginPath();
+        for (let l = 0; l < lines.length; l++) {
+          const poly = lines[l];
+          let started = false;
+          for (let k = 0; k < poly.length; k++) {
+            const pt = projected[poly[k]];
+            if (!pt) { started = false; continue; }
+            if (!started) { ctx.moveTo(pt.sx, pt.sy); started = true; }
+            else ctx.lineTo(pt.sx, pt.sy);
+          }
+        }
+        ctx.stroke();
+
+        for (let i = 0; i < projected.length; i++) {
+          const pt = projected[i];
+          if (!pt) continue;
+          const { sx, sy, rs } = pt;
+          const a = Math.min(0.98, rs.alpha * zoomFade);
+          const haloR = rs.r * 3.8;
+          const grad = ctx.createRadialGradient(sx, sy, 0, sx, sy, haloR);
+          grad.addColorStop(0, `rgba(${rs.rgb},${(a * 0.42).toFixed(3)})`);
+          grad.addColorStop(1, `rgba(${rs.rgb},0)`);
+          ctx.fillStyle = grad;
+          ctx.beginPath();
+          ctx.arc(sx, sy, haloR, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.fillStyle = `rgba(${rs.rgb},${a.toFixed(3)})`;
+          ctx.beginPath();
+          ctx.arc(sx, sy, rs.r, 0, Math.PI * 2);
+          ctx.fill();
+
+          if (rs.mag <= 0.6) {
+            const glint = rs.r * 3.1;
+            ctx.strokeStyle = `rgba(${rs.rgb},${(a * 0.45).toFixed(3)})`;
+            ctx.lineWidth = 0.7;
+            ctx.beginPath();
+            ctx.moveTo(sx - glint, sy);
+            ctx.lineTo(sx + glint, sy);
+            ctx.moveTo(sx, sy - glint);
+            ctx.lineTo(sx, sy + glint);
+            ctx.stroke();
+          }
+        }
+      }
     }
 
     function scheduleRender() {
@@ -1692,6 +1775,9 @@
       btn.addEventListener('click', () => {
         state.month = btn.dataset.month;
         applyFilterUpdates();
+        if (global.PhenologyEngine && global.PhenologyEngine.isHeatmapEnabled()) {
+          global.PhenologyEngine.updateSeasonHeatmap(map, state.month);
+        }
         if (state.selectedId && state.month !== 'all') {
           const dest = ATLAS.getById(state.selectedId);
           if (dest) Panel.open(dest, state.month);
@@ -2285,19 +2371,36 @@
       const wxBtnEl = document.getElementById('toggle-weather-layer-btn');
       const tmBtnEl = document.getElementById('toggle-timemachine-btn');
       const fpBtnEl = document.getElementById('toggle-footprint-btn');
+      const t3dState = global.Terrain3DModule ? global.Terrain3DModule.getState() : {};
       const anyActive = Boolean(
         state.showLabels ||
         state.forceAllLabels ||
         (wxBtnEl && wxBtnEl.classList.contains('active')) ||
         (tmBtnEl && tmBtnEl.classList.contains('active')) ||
-        (fpBtnEl && fpBtnEl.classList.contains('active'))
+        (fpBtnEl && fpBtnEl.classList.contains('active')) ||
+        t3dState.terrain ||
+        t3dState.contours ||
+        t3dState.buildings ||
+        t3dState.nightLights ||
+        t3dState.aurora ||
+        (global.PhenologyEngine && global.PhenologyEngine.isHeatmapEnabled())
       );
       badge.classList.toggle('is-hidden', !anyActive);
     }
 
     if (typeof MutationObserver !== 'undefined') {
       const layerObserver = new MutationObserver(updateLayersBadge);
-      ['toggle-weather-layer-btn', 'toggle-timemachine-btn', 'toggle-footprint-btn'].forEach((id) => {
+      [
+        'toggle-weather-layer-btn',
+        'toggle-timemachine-btn',
+        'toggle-footprint-btn',
+        'toggle-terrain-btn',
+        'toggle-contour-btn',
+        'toggle-buildings-btn',
+        'toggle-nightlights-btn',
+        'toggle-aurora-btn',
+        'toggle-pheno-heat-btn'
+      ].forEach((id) => {
         const el = document.getElementById(id);
         if (el) layerObserver.observe(el, { attributes: true, attributeFilter: ['class'] });
       });
@@ -2427,6 +2530,48 @@
     if (fpBtn) {
       fpBtn.addEventListener('click', () => {
         if (global.TravelArchive) global.TravelArchive.applyFootprintLayer(map);
+      });
+    }
+
+    const terrainBtn = document.getElementById('toggle-terrain-btn');
+    if (terrainBtn) {
+      terrainBtn.addEventListener('click', () => {
+        if (global.Terrain3DModule) global.Terrain3DModule.toggleTerrain(map);
+      });
+    }
+    document.querySelectorAll('[data-terrain-exag]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        if (global.Terrain3DModule) global.Terrain3DModule.setTerrainExaggeration(map, Number(btn.dataset.terrainExag));
+      });
+    });
+    const contourBtn = document.getElementById('toggle-contour-btn');
+    if (contourBtn) {
+      contourBtn.addEventListener('click', () => {
+        if (global.Terrain3DModule) global.Terrain3DModule.toggleContours(map);
+      });
+    }
+    const bldgBtn = document.getElementById('toggle-buildings-btn');
+    if (bldgBtn) {
+      bldgBtn.addEventListener('click', () => {
+        if (global.Terrain3DModule) global.Terrain3DModule.toggleBuildings(map);
+      });
+    }
+    const nlBtn = document.getElementById('toggle-nightlights-btn');
+    if (nlBtn) {
+      nlBtn.addEventListener('click', () => {
+        if (global.Terrain3DModule) global.Terrain3DModule.toggleNightLights(map);
+      });
+    }
+    const auroraBtn = document.getElementById('toggle-aurora-btn');
+    if (auroraBtn) {
+      auroraBtn.addEventListener('click', () => {
+        if (global.Terrain3DModule) global.Terrain3DModule.toggleAurora(map);
+      });
+    }
+    const phenoHeatBtn = document.getElementById('toggle-pheno-heat-btn');
+    if (phenoHeatBtn) {
+      phenoHeatBtn.addEventListener('click', () => {
+        if (global.PhenologyEngine) global.PhenologyEngine.toggleSeasonHeatmap(map, state.month);
       });
     }
 
@@ -2610,6 +2755,10 @@
       }
 
       if (e.key === 'Escape') {
+        if (global.Viewfinder3D && global.Viewfinder3D.isOpen()) {
+          global.Viewfinder3D.close();
+          return;
+        }
         if (state.isFullscreen) {
           state.isFullscreen = false;
           document.body.classList.remove('fullscreen-globe');
@@ -3096,6 +3245,7 @@
       if (state.mode === 'gallery') setViewMode('gallery', true);
       scheduleLabelLayout();
       initAutoTileRoute();
+      if (global.PhenologyEngine) global.PhenologyEngine.loadEnrichment();
       if (global.OnboardingTour) global.OnboardingTour.init();
 
       if (focusDest) {

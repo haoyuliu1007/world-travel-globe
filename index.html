@@ -353,6 +353,44 @@
       </div>
     </div>
 
+    <div class="popover-section">
+      <div class="popover-label" data-i18n="layersSpace3d">3D 地形与天文奇观</div>
+      <div class="layers-toggle-grid">
+        <button class="layer-tile-btn" id="toggle-terrain-btn" type="button" aria-label="3D 真实地形" title="3D 真实地形 (AWS Terrarium DEM)">
+          <span data-icon="mountain" data-size="14"></span>
+          <span data-i18n="layerTerrain">3D 地形</span>
+        </button>
+        <button class="layer-tile-btn" id="toggle-contour-btn" type="button" aria-label="等高线图层" title="等高线 (Zoom >= 9)">
+          <span data-icon="layers" data-size="14"></span>
+          <span data-i18n="layerContours">等高线</span>
+        </button>
+        <button class="layer-tile-btn" id="toggle-buildings-btn" type="button" aria-label="3D 城市建筑" title="3D 城市建筑 (OpenFreeMap, Zoom >= 13)">
+          <span data-icon="building" data-size="14"></span>
+          <span data-i18n="layerBuildings">3D 建筑</span>
+        </button>
+        <button class="layer-tile-btn" id="toggle-nightlights-btn" type="button" aria-label="全球夜景灯光" title="NASA Black Marble 暗夜灯光">
+          <span data-icon="moon" data-size="14"></span>
+          <span data-i18n="layerNightLights">暗夜灯光</span>
+        </button>
+        <button class="layer-tile-btn" id="toggle-aurora-btn" type="button" aria-label="实时极光带" title="NOAA OVATION 30 分钟极光预报">
+          <span data-icon="aurora" data-size="14"></span>
+          <span data-i18n="layerAurora">实时极光</span>
+        </button>
+        <button class="layer-tile-btn" id="toggle-pheno-heat-btn" type="button" aria-label="季节物候热力图" title="全球季节物候前沿热力图">
+          <span data-icon="sparkles" data-size="14"></span>
+          <span data-i18n="layerPhenoHeat">季节热力</span>
+        </button>
+      </div>
+      <div class="terrain-exag-row is-hidden" id="terrain-exag-row">
+        <span style="font-size:11px;color:var(--text-secondary);">起伏倍率</span>
+        <div style="display:flex;gap:4px;">
+          <button class="mini-action-pill" data-terrain-exag="1" type="button">1.0×</button>
+          <button class="mini-action-pill active" data-terrain-exag="1.35" type="button">1.35×</button>
+          <button class="mini-action-pill" data-terrain-exag="1.8" type="button">1.8×</button>
+        </div>
+      </div>
+    </div>
+
     <div class="popover-section layers-footer-row">
       <button class="layer-foot-btn" id="toggle-tile-cdn-btn" type="button" title="切换底图线路（标准 / 国内极速）" data-i18n="tileRouteAuto">自动线路</button>
       <button class="layer-foot-btn" id="open-diagnostics-btn" type="button" aria-label="系统诊断与配置" title="系统诊断、质量审核与设置">
@@ -510,6 +548,8 @@
   <div class="streetview-modal is-hidden" id="streetview-modal" role="dialog" aria-modal="true" aria-label="沉浸式街景"></div>
   <div class="diag-modal is-hidden" id="diagnostics-modal" role="dialog" aria-modal="true" aria-label="系统诊断与审核"></div>
   <div class="lightbox-backdrop is-hidden" id="media-lightbox" role="dialog" aria-modal="true" aria-label="全屏照片查看器"></div>
+  <div id="viewfinder-hud" class="viewfinder-hud is-hidden" role="dialog" aria-modal="true" aria-label="3D 摄影机位取景器"></div>
+  <div id="aurora-status-pill" class="aurora-status-pill is-hidden" aria-live="polite"></div>
   <div id="trip-print-area" class="is-hidden" aria-hidden="true"></div>
 
   <!-- MapLibre GL v5 & Local Vendor Libraries -->
@@ -518,6 +558,8 @@
   <script src="vendor/fuse.min.js"></script>
   <script src="vendor/supercluster.min.js"></script>
   <script src="vendor/dexie.min.js"></script>
+  <script src="vendor/astronomy.browser.min.js"></script>
+  <script src="vendor/minisearch.min.js"></script>
   <!-- Registry & All 7 Continents 722 Destinations Data -->
   <script src="data/registry.js?v=10"></script>
   <script src="data/asia/china/north_metro.js?v=10"></script>
@@ -581,6 +623,7 @@
   <script src="js/theme.js?v=36"></script>
   <script src="js/services/lazy-loader.js?v=36"></script>
   <script src="js/services/storage-db.js?v=36"></script>
+  <script src="js/services/crdt-merge.js?v=40"></script>
   <script src="js/services/api-client.js?v=36"></script>
   <script src="js/services/media-wikidata.js?v=36"></script>
   <script src="js/services/weather-service.js?v=36"></script>
@@ -596,6 +639,11 @@
   <script src="js/modules/diagnostics.js?v=36"></script>
   <script src="js/modules/onboarding-tour.js?v=39"></script>
   <script src="js/modules/ambient-radio.js?v=38"></script>
+  <script src="js/modules/bright-stars.js?v=40"></script>
+  <script src="js/modules/terrain-3d.js?v=40"></script>
+  <script src="js/modules/viewfinder-3d.js?v=40"></script>
+  <script src="js/modules/geo-intelligence.js?v=40"></script>
+  <script src="js/modules/phenology-engine.js?v=40"></script>
   <script src="js/detail-panel.js?v=36"></script>
   <script src="js/command-palette.js?v=36"></script>
   <script src="js/gallery.js?v=36"></script>

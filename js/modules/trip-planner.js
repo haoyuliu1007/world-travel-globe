@@ -50,6 +50,46 @@
     return ordered;
   }
 
+  function twoOptOptimize(spots) {
+    if (!Array.isArray(spots) || spots.length < 4) return Array.isArray(spots) ? spots.slice() : [];
+    const route = spots.slice();
+    const dist = (a, b) => (a && a.coords && b && b.coords ? haversineKm(a.coords, b.coords) : 0);
+    let improved = true;
+    let guard = 0;
+    while (improved && guard < 120) {
+      improved = false;
+      guard++;
+      for (let i = 0; i < route.length - 2; i++) {
+        for (let k = i + 2; k < route.length; k++) {
+          const cur = dist(route[i], route[i + 1]) + (k + 1 < route.length ? dist(route[k], route[k + 1]) : 0);
+          const next = dist(route[i], route[k]) + (k + 1 < route.length ? dist(route[i + 1], route[k + 1]) : 0);
+          if (next + 1e-6 < cur) {
+            const seg = route.slice(i + 1, k + 1).reverse();
+            route.splice(i + 1, seg.length, ...seg);
+            improved = true;
+          }
+        }
+      }
+    }
+    return route;
+  }
+
+  function lightSlotScore(stop) {
+    const txt = `${(stop && stop.bestTime) || ''} ${(stop && stop.name) || ''}`;
+    if (/日出|清晨|黎明|晨雾|蓝调晨|上午|sunrise|dawn|morning/i.test(txt)) return 1;
+    if (/正午|午后|下午|midday|afternoon/i.test(txt)) return 2;
+    if (/日落|夕阳|黄昏|傍晚|蓝调昏|夜景|星空|银河|极光|sunset|dusk|night|milky/i.test(txt)) return 3;
+    return 2;
+  }
+
+  function orderDayStopsByLight(stops) {
+    if (!Array.isArray(stops) || stops.length <= 1) return Array.isArray(stops) ? stops.slice() : [];
+    return stops
+      .map((s, idx) => ({ s, idx, slot: lightSlotScore(s) }))
+      .sort((a, b) => (a.slot - b.slot) || (a.idx - b.idx))
+      .map((x) => x.s);
+  }
+
   function generateTripPlan(opts) {
     const dest = opts.dest;
     const days = Math.max(1, Math.min(14, Number(opts.days) || 4));
@@ -64,7 +104,7 @@
       if (interest === 'architecture') return /建筑|馆|塔|桥|寺|城|街|宫|教堂/.test(`${sp.category} ${sp.name} ${sp.scene}`);
       return true;
     });
-    const pool = nearestNeighborSort(filtered.length >= 2 ? filtered : rawSpots);
+    const pool = twoOptOptimize(nearestNeighborSort(filtered.length >= 2 ? filtered : rawSpots));
 
     const dayBuckets = Array.from({ length: days }, (_, idx) => ({
       day: idx + 1,
@@ -85,7 +125,11 @@
       });
     });
 
-    // Seed budget from destination comfort tier scaled to user budget, or balanced default
+    dayBuckets.forEach((dy) => {
+      dy.stops = orderDayStopsByLight(dy.stops);
+    });
+
+    // Seed budget from destination comfort tier scaled to user budget (explicitly marked estimated)
     let budgetItems = [];
     const comfortItems = dest && dest.budget && dest.budget.comfort && Array.isArray(dest.budget.comfort.items)
       ? dest.budget.comfort.items
@@ -97,14 +141,15 @@
         id: `bi_${idx}`,
         category: it.category || '消费',
         detail: it.detail || '',
-        cost: Math.round((Number(it.cost) || 0) * ratio)
+        cost: Math.round((Number(it.cost) || 0) * ratio),
+        priceType: 'estimated'
       }));
     } else {
       budgetItems = [
-        { id: 'bi_1', category: '交通与接驳', detail: '城际/当地交通预算', cost: Math.round(budgetRmb * 0.35) },
-        { id: 'bi_2', category: '住宿体验', detail: `${days} 晚精选住宿`, cost: Math.round(budgetRmb * 0.35) },
-        { id: 'bi_3', category: '餐饮美食', detail: '当地特色风味', cost: Math.round(budgetRmb * 0.18) },
-        { id: 'bi_4', category: '门票向导', detail: '景点预约与活动', cost: Math.round(budgetRmb * 0.12) }
+        { id: 'bi_1', category: '交通与接驳', detail: '城际/当地交通估算', cost: Math.round(budgetRmb * 0.35), priceType: 'estimated' },
+        { id: 'bi_2', category: '住宿体验', detail: `${days} 晚精选住宿估算`, cost: Math.round(budgetRmb * 0.35), priceType: 'estimated' },
+        { id: 'bi_3', category: '餐饮美食', detail: '当地特色风味估算', cost: Math.round(budgetRmb * 0.18), priceType: 'estimated' },
+        { id: 'bi_4', category: '门票向导', detail: '景点预约与活动估算', cost: Math.round(budgetRmb * 0.12), priceType: 'estimated' }
       ];
     }
 
@@ -746,6 +791,8 @@
 
   return {
     generateTripPlan,
+    twoOptOptimize,
+    orderDayStopsByLight,
     serializeTripToUrl,
     deserializeTripFromParam,
     tripToCsv,

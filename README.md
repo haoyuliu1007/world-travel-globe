@@ -1,23 +1,42 @@
 <div align="center">
 
-# 🌍 World Travel Globe · 全球旅行地理图鉴 (v3.8)
+# 🌍 World Travel Globe · 全球旅行地理图鉴 (v4.0 — Geo Intelligence)
 
-**覆盖七大洲 · 137 个国家/地区 · 722 座精选目的地 · 5,414 个精准摄影机位的 3D 交互卫星地球仪平台**
+**覆盖七大洲 · 137 个国家/地区 · 722 座精选目的地 · 5,414 个精准摄影机位的全球地理智能与三维探索平台**
 
-[![Version](https://img.shields.io/badge/Version-v3.8.0-e0c38e?style=flat-square&labelColor=0b101b)](docs/CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Version-v4.0.0-e0c38e?style=flat-square&labelColor=0b101b)](docs/CHANGELOG.md)
 [![Countries](https://img.shields.io/badge/Countries%20%26%20Regions-137-4f8cff?style=flat-square&labelColor=0b101b)](#核心功能矩阵)
 [![Destinations](https://img.shields.io/badge/Destinations-722-5b5ff9?style=flat-square&labelColor=0b101b)](#核心功能矩阵)
 [![Photo Spots](https://img.shields.io/badge/Photo%20Spots-5%2C414-8b5cf6?style=flat-square&labelColor=0b101b)](#核心功能矩阵)
 [![MapLibre](https://img.shields.io/badge/MapLibre%20GL-v5-2768f5?style=flat-square&labelColor=0b101b)](https://maplibre.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-10b981?style=flat-square&labelColor=0b101b)](docs/THIRD_PARTY_LICENSES.md)
 
-[🌐 在线体验 (Cloudflare 边缘加速)](https://world-travel-globe.globe-app.workers.dev) · [📄 GitHub Pages 镜像](https://haoyuliu1007.github.io/world-travel-globe/) · [📜 v3.8 更新日志](docs/CHANGELOG.md)
+[🌐 在线体验 (Cloudflare 边缘加速)](https://world-travel-globe.globe-app.workers.dev) · [📄 GitHub Pages 镜像](https://haoyuliu1007.github.io/world-travel-globe/) · [📜 v4.0 更新日志](docs/CHANGELOG.md)
 
 </div>
 
 ---
 
-## ✨ v3.8 里程碑亮点 (What's New in v3.8)
+## ✨ v4.0 里程碑亮点 (Geo Intelligence)
+
+- **真实 3D 空间与自然奇观图层 (`Terrain3DModule` + `BrightStars`)**
+  - 一键开启 **AWS Terrarium 3D 真实地形**（`1.0× / 1.35× / 1.8×` 起伏倍率与山体阴影）、**`maplibre-contour` 矢量等高线**、**OpenFreeMap 3D 城市建筑 (`fill-extrusion`)**、**NASA VIIRS Black Marble 暗夜灯光** 与 **NOAA SWPC OVATION 30 分钟实时极光带**。
+  - 基于 Hipparcos/Yale J2000 真实亮星表与实时格林尼治恒星时（GMST），3D 背景星穹随地球经纬与时间精准对齐。
+- **第一人称 3D 取景器 & 前端 DEM 地形遮挡 (`Viewfinder3D` + `PhotoSimulator` + `Astronomy Engine`)**
+  - 新增 **全画幅 / APS-C / M4/3 / 中画幅** 与 `14mm–200mm` 焦距光学视场模拟，联动地球仪视场扇形。
+  - 在浏览器端直接解码周边 Terrarium DEM 瓦片计算 360° 山体遮挡轮廓，实时推演地形遮挡修正后的实际日出/日落（“日照金山”时刻），并结合 `Astronomy Engine` 算出银河核心 (Sgr A*) 方位/仰角与天文黑夜 (-18°) 观测窗口。
+  - 点击任意机位「3D 取景」即可进入全屏透明 HUD 取景器，顶部动态指南针标尺实时追踪太阳、日出、日落与银河核心方位。
+- **免密钥 Panoramax 360° 全景探索 (`StreetViewModule`)**
+  - 优先接入 **Panoramax** 免 Token 开放街景，内置零外部依赖原生 WebGL 等距柱状 360° 全景浏览器，支持上下站序列漫游与地球仪朝向联动（保留 `Panoramax → Mapillary → Wikimedia → 外部地图` 降级链路）。
+- **Geo Intelligence 自然语言搜索 & 科学物候预测 (`GeoIntelligence` + `PhenologyEngine`)**
+  - 接入 `MiniSearch v7.1.1` 中英文分词检索与结构化自然语言意图解析（自动识别月份/季节、预算上限、天数、大洲、16 类景观标签与少雨偏好），输出带推荐理由与不确定性说明的可解释结果及轻量知识图谱关联。
+  - 建立只读原始数据外的无损增强层 `data/enrichment/atlas-enrichment.json`，支持分景观物候评估（春花/秋叶/冰雪/极光地磁纬/银河星历）与地球仪动态季节前沿热力图。
+- **智能行程 2-opt 优化 & CRDT 多设备无损同步 (`TripPlanner` + `ProfileCRDT`)**
+  - 行程自动规划新增 2-opt 路径去交叉优化与早晚光影时段排序；私人档案云同步新增 LWW-Element-Set CRDT 无损冲突合并。
+
+---
+
+## ✨ v3.8 空间交互基础 (Retained in v4.0)
 
 - **中轴灵动岛 + 四象限平衡空间布局 (Spatial Island UI)**
   - 桌面端重构为三段式顶部灵动岛：左岛（默认收起的 722 城清单胶囊 + 筛选 + 收藏）、中轴岛（地球/图鉴/规划/档案 + `⌘K` 搜索）、右岛（独立高亮的「🎵 电台」+ 外观 + 三语），让 3D 地球稳居绝对视觉中心。
@@ -110,6 +129,9 @@ node scripts/dev-server.js
 ## 📚 延伸文档与归属
 
 - [版本更新日志 (CHANGELOG)](docs/CHANGELOG.md)
+- [V4.0 系统架构说明 (ARCHITECTURE)](docs/ARCHITECTURE.md)
+- [科学数据源与治理说明 (DATA_SOURCES)](docs/DATA_SOURCES.md)
+- [V4.0 验收报告 (V4_ACCEPTANCE_REPORT)](docs/V4_ACCEPTANCE_REPORT.md)
 - [API 接入、密钥配置与双平台部署指南](docs/API_AND_DEPLOY.md)
 - [地理数据结构与字段规范 (DATA_SCHEMA)](docs/DATA_SCHEMA.md)
 - [宇宙开场片源与配乐说明 (Film & Audio Credits)](assets/cosmic-intro/credits.html)

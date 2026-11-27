@@ -2,13 +2,27 @@
   'use strict';
 
   const DEG2RAD = Math.PI / 180;
+  const SENSOR_PRESETS = {
+    fullFrame: { id: 'fullFrame', label: '全画幅 35mm', w: 36.0, h: 24.0, aspect: '3:2' },
+    apsc: { id: 'apsc', label: 'APS-C (1.5×)', w: 23.5, h: 15.6, aspect: '3:2' },
+    m43: { id: 'm43', label: 'M4/3 (2.0×)', w: 17.3, h: 13.0, aspect: '4:3' },
+    medium: { id: 'medium', label: '中画幅 44×33', w: 43.8, h: 32.9, aspect: '4:3' },
+    custom: { id: 'custom', label: '自定义', w: 36.0, h: 24.0, aspect: '3:2' }
+  };
+  const FOCAL_PRESETS = [14, 24, 35, 50, 85, 135, 200];
+  const horizonCache = new Map();
+
   let state = {
     destId: null,
     spotIdx: -1,
     dateStr: new Date().toISOString().slice(0, 10),
     minutes: new Date().getHours() * 60 + new Date().getMinutes(),
     cameraAzimuth: 180,
-    showOnGlobe: true
+    showOnGlobe: true,
+    sensorKey: 'fullFrame',
+    focalMm: 24,
+    customW: 36.0,
+    customH: 24.0
   };
 
   function esc(str) {
@@ -40,7 +54,6 @@
     if (sunAlt < -6) return { label: '天文暗夜 / 星空窗口', badge: '夜间' };
     if (sunAlt < 0) return { label: '曙暮光 / 蓝调时刻', badge: '蓝调' };
     const diff = Math.abs((((sunAz - camAz) % 360) + 540) % 360 - 180);
-    // diff = 0 means sun is behind subject (camera facing sun -> backlit); diff = 180 means sun is behind camera (front-lit)
     if (diff <= 28) return { label: '正逆光 · 剪影/轮廓光绝佳 (注意眩光)', badge: '逆光' };
     if (diff <= 65) return { label: '侧逆光 · 立体质感与水面反光强', badge: '侧逆光' };
     if (diff <= 115) return { label: '90° 侧光 · 建筑与山体明暗对比强烈', badge: '侧光' };
@@ -57,6 +70,112 @@
     if (phase < 0.72) return '亏凸月 Waning Gibbous';
     if (phase < 0.78) return '下弦月 Last Quarter';
     return '残月 Waning Crescent';
+  }
+
+  /**
+   * Compute exact rectilinear camera FOV angles from focal length & sensor size.
+   */
+  function computeLensFov(focalMm, sensorKey, customSensor) {
+    const preset = SENSOR_PRESETS[sensorKey] || SENSOR_PRESETS.fullFrame;
+    const w = sensorKey === 'custom' && customSensor && Number(customSensor.w) > 1
+      ? Number(customSensor.w)
+      : preset.w;
+    const h = sensorKey === 'custom' && customSensor && Number(customSensor.h) > 1
+      ? Number(customSensor.h)
+      : preset.h;
+    const f = Math.max(4, Math.min(1200, Number(focalMm) || 24));
+    const diag = Math.hypot(w, h);
+    const ffDiag = Math.hypot(36, 24);
+    const cropFactor = Number((ffDiag / diag).toFixed(2));
+    const hFov = Number((2 * Math.atan(w / (2 * f)) * (180 / Math.PI)).toFixed(2));
+    const vFov = Number((2 * Math.atan(h / (2 * f)) * (180 / Math.PI)).toFixed(2));
+    const dFov = Number((2 * Math.atan(diag / (2 * f)) * (180 / Math.PI)).toFixed(2));
+    return {
+      sensorKey: preset.id,
+      sensorLabel: preset.label,
+      sensorW: w,
+      sensorH: h,
+      aspect: preset.aspect,
+      focalMm: f,
+      eqFocalMm: Math.round(f * (ffDiag / diag)),
+      cropFactor,
+      hFov,
+      vFov,
+      dFov
+    };
+  }
+
+  /**
+   * Compute Astronomy Engine ephemeris extras: Galactic Center position,
+   * astronomical night bounds (-18° sun altitude), and tonight's Milky Way window.
+   */
+  function computeAstronomyExtras(lat, lng, dateStr, minutes, astroRef) {
+    const A = astroRef || global.Astronomy;
+    if (!A || typeof A.Observer !== 'function' || typeof A.Horizon !== 'function') {
+      return { available: false };
+    }
+    const [y, m, d] = String(dateStr || '').split('-').map(Number);
+    const yr = y || 2026;
+    const mo = (m || 6) - 1;
+    const dy = d || 21;
+    const hh = Math.floor((minutes || 0) / 60);
+    const mm = (minutes || 0) % 60;
+    const dt = new Date(yr, mo, dy, hh, mm, 0);
+    const obs = new A.Observer(lat, lng, 0);
+
+    // Galactic Center (Sagittarius A* J2000: RA 17.7611h, Dec -29.0078°)
+    const gcNow = A.Horizon(dt, obs, 17.7611, -29.0078, 'normal');
+
+    let astroDusk = null;
+    let astroDawn = null;
+    try {
+      const noonLocal = new Date(yr, mo, dy, 12, 0, 0);
+      const duskRes = A.SearchAltitude(A.Body.Sun, obs, -1, noonLocal, 1, -18);
+      if (duskRes && duskRes.date) astroDusk = duskRes.date;
+      const midnightLocal = new Date(yr, mo, dy, 23, 30, 0);
+      const dawnRes = A.SearchAltitude(A.Body.Sun, obs, 1, midnightLocal, 1, -18);
+      if (dawnRes && dawnRes.date) astroDawn = dawnRes.date;
+    } catch (e) {
+      // Polar day/night or search boundary
+    }
+
+    // Scan tonight (18:00 -> next day 06:00) in 20m steps for dark-sky Galactic Center window
+    let bestStart = null;
+    let bestEnd = null;
+    let curStart = null;
+    let peakAlt = -90;
+    let peakAz = 0;
+
+    for (let offsetMin = 18 * 60; offsetMin <= 30 * 60; offsetMin += 20) {
+      const sampleDt = new Date(yr, mo, dy, Math.floor(offsetMin / 60), offsetMin % 60, 0);
+      const eqSun = A.Equator(A.Body.Sun, sampleDt, obs, true, true);
+      const sunH = A.Horizon(sampleDt, obs, eqSun.ra, eqSun.dec, 'normal');
+      const gcH = A.Horizon(sampleDt, obs, 17.7611, -29.0078, 'normal');
+
+      if (sunH.altitude <= -12 && gcH.altitude >= 10) {
+        if (!curStart) curStart = sampleDt;
+        if (!bestStart) bestStart = sampleDt;
+        bestEnd = sampleDt;
+        if (gcH.altitude > peakAlt) {
+          peakAlt = gcH.altitude;
+          peakAz = gcH.azimuth;
+        }
+      } else if (curStart && bestEnd) {
+        break;
+      }
+    }
+
+    return {
+      available: true,
+      gcAzimuth: Number(gcNow.azimuth.toFixed(1)),
+      gcAltitude: Number(gcNow.altitude.toFixed(1)),
+      astroDusk,
+      astroDawn,
+      mwWindowStart: bestStart,
+      mwWindowEnd: bestEnd,
+      mwPeakAlt: peakAlt > -90 ? Number(peakAlt.toFixed(1)) : null,
+      mwPeakAz: peakAlt > -90 ? Number(peakAz.toFixed(1)) : null
+    };
   }
 
   function destPoint(lng, lat, bearingDeg, distKm) {
@@ -105,6 +224,7 @@
     }
 
     const lightRelation = classifyLightAngle(sunPos.azimuth, cameraAzimuth, sunPos.altitude);
+    const astroExtras = computeAstronomyExtras(lat, lng, dateStr, minutes);
 
     return {
       dt,
@@ -116,11 +236,12 @@
       moonIllum,
       moonTimes,
       curve,
-      lightRelation
+      lightRelation,
+      astroExtras
     };
   }
 
-  function buildCompassSvg(sim, cameraAzimuth) {
+  function buildCompassSvg(sim, cameraAzimuth, hFov) {
     const cx = 96;
     const cy = 96;
     const r = 74;
@@ -129,13 +250,22 @@
       return [cx + Math.cos(a) * rad, cy + Math.sin(a) * rad];
     };
 
-    const fov1 = polar(cameraAzimuth - 24, r);
-    const fov2 = polar(cameraAzimuth + 24, r);
-    const fovPath = `M ${cx} ${cy} L ${fov1[0].toFixed(1)} ${fov1[1].toFixed(1)} A ${r} ${r} 0 0 1 ${fov2[0].toFixed(1)} ${fov2[1].toFixed(1)} Z`;
+    const halfFov = Math.max(4, Math.min(68, (Number(hFov) || 48) / 2));
+    const fov1 = polar(cameraAzimuth - halfFov, r);
+    const fov2 = polar(cameraAzimuth + halfFov, r);
+    const largeArc = halfFov * 2 > 180 ? 1 : 0;
+    const fovPath = `M ${cx} ${cy} L ${fov1[0].toFixed(1)} ${fov1[1].toFixed(1)} A ${r} ${r} 0 ${largeArc} 1 ${fov2[0].toFixed(1)} ${fov2[1].toFixed(1)} Z`;
 
     const [camX, camY] = polar(cameraAzimuth, r - 4);
     const [sunX, sunY] = polar(sim.sunPos.azimuth, r - 6);
     const [moonX, moonY] = polar(sim.moonPos.azimuth, r - 18);
+
+    const gcDot = sim.astroExtras && sim.astroExtras.available
+      ? (() => {
+          const [gx, gy] = polar(sim.astroExtras.gcAzimuth, r - 24);
+          return `<circle cx="${gx.toFixed(1)}" cy="${gy.toFixed(1)}" r="3.6" fill="#A78BFA" stroke="#09090B" stroke-width="1" />`;
+        })()
+      : '';
 
     const srLine = sim.sunrisePos
       ? (() => {
@@ -154,13 +284,14 @@
       <svg width="192" height="192" viewBox="0 0 192 192" aria-label="太阳方位与机位朝向罗盘">
         <circle cx="${cx}" cy="${cy}" r="${r}" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.16)" stroke-width="1" />
         <circle cx="${cx}" cy="${cy}" r="${r * 0.55}" fill="none" stroke="rgba(255,255,255,0.08)" stroke-dasharray="2 3" />
-        <path d="${fovPath}" fill="rgba(56,189,248,0.18)" stroke="rgba(56,189,248,0.6)" stroke-width="1" />
+        <path d="${fovPath}" fill="rgba(56,189,248,0.20)" stroke="rgba(56,189,248,0.68)" stroke-width="1" />
         ${srLine}
         ${ssLine}
         <line x1="${cx}" y1="${cy}" x2="${camX.toFixed(1)}" y2="${camY.toFixed(1)}" stroke="#38BDF8" stroke-width="2" />
         <line x1="${cx}" y1="${cy}" x2="${sunX.toFixed(1)}" y2="${sunY.toFixed(1)}" stroke="#F59E0B" stroke-width="2.4" />
         <circle cx="${sunX.toFixed(1)}" cy="${sunY.toFixed(1)}" r="6" fill="${sim.sunPos.altitude >= 0 ? '#FBBF24' : '#71717A'}" stroke="#09090B" stroke-width="1.5" />
         <circle cx="${moonX.toFixed(1)}" cy="${moonY.toFixed(1)}" r="4.5" fill="#E2E8F0" stroke="#09090B" stroke-width="1" />
+        ${gcDot}
         <text x="${cx}" y="14" text-anchor="middle" fill="#A1A1AA" font-size="10">N 0°</text>
         <text x="180" y="${cy + 3}" text-anchor="middle" fill="#A1A1AA" font-size="10">E</text>
         <text x="${cx}" y="185" text-anchor="middle" fill="#A1A1AA" font-size="10">S</text>
@@ -197,7 +328,34 @@
     `;
   }
 
-  function updateGlobeOverlay(coords, sim, cameraAzimuth) {
+  function buildHorizonProfileSvg(profile, camAz) {
+    if (!Array.isArray(profile) || !profile.length) return '';
+    const w = 310;
+    const h = 68;
+    const baseY = 58;
+    const maxScaleDeg = Math.max(15, Math.min(45, Math.max(...profile.map((p) => p.maxAngleDeg)) + 4));
+    const pts = profile.map((p) => {
+      const x = (p.az / 360) * w;
+      const y = baseY - (Math.max(0, p.maxAngleDeg) / maxScaleDeg) * 46;
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    });
+    const poly = `0,${baseY} ${pts.join(' ')} ${w},${baseY}`;
+    const camX = (((camAz % 360) + 360) % 360) / 360 * w;
+    return `
+      <svg width="100%" height="${h}" viewBox="0 0 ${w} ${h}" style="display:block;width:100%;height:${h}px;margin-top:6px;" aria-label="360度真实地形地平线遮挡剖面">
+        <polygon points="${poly}" fill="rgba(226,192,125,0.22)" stroke="#E2C07D" stroke-width="1.4" />
+        <line x1="${camX.toFixed(1)}" y1="6" x2="${camX.toFixed(1)}" y2="${baseY}" stroke="#38BDF8" stroke-width="1.2" stroke-dasharray="2 2" />
+        <text x="4" y="13" fill="#A1A1AA" font-size="9">+${Math.round(maxScaleDeg)}°</text>
+        <text x="4" y="${h - 2}" fill="#A1A1AA" font-size="8.5">N</text>
+        <text x="${w * 0.25 - 4}" y="${h - 2}" fill="#A1A1AA" font-size="8.5">E</text>
+        <text x="${w * 0.5 - 4}" y="${h - 2}" fill="#A1A1AA" font-size="8.5">S</text>
+        <text x="${w * 0.75 - 4}" y="${h - 2}" fill="#A1A1AA" font-size="8.5">W</text>
+        <text x="${w - 10}" y="${h - 2}" fill="#A1A1AA" font-size="8.5">N</text>
+      </svg>
+    `;
+  }
+
+  function updateGlobeOverlay(coords, sim, cameraAzimuth, hFov) {
     const map = typeof global.getGlobeMap === 'function' ? global.getGlobeMap() : null;
     if (!map || !map.isStyleLoaded()) return;
 
@@ -230,8 +388,10 @@
       geometry: { type: 'LineString', coordinates: [[lng, lat], destPoint(lng, lat, sim.sunPos.azimuth, rayDistKm * 1.15)] }
     });
 
+    const halfFov = Math.max(4, Math.min(68, (Number(hFov) || 48) / 2));
     const fovPoly = [[lng, lat]];
-    for (let a = -24; a <= 24; a += 6) {
+    const step = Math.max(2, halfFov / 4);
+    for (let a = -halfFov; a <= halfFov + 0.01; a += step) {
       fovPoly.push(destPoint(lng, lat, cameraAzimuth + a, rayDistKm * 0.85));
     }
     fovPoly.push([lng, lat]);
@@ -290,6 +450,7 @@
     const coords = (activeSpot && activeSpot.coords) || dest.coords;
     if (!Array.isArray(coords) || coords.length < 2) return;
 
+    const lensFov = computeLensFov(state.focalMm, state.sensorKey, { w: state.customW, h: state.customH });
     const sim = computeSimulation(coords[1], coords[0], state.dateStr, state.minutes, state.cameraAzimuth);
     if (!sim) {
       containerEl.innerHTML = `<div class="sim-card">SunCalc 天文库未就绪。</div>`;
@@ -302,6 +463,36 @@
       ...spots.map((s, idx) => `<option value="${idx}" ${state.spotIdx === idx ? 'selected' : ''}>机位 ${idx + 1} · ${esc(s.name)}</option>`)
     ].join('');
 
+    const sensorOptions = Object.values(SENSOR_PRESETS)
+      .map((s) => `<option value="${s.id}" ${state.sensorKey === s.id ? 'selected' : ''}>${esc(s.label)}</option>`)
+      .join('');
+
+    const astro = sim.astroExtras;
+    const mwCardHtml = astro && astro.available
+      ? `
+        <div class="sim-card">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap;">
+            <strong>${icon('sparkles', 14)} 星空与银河摄影窗口</strong>
+            <span class="source-tag astronomy">Astronomy Engine</span>
+          </div>
+          <div style="font-size:11.5px;line-height:1.65;margin-top:6px;">
+            <div>银河核心 (Sgr A*)：方位 <strong class="mono-num">${astro.gcAzimuth}°</strong> (${compassDirName(astro.gcAzimuth)}) · 高度 <strong class="mono-num">${astro.gcAltitude}°</strong></div>
+            <div>天文黑夜 (-18°)：<strong class="mono-num">${fmtTime(astro.astroDusk)}</strong> — <strong class="mono-num">${fmtTime(astro.astroDawn)}</strong></div>
+            <div>今晚银心可拍窗口：${
+              astro.mwWindowStart && astro.mwWindowEnd
+                ? `<strong class="mono-num">${fmtTime(astro.mwWindowStart)}–${fmtTime(astro.mwWindowEnd)}</strong> (最高仰角 <span class="mono-num">${astro.mwPeakAlt}°</span> @ ${astro.mwPeakAz}°)`
+                : '<span style="color:var(--text-secondary);">当晚银心高度偏低或极昼无天文黑夜</span>'
+            }</div>
+            <div style="color:var(--text-secondary);">月光干扰参考：照明度 <span class="mono-num">${Math.round(sim.moonIllum.fraction * 100)}%</span> (${sim.moonIllum.fraction < 0.25 ? '弱光极佳' : sim.moonIllum.fraction < 0.65 ? '中等干扰' : '强月光明显'})</div>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">
+            <button class="mini-action-pill" id="sim-toggle-blackmarble" type="button">${icon('moon', 12)} 暗夜灯光图层</button>
+            <button class="mini-action-pill" id="sim-toggle-aurora" type="button">${icon('aurora', 12)} 实时极光带</button>
+          </div>
+        </div>
+      `
+      : '';
+
     containerEl.innerHTML = `
       <div class="sim-card">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap;">
@@ -309,8 +500,11 @@
           <span class="source-tag astronomy">天文计算 · SunCalc</span>
         </div>
 
-        <div style="margin-top:8px;">
-          <select class="sim-input" id="sim-spot-select" aria-label="选择模拟机位">${targetOptions}</select>
+        <div style="margin-top:8px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+          <select class="sim-input" id="sim-spot-select" style="flex:1;min-width:140px;" aria-label="选择模拟机位">${targetOptions}</select>
+          <button class="mini-action-pill sim-vf-launch" id="sim-open-viewfinder-btn" type="button">
+            ${icon('camera', 12)} 3D 取景器
+          </button>
         </div>
 
         <div class="sim-controls-row">
@@ -331,8 +525,20 @@
           <button class="mini-action-pill sim-preset-btn" data-preset="dusk" type="button">蓝调昏</button>
         </div>
 
+        <div class="sim-lens-bar">
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:space-between;">
+            <select class="sim-input" id="sim-sensor-select" style="width:auto;min-width:128px;height:28px;font-size:11.5px;" aria-label="传感器画幅">${sensorOptions}</select>
+            <span class="mono-num" style="font-size:11px;color:var(--text-secondary);">
+              视角 ${lensFov.hFov.toFixed(1)}°×${lensFov.vFov.toFixed(1)}° · 等效 ${lensFov.eqFocalMm}mm
+            </span>
+          </div>
+          <div class="sim-focal-pills">
+            ${FOCAL_PRESETS.map((f) => `<button class="mini-action-pill sim-focal-btn ${state.focalMm === f ? 'active' : ''}" data-focal="${f}" type="button">${f}mm</button>`).join('')}
+          </div>
+        </div>
+
         <div class="sim-compass-wrap">
-          ${buildCompassSvg(sim, state.cameraAzimuth)}
+          ${buildCompassSvg(sim, state.cameraAzimuth, lensFov.hFov)}
           <div style="flex:1;min-width:155px;font-size:11.5px;line-height:1.6;">
             <div>太阳方位：<strong class="mono-num">${sim.sunPos.azimuth.toFixed(1)}°</strong> (${compassDirName(sim.sunPos.azimuth)})</div>
             <div>太阳高度：<strong class="mono-num">${sim.sunPos.altitude.toFixed(1)}°</strong></div>
@@ -373,6 +579,18 @@
         </div>
       </div>
 
+      <div class="sim-card" id="sim-terrain-box">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap;">
+          <strong>${icon('mountain', 14)} 真实地形遮挡与日照金山推演</strong>
+          <span class="source-tag astronomy">DEM 射线采样</span>
+        </div>
+        <div id="sim-terrain-status" style="font-size:11.5px;color:var(--text-secondary);margin-top:6px;">
+          正在读取周边 AWS Terrarium DEM 高程瓦片计算 360° 山体遮挡…
+        </div>
+      </div>
+
+      ${mwCardHtml}
+
       <div class="sim-card" id="sim-advice-box">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
           <strong>拍摄窗口综合建议</strong>
@@ -393,7 +611,7 @@
       </div>
     `;
 
-    updateGlobeOverlay(coords, sim, state.cameraAzimuth);
+    updateGlobeOverlay(coords, sim, state.cameraAzimuth, lensFov.hFov);
 
     const rerender = () => mount(dest, containerEl, state.spotIdx);
 
@@ -415,9 +633,19 @@
       state.cameraAzimuth = Number(e.target.value);
       rerender();
     });
+    containerEl.querySelector('#sim-sensor-select').addEventListener('change', (e) => {
+      state.sensorKey = e.target.value;
+      rerender();
+    });
+    containerEl.querySelectorAll('.sim-focal-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        state.focalMm = Number(btn.dataset.focal) || 24;
+        rerender();
+      });
+    });
     containerEl.querySelector('#sim-globe-toggle').addEventListener('change', (e) => {
       state.showOnGlobe = e.target.checked;
-      updateGlobeOverlay(coords, sim, state.cameraAzimuth);
+      updateGlobeOverlay(coords, sim, state.cameraAzimuth, lensFov.hFov);
     });
     containerEl.querySelector('#sim-align-cam-btn').addEventListener('click', () => {
       const m = typeof global.getGlobeMap === 'function' ? global.getGlobeMap() : null;
@@ -426,6 +654,43 @@
         rerender();
       }
     });
+
+    const vfBtn = containerEl.querySelector('#sim-open-viewfinder-btn');
+    if (vfBtn) {
+      vfBtn.addEventListener('click', () => {
+        if (global.Viewfinder3D) {
+          global.Viewfinder3D.open(dest, activeSpot, {
+            spotIdx: state.spotIdx,
+            dateStr: state.dateStr,
+            minutes: state.minutes,
+            bearing: state.cameraAzimuth,
+            sensorKey: state.sensorKey,
+            focalMm: state.focalMm
+          });
+        }
+      });
+    }
+
+    const bmBtn = containerEl.querySelector('#sim-toggle-blackmarble');
+    if (bmBtn) {
+      bmBtn.addEventListener('click', () => {
+        const m = typeof global.getGlobeMap === 'function' ? global.getGlobeMap() : null;
+        if (m && global.Terrain3DModule) {
+          const on = global.Terrain3DModule.toggleNightLights(m);
+          bmBtn.classList.toggle('active', on);
+        }
+      });
+    }
+    const auBtn = containerEl.querySelector('#sim-toggle-aurora');
+    if (auBtn) {
+      auBtn.addEventListener('click', async () => {
+        const m = typeof global.getGlobeMap === 'function' ? global.getGlobeMap() : null;
+        if (m && global.Terrain3DModule) {
+          const on = await global.Terrain3DModule.toggleAurora(m);
+          auBtn.classList.toggle('active', on);
+        }
+      });
+    }
 
     containerEl.querySelectorAll('.sim-preset-btn').forEach((btn) => {
       btn.addEventListener('click', () => {
@@ -445,6 +710,46 @@
       });
     });
 
+    // Terrain Horizon Obstruction (cached per spot coordinate)
+    const terrainEl = containerEl.querySelector('#sim-terrain-status');
+    if (terrainEl && global.Terrain3DModule) {
+      const hKey = `${coords[1].toFixed(4)},${coords[0].toFixed(4)}`;
+      const renderHorizonResult = (hRes) => {
+        if (!document.body.contains(terrainEl)) return;
+        if (!hRes || !hRes.available) {
+          terrainEl.innerHTML = `<span class="source-tag empirical">DEM 暂不可用</span> 无法获取高程瓦片（离线或受限），仅显示几何地平线日出日落。`;
+          return;
+        }
+        const adj = global.Terrain3DModule.estimateTerrainAdjustedSunTimes(
+          coords[1],
+          coords[0],
+          state.dateStr,
+          hRes.profile,
+          global.SunCalc
+        );
+        terrainEl.innerHTML = `
+          <div>观测点高程 <strong class="mono-num">${hRes.observerElevation}m</strong> · 最大山脊仰角 <strong class="mono-num">${hRes.maxObstacleDeg}°</strong> · ${esc(hRes.demSource || 'Terrarium DEM')}</div>
+          ${
+            adj
+              ? `<div style="margin-top:3px;">地形修正日出：<strong class="mono-num">${fmtTime(adj.adjSunrise)}</strong> (较几何晚 <span class="mono-num">+${adj.sunriseDelayMin}</span> 分钟) · 修正日落：<strong class="mono-num">${fmtTime(adj.adjSunset)}</strong> (提前 <span class="mono-num">-${adj.sunsetEarlyMin}</span> 分钟)</div>`
+              : ''
+          }
+          ${buildHorizonProfileSvg(hRes.profile, state.cameraAzimuth)}
+        `;
+      };
+
+      if (horizonCache.has(hKey)) {
+        renderHorizonResult(horizonCache.get(hKey));
+      } else {
+        global.Terrain3DModule.computeTerrainHorizon(coords[1], coords[0])
+          .then((hRes) => {
+            if (hRes && hRes.available) horizonCache.set(hKey, hRes);
+            renderHorizonResult(hRes);
+          })
+          .catch(() => renderHorizonResult(null));
+      }
+    }
+
     // Weather-aware advice when within 7-day Open-Meteo window
     const wxAdviceEl = containerEl.querySelector('#sim-wx-advice');
     if (wxAdviceEl && global.WeatherService) {
@@ -453,7 +758,7 @@
         if (!document.body.contains(wxAdviceEl)) return;
         const hourly = live && live.hourly;
         const targetPrefix = `${state.dateStr}T${String(Math.floor(state.minutes / 60)).padStart(2, '0')}`;
-        let idx = hourly && Array.isArray(hourly.time) ? hourly.time.findIndex((t) => t.startsWith(targetPrefix)) : -1;
+        const idx = hourly && Array.isArray(hourly.time) ? hourly.time.findIndex((t) => t.startsWith(targetPrefix)) : -1;
         if (idx >= 0) {
           const cc = hourly.cloud_cover[idx];
           const pop = hourly.precipitation_probability[idx];
@@ -474,10 +779,19 @@
     }
   }
 
-  global.PhotoSimulator = {
+  const api = {
+    SENSOR_PRESETS,
+    FOCAL_PRESETS,
     computeSimulation,
     classifyLightAngle,
+    computeLensFov,
+    computeAstronomyExtras,
     mount,
     clearGlobeOverlay
   };
-})(window);
+
+  global.PhotoSimulator = api;
+  if (typeof module === 'object' && module.exports) {
+    module.exports = api;
+  }
+})(typeof window !== 'undefined' ? window : globalThis);

@@ -49,32 +49,48 @@
     return [
       null,
       {
-        selector: '.search-capsule',
+        selector: '.dock-center-island',
         titleKey: 'tourStep1Title',
         descKey: 'tourStep1Desc',
         pad: 6,
         radius: '999px',
         legend: [
+          ['globe', 'modeMap'],
+          ['compass', 'modeGallery'],
+          ['route', 'modePlanner'],
+          ['bookmark', 'modeArchive'],
+          ['search', 'tourLegSearch']
+        ]
+      },
+      {
+        selector: '.dock-left-island',
+        titleKey: 'tourStep2Title',
+        descKey: 'tourStep2Desc',
+        pad: 6,
+        radius: '999px',
+        legend: [
           ['list', 'tourLegList'],
-          ['search', 'tourLegSearch'],
           ['sliders', 'tourLegFilter'],
-          ['bookmark', 'tourLegFav'],
+          ['bookmark', 'tourLegFav']
+        ]
+      },
+      {
+        selector: '.dock-right-island',
+        titleKey: 'tourStep3Title',
+        descKey: 'tourStep3Desc',
+        pad: 6,
+        radius: '999px',
+        legend: [
+          ['music', 'tourLegRadio'],
           ['sun', 'tourLegTheme'],
           ['languages', 'tourLegLang']
         ]
       },
       {
-        selector: '.mode-switch',
-        titleKey: 'tourStep2Title',
-        descKey: 'tourStep2Desc',
-        pad: 6,
-        radius: '999px'
-      },
-      {
         selector: '#map',
         isGlobeCenter: true,
-        titleKey: 'tourStep3Title',
-        descKey: 'tourStep3Desc',
+        titleKey: 'tourStep4Title',
+        descKey: 'tourStep4Desc',
         pad: 0,
         radius: '50%',
         dots: [
@@ -84,15 +100,15 @@
       },
       {
         selector: '#phenology-bar',
-        titleKey: 'tourStep4Title',
-        descKey: 'tourStep4Desc',
+        titleKey: 'tourStep5Title',
+        descKey: 'tourStep5Desc',
         pad: 6,
         radius: '999px'
       },
       {
         selector: '#globe-controls',
-        titleKey: 'tourStep5Title',
-        descKey: 'tourStep5Desc',
+        titleKey: 'tourStep6Title',
+        descKey: 'tourStep6Desc',
         pad: 6,
         radius: '999px',
         legend: [
@@ -161,7 +177,7 @@
     rootEl.querySelector('#tour-welcome-skip-btn').addEventListener('click', () => close());
     rootEl.querySelector('#tour-cm-skip-btn').addEventListener('click', () => close());
     rootEl.querySelector('#tour-cm-next-btn').addEventListener('click', () => {
-      if (currentStep >= 5) close();
+      if (currentStep >= 6) close();
       else goToStep(currentStep + 1);
     });
 
@@ -170,7 +186,7 @@
     });
 
     global.addEventListener('resize', () => {
-      if (active && currentStep >= 1 && currentStep <= 5) {
+      if (active && currentStep >= 1 && currentStep <= 6) {
         positionStep(currentStep);
       }
     });
@@ -188,10 +204,10 @@
             e.preventDefault();
             e.stopImmediatePropagation();
             goToStep(1);
-          } else if (currentStep >= 1 && currentStep <= 5 && e.key === 'ArrowRight') {
+          } else if (currentStep >= 1 && currentStep <= 6 && e.key === 'ArrowRight') {
             e.preventDefault();
             e.stopImmediatePropagation();
-            if (currentStep >= 5) close();
+            if (currentStep >= 6) close();
             else goToStep(currentStep + 1);
           }
         } else if (e.key === 'ArrowLeft' && currentStep > 1) {
@@ -213,6 +229,7 @@
     const rows = [
       { icon: 'globe', cls: 'is-gold', title: t('tourFeat1Title'), desc: t('tourFeat1Desc') },
       { icon: 'sun', cls: 'is-blue', title: t('tourFeat2Title'), desc: t('tourFeat2Desc') },
+      { icon: 'music', cls: 'is-purple', title: t('tourFeat4Title'), desc: t('tourFeat4Desc') },
       { icon: 'route', cls: 'is-green', title: t('tourFeat3Title'), desc: t('tourFeat3Desc') }
     ];
 
@@ -340,7 +357,7 @@
       return;
     }
 
-    if (nextStep < 1 || nextStep > 5) {
+    if (nextStep < 1 || nextStep > 6) {
       close();
       return;
     }
@@ -368,10 +385,10 @@
     }
 
     const dotsEl = coachmarkEl.querySelector('#tour-cm-dots');
-    dotsEl.innerHTML = [1, 2, 3, 4, 5]
+    dotsEl.innerHTML = [1, 2, 3, 4, 5, 6]
       .map(
         (i) =>
-          `<button type="button" class="tour-dot-btn ${i === nextStep ? 'active' : ''}" data-tour-dot="${i}" aria-label="${i}/5"></button>`
+          `<button type="button" class="tour-dot-btn ${i === nextStep ? 'active' : ''}" data-tour-dot="${i}" aria-label="${i}/6"></button>`
       )
       .join('');
     dotsEl.querySelectorAll('[data-tour-dot]').forEach((btn) => {
@@ -379,7 +396,7 @@
     });
 
     coachmarkEl.querySelector('#tour-cm-skip-btn').textContent = t('tourSkip');
-    coachmarkEl.querySelector('#tour-cm-next-btn').textContent = nextStep === 5 ? t('tourFinish') : t('tourNext');
+    coachmarkEl.querySelector('#tour-cm-next-btn').textContent = nextStep === 6 ? t('tourFinish') : t('tourNext');
 
     positionStep(nextStep);
   }

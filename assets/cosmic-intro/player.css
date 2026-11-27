@@ -114,12 +114,12 @@ html.cosmic-intro-boot #globe-loader { opacity: 0 !important; pointer-events: no
 .cosmic-film-controls kbd { color: #bfc6d0; font-size: 11px; margin-inline-start: 3px; }
 .cosmic-options { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
 #cosmic-credits { color: var(--text-main, currentColor); font-size: 13px; }
-html.cosmic-stage :is(#space-backdrop,#topbar,#left-sidebar,#phenology-bar,#globe-controls,#globe-label-canvas) { opacity: 0; }
-html.cosmic-stage.cosmic-tools :is(#space-backdrop,#topbar,#left-sidebar,#phenology-bar,#globe-controls) { opacity: 1; }
-html.cosmic-motion :is(#space-backdrop,#topbar,#left-sidebar,#phenology-bar,#globe-controls,#globe-label-canvas) {
+html.cosmic-stage :is(#space-backdrop,#topbar,#left-sidebar,#phenology-bar,#orbit-rail,#globe-controls,#atlas-stats-line,#globe-label-canvas) { opacity: 0; }
+html.cosmic-stage.cosmic-tools :is(#space-backdrop,#topbar,#left-sidebar,#phenology-bar,#orbit-rail,#globe-controls,#atlas-stats-line) { opacity: 1; }
+html.cosmic-motion :is(#space-backdrop,#topbar,#left-sidebar,#phenology-bar,#orbit-rail,#globe-controls,#atlas-stats-line,#globe-label-canvas) {
   transition: opacity 230ms ease;
 }
 @media (prefers-reduced-motion: reduce) {
-  #cosmic-intro, #cosmic-intro.is-exiting, #cosmic-intro.is-exiting-fast, #cosmic-film, #cosmic-loading, html.cosmic-motion :is(#space-backdrop,#topbar,#left-sidebar,#phenology-bar,#globe-controls,#globe-label-canvas) { transition: none; }
+  #cosmic-intro, #cosmic-intro.is-exiting, #cosmic-intro.is-exiting-fast, #cosmic-film, #cosmic-loading, html.cosmic-motion :is(#space-backdrop,#topbar,#left-sidebar,#phenology-bar,#orbit-rail,#globe-controls,#atlas-stats-line,#globe-label-canvas) { transition: none; }
   .cosmic-loading-ring { animation: none; }
 }

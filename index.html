@@ -14,10 +14,10 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <title>World Travel Globe · 全球旅行地理图鉴</title>
   <link rel="stylesheet" href="vendor/maplibre-gl.css" />
-  <link rel="stylesheet" href="css/styles.css?v=39" />
-  <link rel="stylesheet" href="css/upgrades.css?v=38" />
+  <link rel="stylesheet" href="css/styles.css?v=40" />
+  <link rel="stylesheet" href="css/upgrades.css?v=39" />
   <link rel="stylesheet" href="assets/prologue/prologue.css?v=5" />
-  <link rel="stylesheet" href="assets/cosmic-intro/player.css?v=8" />
+  <link rel="stylesheet" href="assets/cosmic-intro/player.css?v=9" />
   <script>
   (function () {
     try {
@@ -86,17 +86,12 @@
 
   <div id="story-prologue" class="story-prologue" role="dialog" aria-modal="true" aria-label="探索序章" hidden></div>
 
-  <!-- Top-Left Floating Spatial Command Cluster (Google Earth / Apple Maps Pattern) -->
+  <!-- Top Spatial Islands: Left Directory/Filter · Center Nav/Search · Right Radio/Appearance -->
   <header class="top-dock" id="topbar">
-    <div class="search-capsule">
-      <button class="capsule-icon-btn" id="sidebar-toggle-btn" type="button" aria-label="展开或收起目的地清单" title="目的地清单">
-        <span data-icon="list" data-size="16"></span>
-      </button>
-
-      <button class="cmd-trigger" id="open-palette-btn" type="button" aria-label="搜索全球目的地与机位 (Ctrl+K 或 /)">
-        <span class="cmd-trigger-icon" data-icon="search" data-size="15"></span>
-        <span class="cmd-trigger-text" data-i18n="searchPlaceholderShort">搜索 722 城与 5,414 机位…</span>
-        <kbd class="cmd-kbd">⌘K</kbd>
+    <div class="dock-island dock-left-island">
+      <button class="capsule-pill-btn" id="sidebar-toggle-btn" type="button" aria-label="展开或收起目的地清单" title="目的地清单">
+        <span data-icon="list" data-size="15"></span>
+        <span class="sidebar-toggle-label" data-i18n="sidebarToggleLabel">清单</span>
       </button>
 
       <div class="capsule-sep"></div>
@@ -109,6 +104,31 @@
       <button class="capsule-icon-btn" id="favorites-toggle-btn" type="button" aria-pressed="false" aria-label="仅看收藏目的地" title="收藏">
         <span data-icon="bookmark" data-size="15"></span>
         <span class="fav-dot is-hidden" id="favorites-count-badge">0</span>
+      </button>
+    </div>
+
+    <div class="dock-island dock-center-island">
+      <div class="mode-switch" role="tablist" aria-label="视图模式">
+        <button class="mode-btn active" id="mode-map-btn" type="button" role="tab" aria-selected="true" data-i18n="modeMap">地球</button>
+        <button class="mode-btn" id="mode-gallery-btn" type="button" role="tab" aria-selected="false" data-i18n="modeGallery">图鉴</button>
+        <button class="mode-btn" id="mode-planner-btn" type="button" role="tab" aria-selected="false" data-i18n="modePlanner">规划</button>
+        <button class="mode-btn" id="mode-archive-btn" type="button" role="tab" aria-selected="false" data-i18n="modeArchive">档案</button>
+      </div>
+
+      <div class="capsule-sep"></div>
+
+      <button class="cmd-trigger" id="open-palette-btn" type="button" aria-label="搜索全球目的地与机位 (Ctrl+K 或 /)">
+        <span class="cmd-trigger-icon" data-icon="search" data-size="15"></span>
+        <span class="cmd-trigger-text" data-i18n="searchPlaceholderShort">搜索 722 城与 5,414 机位…</span>
+        <kbd class="cmd-kbd">⌘K</kbd>
+      </button>
+    </div>
+
+    <div class="dock-island dock-right-island">
+      <button class="capsule-pill-btn music-trigger-btn" id="music-popover-btn" type="button" aria-expanded="false" aria-controls="music-popover" aria-label="全球氛围电台" title="氛围配乐">
+        <span data-icon="music" data-size="15"></span>
+        <span class="radio-pill-label" data-i18n="radioPillLabel">电台</span>
+        <span class="music-playing-dot is-hidden" id="music-playing-dot" aria-hidden="true"></span>
       </button>
 
       <div class="capsule-sep"></div>
@@ -123,15 +143,6 @@
         <span class="lang-code-badge mono-num" id="lang-code-badge">简</span>
       </button>
     </div>
-
-    <div class="mode-switch" role="tablist" aria-label="视图模式">
-      <button class="mode-btn active" id="mode-map-btn" type="button" role="tab" aria-selected="true" data-i18n="modeMap">地球</button>
-      <button class="mode-btn" id="mode-gallery-btn" type="button" role="tab" aria-selected="false" data-i18n="modeGallery">图鉴</button>
-      <button class="mode-btn" id="mode-planner-btn" type="button" role="tab" aria-selected="false" data-i18n="modePlanner">规划</button>
-      <button class="mode-btn" id="mode-archive-btn" type="button" role="tab" aria-selected="false" data-i18n="modeArchive">档案</button>
-    </div>
-
-    <span class="atlas-micro-stat mono-num hide-xs" id="atlas-stats-line">722 城 · 5,414 机位</span>
   </header>
 
   <!-- Appearance & Theme Color Studio Popover -->
@@ -248,44 +259,44 @@
     <div class="sidebar-list" id="sidebar-list"></div>
   </aside>
 
+  <!-- Bottom-Left Quiet Atlas Stat -->
+  <span class="atlas-micro-stat mono-num hide-xs" id="atlas-stats-line">722 城 · 5,414 机位</span>
+
   <!-- Bottom-Center Slim 12-Month Phenology Scrubber -->
   <section class="phenology-bar" id="phenology-bar" aria-label="全球物候月份轴">
     <div class="phenology-track" id="phenology-track" role="radiogroup" aria-label="选择月份"></div>
     <span class="phenology-hemi mono-num" id="phenology-hemi-hint">全年</span>
   </section>
 
-  <!-- Bottom-Right Compact Apple/Google Earth Control Cluster -->
-  <div class="globe-controls" id="globe-controls" aria-label="底图与视角控制">
-    <button class="ctrl-icon-btn layers-trigger-btn" id="layers-popover-btn" type="button" aria-expanded="false" aria-controls="layers-popover" aria-label="地图图层与工具" title="地图图层与工具">
-      <span data-icon="layers" data-size="15"></span>
-      <span class="layers-active-dot is-hidden" id="layers-active-badge"></span>
+  <!-- Right-Center Vertical Orbit & Zoom Rail -->
+  <div class="orbit-rail" id="orbit-rail" aria-label="视角与缩放微操">
+    <button class="ctrl-icon-btn active" id="toggle-proj-btn" type="button" aria-label="3D 球体 / 2D 平面" title="3D / 2D">
+      <span data-icon="box3d" data-size="14"></span>
     </button>
-    <button class="ctrl-icon-btn music-trigger-btn" id="music-popover-btn" type="button" aria-expanded="false" aria-controls="music-popover" aria-label="全球氛围电台" title="氛围配乐">
-      <span data-icon="music" data-size="15"></span>
-      <span class="music-playing-dot is-hidden" id="music-playing-dot" aria-hidden="true"></span>
+    <button class="ctrl-icon-btn" id="toggle-spin-btn" type="button" aria-label="地球自转" title="自转">
+      <span data-icon="rotateCw" data-size="14"></span>
     </button>
-    <div class="divider-v"></div>
-    <div class="action-switcher">
-      <button class="ctrl-icon-btn active" id="toggle-proj-btn" type="button" aria-label="3D 球体 / 2D 平面" title="3D / 2D">
-        <span data-icon="box3d" data-size="14"></span>
-      </button>
-      <button class="ctrl-icon-btn" id="toggle-spin-btn" type="button" aria-label="地球自转" title="自转">
-        <span data-icon="rotateCw" data-size="14"></span>
-      </button>
-      <button class="ctrl-icon-btn" id="toggle-fullscreen-btn" type="button" aria-label="全屏探索模式" title="全屏探索 (F)">
-        <span data-icon="maximize" data-size="14"></span>
-      </button>
-    </div>
-    <div class="divider-v"></div>
-    <button class="ctrl-btn" id="fly-china-btn" type="button" title="中国视角" data-i18n="flyChina">中国</button>
-    <button class="ctrl-btn" id="fly-global-btn" type="button" title="全球视角" data-i18n="flyGlobal">全球</button>
-    <div class="divider-v hide-xs"></div>
+    <button class="ctrl-icon-btn" id="toggle-fullscreen-btn" type="button" aria-label="全屏探索模式" title="全屏探索 (F)">
+      <span data-icon="maximize" data-size="14"></span>
+    </button>
+    <div class="divider-h hide-xs"></div>
     <button class="ctrl-icon-btn hide-xs" id="zoom-in-btn" type="button" aria-label="放大" title="放大">
       <span data-icon="plus" data-size="14"></span>
     </button>
     <button class="ctrl-icon-btn hide-xs" id="zoom-out-btn" type="button" aria-label="缩小" title="缩小">
       <span data-icon="minus" data-size="14"></span>
     </button>
+  </div>
+
+  <!-- Bottom-Right Compact Layers & Region Cluster -->
+  <div class="globe-controls" id="globe-controls" aria-label="底图与视角控制">
+    <button class="ctrl-icon-btn layers-trigger-btn" id="layers-popover-btn" type="button" aria-expanded="false" aria-controls="layers-popover" aria-label="地图图层与工具" title="地图图层与工具">
+      <span data-icon="layers" data-size="15"></span>
+      <span class="layers-active-dot is-hidden" id="layers-active-badge"></span>
+    </button>
+    <div class="divider-v"></div>
+    <button class="ctrl-btn" id="fly-china-btn" type="button" title="中国视角" data-i18n="flyChina">中国</button>
+    <button class="ctrl-btn" id="fly-global-btn" type="button" title="全球视角" data-i18n="flyGlobal">全球</button>
   </div>
 
   <!-- Map Layers & Tools Popover -->
@@ -566,7 +577,7 @@
   <script src="data/africa_antarctica/antarctica_subantarctic.js?v=10"></script>
   <!-- App Logic & Services -->
   <script src="js/icons.js?v=38"></script>
-  <script src="js/i18n.js?v=39"></script>
+  <script src="js/i18n.js?v=40"></script>
   <script src="js/theme.js?v=36"></script>
   <script src="js/services/lazy-loader.js?v=36"></script>
   <script src="js/services/storage-db.js?v=36"></script>
@@ -583,11 +594,11 @@
   <script src="js/modules/trip-planner.js?v=36"></script>
   <script src="js/modules/travel-archive.js?v=36"></script>
   <script src="js/modules/diagnostics.js?v=36"></script>
-  <script src="js/modules/onboarding-tour.js?v=38"></script>
+  <script src="js/modules/onboarding-tour.js?v=39"></script>
   <script src="js/modules/ambient-radio.js?v=38"></script>
   <script src="js/detail-panel.js?v=36"></script>
   <script src="js/command-palette.js?v=36"></script>
   <script src="js/gallery.js?v=36"></script>
-  <script src="js/app.js?v=41"></script>
+  <script src="js/app.js?v=42"></script>
 </body>
 </html>

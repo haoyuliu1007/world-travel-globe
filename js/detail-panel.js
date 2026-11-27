@@ -141,6 +141,11 @@
         drawer.classList.remove('is-hidden');
         this.setSheetState('half');
       }
+      const scrollEl = document.getElementById('drawer-scroll');
+      if (scrollEl) {
+        scrollEl.scrollTop = 0;
+        scrollEl.classList.remove('is-scrolled');
+      }
       document.body.classList.add('drawer-open');
     },
 
@@ -435,7 +440,15 @@
         });
       }
 
-      body.scrollTop = 0;
+      const scrollEl = document.getElementById('drawer-scroll');
+      const headerEl = document.getElementById('drawer-header');
+      if (scrollEl && headerEl) {
+        if (scrollEl.scrollTop > headerEl.offsetHeight) {
+          scrollEl.scrollTop = headerEl.offsetHeight;
+        }
+      } else {
+        body.scrollTop = 0;
+      }
     },
 
     buildPendingHtml: function (dest) {
@@ -737,7 +750,41 @@
     handle.addEventListener('pointercancel', finishDrag);
   }
 
-  document.addEventListener('DOMContentLoaded', bindMobileSheetGesture);
+  function bindDrawerScrollUX() {
+    const scrollEl = document.getElementById('drawer-scroll');
+    const drawer = document.getElementById('detail-drawer');
+    if (scrollEl && drawer) {
+      scrollEl.addEventListener(
+        'scroll',
+        () => {
+          const top = scrollEl.scrollTop;
+          scrollEl.classList.toggle('is-scrolled', top > 120);
+          if (
+            global.innerWidth <= 768 &&
+            top > 20 &&
+            DetailPanel.sheetState === 'half' &&
+            !drawer.classList.contains('is-dragging')
+          ) {
+            DetailPanel.setSheetState('full');
+          }
+        },
+        { passive: true }
+      );
+    }
+    const stickyCloseBtn = document.getElementById('drawer-sticky-close-btn');
+    if (stickyCloseBtn) {
+      stickyCloseBtn.addEventListener('click', () => {
+        const primaryCloseBtn = document.getElementById('drawer-close-btn');
+        if (primaryCloseBtn) primaryCloseBtn.click();
+        else DetailPanel.close();
+      });
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    bindMobileSheetGesture();
+    bindDrawerScrollUX();
+  });
 
   global.DetailPanel = DetailPanel;
 })(window);

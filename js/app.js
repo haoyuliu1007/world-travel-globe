@@ -1238,8 +1238,14 @@
     if (labelCanvas) return;
     labelCanvas = document.createElement('canvas');
     labelCanvas.id = 'globe-label-canvas';
-    labelCanvas.style.cssText = 'position:fixed;inset:0;z-index:5;pointer-events:none;';
-    document.body.insertBefore(labelCanvas, document.getElementById('topbar'));
+    const mapHost = document.getElementById('map');
+    if (mapHost) {
+      labelCanvas.style.cssText = 'position:absolute;inset:0;z-index:1;pointer-events:none;';
+      mapHost.appendChild(labelCanvas);
+    } else {
+      labelCanvas.style.cssText = 'position:fixed;inset:0;z-index:2;pointer-events:none;';
+      document.body.insertBefore(labelCanvas, document.getElementById('topbar'));
+    }
     labelCtx = labelCanvas.getContext('2d');
     resizeLabelCanvas();
   }
@@ -1247,8 +1253,9 @@
   function resizeLabelCanvas() {
     if (!labelCanvas || !labelCtx) return;
     const dpr = Math.min(global.devicePixelRatio || 1, 2);
-    const w = global.innerWidth;
-    const h = global.innerHeight;
+    const parent = labelCanvas.parentElement;
+    const w = (parent && parent.clientWidth) || global.innerWidth;
+    const h = (parent && parent.clientHeight) || global.innerHeight;
     if (labelCanvas.width !== Math.round(w * dpr) || labelCanvas.height !== Math.round(h * dpr)) {
       labelCanvas.width = Math.round(w * dpr);
       labelCanvas.height = Math.round(h * dpr);
@@ -1303,8 +1310,9 @@
   function layoutVisibleLabels() {
     if (!map || !labelCanvas || !labelCtx) return;
     resizeLabelCanvas();
-    const w = global.innerWidth;
-    const h = global.innerHeight;
+    const parent = labelCanvas.parentElement;
+    const w = (parent && parent.clientWidth) || global.innerWidth;
+    const h = (parent && parent.clientHeight) || global.innerHeight;
     labelCtx.clearRect(0, 0, w, h);
     drawnLabelBoxes = [];
     const occupiedBoxes = [];

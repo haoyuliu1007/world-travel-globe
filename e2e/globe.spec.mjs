@@ -361,6 +361,71 @@ async function run() {
     }
     report.scenarios.push('10. Multi-viewport responsive & touch target audit');
 
+    // 11. Label canvas stacking inside #map + unified drawer scroll (desktop & mobile)
+    const deskCtx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    const deskPage = await deskCtx.newPage();
+    deskPage.on('pageerror', (err) => pageErrors.push(`desktop-scroll: ${err}`));
+    await attachFastNetworkStubs(deskPage, baseUrl);
+    await deskPage.goto(`${baseUrl}/?instant=1&focus=jp-kanto-tokyo`, { waitUntil: 'load' });
+    await deskPage.waitForSelector('#detail-drawer:not(.is-hidden) #drawer-scroll', { timeout: 12000 });
+    await deskPage.waitForTimeout(300);
+
+    const deskMetrics = await deskPage.evaluate(async () => {
+      const lc = document.querySelector('#map #globe-label-canvas');
+      const lcZ = lc ? getComputedStyle(lc).zIndex : '';
+      const drawer = document.getElementById('detail-drawer');
+      const scrollEl = document.getElementById('drawer-scroll');
+      const hero = document.getElementById('drawer-hero-banner');
+      const tabsBar = document.getElementById('drawer-tabs-bar');
+      const header = document.getElementById('drawer-header');
+      const drawerTop = drawer.getBoundingClientRect().top;
+      const topBefore = hero.getBoundingClientRect().top;
+      scrollEl.scrollTop = Math.max(580, (header ? header.offsetHeight : 440) + 120);
+      await new Promise((r) => setTimeout(r, 140));
+      const topAfter = hero.getBoundingClientRect().top;
+      const tabsTop = tabsBar.getBoundingClientRect().top;
+      return {
+        hasCanvasInMap: Boolean(lc),
+        lcZ,
+        topBefore,
+        topAfter,
+        drawerTop,
+        tabsTop,
+        isScrolled: scrollEl.classList.contains('is-scrolled')
+      };
+    });
+    assert.ok(deskMetrics.hasCanvasInMap && deskMetrics.lcZ === '1', `Expected #map #globe-label-canvas with z-index 1, got ${JSON.stringify(deskMetrics)}`);
+    assert.ok(deskMetrics.topAfter < deskMetrics.topBefore - 100, `Expected hero banner to scroll up cleanly: ${deskMetrics.topBefore} -> ${deskMetrics.topAfter}`);
+    assert.ok(Math.abs(deskMetrics.tabsTop - deskMetrics.drawerTop) <= 6, `Expected #drawer-tabs-bar sticky at top (${deskMetrics.tabsTop} vs ${deskMetrics.drawerTop})`);
+    assert.ok(deskMetrics.isScrolled, 'Expected #drawer-scroll to receive .is-scrolled');
+    await deskCtx.close();
+
+    const mobCtx = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    const mobPage = await mobCtx.newPage();
+    mobPage.on('pageerror', (err) => pageErrors.push(`mobile-scroll: ${err}`));
+    await attachFastNetworkStubs(mobPage, baseUrl);
+    await mobPage.goto(`${baseUrl}/?instant=1&focus=jp-kanto-tokyo`, { waitUntil: 'load' });
+    await mobPage.waitForSelector('#detail-drawer:not(.is-hidden) #drawer-scroll', { timeout: 12000 });
+    await mobPage.waitForTimeout(300);
+
+    const mobMetrics = await mobPage.evaluate(async () => {
+      const drawer = document.getElementById('detail-drawer');
+      const scrollEl = document.getElementById('drawer-scroll');
+      const stateBefore = drawer.getAttribute('data-sheet-state');
+      scrollEl.scrollTop = 220;
+      await new Promise((r) => setTimeout(r, 250));
+      return {
+        stateBefore,
+        stateAfter: drawer.getAttribute('data-sheet-state'),
+        isScrolled: scrollEl.classList.contains('is-scrolled')
+      };
+    });
+    assert.equal(mobMetrics.stateBefore, 'half', 'Expected mobile drawer initial state to be half');
+    assert.equal(mobMetrics.stateAfter, 'full', 'Expected scrolling down on mobile drawer to auto-expand to full');
+    assert.ok(mobMetrics.isScrolled, 'Expected mobile #drawer-scroll to receive .is-scrolled');
+    await mobCtx.close();
+    report.scenarios.push('11. Map label stacking inside #map & unified drawer scroll (desktop + mobile auto-expand)');
+
     assert.equal(pageErrors.length, 0, `Uncaught pageerrors occurred: ${pageErrors.join(' | ')}`);
     await ctx.close();
 

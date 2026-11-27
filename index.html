@@ -430,55 +430,59 @@
       <span class="drag-pill"></span>
     </div>
 
-    <div class="drawer-header" id="drawer-header">
-      <div class="drawer-hero-banner" id="drawer-hero-banner">
-        <div class="drawer-hero-bg" id="drawer-hero-bg"></div>
-        <div class="drawer-hero-scrim" aria-hidden="true"></div>
-        <div class="drawer-nav-row">
-          <div class="breadcrumb" id="drawer-breadcrumb"></div>
-          <div class="drawer-win-actions">
-            <button id="drawer-fav-btn" class="icon-btn" type="button" aria-label="收藏目的地" data-i18n-aria="ariaBookmarkDest" title="收藏" data-i18n-title="galFav">
-              <span data-icon="bookmark" data-size="14"></span>
-            </button>
-            <button id="poster-dest-btn" class="icon-btn" type="button" aria-label="生成旅行海报" data-i18n-aria="posterBtn" title="生成旅行海报" data-i18n-title="posterBtn">
-              <span data-icon="image" data-size="14"></span>
-            </button>
-            <button id="share-dest-btn" class="icon-btn" type="button" aria-label="复制直达链接" data-i18n-aria="plannerShareLink" title="分享链接" data-i18n-title="plannerShareLink">
-              <span data-icon="share" data-size="14"></span>
-            </button>
-            <button id="embed-dest-btn" class="icon-btn" type="button" aria-label="复制嵌入式地球代码" data-i18n-aria="embedBtn" title="嵌入网页 iframe" data-i18n-title="embedBtn">
-              <span data-icon="globe" data-size="14"></span>
-            </button>
-            <button id="prev-dest-btn" class="icon-btn" type="button" aria-label="上一站" data-i18n-aria="ariaPrevDest" title="上一站" data-i18n-title="ariaPrevDest">
-              <span data-icon="chevronLeft" data-size="15"></span>
-            </button>
-            <button id="next-dest-btn" class="icon-btn" type="button" aria-label="下一站" data-i18n-aria="ariaNextDest" title="下一站" data-i18n-title="ariaNextDest">
-              <span data-icon="chevronRight" data-size="15"></span>
-            </button>
-            <button id="drawer-expand-btn" class="icon-btn mobile-only" type="button" aria-label="展开或收起" data-i18n-aria="ariaDrawerExpand" title="切换高度" data-i18n-title="ariaDrawerExpand">
-              <span data-icon="maximize" data-size="14"></span>
-            </button>
-            <button id="drawer-close-btn" class="icon-btn" type="button" aria-label="关闭 (Esc)" data-i18n-aria="paletteClose" title="关闭" data-i18n-title="paletteClose">
-              <span data-icon="x" data-size="15"></span>
-            </button>
+    <div class="drawer-scroll-container" id="drawer-scroll">
+      <div class="drawer-header" id="drawer-header">
+        <div class="drawer-hero-banner" id="drawer-hero-banner">
+          <div class="drawer-hero-bg" id="drawer-hero-bg"></div>
+          <div class="drawer-hero-scrim" aria-hidden="true"></div>
+          <div class="drawer-nav-row">
+            <div class="breadcrumb" id="drawer-breadcrumb"></div>
+            <div class="drawer-win-actions">
+              <button id="drawer-fav-btn" class="icon-btn" type="button" aria-label="收藏目的地" data-i18n-aria="ariaBookmarkDest" title="收藏" data-i18n-title="galFav">
+                <span data-icon="bookmark" data-size="14"></span>
+              </button>
+              <button id="poster-dest-btn" class="icon-btn" type="button" aria-label="生成旅行海报" data-i18n-aria="posterBtn" title="生成旅行海报" data-i18n-title="posterBtn">
+                <span data-icon="image" data-size="14"></span>
+              </button>
+              <button id="share-dest-btn" class="icon-btn" type="button" aria-label="复制直达链接" data-i18n-aria="plannerShareLink" title="分享链接" data-i18n-title="plannerShareLink">
+                <span data-icon="share" data-size="14"></span>
+              </button>
+              <button id="embed-dest-btn" class="icon-btn" type="button" aria-label="复制嵌入式地球代码" data-i18n-aria="embedBtn" title="嵌入网页 iframe" data-i18n-title="embedBtn">
+                <span data-icon="globe" data-size="14"></span>
+              </button>
+              <button id="prev-dest-btn" class="icon-btn" type="button" aria-label="上一站" data-i18n-aria="ariaPrevDest" title="上一站" data-i18n-title="ariaPrevDest">
+                <span data-icon="chevronLeft" data-size="15"></span>
+              </button>
+              <button id="next-dest-btn" class="icon-btn" type="button" aria-label="下一站" data-i18n-aria="ariaNextDest" title="下一站" data-i18n-title="ariaNextDest">
+                <span data-icon="chevronRight" data-size="15"></span>
+              </button>
+              <button id="drawer-expand-btn" class="icon-btn mobile-only" type="button" aria-label="展开或收起" data-i18n-aria="ariaDrawerExpand" title="切换高度" data-i18n-title="ariaDrawerExpand">
+                <span data-icon="maximize" data-size="14"></span>
+              </button>
+              <button id="drawer-close-btn" class="icon-btn" type="button" aria-label="关闭 (Esc)" data-i18n-aria="paletteClose" title="关闭" data-i18n-title="paletteClose">
+                <span data-icon="x" data-size="15"></span>
+              </button>
+            </div>
+          </div>
+
+          <div class="drawer-title-block">
+            <div class="drawer-kicker-row">
+              <span class="kicker-tag" id="drawer-allweather-badge"></span>
+              <span class="kicker-coords mono-num" id="drawer-hero-coords"></span>
+            </div>
+            <h2 id="drawer-title"></h2>
+            <p class="drawer-subtitle" id="drawer-subtitle"></p>
           </div>
         </div>
 
-        <div class="drawer-title-block">
-          <div class="drawer-kicker-row">
-            <span class="kicker-tag" id="drawer-allweather-badge"></span>
-            <span class="kicker-coords mono-num" id="drawer-hero-coords"></span>
-          </div>
-          <h2 id="drawer-title"></h2>
-          <p class="drawer-subtitle" id="drawer-subtitle"></p>
+        <div class="drawer-header-body">
+          <div class="drawer-meta-line" id="drawer-meta-strip"></div>
+          <div class="hero-phenology-ribbon" id="drawer-phenology-ribbon" aria-label="12个月最佳观赏指数" data-i18n-aria="ariaPhenologyRibbon"></div>
+          <p class="drawer-hero-summary" id="drawer-hero-summary"></p>
         </div>
       </div>
 
-      <div class="drawer-header-body">
-        <div class="drawer-meta-line" id="drawer-meta-strip"></div>
-        <div class="hero-phenology-ribbon" id="drawer-phenology-ribbon" aria-label="12个月最佳观赏指数" data-i18n-aria="ariaPhenologyRibbon"></div>
-        <p class="drawer-hero-summary" id="drawer-hero-summary"></p>
-
+      <div class="drawer-tabs-bar" id="drawer-tabs-bar">
         <div class="drawer-tabs" id="drawer-tabs" role="tablist">
           <button class="tab-btn active" data-tab="spots" type="button" role="tab" aria-selected="true">
             <span data-i18n="tabSpots">机位</span> <span class="tab-count mono-num" id="tab-spots-count"></span>
@@ -489,10 +493,13 @@
           <button class="tab-btn" data-tab="budget" type="button" role="tab" aria-selected="false" data-i18n="tabBudget">预算</button>
           <button class="tab-btn" data-tab="itinerary" type="button" role="tab" aria-selected="false" data-i18n="tabItinerary">动线</button>
         </div>
+        <button id="drawer-sticky-close-btn" class="icon-btn drawer-sticky-close" type="button" aria-label="关闭 (Esc)" data-i18n-aria="paletteClose" title="关闭" data-i18n-title="paletteClose">
+          <span data-icon="x" data-size="14"></span>
+        </button>
       </div>
-    </div>
 
-    <div class="drawer-body" id="detail-body"></div>
+      <div class="drawer-body" id="detail-body"></div>
+    </div>
   </aside>
 
   <!-- Global Aesthetic Gallery View -->

@@ -30,6 +30,28 @@ test('CSS layout invariants prevent drawer-topbar overlap and popover overflow',
 
   // Aurora status pill must hide during viewfinder & fullscreen
   assert.ok(upgradesCss.includes('body.viewfinder-active .aurora-status-pill'));
+
+  // Label canvas must mount inside #map below hover popups
+  const appJs = fs.readFileSync(path.join(rootDir, 'js', 'app.js'), 'utf8');
+  assert.ok(
+    appJs.includes("mapHost.appendChild(labelCanvas)") && !appJs.includes("inset:0;z-index:5;pointer-events:none"),
+    'Expected #globe-label-canvas to mount inside #map below popups'
+  );
+  const popupRule = stylesCss.match(/\.maplibregl-popup\s*\{[\s\S]*?\}/);
+  const popupZ = popupRule && popupRule[0].match(/z-index:\s*(\d+)/);
+  assert.ok(popupZ && Number(popupZ[1]) >= 10, `Expected .maplibregl-popup z-index >= 10, got ${popupZ && popupZ[1]}`);
+
+  // Detail drawer must unify scrolling so hero/summary scroll away and #drawer-tabs-bar sticks
+  const indexHtml = fs.readFileSync(path.join(rootDir, 'index.html'), 'utf8');
+  const scrollIdx = indexHtml.indexOf('id="drawer-scroll"');
+  const headerIdx = indexHtml.indexOf('id="drawer-header"');
+  const tabsBarIdx = indexHtml.indexOf('id="drawer-tabs-bar"');
+  const bodyIdx = indexHtml.indexOf('id="detail-body"');
+  assert.ok(scrollIdx > 0 && headerIdx > scrollIdx && tabsBarIdx > headerIdx && bodyIdx > tabsBarIdx, 'Expected #drawer-scroll wrapping #drawer-header, #drawer-tabs-bar, and #detail-body');
+  const scrollContainerRule = stylesCss.match(/\.drawer-scroll-container\s*\{[\s\S]*?\}/);
+  assert.ok(scrollContainerRule && scrollContainerRule[0].includes('overflow-y: auto'), 'Expected .drawer-scroll-container overflow-y: auto');
+  const tabsBarRule = stylesCss.match(/\.drawer-tabs-bar\s*\{[\s\S]*?\}/);
+  assert.ok(tabsBarRule && tabsBarRule[0].includes('position: sticky'), 'Expected .drawer-tabs-bar position: sticky');
 });
 
 test('MediaWikidataService filters food/logo photos and prioritizes landmark scenery', () => {

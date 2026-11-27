@@ -50,7 +50,6 @@ function main() {
 
   // Copy static runtime assets (keep lazy-loaded assets like echarts & web workers)
   const assetCopies = [
-    ['assets/space-backdrop.jpg', 'assets/space-backdrop.jpg'],
     ['vendor/maplibre-gl.js', 'vendor/maplibre-gl.js'],
     ['vendor/echarts.min.js', 'vendor/echarts.min.js'],
     ['manifest.webmanifest', 'manifest.webmanifest']

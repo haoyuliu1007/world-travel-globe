@@ -19,8 +19,13 @@
   let instNearViewport = false;
   let returnFocusEl = null;
   let bgmUnsub = null;
-  let slideObserver = null;
-  let navRaf = 0;
+  let leaveTimer = 0;
+  let wheelLockUntil = 0;
+  let wheelAccum = 0;
+  let wheelAccumTimer = 0;
+  let touchStartY = 0;
+  let touchStartX = 0;
+  let touchTracking = false;
   const inertNodes = new Set();
 
   let refs = {};
@@ -357,61 +362,150 @@
       if (global.CosmicBGM) global.CosmicBGM.toggleMute();
     });
 
-    root.addEventListener('scroll', onScroll, { passive: true });
     global.addEventListener('resize', () => {
       if (isOpen) resizeInst();
     });
   }
 
-  function goToSlide(idx) {
-    const clamped = Math.max(0, Math.min(refs.slides.length - 1, idx));
-    const target = refs.slides[clamped];
-    if (!target) return;
-    activateSlide(clamped);
-    target.scrollIntoView({ behavior: reduced.matches ? 'auto' : 'smooth', block: 'start' });
+  function clearTransitionTimers() {
+    if (leaveTimer) {
+      clearTimeout(leaveTimer);
+      leaveTimer = 0;
+    }
+    if (wheelAccumTimer) {
+      clearTimeout(wheelAccumTimer);
+      wheelAccumTimer = 0;
+    }
+    wheelAccum = 0;
   }
 
-  function activateSlide(idx) {
-    activeSlideIdx = idx;
-    const slide = refs.slides[idx];
-    if (slide) {
-      slide.classList.add('is-active');
-      if (idx === 4) {
-        animateCoordLock();
-      } else if (idx === 5) {
-        refs.counters.forEach((el) => animateCount(el));
-      }
+  function updateSlideEffects(idx) {
+    if (idx === 4) {
+      animateCoordLock();
+    } else if (idx === 5) {
+      refs.counters.forEach((el) => animateCount(el));
     }
-    refs.dots.forEach((d, i) => d.classList.toggle('active', i === idx));
 
     const wasNear = instNearViewport;
-    instNearViewport = idx >= 5 && idx <= 7;
+    instNearViewport = idx === 6;
     if (instNearViewport && !wasNear && isOpen && !rafId) {
       resizeInst();
       rafId = requestAnimationFrame(tick);
     }
   }
 
-  function syncActiveSlideFromScroll() {
-    if (!isOpen || !refs.slides.length) return;
-    const h = root.clientHeight || global.innerHeight || 900;
-    const approxIdx = Math.max(0, Math.min(refs.slides.length - 1, Math.round(root.scrollTop / Math.max(1, h))));
-    if (approxIdx !== activeSlideIdx || !refs.slides[approxIdx].classList.contains('is-active')) {
-      activateSlide(approxIdx);
+  function goToSlide(idx, opts = {}) {
+    if (!refs.slides || !refs.slides.length) return;
+    const nextIdx = Math.max(0, Math.min(refs.slides.length - 1, idx));
+    const force = Boolean(opts.force);
+    const instant = Boolean(opts.instant) || reduced.matches;
+    if (!force && nextIdx === activeSlideIdx) return;
+
+    const prevIdx = activeSlideIdx;
+    const prevSlide = refs.slides[prevIdx];
+    const nextSlide = refs.slides[nextIdx];
+    if (!nextSlide) return;
+
+    if (leaveTimer) {
+      clearTimeout(leaveTimer);
+      leaveTimer = 0;
+    }
+
+    refs.slides.forEach((s) => {
+      if (s !== nextSlide) s.classList.remove('is-leaving');
+    });
+
+    if (!instant && prevSlide && prevSlide !== nextSlide) {
+      prevSlide.classList.remove('is-active');
+      prevSlide.classList.add('is-leaving');
+      leaveTimer = setTimeout(() => {
+        prevSlide.classList.remove('is-leaving');
+        leaveTimer = 0;
+      }, 680);
+    } else {
+      refs.slides.forEach((s, i) => {
+        s.classList.toggle('is-active', i === nextIdx);
+        s.classList.remove('is-leaving');
+      });
+    }
+
+    nextSlide.classList.remove('is-leaving');
+    nextSlide.classList.add('is-active');
+    activeSlideIdx = nextIdx;
+
+    if (refs.hairline) {
+      const progress = nextIdx / Math.max(1, refs.slides.length - 1);
+      refs.hairline.style.transform = `scaleX(${progress.toFixed(4)})`;
+    }
+
+    refs.dots.forEach((d, i) => {
+      const isActive = i === nextIdx;
+      d.classList.toggle('active', isActive);
+      if (isActive) d.setAttribute('aria-current', 'step');
+      else d.removeAttribute('aria-current');
+    });
+
+    updateSlideEffects(nextIdx);
+  }
+
+  function onWheel(event) {
+    if (!isOpen || isClosing) return;
+    event.preventDefault();
+
+    let dy = event.deltaY;
+    if (event.deltaMode === 1) dy *= 32;
+    else if (event.deltaMode === 2) dy *= (global.innerHeight || 900);
+
+    const now = performance.now();
+    if (now < wheelLockUntil) {
+      wheelAccum = 0;
+      return;
+    }
+
+    wheelAccum += dy;
+    if (wheelAccumTimer) clearTimeout(wheelAccumTimer);
+    wheelAccumTimer = setTimeout(() => {
+      wheelAccum = 0;
+      wheelAccumTimer = 0;
+    }, 180);
+
+    if (Math.abs(wheelAccum) >= 34) {
+      const dir = wheelAccum > 0 ? 1 : -1;
+      wheelAccum = 0;
+      if (wheelAccumTimer) {
+        clearTimeout(wheelAccumTimer);
+        wheelAccumTimer = 0;
+      }
+      const targetIdx = Math.max(0, Math.min(refs.slides.length - 1, activeSlideIdx + dir));
+      if (targetIdx !== activeSlideIdx) {
+        wheelLockUntil = now + 560;
+        goToSlide(targetIdx);
+      } else {
+        wheelLockUntil = now + 240;
+      }
     }
   }
 
-  function onScroll() {
-    if (!isOpen || navRaf) return;
-    navRaf = requestAnimationFrame(() => {
-      navRaf = 0;
-      const y = root.scrollTop;
-      const maxS = Math.max(1, root.scrollHeight - root.clientHeight);
-      if (refs.hairline) {
-        refs.hairline.style.transform = `scaleX(${clamp01(y / maxS).toFixed(4)})`;
-      }
-      syncActiveSlideFromScroll();
-    });
+  function onTouchStart(event) {
+    if (!isOpen || isClosing || !event.touches || event.touches.length !== 1) return;
+    const t = event.target;
+    if (t && t.closest && t.closest('button, a, input, .sp-tabs')) {
+      touchTracking = false;
+      return;
+    }
+    touchTracking = true;
+    touchStartY = event.touches[0].clientY;
+    touchStartX = event.touches[0].clientX;
+  }
+
+  function onTouchEnd(event) {
+    if (!isOpen || isClosing || !touchTracking || !event.changedTouches || !event.changedTouches.length) return;
+    touchTracking = false;
+    const dy = touchStartY - event.changedTouches[0].clientY;
+    const dx = touchStartX - event.changedTouches[0].clientX;
+    if (Math.abs(dy) >= 44 && Math.abs(dy) > Math.abs(dx) * 1.2) {
+      goToSlide(activeSlideIdx + (dy > 0 ? 1 : -1));
+    }
   }
 
   function animateCoordLock() {
@@ -472,11 +566,24 @@
     requestAnimationFrame(step);
   }
 
-  function setupObservers() {
-    teardownObservers();
+  function resetStage() {
+    clearTransitionTimers();
+    wheelLockUntil = 0;
+    activeSlideIdx = 0;
+    instNearViewport = false;
 
-    refs.slides.forEach((s, i) => s.classList.toggle('is-active', i === 0));
-    refs.dots.forEach((d, i) => d.classList.toggle('active', i === 0));
+    refs.slides.forEach((s, i) => {
+      s.classList.remove('is-leaving');
+      s.classList.toggle('is-active', i === 0);
+    });
+    refs.dots.forEach((d, i) => {
+      const isActive = i === 0;
+      d.classList.toggle('active', isActive);
+      if (isActive) d.setAttribute('aria-current', 'step');
+      else d.removeAttribute('aria-current');
+    });
+    if (refs.hairline) refs.hairline.style.transform = 'scaleX(0)';
+
     refs.counters.forEach((el) => {
       el.dataset.counted = '0';
       el.textContent = reduced.matches ? Number(el.dataset.count || 0).toLocaleString('en-US') : '0';
@@ -485,34 +592,6 @@
       refs.coordLock.classList.toggle('is-locked', reduced.matches);
       refs.coordReadout.dataset.locked = '0';
       refs.coordReadout.textContent = reduced.matches ? FINAL_COORD_TEXT : '00.0000° N · 00.0000° E';
-    }
-
-    if (reduced.matches || typeof IntersectionObserver === 'undefined') {
-      refs.slides.forEach((s) => s.classList.add('is-active'));
-      refs.counters.forEach((el) => animateCount(el));
-      animateCoordLock();
-      instNearViewport = true;
-      return;
-    }
-
-    slideObserver = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting && entry.intersectionRatio >= 0.45) {
-            const idx = Number(entry.target.dataset.slide);
-            if (!Number.isNaN(idx)) activateSlide(idx);
-          }
-        });
-      },
-      { root, threshold: [0.45, 0.7] }
-    );
-    refs.slides.forEach((s) => slideObserver.observe(s));
-  }
-
-  function teardownObservers() {
-    if (slideObserver) {
-      slideObserver.disconnect();
-      slideObserver = null;
     }
   }
 
@@ -744,7 +823,30 @@
     } else if (event.key === 'ArrowUp' || event.key === 'PageUp') {
       event.preventDefault();
       goToSlide(activeSlideIdx - 1);
+    } else if (event.key === 'Home') {
+      event.preventDefault();
+      goToSlide(0);
+    } else if (event.key === 'End') {
+      event.preventDefault();
+      goToSlide(refs.slides.length - 1);
+    } else if (event.key === ' ' && (!document.activeElement || document.activeElement.tagName !== 'BUTTON')) {
+      event.preventDefault();
+      goToSlide(activeSlideIdx + (event.shiftKey ? -1 : 1));
     }
+  }
+
+  function bindStageInputs() {
+    document.addEventListener('keydown', onKeydown, true);
+    root.addEventListener('wheel', onWheel, { passive: false });
+    root.addEventListener('touchstart', onTouchStart, { passive: true });
+    root.addEventListener('touchend', onTouchEnd, { passive: true });
+  }
+
+  function unbindStageInputs() {
+    document.removeEventListener('keydown', onKeydown, true);
+    root.removeEventListener('wheel', onWheel, { passive: false });
+    root.removeEventListener('touchstart', onTouchStart, { passive: true });
+    root.removeEventListener('touchend', onTouchEnd, { passive: true });
   }
 
   function open(opts = {}) {
@@ -753,8 +855,6 @@
     isClosing = false;
     isOpen = true;
     isReplayRun = Boolean(opts.isReplay);
-    activeSlideIdx = 0;
-    instNearViewport = false;
     returnFocusEl = opts.isReplay ? document.activeElement : null;
 
     document.documentElement.dataset.introState = 'prologue';
@@ -762,11 +862,9 @@
     root.classList.remove('k-ready', 'is-exiting');
     root.classList.add('is-entering');
     root.hidden = false;
-    root.scrollTop = 0;
-    if (refs.hairline) refs.hairline.style.transform = 'scaleX(0)';
     lockBackground();
     resizeInst();
-    setupObservers();
+    resetStage();
 
     if (global.CosmicIntro && typeof global.CosmicIntro.preload === 'function') {
       global.CosmicIntro.preload();
@@ -787,14 +885,14 @@
       bgmUnsub = global.CosmicBGM.onChange(syncMuteUI);
     }
 
-    document.addEventListener('keydown', onKeydown, true);
+    bindStageInputs();
 
     requestAnimationFrame(() => {
       root.classList.remove('is-entering');
       document.documentElement.classList.remove('prologue-boot');
       requestAnimationFrame(() => {
         root.classList.add('k-ready');
-        activateSlide(0);
+        goToSlide(0, { force: true, instant: true });
       });
     });
   }
@@ -802,7 +900,8 @@
   function close(reason = 'skip') {
     if (!isOpen || isClosing) return;
     isClosing = true;
-    document.removeEventListener('keydown', onKeydown, true);
+    unbindStageInputs();
+    clearTransitionTimers();
     document.documentElement.classList.remove('prologue-boot');
 
     const canHandOffToFilm =
@@ -822,9 +921,8 @@
 
       isOpen = false;
       isClosing = false;
+      instNearViewport = false;
       if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
-      if (navRaf) { cancelAnimationFrame(navRaf); navRaf = 0; }
-      teardownObservers();
       if (bgmUnsub) { bgmUnsub(); bgmUnsub = null; }
       unlockBackground();
 
@@ -837,11 +935,13 @@
         setTimeout(() => {
           root.hidden = true;
           root.classList.remove('is-exiting', 'is-entering', 'k-ready');
+          refs.slides.forEach((s) => s.classList.remove('is-leaving'));
         }, 120);
         return;
       }
       isOpen = true;
       isClosing = true;
+      bindStageInputs();
     }
 
     const landing = !global.location || (!global.location.search && !global.location.hash);
@@ -862,12 +962,13 @@
     const finalize = () => {
       isOpen = false;
       isClosing = false;
+      instNearViewport = false;
       if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
-      if (navRaf) { cancelAnimationFrame(navRaf); navRaf = 0; }
-      teardownObservers();
+      clearTransitionTimers();
       if (bgmUnsub) { bgmUnsub(); bgmUnsub = null; }
       root.hidden = true;
       root.classList.remove('is-exiting', 'is-entering', 'k-ready');
+      refs.slides.forEach((s) => s.classList.remove('is-leaving'));
       unlockBackground();
       document.documentElement.dataset.introState = 'map';
       document.documentElement.dataset.introReason = reason;

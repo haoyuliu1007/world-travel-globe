@@ -14,9 +14,9 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <title>World Travel Globe · 全球旅行地理图鉴</title>
   <link rel="stylesheet" href="vendor/maplibre-gl.css" />
-  <link rel="stylesheet" href="css/styles.css?v=36" />
+  <link rel="stylesheet" href="css/styles.css?v=37" />
   <link rel="stylesheet" href="css/upgrades.css?v=38" />
-  <link rel="stylesheet" href="assets/prologue/prologue.css?v=4" />
+  <link rel="stylesheet" href="assets/prologue/prologue.css?v=5" />
   <link rel="stylesheet" href="assets/cosmic-intro/player.css?v=8" />
   <script>
   (function () {
@@ -42,8 +42,10 @@
   <script type="application/ld+json" id="dest-jsonld">{}</script>
 </head>
 <body>
-  <!-- Deep Space Backdrop -->
-  <div id="space-backdrop" aria-hidden="true"></div>
+  <!-- Restrained Deep Space Backdrop & 3D-Linked Starfield -->
+  <div id="space-backdrop" aria-hidden="true">
+    <canvas id="starfield-canvas" aria-hidden="true"></canvas>
+  </div>
 
   <!-- Edge-to-Edge 3D Globe -->
   <div id="map" role="application" aria-label="全球旅行 3D 交互卫星地球仪"></div>
@@ -174,7 +176,7 @@
     </div>
   </section>
   <script src="assets/prologue/bgm.js?v=2"></script>
-  <script src="assets/prologue/prologue.js?v=4"></script>
+  <script src="assets/prologue/prologue.js?v=5"></script>
   <script src="assets/cosmic-intro/player.js?v=9"></script>
 
   <!-- 3-Language Selector Popover -->
@@ -580,6 +582,6 @@
   <script src="js/detail-panel.js?v=36"></script>
   <script src="js/command-palette.js?v=36"></script>
   <script src="js/gallery.js?v=36"></script>
-  <script src="js/app.js?v=38"></script>
+  <script src="js/app.js?v=39"></script>
 </body>
 </html>

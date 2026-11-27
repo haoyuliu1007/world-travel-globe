@@ -20,11 +20,8 @@ html.prologue-boot #globe-loader { opacity: 0 !important; pointer-events: none !
   position: fixed;
   inset: 0;
   z-index: 9500;
-  overflow-y: auto;
-  overflow-x: hidden;
-  scroll-snap-type: y mandatory;
-  scroll-behavior: smooth;
-  overscroll-behavior: contain;
+  overflow: hidden;
+  touch-action: none;
   background: var(--sp-bg);
   color: var(--sp-bone);
   font-family: var(--sp-font);
@@ -35,9 +32,7 @@ html.prologue-boot #globe-loader { opacity: 0 !important; pointer-events: none !
   text-rendering: optimizeLegibility;
   opacity: 1;
   transition: opacity 480ms var(--sp-ease);
-  scrollbar-width: none;
 }
-#story-prologue::-webkit-scrollbar { display: none; }
 #story-prologue.is-entering { opacity: 0; }
 #story-prologue.is-exiting { opacity: 0; pointer-events: none; }
 
@@ -73,6 +68,7 @@ html.prologue-boot #globe-loader { opacity: 0 !important; pointer-events: none !
   background: var(--sp-gradient);
   transform-origin: 0 50%;
   transform: scaleX(0);
+  transition: transform 540ms var(--sp-ease);
   pointer-events: none;
   will-change: transform;
 }
@@ -214,7 +210,7 @@ html.prologue-boot #globe-loader { opacity: 0 !important; pointer-events: none !
   transform: translateY(-50%) translateX(0);
 }
 
-/* Base Pure-GPU Reveal System & Per-Slide Narrative Archetypes */
+/* Unified Restrained GPU Reveal System */
 #story-prologue .sp-accent-grad {
   background: var(--sp-gradient);
   -webkit-background-clip: text;
@@ -223,86 +219,19 @@ html.prologue-boot #globe-loader { opacity: 0 !important; pointer-events: none !
 }
 #story-prologue .sp-reveal {
   opacity: 0;
-  transform: translate3d(0, 24px, 0);
+  transform: translate3d(0, 14px, 0);
   transition:
-    opacity 800ms var(--sp-ease) var(--sp-delay, 0ms),
-    transform 800ms var(--sp-ease) var(--sp-delay, 0ms),
-    clip-path 880ms var(--sp-ease) var(--sp-delay, 0ms);
+    opacity 560ms var(--sp-ease) calc(var(--sp-delay, 0ms) + 90ms),
+    transform 620ms var(--sp-ease) calc(var(--sp-delay, 0ms) + 90ms);
   will-change: opacity, transform;
 }
 
-/* Slide 2: Horizontal Bronze Engraving Clip-Wipe */
-#story-prologue .sp-slide.sp-anim-wipe .sp-reveal {
-  opacity: 0;
-  transform: translate3d(-14px, 0, 0);
-  clip-path: inset(0 100% 0 0);
-  transition:
-    opacity 720ms var(--sp-ease) var(--sp-delay, 0ms),
-    transform 820ms var(--sp-ease) var(--sp-delay, 0ms),
-    clip-path 880ms var(--sp-ease) var(--sp-delay, 0ms);
-}
-
-/* Slide 3: Geometric Leftward Sweep */
-#story-prologue .sp-slide.sp-anim-geo .sp-reveal {
-  opacity: 0;
-  transform: translate3d(-28px, 0, 0);
-  transition:
-    opacity 780ms var(--sp-ease) var(--sp-delay, 0ms),
-    transform 860ms var(--sp-ease) var(--sp-delay, 0ms);
-}
-
-/* Slide 4: Orbital Wide-Lens Convergence */
-#story-prologue .sp-slide.sp-anim-orbital .sp-reveal {
-  opacity: 0;
-  transform: translate3d(0, 8px, 0) scale(1.06);
-  transition:
-    opacity 980ms var(--sp-ease) var(--sp-delay, 0ms),
-    transform 1100ms var(--sp-ease) var(--sp-delay, 0ms);
-}
-
-/* Slide 5: Coordinate Lock Vertical Whisper */
-#story-prologue .sp-slide.sp-anim-coord .sp-reveal {
-  opacity: 0;
-  transform: translate3d(0, 14px, 0);
-  transition:
-    opacity 760ms var(--sp-ease) var(--sp-delay, 0ms),
-    transform 820ms var(--sp-ease) var(--sp-delay, 0ms);
-}
-
-/* Slide 6: Humboldt Staggered Cascade */
-#story-prologue .sp-slide.sp-anim-cascade .sp-reveal {
-  opacity: 0;
-  transform: translate3d(0, 26px, 0);
-  transition:
-    opacity 760ms var(--sp-ease) var(--sp-delay, 0ms),
-    transform 840ms var(--sp-ease) var(--sp-delay, 0ms);
-}
-
-/* Slide 7: Precision Observatory Console Reveal */
-#story-prologue .sp-slide.sp-anim-console .sp-reveal {
-  opacity: 0;
-  transform: translate3d(0, 14px, 0) scale(0.95);
-  transition:
-    opacity 820ms var(--sp-ease) var(--sp-delay, 0ms),
-    transform 860ms var(--sp-ease) var(--sp-delay, 0ms);
-}
-
-/* Slide 8: Dawn Subtle Lens Settlement */
-#story-prologue .sp-slide.sp-anim-dawn .sp-reveal {
-  opacity: 0;
-  transform: translate3d(0, 10px, 0) scale(1.04);
-  transition:
-    opacity 920ms var(--sp-ease) var(--sp-delay, 0ms),
-    transform 1050ms var(--sp-ease) var(--sp-delay, 0ms);
-}
-
-/* Unified Active State (Placed After All Per-Slide Initial States) */
+/* Unified Active State */
 #story-prologue .sp-slide.is-active .sp-reveal,
-#story-prologue.k-ready #sp-s1 .sp-reveal,
+#story-prologue.k-ready #sp-s1.is-active .sp-reveal,
 #story-prologue .sp-reveal.is-visible {
   opacity: 1;
-  transform: translate3d(0, 0, 0) scale(1);
-  clip-path: inset(0 0 0 0);
+  transform: translate3d(0, 0, 0);
 }
 
 /* Slide 1 Hero Masked Upward Curtain */
@@ -321,29 +250,66 @@ html.prologue-boot #globe-loader { opacity: 0 !important; pointer-events: none !
     opacity 540ms ease var(--sp-delay, 0ms);
   will-change: transform, opacity;
 }
-#story-prologue.k-ready #sp-s1 .sp-line-inner {
+#story-prologue.k-ready #sp-s1.is-active .sp-line-inner {
   opacity: 1;
   transform: translate3d(0, 0, 0);
 }
 
-/* Strict 100dvh Snap Slide Container */
+/* Cinema Crossfade Full-Viewport Slide Stage */
 #story-prologue .sp-slide {
-  position: relative;
+  position: absolute;
+  inset: 0;
   width: 100%;
-  height: 100vh;
-  height: 100dvh;
-  min-height: 100dvh;
+  height: 100%;
   overflow: hidden;
-  scroll-snap-align: start;
-  scroll-snap-stop: always;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: clamp(64px, 9vh, 88px) var(--sp-gutter) clamp(52px, 7vh, 72px);
   background: var(--sp-bg);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  z-index: 1;
+  transition: opacity 640ms var(--sp-ease), visibility 0s linear 640ms;
+  will-change: opacity;
+}
+#story-prologue .sp-slide.is-active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  z-index: 3;
+  transition: opacity 640ms var(--sp-ease), visibility 0s linear 0s;
+}
+#story-prologue .sp-slide.is-leaving {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: none;
+  z-index: 2;
+  transition: none;
 }
 
-/* Per-Slide Background Photos & Distinct Lens Motion */
+#story-prologue .sp-hero-inner,
+#story-prologue .sp-story-inner,
+#story-prologue .sp-earth-inner,
+#story-prologue .sp-inst-inner,
+#story-prologue .sp-finale-inner,
+#story-prologue .sp-cue {
+  transition: opacity 320ms ease, transform 420ms var(--sp-ease);
+}
+
+#story-prologue .sp-slide.is-leaving .sp-hero-inner,
+#story-prologue .sp-slide.is-leaving .sp-story-inner,
+#story-prologue .sp-slide.is-leaving .sp-earth-inner,
+#story-prologue .sp-slide.is-leaving .sp-inst-inner,
+#story-prologue .sp-slide.is-leaving .sp-finale-inner,
+#story-prologue .sp-slide.is-leaving .sp-cue {
+  opacity: 0;
+  transform: translate3d(0, -8px, 0);
+  transition: opacity 240ms ease, transform 280ms var(--sp-ease);
+}
+
+/* Subtle Unified Background Lens Settlement */
 #story-prologue .sp-bg-photo {
   position: absolute;
   inset: 0;
@@ -351,31 +317,18 @@ html.prologue-boot #globe-loader { opacity: 0 !important; pointer-events: none !
   height: 100%;
   object-fit: cover;
   pointer-events: none;
-  transform: scale(1.04);
-  transition: transform 1600ms var(--sp-ease), opacity 900ms ease;
-  will-change: transform, opacity;
+  transform: scale(1.03);
+  transition: transform 1100ms var(--sp-ease);
+  will-change: transform;
 }
 #story-prologue .sp-slide.is-active .sp-bg-photo,
-#story-prologue.k-ready #sp-s1 .sp-bg-photo {
-  transform: scale(1);
-}
-
-#story-prologue #sp-s4 .sp-bg-photo {
-  transform: scale(1.11);
-  transition: transform 1800ms var(--sp-ease), opacity 950ms ease;
-}
-#story-prologue #sp-s4.is-active .sp-bg-photo {
+#story-prologue .sp-slide.is-leaving .sp-bg-photo,
+#story-prologue.k-ready #sp-s1.is-active .sp-bg-photo {
   transform: scale(1);
 }
 
 #story-prologue #sp-s8 .sp-bg-photo {
-  opacity: 0.55;
-  transform: translate3d(0, 18px, 0) scale(1.05);
-  transition: transform 1650ms var(--sp-ease), opacity 1300ms var(--sp-ease);
-}
-#story-prologue #sp-s8.is-active .sp-bg-photo {
-  opacity: 0.94;
-  transform: translate3d(0, 0, 0) scale(1);
+  opacity: 0.92;
 }
 
 #story-prologue .sp-grid-overlay {
@@ -1109,7 +1062,19 @@ html.prologue-boot #globe-loader { opacity: 0 !important; pointer-events: none !
 }
 
 @media (prefers-reduced-motion: reduce) {
-  #story-prologue { scroll-behavior: auto; transition: none; }
+  #story-prologue,
+  #story-prologue .sp-hairline,
+  #story-prologue .sp-slide,
+  #story-prologue .sp-slide.is-active,
+  #story-prologue .sp-slide.is-leaving,
+  #story-prologue .sp-hero-inner,
+  #story-prologue .sp-story-inner,
+  #story-prologue .sp-earth-inner,
+  #story-prologue .sp-inst-inner,
+  #story-prologue .sp-finale-inner,
+  #story-prologue .sp-cue {
+    transition: none;
+  }
   #story-prologue .sp-cue-line::after { animation: none; }
   #story-prologue .sp-reveal,
   #story-prologue .sp-line-inner {

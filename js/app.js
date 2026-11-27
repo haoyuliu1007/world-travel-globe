@@ -227,6 +227,198 @@
     return Boolean(global.matchMedia && global.matchMedia('(prefers-reduced-motion: reduce)').matches);
   }
 
+  // Restrained 3D-Linked Celestial Starfield Backdrop (zero idle CPU, syncs to globe camera)
+  const starfield = (() => {
+    const STAR_COUNT = 760;
+    const DEG2RAD = Math.PI / 180;
+    let canvas = null;
+    let ctx = null;
+    let stars = null;
+    let width = 0;
+    let height = 0;
+    let dpr = 1;
+    let rafId = 0;
+    let isBlank = true;
+
+    function createRng(seed) {
+      let s = seed >>> 0;
+      return () => {
+        s = (s + 0x6D2B79F5) >>> 0;
+        let t = Math.imul(s ^ (s >>> 15), 1 | s);
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    function buildCatalog() {
+      const rand = createRng(20260722);
+      const list = new Array(STAR_COUNT);
+      for (let i = 0; i < STAR_COUNT; i++) {
+        const u = rand() * 2 - 1;
+        const theta = rand() * Math.PI * 2;
+        const s = Math.sqrt(Math.max(0, 1 - u * u));
+        const tier = rand();
+        let r;
+        let alpha;
+        if (tier < 0.82) {
+          r = 0.55 + rand() * 0.30;
+          alpha = 0.10 + rand() * 0.15;
+        } else if (tier < 0.97) {
+          r = 0.85 + rand() * 0.30;
+          alpha = 0.25 + rand() * 0.17;
+        } else {
+          r = 1.15 + rand() * 0.30;
+          alpha = 0.42 + rand() * 0.16;
+        }
+        const tintPick = rand();
+        const rgb = tintPick < 0.65
+          ? '220,232,248'
+          : (tintPick < 0.85 ? '242,232,212' : '192,214,244');
+        list[i] = {
+          x: s * Math.cos(theta),
+          y: u,
+          z: s * Math.sin(theta),
+          r,
+          alpha,
+          rgb
+        };
+      }
+      return list;
+    }
+
+    function ensureCanvas() {
+      if (!canvas) {
+        canvas = document.getElementById('starfield-canvas');
+        if (!canvas) return false;
+        ctx = canvas.getContext('2d');
+        stars = buildCatalog();
+      }
+      return Boolean(ctx);
+    }
+
+    function resize() {
+      if (!ensureCanvas()) return;
+      dpr = Math.min(global.devicePixelRatio || 1, 2);
+      width = global.innerWidth || 1;
+      height = global.innerHeight || 1;
+      const targetW = Math.round(width * dpr);
+      const targetH = Math.round(height * dpr);
+      if (canvas.width !== targetW || canvas.height !== targetH) {
+        canvas.width = targetW;
+        canvas.height = targetH;
+      }
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      scheduleRender();
+    }
+
+    function render() {
+      rafId = 0;
+      if (!ensureCanvas()) return;
+      if (!width || !height) {
+        resize();
+        return;
+      }
+
+      const zoom = map && typeof map.getZoom === 'function' ? map.getZoom() : 1.8;
+      if (zoom >= 5.2) {
+        if (!isBlank) {
+          ctx.clearRect(0, 0, width, height);
+          isBlank = true;
+        }
+        return;
+      }
+
+      ctx.clearRect(0, 0, width, height);
+      isBlank = false;
+
+      const fixed = prefersReducedMotion() || !map || typeof map.getCenter !== 'function';
+      const center = fixed ? { lng: 105, lat: 30 } : map.getCenter();
+      const bearing = fixed ? 0 : map.getBearing();
+      const pitch = fixed ? 0 : map.getPitch();
+
+      const latR = center.lat * DEG2RAD;
+      const lngR = center.lng * DEG2RAD;
+      const bR = bearing * DEG2RAD;
+      const pR = pitch * 0.55 * DEG2RAD;
+
+      const cosLat = Math.cos(latR);
+      const sinLat = Math.sin(latR);
+      const cosLng = Math.cos(lngR);
+      const sinLng = Math.sin(lngR);
+
+      // Camera basis looking through Earth center toward deep space
+      const fx = -cosLat * cosLng;
+      const fy = -sinLat;
+      const fz = -cosLat * sinLng;
+
+      const ex = -sinLng;
+      const ey = 0;
+      const ez = cosLng;
+
+      const nx = -sinLat * cosLng;
+      const ny = cosLat;
+      const nz = -sinLat * sinLng;
+
+      const cosB = Math.cos(bR);
+      const sinB = Math.sin(bR);
+      const rx = ex * cosB - nx * sinB;
+      const ry = ey * cosB - ny * sinB;
+      const rz = ez * cosB - nz * sinB;
+
+      const ux0 = ex * sinB + nx * cosB;
+      const uy0 = ey * sinB + ny * cosB;
+      const uz0 = ez * sinB + nz * cosB;
+
+      const cosP = Math.cos(pR);
+      const sinP = Math.sin(pR);
+      const fx1 = fx * cosP + ux0 * sinP;
+      const fy1 = fy * cosP + uy0 * sinP;
+      const fz1 = fz * cosP + uz0 * sinP;
+
+      const ux1 = -fx * sinP + ux0 * cosP;
+      const uy1 = -fy * sinP + uy0 * cosP;
+      const uz1 = -fz * sinP + uz0 * cosP;
+
+      const cx = width * 0.5;
+      const cy = height * 0.5;
+      const focal = Math.max(width, height) * 0.92;
+      const zoomFade = zoom <= 3.6 ? 1 : Math.max(0, 1 - (zoom - 3.6) / 1.6);
+
+      for (let i = 0; i < stars.length; i++) {
+        const st = stars[i];
+        const zCam = st.x * fx1 + st.y * fy1 + st.z * fz1;
+        if (zCam <= 0.14) continue;
+
+        const xCam = st.x * rx + st.y * ry + st.z * rz;
+        const yCam = st.x * ux1 + st.y * uy1 + st.z * uz1;
+        const sx = cx + (xCam / zCam) * focal;
+        const sy = cy - (yCam / zCam) * focal;
+
+        if (sx < -4 || sx > width + 4 || sy < -4 || sy > height + 4) continue;
+
+        ctx.fillStyle = `rgba(${st.rgb},${(st.alpha * zoomFade).toFixed(3)})`;
+        if (st.r <= 0.85) {
+          const sz = st.r * 1.65;
+          ctx.fillRect(sx - sz * 0.5, sy - sz * 0.5, sz, sz);
+        } else {
+          ctx.beginPath();
+          ctx.arc(sx, sy, st.r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+    }
+
+    function scheduleRender() {
+      if (rafId) return;
+      rafId = requestAnimationFrame(render);
+    }
+
+    return {
+      resize,
+      scheduleRender
+    };
+  })();
+
   function isMobileViewport() {
     return global.innerWidth <= 768;
   }
@@ -344,12 +536,12 @@
       version: 8,
       projection: { type: 'globe' },
       sky: {
-        'sky-color': 'rgba(8, 16, 34, 0)',
-        'horizon-color': '#4B96EB',
-        'fog-color': '#122544',
-        'sky-horizon-blend': 0.55,
-        'horizon-fog-blend': 0.65,
-        'atmosphere-blend': ['interpolate', ['linear'], ['zoom'], 0, 1, 4.5, 0.72, 7, 0]
+        'sky-color': 'rgba(4, 7, 15, 0)',
+        'horizon-color': '#356FB8',
+        'fog-color': '#0C1A33',
+        'sky-horizon-blend': 0.48,
+        'horizon-fog-blend': 0.60,
+        'atmosphere-blend': ['interpolate', ['linear'], ['zoom'], 0, 0.78, 4.5, 0.55, 7, 0]
       },
       sources: {
         satellite: {
@@ -2319,17 +2511,22 @@
     map.on('wheel', () => { stopSpin(); cancelActiveFlight(); });
     map.on('touchstart', () => { stopSpin(); cancelActiveFlight(); });
 
-    map.on('move', scheduleLabelLayout);
+    map.on('move', () => {
+      scheduleLabelLayout();
+      starfield.scheduleRender();
+    });
     map.on('zoomend', () => {
       if (state.clustering && clusterIndex && !state.selectedId) {
         syncGeoJsonSource();
       }
       scheduleLabelLayout();
+      starfield.scheduleRender();
       if (state.subSpotMarkers.length) applySpiderfyLayout();
     });
     map.on('resize', () => {
       resizeLabelCanvas();
       scheduleLabelLayout();
+      starfield.resize();
     });
 
     const onFullscreenResize = () => {
@@ -2337,6 +2534,7 @@
         map.resize();
         resizeLabelCanvas();
         scheduleLabelLayout();
+        starfield.resize();
       }
     };
     document.addEventListener('fullscreenchange', onFullscreenResize);
@@ -2438,14 +2636,14 @@
 
     if (!map || !map.isStyleLoaded()) return;
 
-    // Outer space backdrop shows luminous Milky Way starfield; sky-color stays transparent with sapphire halo
+    // Restrained deep-space starfield shows behind transparent sky with soft sapphire atmosphere halo
     map.setSky({
-      'sky-color': 'rgba(8, 16, 34, 0)',
-      'horizon-color': '#4B96EB',
-      'fog-color': '#122544',
-      'sky-horizon-blend': 0.55,
-      'horizon-fog-blend': 0.65,
-      'atmosphere-blend': ['interpolate', ['linear'], ['zoom'], 0, 1, 4.5, 0.72, 7, 0]
+      'sky-color': 'rgba(4, 7, 15, 0)',
+      'horizon-color': '#356FB8',
+      'fog-color': '#0C1A33',
+      'sky-horizon-blend': 0.48,
+      'horizon-fog-blend': 0.60,
+      'atmosphere-blend': ['interpolate', ['linear'], ['zoom'], 0, 0.78, 4.5, 0.55, 7, 0]
     });
 
     if (map.getLayer('globe-ocean-base')) {
@@ -2688,6 +2886,8 @@
     }
 
     ensureLabelOverlay();
+    starfield.resize();
+    global.addEventListener('resize', starfield.resize);
     bindMapInteractions();
     bindEvents();
 

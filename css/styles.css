@@ -149,11 +149,7 @@ input:focus-visible {
   outline-offset: 2px;
 }
 
-/* Observatory Dual-World + 12-Month Seasonal Atmosphere + 1:1 Parallax Backdrop */
-html[data-theme="light"][data-skybox="observatory"] {
-  --bg-space: #E7EDF5;
-}
-
+/* Crisp Deep Space Parallax Backdrop & 3D-Linked Starfield Canvas */
 #space-backdrop {
   position: fixed;
   inset: 0;
@@ -162,40 +158,6 @@ html[data-theme="light"][data-skybox="observatory"] {
   overflow: hidden;
   background: radial-gradient(circle at 50% 50%, #091120 0%, #050812 50%, #02040a 100%);
   transition: background 900ms ease;
-}
-
-/* Daylight Museum Gallery Observatory + Seasonal Flow */
-html[data-theme="light"][data-skybox="observatory"] #space-backdrop {
-  background: radial-gradient(ellipse 68% 58% at 50% 48%, #f4f7fb 0%, #e7edf5 52%, #d8e1ec 100%);
-}
-html[data-theme="light"][data-skybox="observatory"][data-season="winter"] #space-backdrop {
-  background: radial-gradient(ellipse 68% 58% at 50% 48%, #f1f6fc 0%, #e1ebf6 52%, #cedceb 100%);
-}
-html[data-theme="light"][data-skybox="observatory"][data-season="spring"] #space-backdrop {
-  background: radial-gradient(ellipse 68% 58% at 50% 48%, #f3f7f4 0%, #e5eee9 52%, #d4e1db 100%);
-}
-html[data-theme="light"][data-skybox="observatory"][data-season="summer"] #space-backdrop {
-  background: radial-gradient(ellipse 68% 58% at 50% 48%, #eff6fb 0%, #dfecf6 52%, #caddec 100%);
-}
-html[data-theme="light"][data-skybox="observatory"][data-season="autumn"] #space-backdrop {
-  background: radial-gradient(ellipse 68% 58% at 50% 48%, #f7f4ef 0%, #ece6dc 52%, #ddd4c6 100%);
-}
-
-/* Night Deep-Space Observatory + Seasonal Flow */
-html[data-theme="dark"][data-skybox="observatory"] #space-backdrop {
-  background: radial-gradient(ellipse 68% 58% at 50% 48%, #0e192d 0%, #070d19 52%, #03050b 100%);
-}
-html[data-theme="dark"][data-skybox="observatory"][data-season="winter"] #space-backdrop {
-  background: radial-gradient(ellipse 68% 58% at 50% 48%, #0c1b33 0%, #060e1d 52%, #02050c 100%);
-}
-html[data-theme="dark"][data-skybox="observatory"][data-season="spring"] #space-backdrop {
-  background: radial-gradient(ellipse 68% 58% at 50% 48%, #0b1c26 0%, #050f17 52%, #02060b 100%);
-}
-html[data-theme="dark"][data-skybox="observatory"][data-season="summer"] #space-backdrop {
-  background: radial-gradient(ellipse 68% 58% at 50% 48%, #0d1a34 0%, #060d1f 52%, #02050d 100%);
-}
-html[data-theme="dark"][data-skybox="observatory"][data-season="autumn"] #space-backdrop {
-  background: radial-gradient(ellipse 68% 58% at 50% 48%, #181426 0%, #0b0a16 52%, #04040a 100%);
 }
 
 .skybox-layer {
@@ -609,7 +571,7 @@ body.drawer-open .studio-popover {
 /* Deep Space Skybox Preset Grid */
 .skybox-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
 }
 
@@ -648,18 +610,8 @@ body.drawer-open .studio-popover {
   box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.14);
 }
 
-.skybox-thumb-observatory {
-  background:
-    radial-gradient(circle at 50% 50%, transparent 0 38%, rgba(226, 192, 125, 0.45) 39% 43%, transparent 44%),
-    linear-gradient(135deg, #e7edf5 0 49%, #0a1528 51% 100%);
-}
-
 .skybox-thumb-milkyway {
   background: #040710 url('../assets/skyboxes/milkyway.jpg') center / cover no-repeat;
-}
-
-.skybox-thumb-nebula {
-  background: #040710 url('../assets/skyboxes/nebula.jpg') center / cover no-repeat;
 }
 
 .skybox-thumb-aurora {
@@ -894,12 +846,6 @@ body.drawer-open .studio-popover {
 
 body:not(.sidebar-collapsed) .atlas-micro-stat {
   opacity: 0;
-}
-
-html[data-theme="light"][data-skybox="observatory"] .atlas-micro-stat,
-html[data-theme="light"][data-skybox="observatory"] .chips-match-count {
-  color: var(--text-secondary);
-  text-shadow: none;
 }
 
 /* Filter Popover */

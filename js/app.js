@@ -227,11 +227,9 @@
     return Boolean(global.matchMedia && global.matchMedia('(prefers-reduced-motion: reduce)').matches);
   }
 
-  // Observatory Dual-World + Seasonal Flow + 1:1 Parallax Skyboxes + Retina 3D Starfield
-  const SKYBOX_KEY = 'wtg_skybox_v3';
+  // 1:1 Parallax Deep Space Skyboxes (Milky Way & Aurora) + Retina 3D Starfield
+  const SKYBOX_KEY = 'wtg_skybox_v4';
   const SKYBOX_PRESETS = [
-    { id: 'observatory', labelKey: 'skyObservatory', url: null, starCount: 850, starBoost: 0.95 },
-    { id: 'nebula', labelKey: 'skyNebula', url: 'assets/skyboxes/nebula.jpg', starCount: 900, starBoost: 0.92 },
     { id: 'milkyway', labelKey: 'skyMilkyway', url: 'assets/skyboxes/milkyway.jpg', starCount: 750, starBoost: 0.85 },
     { id: 'aurora', labelKey: 'skyAurora', url: 'assets/skyboxes/aurora.jpg', starCount: 950, starBoost: 0.95 }
   ];
@@ -282,7 +280,7 @@
       } catch (e) {
         // ignore
       }
-      return 'observatory';
+      return 'milkyway';
     }
 
     let currentPresetId = loadInitialPresetId();
@@ -456,7 +454,7 @@
 
     function updateParallax(center, pitch, reduced) {
       if (!layerA || !layerB) return;
-      if (reduced || currentPresetId === 'observatory') {
+      if (reduced) {
         layerA.style.transform = 'translate3d(0, 0, 0)';
         layerB.style.transform = 'translate3d(0, 0, 0)';
         return;
@@ -466,90 +464,6 @@
       const xf = `translate3d(${tx.toFixed(2)}px, ${ty.toFixed(2)}px, 0)`;
       layerA.style.transform = xf;
       layerB.style.transform = xf;
-    }
-
-    function drawAstrolabe(cx, cy, zoom, isLight, accentHex) {
-      const reticleFade = zoom <= 2.6 ? 1 : Math.max(0, 1 - (zoom - 2.6) / 1.7);
-      if (reticleFade <= 0.01) return;
-
-      const rBase = Math.min(width, height) * 0.37;
-      const center = !prefersReducedMotion() && map && typeof map.getCenter === 'function' ? map.getCenter() : { lng: 108, lat: 24 };
-      const bearing = !prefersReducedMotion() && map && typeof map.getBearing === 'function' ? map.getBearing() : 0;
-      const rot = (-center.lng * 0.5 - bearing) * DEG2RAD;
-
-      ctx.save();
-      ctx.globalAlpha = reticleFade;
-
-      // Subtle museum plinth shadow beneath the globe in Daylight Observatory
-      if (isLight) {
-        const sy = cy + rBase * 0.78;
-        const rx = rBase * 0.56;
-        const ry = rBase * 0.14;
-        ctx.save();
-        ctx.translate(cx, sy);
-        ctx.scale(1, ry / Math.max(1, rx));
-        const shadowGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, rx);
-        shadowGrad.addColorStop(0, 'rgba(15, 28, 52, 0.085)');
-        shadowGrad.addColorStop(0.55, 'rgba(15, 28, 52, 0.035)');
-        shadowGrad.addColorStop(1, 'rgba(15, 28, 52, 0)');
-        ctx.fillStyle = shadowGrad;
-        ctx.beginPath();
-        ctx.arc(0, 0, rx, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-      }
-
-      const ringMain = isLight ? 'rgba(15, 23, 42, 0.075)' : 'rgba(180, 208, 244, 0.08)';
-      const ringSub = isLight ? 'rgba(15, 23, 42, 0.045)' : 'rgba(226, 192, 125, 0.12)';
-      const tickMinor = isLight ? 'rgba(15, 23, 42, 0.08)' : 'rgba(180, 208, 244, 0.11)';
-      const tickMajor = isLight ? 'rgba(15, 23, 42, 0.16)' : 'rgba(226, 192, 125, 0.24)';
-
-      // 3 concentric astronomical orbital rings
-      [0.84, 1.0, 1.14].forEach((mult, idx) => {
-        ctx.strokeStyle = idx === 1 ? ringSub : ringMain;
-        ctx.lineWidth = idx === 1 ? 1.0 : 0.75;
-        ctx.beginPath();
-        ctx.arc(cx, cy, rBase * mult, 0, Math.PI * 2);
-        ctx.stroke();
-      });
-
-      // 4 faint outer meridian/equator hairlines
-      ctx.strokeStyle = ringMain;
-      ctx.lineWidth = 0.7;
-      for (let q = 0; q < 4; q++) {
-        const ang = rot + q * (Math.PI * 0.5);
-        ctx.beginPath();
-        ctx.moveTo(cx + Math.cos(ang) * (rBase * 1.14), cy + Math.sin(ang) * (rBase * 1.14));
-        ctx.lineTo(cx + Math.cos(ang) * (rBase * 1.24), cy + Math.sin(ang) * (rBase * 1.24));
-        ctx.stroke();
-      }
-
-      // 72 precision degree ticks (every 5°, major every 30°)
-      for (let i = 0; i < 72; i++) {
-        const isMajor = i % 6 === 0;
-        const ang = rot + (i * 5) * DEG2RAD;
-        const rIn = rBase * (isMajor ? 0.965 : 0.985);
-        const rOut = rBase * 1.015;
-        ctx.strokeStyle = isMajor ? tickMajor : tickMinor;
-        ctx.lineWidth = isMajor ? 1.1 : 0.65;
-        ctx.beginPath();
-        ctx.moveTo(cx + Math.cos(ang) * rIn, cy + Math.sin(ang) * rIn);
-        ctx.lineTo(cx + Math.cos(ang) * rOut, cy + Math.sin(ang) * rOut);
-        ctx.stroke();
-      }
-
-      // Restrained 48-degree luminous accent arc
-      ctx.save();
-      ctx.globalAlpha = reticleFade * (isLight ? 0.26 : 0.34);
-      ctx.strokeStyle = accentHex || '#E2C07D';
-      ctx.lineWidth = 1.5;
-      ctx.lineCap = 'round';
-      ctx.beginPath();
-      ctx.arc(cx, cy, rBase * 1.0, rot - 0.42, rot + 0.42);
-      ctx.stroke();
-      ctx.restore();
-
-      ctx.restore();
     }
 
     function render() {
@@ -581,58 +495,47 @@
 
       const cx = width * 0.5;
       const cy = height * 0.5;
-      const isObservatory = currentPresetId === 'observatory';
-      const themeState = Theme ? Theme.getState() : { mode: 'light', accentHex: '#B47D22' };
-      const isLight = themeState.mode === 'light';
+      const cam = computeCameraBasis(center, bearing, pitch);
+      const focal = Math.max(width, height) * 0.92;
+      const zoomFade = zoom <= 3.6 ? 1 : Math.max(0, 1 - (zoom - 3.6) / 1.6);
 
-      // Draw crisp 3D stars unless in Daylight Observatory (museum light studio stays pure)
-      if (!isObservatory || !isLight) {
-        const cam = computeCameraBasis(center, bearing, pitch);
-        const focal = Math.max(width, height) * 0.92;
-        const zoomFade = zoom <= 3.6 ? 1 : Math.max(0, 1 - (zoom - 3.6) / 1.6);
+      const meta = getPresetMeta(currentPresetId);
+      const count = Math.min(MAX_STARS, meta.starCount || MAX_STARS);
+      const boost = meta.starBoost || 1.0;
 
-        const meta = getPresetMeta(currentPresetId);
-        const count = Math.min(MAX_STARS, meta.starCount || MAX_STARS);
-        const boost = meta.starBoost || 1.0;
+      for (let i = 0; i < count; i++) {
+        const st = starsData[i];
+        const zCam = st.x * cam.forward[0] + st.y * cam.forward[1] + st.z * cam.forward[2];
+        if (zCam <= 0.14) continue;
 
-        for (let i = 0; i < count; i++) {
-          const st = starsData[i];
-          const zCam = st.x * cam.forward[0] + st.y * cam.forward[1] + st.z * cam.forward[2];
-          if (zCam <= 0.14) continue;
+        const xCam = st.x * cam.right[0] + st.y * cam.right[1] + st.z * cam.right[2];
+        const yCam = st.x * cam.up[0] + st.y * cam.up[1] + st.z * cam.up[2];
+        const sx = cx + (xCam / zCam) * focal;
+        const sy = cy - (yCam / zCam) * focal;
 
-          const xCam = st.x * cam.right[0] + st.y * cam.right[1] + st.z * cam.right[2];
-          const yCam = st.x * cam.up[0] + st.y * cam.up[1] + st.z * cam.up[2];
-          const sx = cx + (xCam / zCam) * focal;
-          const sy = cy - (yCam / zCam) * focal;
+        if (sx < -6 || sx > width + 6 || sy < -6 || sy > height + 6) continue;
 
-          if (sx < -6 || sx > width + 6 || sy < -6 || sy > height + 6) continue;
-
-          const a = Math.min(0.95, st.alpha * boost * zoomFade);
-          if (st.isAnchor) {
-            const haloR = st.r * 3.2;
-            const grad = ctx.createRadialGradient(sx, sy, 0, sx, sy, haloR);
-            grad.addColorStop(0, `rgba(${st.rgb},${Math.min(0.32, a * 0.24).toFixed(3)})`);
-            grad.addColorStop(1, `rgba(${st.rgb},0)`);
-            ctx.fillStyle = grad;
-            ctx.beginPath();
-            ctx.arc(sx, sy, haloR, 0, Math.PI * 2);
-            ctx.fill();
-          }
-
-          ctx.fillStyle = `rgba(${st.rgb},${a.toFixed(3)})`;
-          if (st.r <= 0.72) {
-            const sz = st.r * 1.55;
-            ctx.fillRect(sx - sz * 0.5, sy - sz * 0.5, sz, sz);
-          } else {
-            ctx.beginPath();
-            ctx.arc(sx, sy, st.r, 0, Math.PI * 2);
-            ctx.fill();
-          }
+        const a = Math.min(0.95, st.alpha * boost * zoomFade);
+        if (st.isAnchor) {
+          const haloR = st.r * 3.2;
+          const grad = ctx.createRadialGradient(sx, sy, 0, sx, sy, haloR);
+          grad.addColorStop(0, `rgba(${st.rgb},${Math.min(0.32, a * 0.24).toFixed(3)})`);
+          grad.addColorStop(1, `rgba(${st.rgb},0)`);
+          ctx.fillStyle = grad;
+          ctx.beginPath();
+          ctx.arc(sx, sy, haloR, 0, Math.PI * 2);
+          ctx.fill();
         }
-      }
 
-      if (isObservatory) {
-        drawAstrolabe(cx, cy, zoom, isLight, themeState.accentHex);
+        ctx.fillStyle = `rgba(${st.rgb},${a.toFixed(3)})`;
+        if (st.r <= 0.72) {
+          const sz = st.r * 1.55;
+          ctx.fillRect(sx - sz * 0.5, sy - sz * 0.5, sz, sz);
+        } else {
+          ctx.beginPath();
+          ctx.arc(sx, sy, st.r, 0, Math.PI * 2);
+          ctx.fill();
+        }
       }
     }
 
@@ -2919,15 +2822,7 @@
 
     if (!map || !map.isStyleLoaded()) return;
 
-    const isLightObservatory = isLight && starfield.getPreset() === 'observatory';
-    map.setSky(isLightObservatory ? {
-      'sky-color': 'rgba(231, 237, 245, 0)',
-      'horizon-color': '#7EAFF0',
-      'fog-color': '#DCE6F2',
-      'sky-horizon-blend': 0.42,
-      'horizon-fog-blend': 0.50,
-      'atmosphere-blend': ['interpolate', ['linear'], ['zoom'], 0, 0.55, 4.5, 0.35, 7, 0]
-    } : {
+    map.setSky({
       'sky-color': 'rgba(4, 7, 15, 0)',
       'horizon-color': '#356FB8',
       'fog-color': '#0C1A33',

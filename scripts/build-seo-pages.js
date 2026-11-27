@@ -14,7 +14,7 @@ try {
   resvgPkgPath = null;
 }
 
-const OG_CACHE_VER = 'v4.5.2';
+const OG_CACHE_VER = 'v4.5.3';
 const FONT_CANDIDATES = [
   'C:/Windows/Fonts/simhei.ttf',
   '/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc',
@@ -170,18 +170,8 @@ function generateOgSvg(dest) {
   }).join('');
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="hsl(${hue}, 38%, 11%)"/>
-      <stop offset="100%" stop-color="hsl(${hue2}, 34%, 6%)"/>
-    </linearGradient>
-    <radialGradient id="glow" cx="78%" cy="32%" r="48%">
-      <stop offset="0%" stop-color="rgba(226,192,125,0.28)"/>
-      <stop offset="100%" stop-color="rgba(0,0,0,0)"/>
-    </radialGradient>
-  </defs>
-  <rect width="1200" height="630" fill="url(#bg)"/>
-  <rect width="1200" height="630" fill="url(#glow)"/>
+  <rect width="1200" height="630" fill="hsl(${hue}, 32%, 9%)"/>
+  <circle cx="940" cy="210" r="240" fill="hsl(${hue2}, 34%, 14%)" opacity="0.65"/>
   <rect x="24" y="24" width="1152" height="582" rx="22" fill="none" stroke="rgba(226,192,125,0.28)" stroke-width="2"/>
   <text x="64" y="84" fill="#E2C07D" font-size="20" font-weight="600" font-family="sans-serif">${esc(dest.country || '')} · ${esc(dest.province || dest.region || '')}</text>
   <text x="64" y="156" fill="#F8FAFC" font-size="52" font-weight="700" font-family="sans-serif">${esc(String(dest.shortName || dest.name || '').slice(0, 18))}</text>
@@ -355,7 +345,7 @@ function buildDirectoryHtml(all) {
 
 function runParallelOgWorkers(jobs, ogDir, cacheDir) {
   if (!jobs.length) return Promise.resolve();
-  const threadCount = Math.max(1, Math.min(12, os.cpus().length || 4, jobs.length));
+  const threadCount = Math.max(1, Math.min(8, os.cpus().length || 4, jobs.length));
   const buckets = Array.from({ length: threadCount }, () => []);
   jobs.forEach((job, idx) => buckets[idx % threadCount].push(job));
 

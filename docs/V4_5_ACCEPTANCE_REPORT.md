@@ -26,7 +26,7 @@
    - 补齐 `init()` 防重入、`visibilitychange` 后台暂停星空/自转/晨昏线计时器、`orientationchange` 防抖重排，以及 `webglcontextlost` / WebGL 失败自动切换至 **2D 图鉴 + 目录** 兜底浏览。
    - 加固 `?embed=<id>&chrome=off` 纯净嵌入模式并注入 `Content-Security-Policy: frame-ancestors *`；移动端核心交互按钮高度统一提升至 **`>= 40px`**。
 5. **722 城专属 `1200×630` PNG OG 卡片与上游弹性治理 (`scripts/build-seo-pages.js`, `js/services/api-client.js`, `worker/index.js`)**：
-   - 使用 `@resvg/resvg-js` + Node 并发工作线程与 `.cache/og/` SHA-256 增量缓存为 722 座目的地生成独立 `1200×630` PNG OG 卡片，缓存复建耗时仅 **1.60 秒**。
+   - 使用 `@resvg/resvg-js` + Node 并发工作线程与 `.cache/og/` SHA-256 增量缓存为 722 座目的地生成独立 `1200×630` PNG OG 卡片，缓存复建耗时仅 **1.68 秒**（全量 PNG 产物经扁平底图优化压缩至 **38.4 MB**）。
    - `ApiClient` 升级指数退避抖动、`Retry-After`、外部 `AbortSignal` 取消及 11 路数据源健康表；Worker 所有代理强制 `12s` 请求超时。
 
 ---
@@ -37,9 +37,9 @@
 |---|---|
 | 原始数据集 (`npm.cmd run audit`) | **137 国/地区 · 722 目的地 · 5,414 机位** · `0` 重复 ID · `0` 无效坐标 · `0` 缺失必填字段 |
 | 生产包体积 (`npm.cmd run build`) | `css/app.bundle.min.css` `216.6 KB (34.0 KB gzip)` · `vendor/libs.bundle.min.js` `351.2 KB (129.3 KB gzip)` · `js/app.bundle.min.js` `767.5 KB (202.1 KB gzip)` · `atlas-index.min.js` `1265.6 KB (451.2 KB gzip)` |
-| 静态 SEO 与 PNG OG 产物 | 722 个 `/p/<id>/index.html` · **723 张 `1200×630` PNG**（总计 `108.65 MB`，`dist/` 共 `2,348` 文件） · 增量缓存复建耗时 **`1.6 s`** |
+| 静态 SEO 与 PNG OG 产物 | 722 个 `/p/<id>/index.html` · **723 张 `1200×630` PNG**（总计 `38.4 MB`，`dist/` 共 `2,348` 文件） · 增量缓存复建耗时 **`1.68 s`** |
 | 自动化测试 (`npm.cmd test`) | **46 / 46 全部通过**（含 240 轮随机 CRDT 性质检验、8 城 IANA 时区 & SunCalc 晨昏验证、ApiClient/Worker 安全头 & OG PNG 验证） |
-| Playwright Chromium 端到端 (`npm.cmd run test:e2e`) | **10 / 10 场景全过 · `0` 未捕获 `pageerror`** · 本地预加载首屏 `domContentLoaded 118ms` / `load 176ms` / `47` 请求 |
+| Playwright Chromium 端到端 (`npm.cmd run test:e2e`) | **10 / 10 场景全过 · `0` 未捕获 `pageerror`** · 本地预加载首屏 `domContentLoaded 90ms` / `load 143ms` / `48` 请求 |
 | 模拟多视口布局校验（Chromium Emulated） | `360×800` (`overflow=0, minTouch=40px`) · `390×844` (`overflow=0, minTouch=40px`) · `768×1024` (`overflow=0, minTouch=40px`) · `1440×900` (`overflow=0`) |
 
 > [!NOTE]

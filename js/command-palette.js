@@ -459,9 +459,27 @@
     }
 
     if (input) {
+      let isComposing = false;
+      let inputTimer = 0;
+
+      input.addEventListener('compositionstart', () => {
+        isComposing = true;
+      });
+      input.addEventListener('compositionend', () => {
+        isComposing = false;
+        if (clearBtn) clearBtn.classList.toggle('is-hidden', !input.value);
+        clearTimeout(inputTimer);
+        renderResults(input.value);
+      });
       input.addEventListener('input', () => {
         if (clearBtn) clearBtn.classList.toggle('is-hidden', !input.value);
-        renderResults(input.value);
+        if (isComposing) return;
+        clearTimeout(inputTimer);
+        if (!input.value) {
+          renderResults('');
+        } else {
+          inputTimer = setTimeout(() => renderResults(input.value), 65);
+        }
       });
 
       input.addEventListener('keydown', (e) => {

@@ -11,6 +11,8 @@
   };
   const FOCAL_PRESETS = [14, 24, 35, 50, 85, 135, 200];
   const horizonCache = new Map();
+  const weatherCache = new Map();
+  const WEATHER_TTL_MS = 900000;
 
   let state = {
     destId: null,
@@ -510,7 +512,7 @@
         <div class="sim-controls-row">
           <input class="sim-input mono-num" id="sim-date-input" type="date" value="${esc(state.dateStr)}" aria-label="模拟日期" />
           <div style="display:flex;align-items:center;gap:6px;">
-            <span class="mono-num" style="font-size:12px;min-width:44px;">${timeText}</span>
+            <span id="sim-time-label" class="mono-num" style="font-size:12px;min-width:44px;">${timeText}</span>
             <input id="sim-time-range" type="range" min="0" max="1439" step="5" value="${state.minutes}" style="flex:1;" aria-label="模拟时刻" />
           </div>
         </div>
@@ -538,8 +540,8 @@
         </div>
 
         <div class="sim-compass-wrap">
-          ${buildCompassSvg(sim, state.cameraAzimuth, lensFov.hFov)}
-          <div style="flex:1;min-width:155px;font-size:11.5px;line-height:1.6;">
+          <div id="sim-compass-host">${buildCompassSvg(sim, state.cameraAzimuth, lensFov.hFov)}</div>
+          <div id="sim-sun-stats" style="flex:1;min-width:155px;font-size:11.5px;line-height:1.6;">
             <div>太阳方位：<strong class="mono-num">${sim.sunPos.azimuth.toFixed(1)}°</strong> (${compassDirName(sim.sunPos.azimuth)})</div>
             <div>太阳高度：<strong class="mono-num">${sim.sunPos.altitude.toFixed(1)}°</strong></div>
             <div>机位朝向：<strong class="mono-num">${state.cameraAzimuth}°</strong> (${compassDirName(state.cameraAzimuth)})</div>
@@ -549,7 +551,7 @@
 
         <div style="margin-top:6px;">
           <div style="display:flex;justify-content:space-between;align-items:center;font-size:11.5px;">
-            <span>调整机位拍摄朝向：<strong class="mono-num">${state.cameraAzimuth}°</strong></span>
+            <span>调整机位拍摄朝向：<strong id="sim-azimuth-label" class="mono-num">${state.cameraAzimuth}°</strong></span>
             <div style="display:flex;gap:6px;">
               <button class="mini-action-pill" id="sim-align-cam-btn" type="button">同步地球视角</button>
               <label style="display:inline-flex;align-items:center;gap:4px;cursor:pointer;">
@@ -560,7 +562,7 @@
           <input id="sim-azimuth-range" type="range" min="0" max="359" value="${state.cameraAzimuth}" style="width:100%;margin-top:4px;" />
         </div>
 
-        ${buildCurveSvg(sim, state.minutes)}
+        <div id="sim-curve-host">${buildCurveSvg(sim, state.minutes)}</div>
 
         <div class="sim-times-grid">
           <div class="sim-time-cell"><span>🌅 蓝调晨 (Dawn)</span><strong class="mono-num">${fmtTime(sim.times.dawn)}</strong></div>
@@ -615,6 +617,56 @@
 
     const rerender = () => mount(dest, containerEl, state.spotIdx);
 
+    const renderWeatherAdvice = (live) => {
+      const wxAdviceEl = containerEl.querySelector('#sim-wx-advice');
+      if (!wxAdviceEl || !document.body.contains(wxAdviceEl) || !live) return;
+      const hourly = live && live.hourly;
+      const targetPrefix = `${state.dateStr}T${String(Math.floor(state.minutes / 60)).padStart(2, '0')}`;
+      const idx = hourly && Array.isArray(hourly.time) ? hourly.time.findIndex((t) => t.startsWith(targetPrefix)) : -1;
+      if (idx >= 0) {
+        const cc = hourly.cloud_cover[idx];
+        const pop = hourly.precipitation_probability[idx];
+        let verdict = '光影条件良好，适合常规拍摄。';
+        if (pop >= 55) verdict = '降水概率偏高，建议做好防雨或转向室内/雨景构图。';
+        else if (cc >= 25 && cc <= 65) verdict = '中低云量适中，日出日落出现火烧云/层次光概率较高。';
+        else if (cc < 25) verdict = '天空极通透，适合星空、清晰远景与强对比日光。';
+        else verdict = '云层较厚，适合柔和漫射光、建筑摄影或长曝光。';
+        wxAdviceEl.innerHTML = `<span class="source-tag realtime">Open-Meteo 预报</span> 选定时刻预报云量 <strong class="mono-num">${cc}%</strong> · 降水概率 <strong class="mono-num">${pop}%</strong> — ${esc(verdict)}`;
+      } else {
+        wxAdviceEl.innerHTML = `<span class="source-tag astronomy">天文计算</span> 所选日期超出 7 日实况预报窗口，请结合下方历史气候统计与经验时段安排机位。`;
+      }
+    };
+
+    const wxKey = `${coords[1].toFixed(3)},${coords[0].toFixed(3)}`;
+    const updateDynamicReadouts = () => {
+      const nextSim = computeSimulation(coords[1], coords[0], state.dateStr, state.minutes, state.cameraAzimuth);
+      if (!nextSim) return;
+      const tLabel = containerEl.querySelector('#sim-time-label');
+      const azLabel = containerEl.querySelector('#sim-azimuth-label');
+      const compassHost = containerEl.querySelector('#sim-compass-host');
+      const sunStats = containerEl.querySelector('#sim-sun-stats');
+      const curveHost = containerEl.querySelector('#sim-curve-host');
+      if (tLabel) {
+        tLabel.textContent = `${String(Math.floor(state.minutes / 60)).padStart(2, '0')}:${String(state.minutes % 60).padStart(2, '0')}`;
+      }
+      if (azLabel) azLabel.textContent = `${state.cameraAzimuth}°`;
+      if (compassHost) compassHost.innerHTML = buildCompassSvg(nextSim, state.cameraAzimuth, lensFov.hFov);
+      if (sunStats) {
+        sunStats.innerHTML = `
+          <div>太阳方位：<strong class="mono-num">${nextSim.sunPos.azimuth.toFixed(1)}°</strong> (${compassDirName(nextSim.sunPos.azimuth)})</div>
+          <div>太阳高度：<strong class="mono-num">${nextSim.sunPos.altitude.toFixed(1)}°</strong></div>
+          <div>机位朝向：<strong class="mono-num">${state.cameraAzimuth}°</strong> (${compassDirName(state.cameraAzimuth)})</div>
+          <div style="margin-top:4px;"><span class="source-tag astronomy">${esc(nextSim.lightRelation.badge)}</span> ${esc(nextSim.lightRelation.label)}</div>
+        `;
+      }
+      if (curveHost) curveHost.innerHTML = buildCurveSvg(nextSim, state.minutes);
+      updateGlobeOverlay(coords, nextSim, state.cameraAzimuth, lensFov.hFov);
+      const cachedWx = weatherCache.get(wxKey);
+      if (cachedWx && Date.now() - cachedWx.ts < WEATHER_TTL_MS) {
+        renderWeatherAdvice(cachedWx.data);
+      }
+    };
+
     containerEl.querySelector('#sim-spot-select').addEventListener('change', (e) => {
       state.spotIdx = Number(e.target.value);
       rerender();
@@ -627,11 +679,11 @@
     });
     containerEl.querySelector('#sim-time-range').addEventListener('input', (e) => {
       state.minutes = Number(e.target.value);
-      rerender();
+      updateDynamicReadouts();
     });
     containerEl.querySelector('#sim-azimuth-range').addEventListener('input', (e) => {
       state.cameraAzimuth = Number(e.target.value);
-      rerender();
+      updateDynamicReadouts();
     });
     containerEl.querySelector('#sim-sensor-select').addEventListener('change', (e) => {
       state.sensorKey = e.target.value;
@@ -750,30 +802,21 @@
       }
     }
 
-    // Weather-aware advice when within 7-day Open-Meteo window
+    // Weather-aware advice when within 7-day Open-Meteo window (memory cached 15m)
     const wxAdviceEl = containerEl.querySelector('#sim-wx-advice');
     if (wxAdviceEl && global.WeatherService) {
-      try {
-        const live = await global.WeatherService.fetchLiveWeather(coords[1], coords[0]);
-        if (!document.body.contains(wxAdviceEl)) return;
-        const hourly = live && live.hourly;
-        const targetPrefix = `${state.dateStr}T${String(Math.floor(state.minutes / 60)).padStart(2, '0')}`;
-        const idx = hourly && Array.isArray(hourly.time) ? hourly.time.findIndex((t) => t.startsWith(targetPrefix)) : -1;
-        if (idx >= 0) {
-          const cc = hourly.cloud_cover[idx];
-          const pop = hourly.precipitation_probability[idx];
-          let verdict = '光影条件良好，适合常规拍摄。';
-          if (pop >= 55) verdict = '降水概率偏高，建议做好防雨或转向室内/雨景构图。';
-          else if (cc >= 25 && cc <= 65) verdict = '中低云量适中，日出日落出现火烧云/层次光概率较高。';
-          else if (cc < 25) verdict = '天空极通透，适合星空、清晰远景与强对比日光。';
-          else verdict = '云层较厚，适合柔和漫射光、建筑摄影或长曝光。';
-          wxAdviceEl.innerHTML = `<span class="source-tag realtime">Open-Meteo 预报</span> 选定时刻预报云量 <strong class="mono-num">${cc}%</strong> · 降水概率 <strong class="mono-num">${pop}%</strong> — ${esc(verdict)}`;
-        } else {
-          wxAdviceEl.innerHTML = `<span class="source-tag astronomy">天文计算</span> 所选日期超出 7 日实况预报窗口，请结合下方历史气候统计与经验时段安排机位。`;
-        }
-      } catch (e) {
-        if (document.body.contains(wxAdviceEl)) {
-          wxAdviceEl.innerHTML = `<span class="source-tag empirical">离线模式</span> 气象预报暂不可用，天文太阳/月相计算仍可离线精确运行。`;
+      const cachedWx = weatherCache.get(wxKey);
+      if (cachedWx && Date.now() - cachedWx.ts < WEATHER_TTL_MS) {
+        renderWeatherAdvice(cachedWx.data);
+      } else {
+        try {
+          const live = await global.WeatherService.fetchLiveWeather(coords[1], coords[0]);
+          weatherCache.set(wxKey, { data: live, ts: Date.now() });
+          renderWeatherAdvice(live);
+        } catch (e) {
+          if (document.body.contains(wxAdviceEl)) {
+            wxAdviceEl.innerHTML = `<span class="source-tag empirical">离线模式</span> 气象预报暂不可用，天文太阳/月相计算仍可离线精确运行。`;
+          }
         }
       }
     }

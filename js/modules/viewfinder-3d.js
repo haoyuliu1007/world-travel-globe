@@ -6,6 +6,9 @@
   let savedCamera = null;
   let savedTerrainState = false;
   let moveHandler = null;
+  let moveRafId = 0;
+  let cachedSimKey = '';
+  let cachedSim = null;
   let state = {
     dest: null,
     spot: null,
@@ -83,8 +86,16 @@
       ? global.PhotoSimulator.computeLensFov(state.focalMm, state.sensorKey)
       : { hFov: 73.7, vFov: 53.1, eqFocalMm: state.focalMm, sensorLabel: '全画幅 35mm', aspect: '3:2' };
 
-    const sim = global.PhotoSimulator
-      ? global.PhotoSimulator.computeSimulation(state.coords[1], state.coords[0], state.dateStr, state.minutes, bearing)
+    const simKey = `${state.coords[1].toFixed(4)},${state.coords[0].toFixed(4)}|${state.dateStr}|${state.minutes}`;
+    if (global.PhotoSimulator) {
+      if (simKey !== cachedSimKey || !cachedSim) {
+        cachedSim = global.PhotoSimulator.computeSimulation(state.coords[1], state.coords[0], state.dateStr, state.minutes, bearing);
+        cachedSimKey = simKey;
+      }
+    }
+    const sim = cachedSim;
+    const lightRel = sim && global.PhotoSimulator
+      ? global.PhotoSimulator.classifyLightAngle(sim.sunPos.azimuth, bearing, sim.sunPos.altitude)
       : null;
 
     const elevM = map && global.Terrain3DModule ? global.Terrain3DModule.queryElevation(map, state.coords[0], state.coords[1]) : null;
@@ -122,7 +133,7 @@
           <div class="vf-thirds-v2"></div>
           <div class="vf-hud-meta-tl mono-num">${state.focalMm}mm · ${esc(lens.sensorLabel)}</div>
           <div class="vf-hud-meta-tr mono-num">FOV ${lens.hFov.toFixed(1)}° × ${lens.vFov.toFixed(1)}° · 等效 ${lens.eqFocalMm}mm</div>
-          <div class="vf-hud-meta-bl">${sim ? `${esc(sim.lightRelation.badge)} · ${esc(sim.lightRelation.label)}` : ''}</div>
+          <div class="vf-hud-meta-bl" id="vf-light-badge">${lightRel ? `${esc(lightRel.badge)} · ${esc(lightRel.label)}` : ''}</div>
           <div class="vf-hud-meta-br mono-num">海拔 ${esc(elevLabel)} · 基于 DEM 与几何透视示意</div>
         </div>
       </div>
@@ -226,17 +237,27 @@
 
     if (moveHandler) map.off('move', moveHandler);
     moveHandler = () => {
-      if (!active) return;
-      const tape = document.getElementById('vf-compass-tape');
-      const bChip = hud.querySelector('.vf-bearing-chip');
-      const b = Math.round(((map.getBearing() % 360) + 360) % 360);
-      state.bearing = b;
-      if (bChip) bChip.textContent = `${b}°`;
-      if (tape && global.PhotoSimulator) {
-        const curLens = global.PhotoSimulator.computeLensFov(state.focalMm, state.sensorKey);
-        const sim = global.PhotoSimulator.computeSimulation(state.coords[1], state.coords[0], state.dateStr, state.minutes, b);
-        tape.innerHTML = `<div class="vf-tape-center"></div>${buildCompassMarkers(b, curLens.hFov, sim)}`;
-      }
+      if (!active || moveRafId) return;
+      moveRafId = requestAnimationFrame(() => {
+        moveRafId = 0;
+        if (!active) return;
+        const tape = document.getElementById('vf-compass-tape');
+        const bChip = hud.querySelector('.vf-bearing-chip');
+        const lightEl = document.getElementById('vf-light-badge');
+        const b = Math.round(((map.getBearing() % 360) + 360) % 360);
+        state.bearing = b;
+        if (bChip) bChip.textContent = `${b}°`;
+        if (global.PhotoSimulator && cachedSim) {
+          if (tape) {
+            const curLens = global.PhotoSimulator.computeLensFov(state.focalMm, state.sensorKey);
+            tape.innerHTML = `<div class="vf-tape-center"></div>${buildCompassMarkers(b, curLens.hFov, cachedSim)}`;
+          }
+          if (lightEl) {
+            const rel = global.PhotoSimulator.classifyLightAngle(cachedSim.sunPos.azimuth, b, cachedSim.sunPos.altitude);
+            lightEl.textContent = `${rel.badge} · ${rel.label}`;
+          }
+        }
+      });
     };
     map.on('move', moveHandler);
   }
@@ -244,6 +265,10 @@
   function close() {
     if (!active) return;
     active = false;
+    if (moveRafId) {
+      cancelAnimationFrame(moveRafId);
+      moveRafId = 0;
+    }
     const map = typeof global.getGlobeMap === 'function' ? global.getGlobeMap() : null;
     const hud = document.getElementById('viewfinder-hud');
 

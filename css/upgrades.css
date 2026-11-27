@@ -649,6 +649,9 @@ body.fullscreen-globe .detail-drawer {
   bottom: 68px;
   right: 16px;
   width: min(322px, calc(100vw - 32px));
+  max-height: calc(100dvh - 132px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   z-index: 36;
   padding: 15px;
   background: var(--bg-material-strong);
@@ -836,7 +839,8 @@ body.drawer-open .layers-popover {
     padding: calc(106px + env(safe-area-inset-top)) 12px 24px;
   }
   body.drawer-open .globe-controls,
-  body.drawer-open .phenology-bar {
+  body.drawer-open .phenology-bar,
+  body.drawer-open .orbit-rail {
     opacity: 0;
     pointer-events: none;
   }
@@ -1594,6 +1598,18 @@ body.drawer-open .music-popover {
   font-size: 11.5px;
   box-shadow: var(--shadow-float);
 }
+@media (min-width: 769px) {
+  body.drawer-open .aurora-status-pill {
+    left: calc(50% - 204px);
+  }
+}
+
+body.viewfinder-active .aurora-status-pill,
+body.fullscreen-globe .aurora-status-pill {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
 .aurora-dot {
   width: 8px;
   height: 8px;

@@ -538,10 +538,18 @@
         }
       }
 
-      // Overlay real J2000 bright stars, constellations & Galactic Center aligned to live GMST
+      // Overlay real J2000 bright stars, constellations & Galactic Center aligned to live GMST (60s cached)
       if (global.BrightStars && typeof global.BrightStars.getProjectedStars === 'function') {
-        const now = new Date();
-        const gcVec = global.BrightStars.getGalacticCenterVector(now);
+        const nowMs = Date.now();
+        if (!starfield._realCache || nowMs - starfield._realCacheAt > 60000) {
+          const nowDt = new Date(nowMs);
+          starfield._realCache = {
+            gcVec: global.BrightStars.getGalacticCenterVector(nowDt),
+            stars: global.BrightStars.getProjectedStars(nowDt)
+          };
+          starfield._realCacheAt = nowMs;
+        }
+        const gcVec = starfield._realCache.gcVec;
         const gcZ = gcVec[0] * cam.forward[0] + gcVec[1] * cam.forward[1] + gcVec[2] * cam.forward[2];
         if (gcZ > 0.16 && zoom < 4.5) {
           const gcX = cx + ((gcVec[0] * cam.right[0] + gcVec[1] * cam.right[1] + gcVec[2] * cam.right[2]) / gcZ) * focal;
@@ -559,7 +567,7 @@
           }
         }
 
-        const realStars = global.BrightStars.getProjectedStars(now);
+        const realStars = starfield._realCache.stars;
         const projected = new Array(realStars.length);
         for (let i = 0; i < realStars.length; i++) {
           const rs = realStars[i];
@@ -593,14 +601,21 @@
           if (!pt) continue;
           const { sx, sy, rs } = pt;
           const a = Math.min(0.98, rs.alpha * zoomFade);
-          const haloR = rs.r * 3.8;
-          const grad = ctx.createRadialGradient(sx, sy, 0, sx, sy, haloR);
-          grad.addColorStop(0, `rgba(${rs.rgb},${(a * 0.42).toFixed(3)})`);
-          grad.addColorStop(1, `rgba(${rs.rgb},0)`);
-          ctx.fillStyle = grad;
-          ctx.beginPath();
-          ctx.arc(sx, sy, haloR, 0, Math.PI * 2);
-          ctx.fill();
+          if (rs.mag <= 1.2) {
+            const haloR = rs.r * 3.8;
+            const grad = ctx.createRadialGradient(sx, sy, 0, sx, sy, haloR);
+            grad.addColorStop(0, `rgba(${rs.rgb},${(a * 0.42).toFixed(3)})`);
+            grad.addColorStop(1, `rgba(${rs.rgb},0)`);
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(sx, sy, haloR, 0, Math.PI * 2);
+            ctx.fill();
+          } else {
+            ctx.fillStyle = `rgba(${rs.rgb},${(a * 0.22).toFixed(3)})`;
+            ctx.beginPath();
+            ctx.arc(sx, sy, rs.r * 2.1, 0, Math.PI * 2);
+            ctx.fill();
+          }
 
           ctx.fillStyle = `rgba(${rs.rgb},${a.toFixed(3)})`;
           ctx.beginPath();

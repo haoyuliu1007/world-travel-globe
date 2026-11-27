@@ -1,5 +1,21 @@
 # 更新日志 (CHANGELOG)
 
+## [4.1.0] - 2026-11-27 · UI Polish, Scenery Filtering & 60fps Perf
+
+### 修复与体验优化 (Fixed & Optimized)
+- **彻底解决详情抽屉与顶部灵动岛重叠问题 (`css/styles.css`, `css/upgrades.css`)**：
+  - 桌面端 `.detail-drawer` 下移至 `top: 72px`，与顶部 `44px` 灵动岛留出 `12px` 呼吸间距，右上角「电台 / 外观 / 语言」不再遮挡抽屉关闭/分享/收藏按钮。
+  - 移动端 `.detail-drawer` 提升层级（`z-index: 38`）并隐藏冲突中的右侧轨道，全屏展开时可随时无阻点击关闭按钮。
+  - 为 `.layers-popover` 增加 `max-height: calc(100dvh - 132px)` 与内部滚动，为 `.aurora-status-pill` 增加抽屉避让与取景器/全屏自动隐退。
+- **Wikimedia 实景画廊去噪与风景地标优选 (`js/services/media-wikidata.js`)**：
+  - 新增 `scoreTravelPhoto` 与 `rankAndFilterTravelPhotos`：自动过滤或重降权美食/菜品/Logo/定位图/肖像等非风景图，扩大候选池并优先展示横向高分地标建筑与自然风光，同时升级缓存键（`photos:v3p` / `photos:v3`）立即刷新客户端旧缓存。
+- **全链路 60fps 渲染与内存泄漏修复**：
+  - **360° 全景 WebGL (`streetview.js`)**：修复 `window.mousemove` 全局监听未解绑导致的内存泄漏，关闭时主动触发 `WEBGL_lose_context` 释放显存。
+  - **3D 取景器 (`viewfinder-3d.js`)**：对太阳轨迹计算按机位+日期+时刻缓存，并使用 `requestAnimationFrame` 合并拖拽帧更新指南针标尺与光影判定。
+  - **光影模拟器 (`photo-simulator.js`)**：拖动时间/方位滑块改为局部原地 DOM 刷新，彻底消除滑块失焦与卡片闪烁；Open-Meteo 预报增加 15 分钟内存缓存。
+  - **真实星穹 (`app.js`) & 全局搜索 (`command-palette.js`)**：星穹 J2000 坐标按 60 秒缓存减少每帧对象分配；全局搜索增加中文 IME 组合输入保护与 `65ms` 防抖。
+- **自动化测试扩展**：新增 `tests/v4-1-polish.test.js`（总测试数增至 25 项）。
+
 ## [4.0.0] - 2026-11-27 · Geo Intelligence
 
 ### 新增 (Added)

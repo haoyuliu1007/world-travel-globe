@@ -332,8 +332,10 @@
       }
     };
 
-    canvas.addEventListener('mousedown', (e) => onDown(e.clientX, e.clientY));
-    global.addEventListener('mousemove', (e) => onMove(e.clientX, e.clientY));
+    const onMouseDown = (e) => onDown(e.clientX, e.clientY);
+    const onMouseMove = (e) => onMove(e.clientX, e.clientY);
+    canvas.addEventListener('mousedown', onMouseDown);
+    global.addEventListener('mousemove', onMouseMove);
     global.addEventListener('mouseup', onUp);
     canvas.addEventListener('touchstart', (e) => {
       if (e.touches[0]) onDown(e.touches[0].clientX, e.touches[0].clientY);
@@ -361,12 +363,16 @@
       remove: () => {
         disposed = true;
         if (rafId) cancelAnimationFrame(rafId);
+        canvas.removeEventListener('mousedown', onMouseDown);
+        global.removeEventListener('mousemove', onMouseMove);
         global.removeEventListener('mouseup', onUp);
         global.removeEventListener('resize', onResize);
         try {
           gl.deleteTexture(tex);
           gl.deleteBuffer(buf);
           gl.deleteProgram(prog);
+          const loseExt = gl.getExtension('WEBGL_lose_context');
+          if (loseExt && typeof loseExt.loseContext === 'function') loseExt.loseContext();
         } catch (e) {
           // ignore
         }

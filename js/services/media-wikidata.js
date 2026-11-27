@@ -157,6 +157,58 @@
     return fetchWithDirectCircuit(url, `wp:${hostLang}:${query}`, SEVEN_DAYS_MS, `Wikipedia (${hostLang})`, useProxy);
   }
 
+  const IRRELEVANT_PHOTO_RE =
+    /\b(curry|food|dish|meal|soup|noodle|rice|salad|vegetable|fruit|dessert|menu|plate|bowl|restaurant|cuisine|cooking|eating|breakfast|lunch|dinner|snack|beverage|drink|cocktail|logo|flag|coat of arms|emblem|seal of|map of|locator|diagram|chart|graph|portrait|selfie|headshot|ticket|stamp|coin|banknote|qr code|screenshot|signpost|gravestone|tombstone|kaeng|khao soi|pad thai|som tam)\b/i;
+
+  const SCENERY_PHOTO_RE =
+    /\b(temple|wat|mountain|peak|lake|sunset|sunrise|view|panorama|skyline|bridge|palace|cathedral|church|castle|fjord|glacier|coast|beach|valley|old town|night|aerial|landscape|river|forest|park|garden|pagoda|shrine|monastery|harbor|bay|canyon|waterfall|cliff|summit|island|arch|square|plaza|cityscape)\b/i;
+
+  /**
+   * Score Wikimedia Commons photo relevance for travel scenery & landmarks,
+   * heavily penalizing food, logos, locator maps, portraits, and tickets.
+   */
+  function scoreTravelPhoto(photo, placeName) {
+    if (!photo || typeof photo !== 'object') return { score: -999, isIrrelevant: true };
+    const text = `${photo.title || ''} ${photo.description || ''}`;
+    let score = 0;
+    let isIrrelevant = false;
+
+    if (IRRELEVANT_PHOTO_RE.test(text)) {
+      score -= 80;
+      isIrrelevant = true;
+    }
+
+    const w = Number(photo.width) || 0;
+    const h = Number(photo.height) || 0;
+    const aspect = w > 0 && h > 0 ? w / h : 1.5;
+
+    if (aspect >= 1.2 && aspect <= 2.4) score += 20;
+    else if (photo.isPano || aspect > 2.4) score += 12;
+    else if (aspect < 0.75) score -= 12;
+
+    if (w >= 1000) score += 10;
+    if (SCENERY_PHOTO_RE.test(text)) score += 18;
+
+    const cleanPlace = cleanQueryName(placeName || '').toLowerCase();
+    if (cleanPlace && cleanPlace.length >= 2 && text.toLowerCase().includes(cleanPlace)) {
+      score += 14;
+    }
+
+    return { score, isIrrelevant };
+  }
+
+  function rankAndFilterTravelPhotos(photos, placeName, limit) {
+    if (!Array.isArray(photos) || !photos.length) return [];
+    const scored = photos.map((p) => {
+      const r = scoreTravelPhoto(p, placeName);
+      return { photo: p, score: r.score, isIrrelevant: r.isIrrelevant };
+    });
+    scored.sort((a, b) => b.score - a.score);
+    const clean = scored.filter((x) => !x.isIrrelevant).map((x) => x.photo);
+    const pool = clean.length ? clean : scored.map((x) => x.photo);
+    return pool.slice(0, limit || 6);
+  }
+
   async function fetchPlacePhotos(opts) {
     const o = opts || {};
     const lat = Number(o.lat);
@@ -165,7 +217,7 @@
     const radiusM = Math.min(10000, o.radiusM || 3500);
     const Api = global.ApiClient;
     const caps = Api ? await Api.detectWorkerCapabilities() : { available: false };
-    const cachePrefix = caps && caps.available && caps.features && caps.features.img ? 'photos:v2p' : 'photos:v1';
+    const cachePrefix = caps && caps.available && caps.features && caps.features.img ? 'photos:v3p' : 'photos:v3';
     const cacheKey = `${cachePrefix}:${o.id || ''}:${lat.toFixed(3)},${lng.toFixed(3)}:${cleanQueryName(o.name)}:${limit}`;
 
     if (global.StorageDB) {
@@ -183,7 +235,7 @@
           ggsnamespace: '6',
           ggscoord: `${lat}|${lng}`,
           ggsradius: String(radiusM),
-          ggslimit: String(Math.min(15, limit + 5)),
+          ggslimit: String(Math.min(24, limit * 3)),
           prop: 'imageinfo',
           iiprop: 'url|extmetadata|size|mime',
           iiurlwidth: '960'
@@ -194,7 +246,8 @@
       // fall through to text search
     }
 
-    if (photos.length < 2 && o.name) {
+    const cleanCount = photos.filter((p) => !scoreTravelPhoto(p, o.name).isIrrelevant).length;
+    if (cleanCount < 2 && o.name) {
       try {
         const q = `${cleanQueryName(o.name)} ${cleanQueryName(o.country || '')}`.trim();
         const searchRes = await queryCommonsApi({
@@ -202,7 +255,7 @@
           generator: 'search',
           gsrsearch: `${q} filetype:bitmap`,
           gsrnamespace: '6',
-          gsrlimit: String(limit + 3),
+          gsrlimit: String(Math.min(20, limit * 2 + 4)),
           prop: 'imageinfo',
           iiprop: 'url|extmetadata|size|mime',
           iiurlwidth: '960'
@@ -249,7 +302,7 @@
       }
     }
 
-    const result = photos.slice(0, limit);
+    const result = rankAndFilterTravelPhotos(photos, o.name, limit);
     if (global.StorageDB && result.length) {
       await global.StorageDB.setCache(cacheKey, result, SEVEN_DAYS_MS, 'Wikimedia Commons');
     }
@@ -426,8 +479,15 @@
     }
   }
 
-  global.MediaWikidataService = {
+  const api = {
     fetchPlacePhotos,
-    verifyWithWikidata
+    verifyWithWikidata,
+    scoreTravelPhoto,
+    rankAndFilterTravelPhotos
   };
-})(window);
+
+  global.MediaWikidataService = api;
+  if (typeof module === 'object' && module.exports) {
+    module.exports = api;
+  }
+})(typeof window !== 'undefined' ? window : globalThis);

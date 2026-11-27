@@ -323,9 +323,63 @@
     return { merged, stats };
   }
 
+  /**
+   * Merge two collaborative trip documents deterministically (stops LWW with tombstones, comments set-union).
+   */
+  function mergeTripDocuments(localTrip, remoteTrip) {
+    const a = localTrip && typeof localTrip === 'object' ? localTrip : {};
+    const b = remoteTrip && typeof remoteTrip === 'object' ? remoteTrip : {};
+    const winner = compareRecordOrder(b, a) >= 0 ? b : a;
+    const stopTombs = {};
+    [a.stopTombstones, b.stopTombstones].forEach((tb) => {
+      if (!tb || typeof tb !== 'object') return;
+      Object.keys(tb).forEach((k) => {
+        stopTombs[k] = Math.max(Number(stopTombs[k] || 0), Number(tb[k] || 0));
+      });
+    });
+
+    const dayMap = new Map();
+    const ingestDays = (days) => {
+      (Array.isArray(days) ? days : []).forEach((dy) => {
+        if (!dy || !dy.day) return;
+        if (!dayMap.has(dy.day)) {
+          dayMap.set(dy.day, { day: dy.day, title: dy.title || `Day ${dy.day}`, stopMap: new Map() });
+        }
+        const entry = dayMap.get(dy.day);
+        (dy.stops || []).forEach((st) => {
+          if (!st || !st.id) return;
+          const tombTs = Number(stopTombs[st.id] || 0);
+          const stTs = Number(st.updatedAt || winner.updatedAt || 0);
+          if (tombTs > stTs) return;
+          const cur = entry.stopMap.get(st.id);
+          entry.stopMap.set(st.id, cur ? tieBreakCompare(cur, st) : st);
+        });
+      });
+    };
+    ingestDays(a.days);
+    ingestDays(b.days);
+
+    const days = [...dayMap.values()]
+      .sort((x, y) => x.day - y.day)
+      .map((d) => ({
+        day: d.day,
+        title: d.title,
+        stops: [...d.stopMap.values()].sort((x, y) => String(x.id).localeCompare(String(y.id))),
+        routeSummary: null
+      }));
+
+    return Object.assign({}, winner, {
+      days,
+      stopTombstones: stopTombs,
+      updatedAt: Math.max(Number(a.updatedAt || 0), Number(b.updatedAt || 0)),
+      clock: Math.max(Number(a.clock || 0), Number(b.clock || 0))
+    });
+  }
+
   return {
     LOCAL_ONLY_SETTING_KEYS,
     sanitizeProfileForSync,
-    mergeUserProfiles
+    mergeUserProfiles,
+    mergeTripDocuments
   };
 });

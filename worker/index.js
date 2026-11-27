@@ -1,5 +1,6 @@
 /* KAIROS V5.0 (World Travel Globe) — Cloudflare Workers Edge API Proxy, Auth, Collab & D1/R2 Adapter */
 import { handleAuthRequest } from './auth.js';
+import { handleCollabRequest } from './collab.js';
 
 const RATE_WINDOW_MS = 60_000;
 const RATE_LIMIT_MAX = 90;
@@ -74,6 +75,9 @@ async function handleApi(request, env) {
 
   if (p.startsWith('/api/auth/') || p.startsWith('/api/account')) {
     return handleAuthRequest(request, env);
+  }
+  if (p.startsWith('/api/collab/')) {
+    return handleCollabRequest(request, env);
   }
 
   if (p === '/api/health') {

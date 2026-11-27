@@ -1,37 +1,35 @@
 <div align="center">
 
-# 🌍 World Travel Globe · 全球旅行地理图鉴 (v3.5)
+# 🌍 World Travel Globe · 全球旅行地理图鉴 (v3.8)
 
 **覆盖七大洲 · 137 个国家/地区 · 722 座精选目的地 · 5,414 个精准摄影机位的 3D 交互卫星地球仪平台**
 
-[![Version](https://img.shields.io/badge/Version-v3.5.0-e0c38e?style=flat-square&labelColor=0b101b)](docs/CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Version-v3.8.0-e0c38e?style=flat-square&labelColor=0b101b)](docs/CHANGELOG.md)
 [![Countries](https://img.shields.io/badge/Countries%20%26%20Regions-137-4f8cff?style=flat-square&labelColor=0b101b)](#核心功能矩阵)
 [![Destinations](https://img.shields.io/badge/Destinations-722-5b5ff9?style=flat-square&labelColor=0b101b)](#核心功能矩阵)
 [![Photo Spots](https://img.shields.io/badge/Photo%20Spots-5%2C414-8b5cf6?style=flat-square&labelColor=0b101b)](#核心功能矩阵)
 [![MapLibre](https://img.shields.io/badge/MapLibre%20GL-v5-2768f5?style=flat-square&labelColor=0b101b)](https://maplibre.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-10b981?style=flat-square&labelColor=0b101b)](docs/THIRD_PARTY_LICENSES.md)
 
-[🌐 在线体验 (Cloudflare 边缘加速)](https://world-travel-globe.globe-app.workers.dev) · [📄 GitHub Pages 镜像](https://haoyuliu1007.github.io/world-travel-globe/) · [📜 v3.5 更新日志](docs/CHANGELOG.md)
+[🌐 在线体验 (Cloudflare 边缘加速)](https://world-travel-globe.globe-app.workers.dev) · [📄 GitHub Pages 镜像](https://haoyuliu1007.github.io/world-travel-globe/) · [📜 v3.8 更新日志](docs/CHANGELOG.md)
 
 </div>
 
 ---
 
-## ✨ v3.5 里程碑亮点 (What's New in v3.5)
+## ✨ v3.8 里程碑亮点 (What's New in v3.8)
 
-- **8 幕整屏吸附式「探索序章」（Story Prologue）**
-  - 严格 `100dvh` 一屏一幕 + `scroll-snap-type: y mandatory` 强吸附翻页与右侧 8 点章节轨道，彻底杜绝跨屏露头。
-  - 纯 GPU 合成层动效（`opacity + translate3d` + `cubic-bezier(0.22, 1, 0.36, 1)`），搭配语义短语断行、137 / 722 / 5,414 实时数字计数与「物候刻度 / 日照星盘 / 环球航迹」三标签天文仪器交互台。
-- **序章前置 + 2K QHD AI 超分宇宙飞入影片（零黑屏落球）**
-  - 进站先打开序章网页，底层同步静默初始化 MapLibre 3D 地球仪并预加载 2K QHD 宇宙开场影片；用户点击终章「进入 3D 地球仪」后再切入宇宙飞入动画，尾帧无缝叠化至已就绪的真实卫星地球仪。
-- **全链路连续配乐（`CosmicBGM`）**
-  - 统一原声《The Blue Horizon》贯穿 **探索序章 → 宇宙飞入影片 → 新手导览**；进入导览时自动降音伴随（`duck`），直到导览完成或关闭后才平滑渐隐停止。
-- **同浏览器 6 小时 × 前 3 次自动重置机制（`IntroSession`）**
-  - 同一浏览器每 6 小时自动刷新为一个新窗口：窗口内前 3 次进入自动走完整开场与导览体验，第 4 次起直达 3D 地球仪；满 6 小时后自动清零重置，再次按新访客体验触发。
-- **全设备适配 + 手势触发系统全屏**
-  - 解除桌面端限制，PC / 平板 / 手机全设备均支持全视口开场与动画；点击「开启序章之旅」或终章「进入 3D 地球仪」自动触发系统全屏（不支持 Fullscreen API 的环境自动降级为 `100dvh` 满屏），并监听 `fullscreenchange` 自动调整 WebGL 画布尺寸。
-- **Apple 级液态玻璃 UI、三语国际化与 5 步新手导览**
-  - 全新明暗双主题与自定义主题色盘、简体中文 / 繁体中文 / 英文全量界面与地理数据翻译，以及带聚光灯高亮与配乐控制的新手导览系统。
+- **中轴灵动岛 + 四象限平衡空间布局 (Spatial Island UI)**
+  - 桌面端重构为三段式顶部灵动岛：左岛（默认收起的 722 城清单胶囊 + 筛选 + 收藏）、中轴岛（地球/图鉴/规划/档案 + `⌘K` 搜索）、右岛（独立高亮的「🎵 电台」+ 外观 + 三语），让 3D 地球稳居绝对视觉中心。
+  - 12 个月物候时间轴移至底部正中对齐主轴，右侧中部增设纤细竖向微操轨道（3D/2D、自转、全屏、缩放），右下角仅保留图层与「中国 / 全球」视角切换，彻底告别传统地图 UI 的左重右挤。
+- **全球氛围电台 (`AmbientRadio`) · 16 首地理意境原声**
+  - 内置 16 首涵盖 **星际 / 东方 / 海岸 / 旷野 / 夜航** 5 大意境分类的地理氛围配乐，支持懒加载零带宽启动、顺序/单曲/随机循环、音量记忆与平滑交接宇宙开场配乐。
+- **高清 1:1 视差深空背景 + Retina 3D 联动繁星**
+  - 新增超清 `2048×1152` 无色带 **星河 (`milkyway`)** 与 **极光 (`aurora`)** 双档深空背景（支持 `600ms` 交叉淡化切换与 1:1 有界 GPU 视差），叠加随地球经纬/旋转/俯仰实时联动的透明高分屏 3D 球面繁星层（静止零空转功耗）。
+- **电影级「交叉淡化」单舞台探索序章 (`StoryPrologue`)**
+  - 淘汰纵向滚动吸附的拉扯感，升级为固定全屏单舞台交叉溶解切镜；配合滚轮防连跳冷却锁、触控滑动、键盘直达与右侧 8 点章节轨道，统一 8 幕定制艺术底图（含 Nebra 星盘、Space & Place 与洪堡《Kosmos》）的动效节奏。
+- **2K 宇宙飞入 + 6 步聚光灯新手导览 + 6 小时窗口 (`IntroSession`)**
+  - 统一原声《The Blue Horizon》无缝贯穿 **交叉淡化序章 → 2K 宇宙飞入 → 6 步聚光灯新手导览**（第 3 步专项引导右上角「全球氛围电台」与外观设定），同一浏览器每 6 小时自动刷新 3 次完整入场体验窗口。
 
 ---
 
@@ -42,7 +40,7 @@
         │
         ▼
   ┌────────────────────────────────────────────────────────┐
-  │ 8 幕整屏探索序章（后台静默预加载 3D 地球仪 + 2K 影片） │──▶ 右上角低调「跳过」/ Esc ──▶ 直达 3D 地球仪
+  │ 8 幕交叉淡化探索序章（后台静默预加载 3D 地球与 2K 影片） │──▶ 右上角低调「跳过」/ Esc ──▶ 直达 3D 地球仪
   └────────────────────────────────────────────────────────┘
         │ 点击第 8 幕「进入 3D 地球仪」（解锁全屏与配乐）
         ▼
@@ -52,7 +50,7 @@
         │ 尾帧叠化进入已完全加载的真实 3D 卫星地球仪
         ▼
   ┌────────────────────────────────────────────────────────┐
-  │ 5 步聚光灯新手导览（配乐自动降音伴随，结束后渐隐停止） │
+  │ 6 步聚光灯新手导览（含氛围电台引导，结束后配乐渐隐）   │
   └────────────────────────────────────────────────────────┘
 ```
 
@@ -67,6 +65,7 @@
 | **专业摄影光影模拟器** | 推演任意日期与经纬度的日出日落、黄金/蓝调时刻、月相与太阳方位仰角轨迹；分析机位顺/侧/逆光，并在 3D 地球仪实时投射太阳射线与视角扇形。 | SunCalc v2.1.4 · 自研 3D 光影叠加 |
 | **全球动态气象与时光机** | 实时天气、7 日预报与 5 年 ERA5 历史月度气候统计图表；叠加 RainViewer 实时雷达云图及 NASA GIBS 卫星真彩/积雪/NDVI 植被/云顶温度双日期对比滑块。 | Open-Meteo · RainViewer · NASA GIBS · ECharts v6.1.0 |
 | **街景与智能行程规划** | 支持 Mapillary 360° 街景联动与无 Token 实景降级；输入出发地/天数/预算自动规划多日行程，真实路网测距（跨海不伪造陆路）、账单拆分、CSV/PDF 导出与 `?trip=` 分享。 | Mapillary · OSRM / FOSSGIS / OpenRouteService |
+| **全球氛围电台与深空背景** | 内置 16 首 5 大地理意境原声（支持懒加载、循环/随机与音量记忆），搭配超清星河/极光 1:1 视差深空背景及 3D 球面联动繁星层。 | Web Audio / HTML5 Audio · Retina 3D Starfield |
 | **本地优先私人档案** | 无需登录即可记录已去过/计划/想去清单、自定义列表、本地压缩摄影作品库与消费台账，支持 `?footprint=` 分享与可选 Cloudflare D1/R2 口令隔离云同步。 | Dexie.js v4.4.7 (IndexedDB) · Cloudflare D1/R2 |
 
 ---

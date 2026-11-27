@@ -1,6 +1,6 @@
 {
   "name": "world-travel-globe",
-  "version": "3.0.0",
+  "version": "3.5.0",
   "private": true,
   "description": "3D interactive travel globe with 722 destinations, 5414 photography spots, live weather, SunCalc simulator, NASA GIBS time machine, trip planner and local-first archive.",
   "scripts": {

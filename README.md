@@ -1,59 +1,117 @@
-# 🌍 World Travel Globe · 全球旅行地理图鉴与探索平台 (v3.0)
+<div align="center">
 
-覆盖全球 **七大洲 · 137 个国家/地区 · 722 座精选目的地 · 5,414 个精细摄影机位** 的一体化 3D 交互卫星地球仪平台，融合真实实景画廊、Wikidata 地理核验、Open-Meteo 全球气象、SunCalc 专业摄影光影模拟、NASA GIBS 地球时光机、真实路网智能行程规划与本地优先私人旅行档案。
+# 🌍 World Travel Globe · 全球旅行地理图鉴 (v3.5)
 
-## 核心功能矩阵
+**覆盖七大洲 · 137 个国家/地区 · 722 座精选目的地 · 5,414 个精准摄影机位的 3D 交互卫星地球仪平台**
 
-### P0 · 真实地理、动态气象、摄影模拟与追美指数
-- **真实实景影像与 Wikidata 核验**：按需检索 Wikimedia Commons 地标影像（含全屏灯箱、作者与 CC 协议标注）；交叉比对 Wikidata（QID、官方海拔、建筑师、遗产属性、坐标偏差），生成非破坏性审核清单而不覆盖原始数据。
-- **全球动态气象系统**：接入 Open-Meteo 实时天气、7 日预报与 5 年 ERA5 历史月度气候统计，懒加载 Apache ECharts 渲染温湿降水与晴/雨/雪概率图表；支持 RainViewer 全球实时雷达与红外云图叠加。
-- **专业摄影机位模拟器**：基于 SunCalc 计算任意日期与时刻的日出日落、黄金时刻、蓝调时刻、太阳方位/高度角轨迹及月相月出月落；支持机位拍摄朝向顺/侧/逆光分析及 3D 地球仪实时太阳射线与相机视角扇形联动。
-- **全球追美指数引擎**：7 维可调权重评分模型（气温舒适度、降水适配、晴天概率、黄金光影时长、季节峰度、物候积雪、可选错峰成本估算），支持 722 城排行榜并明确标注实测、天文与经验数据来源。
+[![Version](https://img.shields.io/badge/Version-v3.5.0-e0c38e?style=flat-square&labelColor=0b101b)](docs/CHANGELOG.md)
+[![Countries](https://img.shields.io/badge/Countries%20%26%20Regions-137-4f8cff?style=flat-square&labelColor=0b101b)](#核心功能矩阵)
+[![Destinations](https://img.shields.io/badge/Destinations-722-5b5ff9?style=flat-square&labelColor=0b101b)](#核心功能矩阵)
+[![Photo Spots](https://img.shields.io/badge/Photo%20Spots-5%2C414-8b5cf6?style=flat-square&labelColor=0b101b)](#核心功能矩阵)
+[![MapLibre](https://img.shields.io/badge/MapLibre%20GL-v5-2768f5?style=flat-square&labelColor=0b101b)](https://maplibre.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-10b981?style=flat-square&labelColor=0b101b)](docs/THIRD_PARTY_LICENSES.md)
 
-### P1 · 沉浸式街景、地球时光机与智能行程规划
-- **沉浸式街景**：支持 Mapillary 街景与 360° 全景联动（需配置免费 Token）；未配置或无覆盖时自动无缝降级为 Wikimedia 实景照片与 Mapillary/KartaView/Google Street View 坐标直达。
-- **地球时光机**：接入 NASA EOSDIS GIBS 公开 WMTS 遥感图层（VIIRS 真彩、MODIS 历史真彩、NDSI 积雪、NDVI 植被绿度、云顶温度），支持日期时间轴、双日期对比滑块、透明度调节与昼夜晨昏线。
-- **智能旅行规划系统**：支持输入出发地、目的地、天数、预算、月份与交通方式（自驾/步行/骑行）自动生成逐日行程，支持拖拽与触控重排、OSRM/OpenRouteService 真实路网距离计算（跨海不伪造陆路）、账单编辑与 ECharts 饼图、JSON/CSV/PDF 导出及 `?trip=` 链接分享恢复。
+[🌐 在线体验 (Cloudflare 边缘加速)](https://world-travel-globe.globe-app.workers.dev) · [📄 GitHub Pages 镜像](https://haoyuliu1007.github.io/world-travel-globe/) · [📜 v3.5 更新日志](docs/CHANGELOG.md)
 
-### P2 · 私人旅行档案与高级地球仪体验
-- **私人旅行档案（本地优先 · 无需登录）**：基于 Dexie.js (IndexedDB) 持久化保存已去过/计划中/想去状态、自定义清单、压缩个人摄影作品库、实际消费记录、全球探索完成度、年度足迹图表、`?footprint=` 足迹地图分享与全量 JSON 导入/导出/清空；可选连接 Cloudflare D1/R2 实现口令隔离云同步。
-- **高性能地球仪交互**：Web Worker + Fuse.js 中英文容错模糊搜索、Supercluster 低缩放空间聚合、全屏探索模式 (`F`)、性能自动分级与系统诊断/数据审计弹窗、PWA (`manifest.webmanifest` + `sw.js`) 离线外壳。
+</div>
 
 ---
 
-## 宇宙开场
+## ✨ v3.5 里程碑亮点 (What's New in v3.5)
 
-桌面首次访问首页时播放 24 秒静音开场。按 Esc 或点击跳过可以直接操作地图，在外观菜单可重播。带参数的分享链接、重复访问及减少动态效果模式直接打开产品。影片和播放器位于 `assets/cosmic-intro/`。更换影片时同步替换 WebM 和 MP4，并核对播放器的交接时刻和 MapLibre 初始机位。影像归属见 [片源说明](assets/cosmic-intro/credits.html)。
+- **8 幕整屏吸附式「探索序章」（Story Prologue）**
+  - 严格 `100dvh` 一屏一幕 + `scroll-snap-type: y mandatory` 强吸附翻页与右侧 8 点章节轨道，彻底杜绝跨屏露头。
+  - 纯 GPU 合成层动效（`opacity + translate3d` + `cubic-bezier(0.22, 1, 0.36, 1)`），搭配语义短语断行、137 / 722 / 5,414 实时数字计数与「物候刻度 / 日照星盘 / 环球航迹」三标签天文仪器交互台。
+- **序章前置 + 2K QHD AI 超分宇宙飞入影片（零黑屏落球）**
+  - 进站先打开序章网页，底层同步静默初始化 MapLibre 3D 地球仪并预加载 2K QHD 宇宙开场影片；用户点击终章「进入 3D 地球仪」后再切入宇宙飞入动画，尾帧无缝叠化至已就绪的真实卫星地球仪。
+- **全链路连续配乐（`CosmicBGM`）**
+  - 统一原声《The Blue Horizon》贯穿 **探索序章 → 宇宙飞入影片 → 新手导览**；进入导览时自动降音伴随（`duck`），直到导览完成或关闭后才平滑渐隐停止。
+- **同浏览器 6 小时 × 前 3 次自动重置机制（`IntroSession`）**
+  - 同一浏览器每 6 小时自动刷新为一个新窗口：窗口内前 3 次进入自动走完整开场与导览体验，第 4 次起直达 3D 地球仪；满 6 小时后自动清零重置，再次按新访客体验触发。
+- **全设备适配 + 手势触发系统全屏**
+  - 解除桌面端限制，PC / 平板 / 手机全设备均支持全视口开场与动画；点击「开启序章之旅」或终章「进入 3D 地球仪」自动触发系统全屏（不支持 Fullscreen API 的环境自动降级为 `100dvh` 满屏），并监听 `fullscreenchange` 自动调整 WebGL 画布尺寸。
+- **Apple 级液态玻璃 UI、三语国际化与 5 步新手导览**
+  - 全新明暗双主题与自定义主题色盘、简体中文 / 繁体中文 / 英文全量界面与地理数据翻译，以及带聚光灯高亮与配乐控制的新手导览系统。
 
-## 本地开发、审计、测试与构建
+---
 
-无需复杂安装，核心构建与测试仅依赖 Node.js (>= 18)：
+## 🎬 沉浸式开场体验链路
 
-```bash
-# 1. 非破坏性数据质量审计（输出 data/audit-report.json）
-npm run audit
-# 或: node scripts/audit-data.js
-
-# 2. 构建生产静态产物到 dist/（42 个地区懒加载分片 + 轻量索引 + 全部运行模块）
-npm run build
-# 或: node build-dist.js
-
-# 3. 运行自动化测试套件 (node:test)
-npm test
-# 或: node --test tests/*.test.js
-
-# 4. 本地预览 dist/ (http://127.0.0.1:4173/)
-npm run dev
-# 或: node scripts/dev-server.js
+```text
+  打开首页（符合 6 小时 × 3 次窗口）
+        │
+        ▼
+  ┌────────────────────────────────────────────────────────┐
+  │ 8 幕整屏探索序章（后台静默预加载 3D 地球仪 + 2K 影片） │──▶ 右上角低调「跳过」/ Esc ──▶ 直达 3D 地球仪
+  └────────────────────────────────────────────────────────┘
+        │ 点击第 8 幕「进入 3D 地球仪」（解锁全屏与配乐）
+        ▼
+  ┌────────────────────────────────────────────────────────┐
+  │ 2K QHD 宇宙飞入动画（同步播放 The Blue Horizon 配乐）  │
+  └────────────────────────────────────────────────────────┘
+        │ 尾帧叠化进入已完全加载的真实 3D 卫星地球仪
+        ▼
+  ┌────────────────────────────────────────────────────────┐
+  │ 5 步聚光灯新手导览（配乐自动降音伴随，结束后渐隐停止） │
+  └────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 双平台部署架构
+## 🧩 核心功能矩阵
+
+| 模块 | 核心能力说明 | 技术 / 数据支撑 |
+|---|---|---|
+| **3D 卫星地球仪与物候轴** | 支持卫星影像 / 国家地理 / 地形 / 暗夜 4 套球面皮肤与 3D/2D 切换；12 个月物候时间轴筛选最佳花期、雪季、秋叶与极光窗口；自动探测国内/全球极速底图线路。 | MapLibre GL JS v5 · Supercluster v9.1.0 |
+| **追美指数与实景核验** | 7 维可调权重追美评分模型与 722 城榜单；按需加载 Wikimedia Commons 实景图库、CC 协议标注与 Wikidata 坐标/海拔/遗产交叉核验。 | Wikimedia Commons · Wikidata API |
+| **专业摄影光影模拟器** | 推演任意日期与经纬度的日出日落、黄金/蓝调时刻、月相与太阳方位仰角轨迹；分析机位顺/侧/逆光，并在 3D 地球仪实时投射太阳射线与视角扇形。 | SunCalc v2.1.4 · 自研 3D 光影叠加 |
+| **全球动态气象与时光机** | 实时天气、7 日预报与 5 年 ERA5 历史月度气候统计图表；叠加 RainViewer 实时雷达云图及 NASA GIBS 卫星真彩/积雪/NDVI 植被/云顶温度双日期对比滑块。 | Open-Meteo · RainViewer · NASA GIBS · ECharts v6.1.0 |
+| **街景与智能行程规划** | 支持 Mapillary 360° 街景联动与无 Token 实景降级；输入出发地/天数/预算自动规划多日行程，真实路网测距（跨海不伪造陆路）、账单拆分、CSV/PDF 导出与 `?trip=` 分享。 | Mapillary · OSRM / FOSSGIS / OpenRouteService |
+| **本地优先私人档案** | 无需登录即可记录已去过/计划/想去清单、自定义列表、本地压缩摄影作品库与消费台账，支持 `?footprint=` 分享与可选 Cloudflare D1/R2 口令隔离云同步。 | Dexie.js v4.4.7 (IndexedDB) · Cloudflare D1/R2 |
+
+---
+
+## 🛠️ 技术栈与工程架构
+
+- **零构建依赖前端体系**：原生 JS 模块化架构，仅通过单脚本 `build-dist.js` 即可完成 CSS/JS 合并、42 个大区懒加载分片（`data/regions/`）、43 个多语种分片（`data/i18n/`）及轻量全局索引打包。
+- **高性能检索与离线外壳**：`Web Worker` + `Fuse.js v7.5.0` 中英文容错模糊检索（支持 `Ctrl/Cmd + K` 或 `/` 全局命令面板）；`manifest.webmanifest` + Network-First 策略 `sw.js` 实现离线外壳与瞬时热更新。
+- **开场与多媒体子系统**：独立打包的 `intro.bundle.min.js`（`IntroSession` + `CosmicBGM` + `StoryPrologue` + `CosmicIntro`），确保首屏零闪烁启动且不阻塞地图核心脚本。
+
+---
+
+## 💻 本地开发、审计、测试与构建
+
+仅需安装 **Node.js (>= 18)**，在 `globe-app/` 目录下执行：
+
+```bash
+# 1. 非破坏性地理数据质量审计（生成 data/audit-report.json）
+node scripts/audit-data.js
+
+# 2. 构建生产静态产物到 dist/（42 个地区懒加载分片 + 轻量索引 + 全部合并包）
+node build-dist.js
+
+# 3. 运行自动化测试套件（含地理完整性、天文计算、会话窗口、行程规划与 Worker 校验）
+node --test tests/*.test.js
+
+# 4. 本地预览生产产物 dist/（默认监听 http://127.0.0.1:4173/）
+node scripts/dev-server.js
+```
+
+---
+
+## 🚀 双平台部署架构
 
 | 部署环境 | 构建方式 | 静态资源 | 扩展能力 |
 |---|---|---|---|
-| **GitHub Pages** | `.github/workflows/deploy-pages.yml` 自动运行 `node build-dist.js` | `dist/` 全量静态托管 | 自动降级为浏览器直连公开 CORS API + IndexedDB 本地档案 |
-| **Cloudflare Workers** | `wrangler.jsonc` (`main: worker/index.js`, `assets.directory: ./dist`) | `./dist` 静态资源 + 边缘缓存 | 启用 `/api/*` 代理与限流；绑定 D1/R2 及环境变量后启用云同步、相册与服务端密钥管理 |
+| **Cloudflare Workers**（主力线上） | 本地执行 `node build-dist.js` 后通过 `npx wrangler deploy` 发布 | `./dist` 全量静态资源 + 边缘缓存 | `/api/*` 边缘代理、IP 限流（90 req/min）、服务端密钥隔离；可选绑定 D1/R2 开启跨设备云同步与相册 |
+| **GitHub Pages**（静态镜像） | `.github/workflows/deploy-pages.yml` 自动运行 `node build-dist.js` | `dist/` 全量静态托管 | 自动切入 `static-direct` 模式，浏览器直连公开 CORS 接口并通过 IndexedDB 持久化档案 |
 
-详细配置步骤见 [API 与部署指南](docs/API_AND_DEPLOY.md)、[数据结构说明](docs/DATA_SCHEMA.md)、[更新日志](docs/CHANGELOG.md) 与 [第三方许可声明](docs/THIRD_PARTY_LICENSES.md)。
+---
+
+## 📚 延伸文档与归属
+
+- [版本更新日志 (CHANGELOG)](docs/CHANGELOG.md)
+- [API 接入、密钥配置与双平台部署指南](docs/API_AND_DEPLOY.md)
+- [地理数据结构与字段规范 (DATA_SCHEMA)](docs/DATA_SCHEMA.md)
+- [宇宙开场片源与配乐说明 (Film & Audio Credits)](assets/cosmic-intro/credits.html)
+- [开源组件与开放数据许可声明](docs/THIRD_PARTY_LICENSES.md)

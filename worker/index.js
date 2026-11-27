@@ -488,6 +488,15 @@ async function handleApi(request, env) {
     });
   }
 
+  if (p === '/api/fx') {
+    const base = String(url.searchParams.get('from') || 'CNY').replace(/[^A-Z]/gi, '').toUpperCase() || 'CNY';
+    const to = String(url.searchParams.get('to') || 'USD,EUR,JPY,GBP,HKD,TWD,CHF,AUD,CAD,SGD,KRW,THB').replace(/[^A-Z,]/gi, '').toUpperCase();
+    const upstream = `https://api.frankfurter.app/latest?from=${encodeURIComponent(base)}&to=${encodeURIComponent(to)}`;
+    return cachedUpstreamJson(request.url, upstream, 43200, {
+      headers: { 'User-Agent': 'KAIROS-Atlas/5.0 (https://world-travel-globe.globe-app.workers.dev)' }
+    });
+  }
+
   if (p === '/api/epic') {
     const cache = typeof caches !== 'undefined' ? caches.default : null;
     const cacheUrl = new URL(request.url);

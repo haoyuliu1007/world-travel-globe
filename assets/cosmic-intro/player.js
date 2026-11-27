@@ -171,6 +171,10 @@
     const landing = !location.search && !location.hash;
     const willChainTour = Boolean(run.chainTour) && landing && Boolean(window.OnboardingTour);
 
+    if (window.AmbientRadio && typeof window.AmbientRadio.pause === 'function') {
+      window.AmbientRadio.pause(true);
+    }
+
     if (window.CosmicBGM) {
       if (willChainTour) {
         window.CosmicBGM.duck(0.36, 700);
@@ -246,6 +250,10 @@
     if (mute) mute.disabled = false;
     if (unmuteHint) unmuteHint.hidden = true;
     publish('loading');
+
+    if (window.AmbientRadio && typeof window.AmbientRadio.pause === 'function') {
+      window.AmbientRadio.pause(true);
+    }
 
     if (window.CosmicBGM) {
       if (!opts.keepBgm || !window.CosmicBGM.isActive()) {

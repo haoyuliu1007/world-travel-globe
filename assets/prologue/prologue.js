@@ -686,6 +686,10 @@
       global.CosmicIntro.preload();
     }
 
+    if (global.AmbientRadio && typeof global.AmbientRadio.pause === 'function') {
+      global.AmbientRadio.pause(true);
+    }
+
     if (!opts.keepBgm && global.CosmicBGM) {
       global.CosmicBGM.start(0.58);
     } else if (global.CosmicBGM && !global.CosmicBGM.isActive()) {

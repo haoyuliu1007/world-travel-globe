@@ -1845,7 +1845,7 @@
     const archModeBtn = document.getElementById('mode-archive-btn');
     if (archModeBtn) archModeBtn.addEventListener('click', () => setViewMode('archive'));
 
-    // Popovers: Filter, Appearance Studio, Language Selector, Map Layers
+    // Popovers: Filter, Appearance Studio, Language Selector, Map Layers, Ambient Radio
     const popBtn = document.getElementById('filter-popover-btn');
     const popEl = document.getElementById('filter-popover');
     const appBtn = document.getElementById('appearance-btn');
@@ -1854,13 +1854,16 @@
     const langEl = document.getElementById('lang-popover');
     const layersBtn = document.getElementById('layers-popover-btn');
     const layersEl = document.getElementById('layers-popover');
+    const musicBtn = document.getElementById('music-popover-btn');
+    const musicEl = document.getElementById('music-popover');
 
     const closeAllPopovers = (exceptEl) => {
       [
         [popEl, popBtn],
         [appEl, appBtn],
         [langEl, langBtn],
-        [layersEl, layersBtn]
+        [layersEl, layersBtn],
+        [musicEl, musicBtn]
       ].forEach(([el, btn]) => {
         if (el && el !== exceptEl && !el.classList.contains('is-hidden')) {
           el.classList.add('is-hidden');
@@ -1873,7 +1876,8 @@
       [popBtn, popEl],
       [appBtn, appEl],
       [langBtn, langEl],
-      [layersBtn, layersEl]
+      [layersBtn, layersEl],
+      [musicBtn, musicEl]
     ].forEach(([btn, el]) => {
       if (!btn || !el) return;
       btn.addEventListener('click', (e) => {
@@ -1890,7 +1894,8 @@
         (popEl && popEl.contains(e.target)) ||
         (appEl && appEl.contains(e.target)) ||
         (langEl && langEl.contains(e.target)) ||
-        (layersEl && layersEl.contains(e.target))
+        (layersEl && layersEl.contains(e.target)) ||
+        (musicEl && musicEl.contains(e.target))
       ) {
         return;
       }
@@ -2561,6 +2566,9 @@
     if (state.mode === 'gallery' && global.AestheticGallery) {
       global.AestheticGallery.render();
     }
+    if (global.AmbientRadio && typeof global.AmbientRadio.refreshLocale === 'function') {
+      global.AmbientRadio.refreshLocale();
+    }
   }
 
   function init() {
@@ -2624,6 +2632,9 @@
         onSelect: (id) => selectDestination(id),
         onBackToMap: () => setViewMode('map')
       });
+    }
+    if (global.AmbientRadio) {
+      global.AmbientRadio.init();
     }
 
     // Determine initial camera pose (if deep-linked without ?instant=1, show global context first for cinematic intro!)

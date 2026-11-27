@@ -15,7 +15,7 @@
   <title>World Travel Globe · 全球旅行地理图鉴</title>
   <link rel="stylesheet" href="vendor/maplibre-gl.css" />
   <link rel="stylesheet" href="css/styles.css?v=36" />
-  <link rel="stylesheet" href="css/upgrades.css?v=37" />
+  <link rel="stylesheet" href="css/upgrades.css?v=38" />
   <link rel="stylesheet" href="assets/prologue/prologue.css?v=3" />
   <link rel="stylesheet" href="assets/cosmic-intro/player.css?v=8" />
   <script>
@@ -252,6 +252,10 @@
       <span data-icon="layers" data-size="15"></span>
       <span class="layers-active-dot is-hidden" id="layers-active-badge"></span>
     </button>
+    <button class="ctrl-icon-btn music-trigger-btn" id="music-popover-btn" type="button" aria-expanded="false" aria-controls="music-popover" aria-label="全球氛围电台" title="氛围配乐">
+      <span data-icon="music" data-size="15"></span>
+      <span class="music-playing-dot is-hidden" id="music-playing-dot" aria-hidden="true"></span>
+    </button>
     <div class="divider-v"></div>
     <div class="action-switcher">
       <button class="ctrl-icon-btn active" id="toggle-proj-btn" type="button" aria-label="3D 球体 / 2D 平面" title="3D / 2D">
@@ -338,6 +342,9 @@
       </button>
     </div>
   </section>
+
+  <!-- Ambient Radio Popover -->
+  <section class="music-popover is-hidden" id="music-popover" role="dialog" aria-label="全球氛围电台"></section>
 
   <!-- Sub-spot Floating Pill -->
   <div class="subspot-toast is-hidden" id="subspot-toast">
@@ -550,8 +557,8 @@
   <script src="data/africa_antarctica/egypt_redsea_west_africa.js?v=10"></script>
   <script src="data/africa_antarctica/antarctica_subantarctic.js?v=10"></script>
   <!-- App Logic & Services -->
-  <script src="js/icons.js?v=36"></script>
-  <script src="js/i18n.js?v=36"></script>
+  <script src="js/icons.js?v=38"></script>
+  <script src="js/i18n.js?v=38"></script>
   <script src="js/theme.js?v=36"></script>
   <script src="js/services/lazy-loader.js?v=36"></script>
   <script src="js/services/storage-db.js?v=36"></script>
@@ -569,9 +576,10 @@
   <script src="js/modules/travel-archive.js?v=36"></script>
   <script src="js/modules/diagnostics.js?v=36"></script>
   <script src="js/modules/onboarding-tour.js?v=38"></script>
+  <script src="js/modules/ambient-radio.js?v=38"></script>
   <script src="js/detail-panel.js?v=36"></script>
   <script src="js/command-palette.js?v=36"></script>
   <script src="js/gallery.js?v=36"></script>
-  <script src="js/app.js?v=36"></script>
+  <script src="js/app.js?v=38"></script>
 </body>
 </html>

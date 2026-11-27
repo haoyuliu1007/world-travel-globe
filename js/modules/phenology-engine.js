@@ -30,6 +30,75 @@
       .replace(/"/g, '&quot;');
   }
 
+  function getLang() {
+    return global.AppI18n && typeof global.AppI18n.getLang === 'function' ? global.AppI18n.getLang() : 'zh-CN';
+  }
+
+  function L(zh, en) {
+    const lang = getLang();
+    if (lang === 'en') return en;
+    if (lang === 'zh-TW' && global.AppI18n && typeof global.AppI18n.toTraditional === 'function') {
+      return global.AppI18n.toTraditional(zh);
+    }
+    return zh;
+  }
+
+  function tx(str) {
+    return global.AppI18n && typeof global.AppI18n.tx === 'function' ? global.AppI18n.tx(str) : (str || '');
+  }
+
+  const MONTH_SHORT_EN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  function fmtMonth(m) {
+    return getLang() === 'en' ? (MONTH_SHORT_EN[m - 1] || `M${m}`) : L(`${m} 月`, `M${m}`);
+  }
+
+  function getCategoryLabel(cat) {
+    const enMap = {
+      all: 'Overall',
+      blossom: 'Spring Blossoms',
+      autumn: 'Autumn Foliage',
+      snow: 'Snow & Glaciers',
+      aurora: 'Aurora Window',
+      milkyway: 'Milky Way & Stars'
+    };
+    return L(cat.label, enMap[cat.id] || cat.label);
+  }
+
+  function translateRelationLabel(raw) {
+    if (getLang() !== 'en') return L(raw, raw);
+    const landEn = {
+      秋色: 'Autumn Foliage',
+      花海: 'Blossoms',
+      雪山: 'Snow Peaks',
+      冰川: 'Glaciers',
+      极光: 'Aurora',
+      银河: 'Milky Way',
+      湖泊: 'Lakes',
+      海岸: 'Coastline',
+      沙漠: 'Desert',
+      森林: 'Forest',
+      云海: 'Cloud Sea',
+      高山: 'Alpine',
+      城市: 'Architecture',
+      火山: 'Volcano',
+      草原: 'Grassland',
+      峡谷: 'Canyon'
+    };
+    return String(raw || '')
+      .split(' · ')
+      .map((part) => {
+        if (part === '地理景观关联') return 'Geo Match';
+        const mNear = part.match(/^邻近\s+(\d+km)$/);
+        if (mNear) return `Nearby ${mNear[1]}`;
+        const mReg = part.match(/^同区域\s+(\d+km)$/);
+        if (mReg) return `Same Region ${mReg[1]}`;
+        const mLand = part.match(/^同属(.+)$/);
+        if (mLand) return landEn[mLand[1]] || tx(mLand[1]);
+        return tx(part);
+      })
+      .join(' · ');
+  }
+
   async function loadEnrichment() {
     if (enrichmentCache) return enrichmentCache;
     if (enrichmentPromise) return enrichmentPromise;
@@ -90,8 +159,10 @@
       : (Array.isArray(dest.monthScores)
           ? dest.monthScores.map((s, i) => (s >= 4 ? i + 1 : 0)).filter(Boolean)
           : []);
-    if (!peaks.length) return '全年均衡';
-    return peaks.map((m) => `${m}月`).join('、');
+    if (!peaks.length) return L('全年均衡', 'Year-round');
+    return getLang() === 'en'
+      ? peaks.map((m) => MONTH_SHORT_EN[m - 1] || `M${m}`).join(', ')
+      : peaks.map((m) => L(`${m}月`, `M${m}`)).join('、');
   }
 
   function inferDefaultCategory(dest, enr) {
@@ -155,15 +226,24 @@
         }
       }
       const suitability = darkFactor === 0 ? 4 : Math.round(ovalFactor * 0.65 + darkFactor * 0.35);
+      const mlatStr = mlat > 0 ? `${mlat}°N` : `${Math.abs(mlat)}°S`;
       return {
         category: 'aurora',
         month: m,
         suitability: Math.max(0, Math.min(100, suitability)),
-        peakWindowText: absMlat >= 55 ? (lat >= 0 ? '9月–次年3月（天文暗夜期）' : '4月–9月（南半球极夜）') : '磁纬偏低，仅强地磁暴期间偶现',
+        peakWindowText: absMlat >= 55
+          ? (lat >= 0 ? L('9月–次年3月（天文暗夜期）', 'Sep – Mar (Astronomical Dark Window)') : L('4月–9月（南半球极夜）', 'Apr – Sep (Southern Polar Night)'))
+          : L('磁纬偏低，仅强地磁暴期间偶现', 'Low magnetic latitude — rare except strong Kp storms'),
         dataSource: 'astronomy',
         confidence: 'medium',
-        explanation: `地磁纬度 ${mlat > 0 ? `${mlat}°N` : `${Math.abs(mlat)}°S`} · ${m} 月黑夜条件评分 ${darkFactor}/100。`,
-        limitations: '基于地磁纬度与天文黑夜时长；实际极光可见度取决于实时太阳风 Kp 指数与当地云量。'
+        explanation: L(
+          `地磁纬度 ${mlatStr} · ${m} 月黑夜条件评分 ${darkFactor}/100。`,
+          `Geomagnetic lat ${mlatStr} · ${fmtMonth(m)} dark-sky score ${darkFactor}/100.`
+        ),
+        limitations: L(
+          '基于地磁纬度与天文黑夜时长；实际极光可见度取决于实时太阳风 Kp 指数与当地云量。',
+          'Based on geomagnetic latitude & dark-sky hours; live visibility depends on Kp index and cloud cover.'
+        )
       };
     }
 
@@ -192,11 +272,19 @@
           category: 'milkyway',
           month: m,
           suitability: Math.max(5, Math.min(100, suitability)),
-          peakWindowText: lat >= 0 ? '3月–10月无月光深夜' : '2月–10月（南半球天顶银心）',
+          peakWindowText: lat >= 0
+            ? L('3月–10月无月光深夜', 'Mar – Oct (Moonless Late Night)')
+            : L('2月–10月（南半球天顶银心）', 'Feb – Oct (Southern Zenith Core)'),
           dataSource: 'astronomy',
           confidence: 'high',
-          explanation: `${m} 月暗夜约 ${darkHours}h · 银心最高仰角 ${gcPeakAlt.toFixed(1)}°。`,
-          limitations: '银心位置由 Astronomy Engine 精确星历计算；实际拍摄需避开满月及厚云层。'
+          explanation: L(
+            `${m} 月暗夜约 ${darkHours}h · 银心最高仰角 ${gcPeakAlt.toFixed(1)}°。`,
+            `${fmtMonth(m)} dark sky ~${darkHours}h · Galactic Core peak ${gcPeakAlt.toFixed(1)}°.`
+          ),
+          limitations: L(
+            '银心位置由 Astronomy Engine 精确星历计算；实际拍摄需避开满月及厚云层。',
+            'Galactic Core ephemeris via Astronomy Engine; avoid full moon & overcast skies.'
+          )
         };
       }
       const fallbackSuit = Math.min(100, Math.round(archiveScore * 16 + (lands.includes('milkyway') ? 18 : 0)));
@@ -207,8 +295,14 @@
         peakWindowText: formatPeakMonths(dest, enr),
         dataSource: 'archive-statistical',
         confidence: 'indicative',
-        explanation: `结合实地暗夜记录与 ${m} 月晴空条件评估。`,
-        limitations: '未加载星历引擎时的经验参考。'
+        explanation: L(
+          `结合实地暗夜记录与 ${m} 月晴空条件评估。`,
+          `Assessed from field dark-sky notes & ${fmtMonth(m)} clear-sky odds.`
+        ),
+        limitations: L(
+          '未加载星历引擎时的经验参考。',
+          'Statistical reference while ephemeris engine is unavailable.'
+        )
       };
     }
 
@@ -223,8 +317,14 @@
           peakWindowText: formatPeakMonths(dest, enr),
           dataSource: 'era5-reanalysis',
           confidence: 'high',
-          explanation: `ERA5 5 年再分析 ${m} 月降雪/积雪率 ${clim.snowProbPct}%，均温 ${clim.tempMean}°C。`,
-          limitations: '再分析网格均值非气象站实测，高海拔山峰局部积雪可能早于山谷网格。'
+          explanation: L(
+            `ERA5 5 年再分析 ${m} 月降雪/积雪率 ${clim.snowProbPct}%，均温 ${clim.tempMean}°C。`,
+            `ERA5 5-yr reanalysis ${fmtMonth(m)} snow prob ${clim.snowProbPct}%, mean ${clim.tempMean}°C.`
+          ),
+          limitations: L(
+            '再分析网格均值非气象站实测，高海拔山峰局部积雪可能早于山谷网格。',
+            'Reanalysis grid mean rather than point station data; alpine peaks may snow earlier than valleys.'
+          )
         };
       }
       const effectiveT = tempC !== null ? tempC : (24 - Math.abs(lat) * 0.45 - elevM * 0.004);
@@ -237,8 +337,14 @@
         peakWindowText: formatPeakMonths(dest, enr),
         dataSource: 'archive-statistical',
         confidence: hasSnowLand ? 'medium' : 'indicative',
-        explanation: `${m} 月参考均温约 ${Math.round(effectiveT)}°C${elevM ? ` · 海拔 ${elevM}m` : ''}，实地评分 ${archiveScore}★。`,
-        limitations: '未拉取 ERA5 逐日积雪深度前采用温度阈值与档案统计估算。'
+        explanation: L(
+          `${m} 月参考均温约 ${Math.round(effectiveT)}°C${elevM ? ` · 海拔 ${elevM}m` : ''}，实地评分 ${archiveScore}★。`,
+          `${fmtMonth(m)} ref temp ~${Math.round(effectiveT)}°C${elevM ? ` · Elev ${elevM}m` : ''}, field score ${archiveScore}★.`
+        ),
+        limitations: L(
+          '未拉取 ERA5 逐日积雪深度前采用温度阈值与档案统计估算。',
+          'Estimated from temp threshold & field stats before ERA5 climate data is loaded.'
+        )
       };
     }
 
@@ -253,11 +359,17 @@
         category: 'autumn',
         month: m,
         suitability: Math.max(5, Math.min(100, sc)),
-        peakWindowText: hasAut ? formatPeakMonths(dest, enr) : (lat >= 0 ? '9月下旬–11月中旬' : '4月–5月'),
+        peakWindowText: hasAut ? formatPeakMonths(dest, enr) : (lat >= 0 ? L('9月下旬–11月中旬', 'Late Sep – Mid Nov') : L('4月–5月', 'Apr – May')),
         dataSource: clim ? 'era5-reanalysis' : 'archive-statistical',
         confidence: hasAut ? 'medium' : 'indicative',
-        explanation: `${hasAut ? '包含典型秋色/落叶林景观' : '综合气候推演'} · ${m} 月适温匹配度 ${tempFit}/100。`,
-        limitations: '红叶转色受当年初霜与降水影响，实际峰值通常存在 ±1–2 周年际波动。'
+        explanation: L(
+          `${hasAut ? '包含典型秋色/落叶林景观' : '综合气候推演'} · ${m} 月适温匹配度 ${tempFit}/100。`,
+          `${hasAut ? 'Verified autumn foliage habitat' : 'Thermal envelope estimate'} · ${fmtMonth(m)} temp fit ${tempFit}/100.`
+        ),
+        limitations: L(
+          '红叶转色受当年初霜与降水影响，实际峰值通常存在 ±1–2 周年际波动。',
+          'Foliage turn varies ±1–2 weeks by first frost & rainfall each year.'
+        )
       };
     }
 
@@ -272,16 +384,23 @@
         category: 'blossom',
         month: m,
         suitability: Math.max(5, Math.min(100, sc)),
-        peakWindowText: hasBlossom ? formatPeakMonths(dest, enr) : (lat >= 0 ? '3月–5月（随纬度海拔北移）' : '9月–11月'),
+        peakWindowText: hasBlossom ? formatPeakMonths(dest, enr) : (lat >= 0 ? L('3月–5月（随纬度海拔北移）', 'Mar – May (shifts with latitude/elev)') : L('9月–11月', 'Sep – Nov')),
         dataSource: clim ? 'era5-reanalysis' : 'archive-statistical',
         confidence: hasBlossom ? 'medium' : 'indicative',
-        explanation: `${hasBlossom ? '拥有春花/花海打卡记录' : '按春温梯次推演'} · ${m} 月花期适温 ${tempFit}/100。`,
-        limitations: '花期对春季积温极敏感，请结合出发前 14 天当地实况预报。'
+        explanation: L(
+          `${hasBlossom ? '拥有春花/花海打卡记录' : '按春温梯次推演'} · ${m} 月花期适温 ${tempFit}/100。`,
+          `${hasBlossom ? 'Recorded spring bloom destination' : 'Thermal bloom model'} · ${fmtMonth(m)} fit ${tempFit}/100.`
+        ),
+        limitations: L(
+          '花期对春季积温极敏感，请结合出发前 14 天当地实况预报。',
+          'Blooms are sensitive to growing degree-days; verify 14-day forecast before departure.'
+        )
       };
     }
 
     // Default 'all' comprehensive seasonal phenology
     const baseSuit = Math.max(15, Math.min(100, Math.round(archiveScore * 18 + (dest.allWeather ? 8 : 0))));
+    const hiTxt = mo && mo.highlight ? tx(mo.highlight) : '';
     return {
       category: 'all',
       month: m,
@@ -289,8 +408,14 @@
       peakWindowText: formatPeakMonths(dest, enr),
       dataSource: clim ? 'era5-reanalysis' : 'archive-statistical',
       confidence: clim ? 'high' : 'medium',
-      explanation: `${m} 月档案推荐度 ${archiveScore}★${mo && mo.highlight ? ` · ${mo.highlight}` : ''}。`,
-      limitations: '综合实地季节档案与气候特征，实时出行请留意短期气象变化。'
+      explanation: L(
+        `${m} 月档案推荐度 ${archiveScore}★${hiTxt ? ` · ${hiTxt}` : ''}。`,
+        `${fmtMonth(m)} field rating ${archiveScore}★${hiTxt ? ` · ${hiTxt}` : ''}.`
+      ),
+      limitations: L(
+        '综合实地季节档案与气候特征，实时出行请留意短期气象变化。',
+        'Blends curated seasonal field notes & climate normals; check live weather before travel.'
+      )
     };
   }
 
@@ -389,35 +514,35 @@
         : [];
 
       const srcLabel = ev.dataSource === 'astronomy'
-        ? 'Astronomy 星历'
-        : (ev.dataSource === 'era5-reanalysis' ? 'ERA5 再分析' : '实地统计物候');
+        ? L('Astronomy 星历', 'Astronomy Ephemeris')
+        : (ev.dataSource === 'era5-reanalysis' ? L('ERA5 再分析', 'ERA5 Reanalysis') : L('实地统计物候', 'Field Archive'));
 
       containerEl.innerHTML = `
         <div class="pheno-engine-card">
           <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap;">
-            <strong>V4 科学物候预测 · ${ev.month} 月适宜度 <span class="mono-num" style="color:var(--accent-primary);">${ev.suitability}/100</span></strong>
-            <span class="source-tag ${ev.dataSource === 'astronomy' ? 'astronomy' : 'empirical'}">${esc(srcLabel)} · 置信度 ${esc(ev.confidence)}</span>
+            <strong>${esc(L(`V4 科学物候预测 · ${ev.month} 月适宜度`, `V4 Phenology Forecast · ${fmtMonth(ev.month)} Suitability`))} <span class="mono-num" style="color:var(--accent-primary);">${ev.suitability}/100</span></strong>
+            <span class="source-tag ${ev.dataSource === 'astronomy' ? 'astronomy' : 'empirical'}">${esc(srcLabel)} · ${esc(L('置信度', 'Confidence'))} ${esc(ev.confidence)}</span>
           </div>
           <div class="pheno-cat-pills">
-            ${CATEGORIES.map((c) => `<button class="mini-action-pill pheno-cat-btn ${c.id === cat ? 'active' : ''}" data-cat="${c.id}" type="button">${esc(c.label)}</button>`).join('')}
+            ${CATEGORIES.map((c) => `<button class="mini-action-pill pheno-cat-btn ${c.id === cat ? 'active' : ''}" data-cat="${c.id}" type="button">${esc(getCategoryLabel(c))}</button>`).join('')}
           </div>
           <div style="font-size:11.5px;line-height:1.6;margin-top:6px;">
-            <div><strong>推荐窗口：</strong>${esc(ev.peakWindowText)}</div>
+            <div><strong>${esc(L('推荐窗口：', 'Peak Window: '))}</strong>${esc(ev.peakWindowText)}</div>
             <div>${esc(ev.explanation)}</div>
-            <div style="color:var(--text-muted);font-size:11px;margin-top:3px;">模型限制：${esc(ev.limitations)}</div>
+            <div style="color:var(--text-muted);font-size:11px;margin-top:3px;">${esc(L('模型限制：', 'Model Note: '))}${esc(ev.limitations)}</div>
           </div>
           ${
             related.length
               ? `
             <div class="related-graph-box">
-              <div style="font-size:11px;color:var(--text-secondary);margin-bottom:5px;">地理知识图谱 · 相似或顺路秘境</div>
+              <div style="font-size:11px;color:var(--text-secondary);margin-bottom:5px;">${esc(L('地理知识图谱 · 相似或顺路秘境', 'Geo Knowledge Graph · Similar or Nearby Gems'))}</div>
               <div class="related-graph-chips">
                 ${related
                   .map(
                     (r) => `
                   <button class="mini-action-pill related-dest-btn" data-id="${esc(r.dest.id)}" type="button">
-                    <span>${esc(r.dest.shortName || r.dest.name)}</span>
-                    <span style="opacity:0.7;font-size:10.5px;">${esc(r.relationLabel)}</span>
+                    <span>${esc(tx(r.dest.shortName || r.dest.name))}</span>
+                    <span style="opacity:0.7;font-size:10.5px;">${esc(translateRelationLabel(r.relationLabel))}</span>
                   </button>
                 `
                   )

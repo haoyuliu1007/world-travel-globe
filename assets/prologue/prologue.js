@@ -30,22 +30,199 @@
 
   let refs = {};
 
-  const CHAPTER_LABELS = [
-    '序幕',
-    '青铜星空',
-    '丈量星球',
-    '总观效应',
-    '空间与地方',
-    '万物之网',
-    '天文仪器',
-    '启程时刻'
-  ];
+  const PROLOGUE_LANG_KEY = 'wtg_lang_v1';
 
-  const FINAL_COORD_TEXT = '46.5422° N · 7.9821° E · 山谷灯火';
+  const PROLOGUE_COPY = {
+    'zh-CN': {
+      langSwitchAria: '切换序章界面语言',
+      muteOn: '取消静音',
+      muteOff: '静音',
+      skipLabel: '跳过',
+      skipAria: '跳过序章直接进入地球仪',
+      railAria: '序章章节进度',
+      chapters: ['序幕', '青铜星空', '丈量星球', '总观效应', '空间与地方', '万物之网', '天文仪器', '启程时刻'],
+      finalCoord: '46.5422° N · 7.9821° E · 山谷灯火',
+      s1BadgePill: '3D 卫星图鉴',
+      s1BadgeText: '覆盖七大洲 137 国与 5,414 处光影机位',
+      s1Line1: '世界，不止于平面',
+      s1Line2: '以天文学的精度去旅行',
+      s1SubHtml: '<span class="sp-phrase">从青铜星盘到近地轨道，</span><span class="sp-phrase">人类花了三千六百年才看清这颗星球的全貌。</span> <span class="sp-phrase">现在，物候、日照与地形尺度，</span><span class="sp-phrase">重新交还到你的掌心。</span>',
+      s1Start: '开启序章之旅',
+      s1Hint: '推荐 · 开启全屏与配乐，沉浸阅读序章',
+      s2Kicker: 'c. 1600 BCE · Nebra Sky Disc',
+      s2Quote1: '三千六百年前，人类第一次',
+      s2Quote2: '把星空与季节刻上青铜。',
+      s2SubHtml: '<span class="sp-phrase">只为读懂风向、物候，</span><span class="sp-phrase">与出发的准确时刻</span>',
+      s3Kicker: 'c. 240 BCE · Eratosthenes',
+      s3Quote1: '两千年前，仅凭正午 7.2° 的树影，',
+      s3Quote2: '便算出整颗星球的周长。',
+      s3SubHtml: '<span class="sp-phrase">人类第一次确信：脚下并非无尽平面，</span><span class="sp-phrase">而是一颗完整的球</span>',
+      s4Kicker: '1987 · Frank White · The Overview Effect',
+      s4Quote1: '直到飞离大气层回望，',
+      s4Quote2: '地图上的国界才第一次消失。',
+      s4SubHtml: '<span class="sp-phrase">宇航哲学称之为「总观效应」——</span><span class="sp-phrase">万物共享同一道晨昏线</span>',
+      s5Kicker: '1977 · Yi-Fu Tuan · Space & Place',
+      s5Quote1: '当你真正认识一处坐标，',
+      s5Quote2: '冷冰冰的“空间”，才成了“地方”。',
+      s5SubHtml: '<span class="sp-phrase">这正是我们造这颗 3D 地球仪的起点</span>',
+      s6Kicker: '1845 · Alexander von Humboldt · Kosmos',
+      s6Title1: '自然，是一张千万丝线',
+      s6Title2: '织成的网。',
+      s6LeadHtml: '<span class="sp-phrase">海拔、洋流、花期与光影从未孤立。</span> <span class="sp-phrase">我们把整颗地球的地形尺度、十二个月物候与太阳光线，</span><span class="sp-phrase">重新交还到你的掌心。</span>',
+      s6Metrics: ['国家与地区', '精选目的地', '真实摄影机位'],
+      s7Kicker: 'Precision Instrument',
+      s7TitleHtml: '<span class="sp-phrase">以天文仪器的精度，</span><span class="sp-phrase sp-accent-grad">丈量下一次出发。</span>',
+      s7TabsAria: '核心仪器能力',
+      s7Tabs: ['物候刻度', '日照星盘', '环球航迹'],
+      s7Caps: [
+        { title: '十二个月物候刻度', desc: '按月份筛选全球最佳花期、雪季、秋叶与极光窗口，只在对的时间前往对的经纬。' },
+        { title: 'SunCalc 黄金日照星盘', desc: '实时推演任意机位的日出方位、黄金时刻仰角与顺逆光轨迹，不再全凭天气撞大运。' },
+        { title: '大圆航迹与足迹档案馆', desc: '自动编排多日动线与双档预算；点亮去过与心愿坐标，长出只属于你的世界版图。' }
+      ],
+      s7SeasonTags: ['雪', '雾', '樱', '春', '夏', '绿', '星', '山', '秋', '枫', '光', '雪'],
+      s7MonthFmt: (m) => `${String(m + 1).padStart(2, '0')}月`,
+      s7GoldenHour: '黄金时刻 · AZIMUTH',
+      s7Nodes: ['北京 · BEIJING', '雷克雅未克 · REYKJAVIK', '皇后镇 · QUEENSTOWN'],
+      s8Kicker: 'Ready for Departure',
+      s8TitleHtml: '<span class="sp-phrase">出发之前，</span><span class="sp-phrase sp-accent-grad">先与世界相遇。</span>',
+      s8Sub: '137 国 · 722 城 · 5,414 处光影坐标',
+      s8Enter: '进入 3D 地球仪'
+    },
+    'zh-TW': {
+      langSwitchAria: '切換序章介面語言',
+      muteOn: '取消靜音',
+      muteOff: '靜音',
+      skipLabel: '略過',
+      skipAria: '略過序章直接進入地球儀',
+      railAria: '序章章節進度',
+      chapters: ['序幕', '青銅星空', '丈量星球', '總觀效應', '空間與地方', '萬物之網', '天文儀器', '啟程時刻'],
+      finalCoord: '46.5422° N · 7.9821° E · 山谷燈火',
+      s1BadgePill: '3D 衛星圖鑑',
+      s1BadgeText: '覆蓋七大洲 137 國與 5,414 處光影機位',
+      s1Line1: '世界，不止於平面',
+      s1Line2: '以天文學的精度去旅行',
+      s1SubHtml: '<span class="sp-phrase">從青銅星盤到近地軌道，</span><span class="sp-phrase">人類花了三千六百年才看清這顆星球的全貌。</span> <span class="sp-phrase">現在，物候、日照與地形尺度，</span><span class="sp-phrase">重新交還到你的掌心。</span>',
+      s1Start: '開啟序章之旅',
+      s1Hint: '推薦 · 開啟全螢幕與配樂，沉浸閱讀序章',
+      s2Kicker: 'c. 1600 BCE · Nebra Sky Disc',
+      s2Quote1: '三千六百年前，人類第一次',
+      s2Quote2: '把星空與季節刻上青銅。',
+      s2SubHtml: '<span class="sp-phrase">只為讀懂風向、物候，</span><span class="sp-phrase">與出發的準確時刻</span>',
+      s3Kicker: 'c. 240 BCE · Eratosthenes',
+      s3Quote1: '兩千年前，僅憑正午 7.2° 的樹影，',
+      s3Quote2: '便算出整顆星球的周長。',
+      s3SubHtml: '<span class="sp-phrase">人類第一次確信：腳下並非無盡平面，</span><span class="sp-phrase">而是一顆完整的球</span>',
+      s4Kicker: '1987 · Frank White · The Overview Effect',
+      s4Quote1: '直到飛離大氣層回望，',
+      s4Quote2: '地圖上的國界才第一次消失。',
+      s4SubHtml: '<span class="sp-phrase">宇航哲學稱之為「總觀效應」——</span><span class="sp-phrase">萬物共享同一道晨昏線</span>',
+      s5Kicker: '1977 · Yi-Fu Tuan · Space & Place',
+      s5Quote1: '當你真正認識一處座標，',
+      s5Quote2: '冷冰冰的「空間」，才成了「地方」。',
+      s5SubHtml: '<span class="sp-phrase">這正是我們造這顆 3D 地球儀的起點</span>',
+      s6Kicker: '1845 · Alexander von Humboldt · Kosmos',
+      s6Title1: '自然，是一張千萬絲線',
+      s6Title2: '織成的網。',
+      s6LeadHtml: '<span class="sp-phrase">海拔、洋流、花期與光影從未孤立。</span> <span class="sp-phrase">我們把整顆地球的地形尺度、十二個月物候與太陽光線，</span><span class="sp-phrase">重新交還到你的掌心。</span>',
+      s6Metrics: ['國家與地區', '精選目的地', '真實攝影機位'],
+      s7Kicker: 'Precision Instrument',
+      s7TitleHtml: '<span class="sp-phrase">以天文儀器的精度，</span><span class="sp-phrase sp-accent-grad">丈量下一次出發。</span>',
+      s7TabsAria: '核心儀器能力',
+      s7Tabs: ['物候刻度', '日照星盤', '環球航跡'],
+      s7Caps: [
+        { title: '十二個月物候刻度', desc: '依月份篩選全球最佳花期、雪季、秋葉與極光視窗，只在對的時間前往對的經緯。' },
+        { title: 'SunCalc 黃金日照星盤', desc: '即時推演任意機位的日出方位、黃金時刻仰角與順逆光軌跡，不再全憑天氣撞大運。' },
+        { title: '大圓航跡與足跡檔案館', desc: '自動編排多日動線與雙檔預算；點亮去過與心願座標，長出只屬於你的世界版圖。' }
+      ],
+      s7SeasonTags: ['雪', '霧', '櫻', '春', '夏', '綠', '星', '山', '秋', '楓', '光', '雪'],
+      s7MonthFmt: (m) => `${String(m + 1).padStart(2, '0')}月`,
+      s7GoldenHour: '黃金時刻 · AZIMUTH',
+      s7Nodes: ['北京 · BEIJING', '雷克雅維克 · REYKJAVIK', '皇后鎮 · QUEENSTOWN'],
+      s8Kicker: 'Ready for Departure',
+      s8TitleHtml: '<span class="sp-phrase">出發之前，</span><span class="sp-phrase sp-accent-grad">先與世界相遇。</span>',
+      s8Sub: '137 國 · 722 城 · 5,414 處光影座標',
+      s8Enter: '進入 3D 地球儀'
+    },
+    en: {
+      langSwitchAria: 'Switch prologue language',
+      muteOn: 'Unmute audio',
+      muteOff: 'Mute audio',
+      skipLabel: 'Skip',
+      skipAria: 'Skip prologue and enter the 3D globe',
+      railAria: 'Prologue chapters',
+      chapters: ['Prologue', 'Bronze Sky', 'Measuring Earth', 'Overview Effect', 'Space & Place', 'Web of Life', 'Instruments', 'Departure'],
+      finalCoord: '46.5422° N · 7.9821° E · Valley Lights',
+      s1BadgePill: '3D Satellite Atlas',
+      s1BadgeText: '137 countries & 5,414 curated photo spots across 7 continents',
+      s1Line1: 'The World, Beyond the Flat',
+      s1Line2: 'Travel with Astronomical Precision',
+      s1SubHtml: '<span class="sp-phrase">From bronze sky discs to low Earth orbit,</span> <span class="sp-phrase">humanity spent 3,600 years learning to see this planet whole.</span> <span class="sp-phrase">Now phenology, sunlight, and terrain scale</span> <span class="sp-phrase">return directly to your hands.</span>',
+      s1Start: 'Begin the Prologue',
+      s1Hint: 'Recommended · Enable fullscreen & ambient score for the full experience',
+      s2Kicker: 'c. 1600 BCE · Nebra Sky Disc',
+      s2Quote1: 'Three thousand six hundred years ago,',
+      s2Quote2: 'we first engraved the stars and seasons onto bronze.',
+      s2SubHtml: '<span class="sp-phrase">All to read the winds, seasonal blooms,</span> <span class="sp-phrase">and the exact moment to set sail.</span>',
+      s3Kicker: 'c. 240 BCE · Eratosthenes',
+      s3Quote1: 'Two millennia ago, from a 7.2° noonday shadow alone,',
+      s3Quote2: 'one mind measured the circumference of the Earth.',
+      s3SubHtml: '<span class="sp-phrase">For the first time we knew: beneath our feet lies no endless plane,</span> <span class="sp-phrase">but a living sphere.</span>',
+      s4Kicker: '1987 · Frank White · The Overview Effect',
+      s4Quote1: 'Only after rising above the atmosphere to look back',
+      s4Quote2: 'did borders vanish from the map for the very first time.',
+      s4SubHtml: '<span class="sp-phrase">Astronauts call it the Overview Effect —</span> <span class="sp-phrase">all life shares one fragile terminator line.</span>',
+      s5Kicker: '1977 · Yi-Fu Tuan · Space & Place',
+      s5Quote1: 'Only when you truly come to know a coordinate',
+      s5Quote2: 'does abstract "space" transform into a beloved "place".',
+      s5SubHtml: '<span class="sp-phrase">That single idea is why we built this 3D globe.</span>',
+      s6Kicker: '1845 · Alexander von Humboldt · Kosmos',
+      s6Title1: 'Nature is a living web',
+      s6Title2: 'woven of countless threads.',
+      s6LeadHtml: '<span class="sp-phrase">Elevation, ocean currents, blossoms, and golden light never act alone.</span> <span class="sp-phrase">We place global terrain relief, twelve months of phenology, and solar geometry</span> <span class="sp-phrase">right in your palm.</span>',
+      s6Metrics: ['Countries & Regions', 'Curated Destinations', 'Curated Photo Spots'],
+      s7Kicker: 'Precision Instrument',
+      s7TitleHtml: '<span class="sp-phrase">Measure your next journey</span> <span class="sp-phrase sp-accent-grad">with observatory precision.</span>',
+      s7TabsAria: 'Core observatory instruments',
+      s7Tabs: ['Season Dial', 'Solar Azimuth', 'Great-Circle Orbit'],
+      s7Caps: [
+        { title: '12-Month Phenology Dial', desc: 'Filter global cherry blossoms, snow peaks, autumn foliage, and aurora windows so you arrive at the right longitude in the right season.' },
+        { title: 'SunCalc Golden Hour Compass', desc: 'Simulate exact sunrise bearings, golden hour elevation, and front- vs backlight vectors for any viewpoint before leaving home.' },
+        { title: 'Great-Circle Routes & Archive', desc: 'Compose multi-day routes with real road timing and two-tier budgets, while lighting up your personal map of visited and wishlist coordinates.' }
+      ],
+      s7SeasonTags: ['Snow', 'Mist', 'Bloom', 'Spring', 'Summer', 'Lush', 'Stars', 'Peaks', 'Autumn', 'Maple', 'Light', 'Snow'],
+      s7MonthFmt: (m) => ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][m] || `M${m + 1}`,
+      s7GoldenHour: 'GOLDEN HOUR · AZIMUTH',
+      s7Nodes: ['BEIJING', 'REYKJAVIK', 'QUEENSTOWN'],
+      s8Kicker: 'Ready for Departure',
+      s8TitleHtml: '<span class="sp-phrase">Before you depart,</span> <span class="sp-phrase sp-accent-grad">meet the whole world first.</span>',
+      s8Sub: '137 Countries · 722 Cities · 5,414 Sun-Tracked Spots',
+      s8Enter: 'Enter 3D Globe'
+    }
+  };
+
+  function detectInitialLang() {
+    try {
+      const qLang = global.location ? new URLSearchParams(global.location.search).get('lang') : null;
+      if (qLang && PROLOGUE_COPY[qLang]) return qLang;
+      if (global.AppI18n && typeof global.AppI18n.getLang === 'function') {
+        const appLang = global.AppI18n.getLang();
+        if (appLang && PROLOGUE_COPY[appLang]) return appLang;
+      }
+      const saved = global.localStorage ? global.localStorage.getItem(PROLOGUE_LANG_KEY) : null;
+      if (saved && PROLOGUE_COPY[saved]) return saved;
+    } catch (e) {}
+    const docLang = document.documentElement && document.documentElement.lang;
+    if (docLang && PROLOGUE_COPY[docLang]) return docLang;
+    return 'zh-CN';
+  }
+
+  let currentLang = detectInitialLang();
+  const getCopy = (lang) => PROLOGUE_COPY[lang || currentLang] || PROLOGUE_COPY['zh-CN'];
 
   function buildDom() {
     if (built) return;
     built = true;
+    const c = getCopy();
 
     root.innerHTML = `
       <div class="sp-hairline" id="sp-hairline" aria-hidden="true"></div>
@@ -56,13 +233,18 @@
           <span>World Travel Globe</span>
         </div>
         <div class="sp-top-controls">
-          <button class="sp-mute-btn" id="sp-mute" type="button" aria-label="静音">🔊</button>
-          <button class="sp-skip-quiet" id="sp-skip" type="button" aria-label="跳过序章直接进入地球仪">跳过</button>
+          <div class="sp-lang-switch" id="sp-lang-switch" role="group" aria-label="${c.langSwitchAria}">
+            <button class="sp-lang-btn${currentLang === 'zh-CN' ? ' active' : ''}" type="button" data-sp-lang="zh-CN">简</button>
+            <button class="sp-lang-btn${currentLang === 'zh-TW' ? ' active' : ''}" type="button" data-sp-lang="zh-TW">繁</button>
+            <button class="sp-lang-btn${currentLang === 'en' ? ' active' : ''}" type="button" data-sp-lang="en">EN</button>
+          </div>
+          <button class="sp-mute-btn" id="sp-mute" type="button" aria-label="${c.muteOff}">🔊</button>
+          <button class="sp-skip-quiet" id="sp-skip" type="button" aria-label="${c.skipAria}">${c.skipLabel}</button>
         </div>
       </header>
 
-      <nav class="sp-dot-rail" id="sp-dot-rail" aria-label="序章章节进度">
-        ${CHAPTER_LABELS.map((label, idx) => `
+      <nav class="sp-dot-rail" id="sp-dot-rail" aria-label="${c.railAria}">
+        ${c.chapters.map((label, idx) => `
           <button class="sp-dot-btn${idx === 0 ? ' active' : ''}" type="button" data-slide-idx="${idx}" aria-label="${label}">
             <span class="sp-dot-label">${label}</span>
           </button>
@@ -77,26 +259,23 @@
 
         <div class="sp-hero-inner">
           <div class="sp-badge sp-reveal" style="--sp-delay: 20ms;">
-            <span class="sp-badge-pill">3D 卫星图鉴</span>
-            <span>覆盖七大洲 137 国与 5,414 处光影机位</span>
+            <span class="sp-badge-pill" id="sp-s1-badge-pill">${c.s1BadgePill}</span>
+            <span id="sp-s1-badge-text">${c.s1BadgeText}</span>
           </div>
 
           <h1 class="sp-hero-title">
-            <span class="sp-line-clip"><span class="sp-line-inner" style="--sp-delay: 60ms;">世界，不止于平面</span></span>
-            <span class="sp-line-clip"><span class="sp-line-inner sp-accent-grad" style="--sp-delay: 130ms;">以天文学的精度去旅行</span></span>
+            <span class="sp-line-clip"><span class="sp-line-inner" id="sp-s1-line1" style="--sp-delay: 60ms;">${c.s1Line1}</span></span>
+            <span class="sp-line-clip"><span class="sp-line-inner sp-accent-grad" id="sp-s1-line2" style="--sp-delay: 130ms;">${c.s1Line2}</span></span>
           </h1>
 
-          <p class="sp-hero-sub sp-reveal" style="--sp-delay: 190ms;">
-            <span class="sp-phrase">从青铜星盘到近地轨道，</span><span class="sp-phrase">人类花了三千六百年才看清这颗星球的全貌。</span>
-            <span class="sp-phrase">现在，物候、日照与地形尺度，</span><span class="sp-phrase">重新交还到你的掌心。</span>
-          </p>
+          <p class="sp-hero-sub sp-reveal" id="sp-s1-sub" style="--sp-delay: 190ms;">${c.s1SubHtml}</p>
 
           <div class="sp-hero-actions sp-reveal" style="--sp-delay: 250ms;">
             <button class="sp-btn-primary" id="sp-start-btn" type="button">
-              <span>开启序章之旅</span>
+              <span id="sp-start-label">${c.s1Start}</span>
               <svg class="sp-arrow-down" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
             </button>
-            <div class="sp-hero-hint">推荐 · 开启全屏与配乐，沉浸阅读序章</div>
+            <div class="sp-hero-hint" id="sp-s1-hint">${c.s1Hint}</div>
           </div>
         </div>
 
@@ -105,7 +284,7 @@
         </div>
       </section>
 
-      <!-- Slide 2: Nebra Sky Disc (Right-Aligned Negative Space + Clip-Wipe) -->
+      <!-- Slide 2: Nebra Sky Disc -->
       <section class="sp-slide sp-anim-wipe" id="sp-s2" data-slide="1">
         <img class="sp-bg-photo" src="assets/prologue/scene-2-nebra.jpg?v=1" alt="" style="object-position: left center;" />
         <div class="sp-scrim-right" aria-hidden="true"></div>
@@ -126,19 +305,17 @@
               <circle class="sp-arc-node" cx="172" cy="34" r="1.8" fill="#7eaaff"/>
             </svg>
           </div>
-          <div class="sp-kicker sp-reveal" style="--sp-delay: 40ms;">c. 1600 BCE · Nebra Sky Disc</div>
+          <div class="sp-kicker sp-reveal" style="--sp-delay: 40ms;">${c.s2Kicker}</div>
           <h2 class="sp-story-quote sp-reveal" style="--sp-delay: 110ms;">
-            <span class="sp-phrase">三千六百年前，人类第一次</span><br />
-            <span class="sp-phrase sp-accent-grad">把星空与季节刻上青铜。</span>
+            <span class="sp-phrase" id="sp-s2-q1">${c.s2Quote1}</span><br />
+            <span class="sp-phrase sp-accent-grad" id="sp-s2-q2">${c.s2Quote2}</span>
           </h2>
           <div class="sp-story-rule" aria-hidden="true"></div>
-          <p class="sp-story-sub sp-reveal" style="--sp-delay: 190ms;">
-            <span class="sp-phrase">只为读懂风向、物候，</span><span class="sp-phrase">与出发的准确时刻</span>
-          </p>
+          <p class="sp-story-sub sp-reveal" id="sp-s2-sub" style="--sp-delay: 190ms;">${c.s2SubHtml}</p>
         </div>
       </section>
 
-      <!-- Slide 3: Eratosthenes (Left-Aligned Negative Space + 7.2 deg Geometry) -->
+      <!-- Slide 3: Eratosthenes -->
       <section class="sp-slide sp-anim-geo" id="sp-s3" data-slide="2">
         <img class="sp-bg-photo" src="assets/prologue/scene-2-astrolabe.jpg?v=1" alt="" style="object-position: right center;" />
         <div class="sp-scrim-left" aria-hidden="true"></div>
@@ -156,36 +333,32 @@
             </svg>
             <span class="sp-geo-badge">7.2° · 1/50 OF SPHERE</span>
           </div>
-          <div><div class="sp-kicker sp-reveal" style="--sp-delay: 50ms;">c. 240 BCE · Eratosthenes</div></div>
+          <div><div class="sp-kicker sp-reveal" style="--sp-delay: 50ms;">${c.s3Kicker}</div></div>
           <h2 class="sp-story-quote sp-reveal" style="--sp-delay: 110ms;">
-            <span class="sp-phrase">两千年前，仅凭正午 7.2° 的树影，</span><br />
-            <span class="sp-phrase sp-accent-grad">便算出整颗星球的周长。</span>
+            <span class="sp-phrase" id="sp-s3-q1">${c.s3Quote1}</span><br />
+            <span class="sp-phrase sp-accent-grad" id="sp-s3-q2">${c.s3Quote2}</span>
           </h2>
           <div class="sp-story-rule" aria-hidden="true"></div>
-          <p class="sp-story-sub sp-reveal" style="--sp-delay: 190ms;">
-            <span class="sp-phrase">人类第一次确信：脚下并非无尽平面，</span><span class="sp-phrase">而是一颗完整的球</span>
-          </p>
+          <p class="sp-story-sub sp-reveal" id="sp-s3-sub" style="--sp-delay: 190ms;">${c.s3SubHtml}</p>
         </div>
       </section>
 
-      <!-- Slide 4: The Overview Effect (Left Orbital Space + Wide-Lens Dolly Zoom) -->
+      <!-- Slide 4: The Overview Effect -->
       <section class="sp-slide sp-anim-orbital" id="sp-s4" data-slide="3">
         <img class="sp-bg-photo" src="assets/prologue/scene-3-earth.jpg?v=1" alt="" style="object-position: right center;" />
         <div class="sp-scrim-orbital" aria-hidden="true"></div>
         <div class="sp-story-inner sp-align-left">
-          <div class="sp-kicker sp-reveal" style="--sp-delay: 0ms;">1987 · Frank White · The Overview Effect</div>
+          <div class="sp-kicker sp-reveal" style="--sp-delay: 0ms;">${c.s4Kicker}</div>
           <h2 class="sp-story-quote sp-reveal" style="--sp-delay: 90ms;">
-            <span class="sp-phrase">直到飞离大气层回望，</span><br />
-            <span class="sp-phrase sp-accent-grad">地图上的国界才第一次消失。</span>
+            <span class="sp-phrase" id="sp-s4-q1">${c.s4Quote1}</span><br />
+            <span class="sp-phrase sp-accent-grad" id="sp-s4-q2">${c.s4Quote2}</span>
           </h2>
           <div class="sp-story-rule" aria-hidden="true"></div>
-          <p class="sp-story-sub sp-reveal" style="--sp-delay: 180ms;">
-            <span class="sp-phrase">宇航哲学称之为「总观效应」——</span><span class="sp-phrase">万物共享同一道晨昏线</span>
-          </p>
+          <p class="sp-story-sub sp-reveal" id="sp-s4-sub" style="--sp-delay: 180ms;">${c.s4SubHtml}</p>
         </div>
       </section>
 
-      <!-- Slide 5: Space & Place (Upper Night Sky + Coordinate-Lock Reticle) -->
+      <!-- Slide 5: Space & Place -->
       <section class="sp-slide sp-anim-coord" id="sp-s5" data-slide="4">
         <img class="sp-bg-photo" src="assets/prologue/scene-5-place.jpg?v=1" alt="" style="object-position: center bottom;" />
         <div class="sp-scrim-top" aria-hidden="true"></div>
@@ -200,68 +373,61 @@
             </span>
             <span class="sp-coord-readout" id="sp-coord-readout">00.0000° N · 00.0000° E</span>
           </div>
-          <div><div class="sp-kicker sp-reveal" style="--sp-delay: 40ms;">1977 · Yi-Fu Tuan · Space &amp; Place</div></div>
+          <div><div class="sp-kicker sp-reveal" style="--sp-delay: 40ms;">${c.s5Kicker}</div></div>
           <h2 class="sp-story-quote sp-reveal" style="--sp-delay: 100ms;">
-            <span class="sp-phrase">当你真正认识一处坐标，</span><br />
-            <span class="sp-phrase sp-accent-grad">冷冰冰的“空间”，才成了“地方”。</span>
+            <span class="sp-phrase" id="sp-s5-q1">${c.s5Quote1}</span><br />
+            <span class="sp-phrase sp-accent-grad" id="sp-s5-q2">${c.s5Quote2}</span>
           </h2>
           <div class="sp-story-rule" aria-hidden="true"></div>
-          <p class="sp-story-sub sp-reveal" style="--sp-delay: 170ms;">
-            <span class="sp-phrase">这正是我们造这颗 3D 地球仪的起点</span>
-          </p>
+          <p class="sp-story-sub sp-reveal" id="sp-s5-sub" style="--sp-delay: 170ms;">${c.s5SubHtml}</p>
         </div>
       </section>
 
-      <!-- Slide 6: Humboldt + Living Planetary Atlas Metrics (Delta Negative Space + Cascade) -->
+      <!-- Slide 6: Humboldt + Living Planetary Atlas Metrics -->
       <section class="sp-slide sp-anim-cascade" id="sp-s6" data-slide="5">
         <img class="sp-bg-photo" src="assets/prologue/scene-6-humboldt.jpg?v=1" alt="" style="object-position: right center;" />
         <div class="sp-scrim-humboldt" aria-hidden="true"></div>
         <div class="sp-earth-inner">
           <div class="sp-earth-copy">
-            <div class="sp-kicker sp-reveal" style="--sp-delay: 0ms;">1845 · Alexander von Humboldt · Kosmos</div>
+            <div class="sp-kicker sp-reveal" style="--sp-delay: 0ms;">${c.s6Kicker}</div>
             <h2 class="sp-earth-title sp-reveal" style="--sp-delay: 70ms;">
-              <span class="sp-phrase">自然，是一张千万丝线</span><br />
-              <span class="sp-phrase sp-accent-grad">织成的网。</span>
+              <span class="sp-phrase" id="sp-s6-t1">${c.s6Title1}</span><br />
+              <span class="sp-phrase sp-accent-grad" id="sp-s6-t2">${c.s6Title2}</span>
             </h2>
-            <p class="sp-earth-lead sp-reveal" style="--sp-delay: 140ms;">
-              <span class="sp-phrase">海拔、洋流、花期与光影从未孤立。</span>
-              <span class="sp-phrase">我们把整颗地球的地形尺度、十二个月物候与太阳光线，</span><span class="sp-phrase">重新交还到你的掌心。</span>
-            </p>
+            <p class="sp-earth-lead sp-reveal" id="sp-s6-lead" style="--sp-delay: 140ms;">${c.s6LeadHtml}</p>
           </div>
 
           <div class="sp-metrics-bar sp-reveal" style="--sp-delay: 210ms;">
             <div class="sp-metric-cell">
               <div class="sp-metric-val" data-count="137">0</div>
-              <div class="sp-metric-name">国家与地区</div>
+              <div class="sp-metric-name" data-metric-idx="0">${c.s6Metrics[0]}</div>
             </div>
             <div class="sp-metric-cell">
               <div class="sp-metric-val" data-count="722">0</div>
-              <div class="sp-metric-name">精选目的地</div>
+              <div class="sp-metric-name" data-metric-idx="1">${c.s6Metrics[1]}</div>
             </div>
             <div class="sp-metric-cell">
               <div class="sp-metric-val sp-accent-grad" data-count="5414">0</div>
-              <div class="sp-metric-name">真实摄影机位</div>
+              <div class="sp-metric-name" data-metric-idx="2">${c.s6Metrics[2]}</div>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- Slide 7: Precision Instrument (Dark Observatory Console + One-Shot Border Scan) -->
+      <!-- Slide 7: Precision Instrument -->
       <section class="sp-slide sp-anim-console" id="sp-s7" data-slide="6">
         <div class="sp-inst-inner">
           <div class="sp-inst-head">
-            <div class="sp-kicker sp-reveal" style="--sp-delay: 0ms;">Precision Instrument</div>
-            <h2 class="sp-inst-title sp-reveal" style="--sp-delay: 70ms;">
-              <span class="sp-phrase">以天文仪器的精度，</span><span class="sp-phrase sp-accent-grad">丈量下一次出发。</span>
-            </h2>
+            <div class="sp-kicker sp-reveal" style="--sp-delay: 0ms;">${c.s7Kicker}</div>
+            <h2 class="sp-inst-title sp-reveal" id="sp-s7-title" style="--sp-delay: 70ms;">${c.s7TitleHtml}</h2>
           </div>
 
           <div class="sp-inst-shell sp-reveal" style="--sp-delay: 140ms;">
             <div class="sp-tabs-wrap">
-              <div class="sp-tabs" role="tablist" aria-label="核心仪器能力">
-                <button class="sp-tab active" data-inst="0" role="tab" aria-selected="true" type="button">物候刻度</button>
-                <button class="sp-tab" data-inst="1" role="tab" aria-selected="false" type="button">日照星盘</button>
-                <button class="sp-tab" data-inst="2" role="tab" aria-selected="false" type="button">环球航迹</button>
+              <div class="sp-tabs" id="sp-inst-tabs" role="tablist" aria-label="${c.s7TabsAria}">
+                <button class="sp-tab active" data-inst="0" role="tab" aria-selected="true" type="button">${c.s7Tabs[0]}</button>
+                <button class="sp-tab" data-inst="1" role="tab" aria-selected="false" type="button">${c.s7Tabs[1]}</button>
+                <button class="sp-tab" data-inst="2" role="tab" aria-selected="false" type="button">${c.s7Tabs[2]}</button>
               </div>
             </div>
 
@@ -269,16 +435,16 @@
               <canvas class="sp-inst-canvas" id="sp-inst-canvas" aria-hidden="true"></canvas>
               <div class="sp-cap-bar">
                 <div class="sp-cap active" data-cap="0">
-                  <h3>十二个月物候刻度</h3>
-                  <p>按月份筛选全球最佳花期、雪季、秋叶与极光窗口，只在对的时间前往对的经纬。</p>
+                  <h3>${c.s7Caps[0].title}</h3>
+                  <p>${c.s7Caps[0].desc}</p>
                 </div>
                 <div class="sp-cap" data-cap="1">
-                  <h3>SunCalc 黄金日照星盘</h3>
-                  <p>实时推演任意机位的日出方位、黄金时刻仰角与顺逆光轨迹，不再全凭天气撞大运。</p>
+                  <h3>${c.s7Caps[1].title}</h3>
+                  <p>${c.s7Caps[1].desc}</p>
                 </div>
                 <div class="sp-cap" data-cap="2">
-                  <h3>大圆航迹与足迹档案馆</h3>
-                  <p>自动编排多日动线与双档预算；点亮去过与心愿坐标，长出只属于你的世界版图。</p>
+                  <h3>${c.s7Caps[2].title}</h3>
+                  <p>${c.s7Caps[2].desc}</p>
                 </div>
               </div>
             </div>
@@ -286,19 +452,17 @@
         </div>
       </section>
 
-      <!-- Slide 8: Departure Finale (Dawn Horizon Lift + Subtle Settlement) -->
+      <!-- Slide 8: Departure Finale -->
       <section class="sp-slide sp-anim-dawn" id="sp-s8" data-slide="7">
         <img class="sp-bg-photo" src="assets/prologue/scene-4-dawn.jpg?v=1" alt="" style="object-position: center bottom;" />
         <div class="sp-scrim-dawn" aria-hidden="true"></div>
         <div class="sp-finale-inner">
-          <div class="sp-kicker sp-reveal" style="--sp-delay: 0ms;">Ready for Departure</div>
-          <h2 class="sp-finale-title sp-reveal" style="--sp-delay: 70ms;">
-            <span class="sp-phrase">出发之前，</span><span class="sp-phrase sp-accent-grad">先与世界相遇。</span>
-          </h2>
-          <div class="sp-finale-sub sp-reveal" style="--sp-delay: 130ms;">137 国 · 722 城 · 5,414 处光影坐标</div>
+          <div class="sp-kicker sp-reveal" style="--sp-delay: 0ms;">${c.s8Kicker}</div>
+          <h2 class="sp-finale-title sp-reveal" id="sp-s8-title" style="--sp-delay: 70ms;">${c.s8TitleHtml}</h2>
+          <div class="sp-finale-sub sp-reveal" id="sp-s8-sub" style="--sp-delay: 130ms;">${c.s8Sub}</div>
           <div class="sp-reveal" style="--sp-delay: 190ms;">
             <button class="sp-btn-primary" id="sp-enter-btn" type="button">
-              <span>进入 3D 地球仪</span>
+              <span id="sp-enter-label">${c.s8Enter}</span>
               <svg class="sp-arrow-right" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
             </button>
           </div>
@@ -312,6 +476,9 @@
 
     refs = {
       hairline: root.querySelector('#sp-hairline'),
+      langSwitch: root.querySelector('#sp-lang-switch'),
+      langBtns: Array.from(root.querySelectorAll('[data-sp-lang]')),
+      dotRail: root.querySelector('#sp-dot-rail'),
       muteBtn: root.querySelector('#sp-mute'),
       skipBtn: root.querySelector('#sp-skip'),
       startBtn: root.querySelector('#sp-start-btn'),
@@ -322,10 +489,19 @@
       coordReadout: root.querySelector('#sp-coord-readout'),
       instCanvas: root.querySelector('#sp-inst-canvas'),
       iCtx: root.querySelector('#sp-inst-canvas').getContext('2d'),
+      instTabsWrap: root.querySelector('#sp-inst-tabs'),
       tabs: Array.from(root.querySelectorAll('.sp-tab')),
       caps: Array.from(root.querySelectorAll('.sp-cap')),
       counters: Array.from(root.querySelectorAll('[data-count]'))
     };
+
+    refs.langBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const nextLang = btn.getAttribute('data-sp-lang');
+        if (!nextLang || !PROLOGUE_COPY[nextLang]) return;
+        setPrologueLanguage(nextLang, { syncApp: true });
+      });
+    });
 
     refs.tabs.forEach((btn) => {
       btn.addEventListener('click', () => {
@@ -334,7 +510,7 @@
           b.classList.toggle('active', i === activeInst);
           b.setAttribute('aria-selected', String(i === activeInst));
         });
-        refs.caps.forEach((c, i) => c.classList.toggle('active', i === activeInst));
+        refs.caps.forEach((cEl, i) => cEl.classList.toggle('active', i === activeInst));
       });
     });
 
@@ -365,6 +541,118 @@
     global.addEventListener('resize', () => {
       if (isOpen) resizeInst();
     });
+  }
+
+  function applyLocale(langId) {
+    if (langId && PROLOGUE_COPY[langId]) currentLang = langId;
+    if (!built) return;
+    const c = getCopy();
+    if (refs.langSwitch) refs.langSwitch.setAttribute('aria-label', c.langSwitchAria);
+    refs.langBtns.forEach((b) => {
+      const isAct = b.getAttribute('data-sp-lang') === currentLang;
+      b.classList.toggle('active', isAct);
+      b.setAttribute('aria-pressed', String(isAct));
+    });
+    if (refs.skipBtn) {
+      refs.skipBtn.textContent = c.skipLabel;
+      refs.skipBtn.setAttribute('aria-label', c.skipAria);
+    }
+    if (refs.dotRail) refs.dotRail.setAttribute('aria-label', c.railAria);
+    refs.dots.forEach((d, idx) => {
+      const lbl = c.chapters[idx] || '';
+      d.setAttribute('aria-label', lbl);
+      const span = d.querySelector('.sp-dot-label');
+      if (span) span.textContent = lbl;
+    });
+
+    const setText = (sel, txt) => {
+      const el = root.querySelector(sel);
+      if (el) el.textContent = txt;
+    };
+    const setHtml = (sel, html) => {
+      const el = root.querySelector(sel);
+      if (el) el.innerHTML = html;
+    };
+
+    setText('#sp-s1-badge-pill', c.s1BadgePill);
+    setText('#sp-s1-badge-text', c.s1BadgeText);
+    setText('#sp-s1-line1', c.s1Line1);
+    setText('#sp-s1-line2', c.s1Line2);
+    setHtml('#sp-s1-sub', c.s1SubHtml);
+    setText('#sp-start-label', c.s1Start);
+    setText('#sp-s1-hint', c.s1Hint);
+
+    setText('#sp-s2-q1', c.s2Quote1);
+    setText('#sp-s2-q2', c.s2Quote2);
+    setHtml('#sp-s2-sub', c.s2SubHtml);
+
+    setText('#sp-s3-q1', c.s3Quote1);
+    setText('#sp-s3-q2', c.s3Quote2);
+    setHtml('#sp-s3-sub', c.s3SubHtml);
+
+    setText('#sp-s4-q1', c.s4Quote1);
+    setText('#sp-s4-q2', c.s4Quote2);
+    setHtml('#sp-s4-sub', c.s4SubHtml);
+
+    setText('#sp-s5-q1', c.s5Quote1);
+    setText('#sp-s5-q2', c.s5Quote2);
+    setHtml('#sp-s5-sub', c.s5SubHtml);
+    if (refs.coordLock && refs.coordReadout && refs.coordLock.classList.contains('is-locked')) {
+      refs.coordReadout.textContent = c.finalCoord;
+    }
+
+    setText('#sp-s6-t1', c.s6Title1);
+    setText('#sp-s6-t2', c.s6Title2);
+    setHtml('#sp-s6-lead', c.s6LeadHtml);
+    root.querySelectorAll('[data-metric-idx]').forEach((el) => {
+      const idx = Number(el.getAttribute('data-metric-idx'));
+      if (c.s6Metrics[idx]) el.textContent = c.s6Metrics[idx];
+    });
+
+    setHtml('#sp-s7-title', c.s7TitleHtml);
+    if (refs.instTabsWrap) refs.instTabsWrap.setAttribute('aria-label', c.s7TabsAria);
+    refs.tabs.forEach((tab, i) => {
+      if (c.s7Tabs[i]) tab.textContent = c.s7Tabs[i];
+    });
+    refs.caps.forEach((capEl, i) => {
+      const item = c.s7Caps[i];
+      if (!item) return;
+      const h3 = capEl.querySelector('h3');
+      const p = capEl.querySelector('p');
+      if (h3) h3.textContent = item.title;
+      if (p) p.textContent = item.desc;
+    });
+
+    setHtml('#sp-s8-title', c.s8TitleHtml);
+    setText('#sp-s8-sub', c.s8Sub);
+    setText('#sp-enter-label', c.s8Enter);
+
+    syncMuteUI();
+    if (instNearViewport || activeSlideIdx === 6) {
+      renderInstrument(performance.now() * 0.001);
+    }
+  }
+
+  function setPrologueLanguage(langId, opts = {}) {
+    if (!langId || !PROLOGUE_COPY[langId]) return;
+    currentLang = langId;
+    try {
+      if (global.localStorage) global.localStorage.setItem(PROLOGUE_LANG_KEY, langId);
+    } catch (e) {}
+    if (document.documentElement) {
+      document.documentElement.lang = langId;
+    }
+    applyLocale(langId);
+    if (opts.syncApp) {
+      if (typeof global.switchAppLanguage === 'function') {
+        global.switchAppLanguage(langId);
+      } else if (global.AppI18n && typeof global.AppI18n.setLang === 'function') {
+        global.AppI18n.setLang(langId);
+        if (langId !== 'zh-CN' && langId !== 'zh-TW' && typeof global.AppI18n.ensureLangIndex === 'function') {
+          global.AppI18n.ensureLangIndex(langId);
+        }
+      }
+    }
   }
 
   function clearTransitionTimers() {
@@ -516,7 +804,7 @@
     readoutEl.dataset.locked = '1';
 
     if (reduced.matches) {
-      readoutEl.textContent = FINAL_COORD_TEXT;
+      readoutEl.textContent = getCopy().finalCoord;
       lockEl.classList.add('is-locked');
       return;
     }
@@ -527,7 +815,7 @@
       if (!isOpen) return;
       const t = clamp01((now - start) / dur);
       if (t >= 1) {
-        readoutEl.textContent = FINAL_COORD_TEXT;
+        readoutEl.textContent = getCopy().finalCoord;
         lockEl.classList.add('is-locked');
         return;
       }
@@ -591,7 +879,7 @@
     if (refs.coordLock && refs.coordReadout) {
       refs.coordLock.classList.toggle('is-locked', reduced.matches);
       refs.coordReadout.dataset.locked = '0';
-      refs.coordReadout.textContent = reduced.matches ? FINAL_COORD_TEXT : '00.0000° N · 00.0000° E';
+      refs.coordReadout.textContent = reduced.matches ? getCopy().finalCoord : '00.0000° N · 00.0000° E';
     }
   }
 
@@ -610,9 +898,10 @@
 
   function syncMuteUI() {
     if (!refs.muteBtn || !global.CosmicBGM) return;
+    const c = getCopy();
     const muted = global.CosmicBGM.isMuted();
     refs.muteBtn.textContent = muted ? '🔇' : '🔊';
-    refs.muteBtn.setAttribute('aria-label', muted ? '取消静音' : '静音');
+    refs.muteBtn.setAttribute('aria-label', muted ? c.muteOn : c.muteOff);
   }
 
   function lockBackground() {
@@ -656,11 +945,12 @@
     if (w0 > 0.01) {
       ctx.save();
       ctx.globalAlpha = w0;
+      const c = getCopy();
       const spanW = Math.min(w - 80, 680);
       const startX = (w - spanW) / 2;
       const baseY = h * 0.44;
       const activeIdx = reduced.matches ? 3 : ((t * 0.55) % 12);
-      const seasonTags = ['雪', '雾', '樱', '春', '夏', '绿', '星', '山', '秋', '枫', '光', '雪'];
+      const seasonTags = c.s7SeasonTags;
 
       ctx.font = '500 11px "PingFang SC", "Microsoft YaHei", sans-serif';
       ctx.textAlign = 'center';
@@ -679,7 +969,7 @@
         ctx.stroke();
 
         ctx.fillStyle = focus > 0.3 ? '#e0c38e' : 'rgba(245, 245, 247, 0.72)';
-        ctx.fillText(String(m + 1).padStart(2, '0') + '月', x, baseY + 26);
+        ctx.fillText(c.s7MonthFmt(m), x, baseY + 26);
 
         if (focus > 0.45) {
           ctx.fillStyle = 'rgba(224, 195, 142, 0.95)';
@@ -754,17 +1044,18 @@
       const deg = Math.round((((sweep * 180) / Math.PI) + 450) % 360);
       ctx.font = '500 11px "PingFang SC", "Microsoft YaHei", sans-serif';
       ctx.fillStyle = '#e0c38e';
-      ctx.fillText(`黄金时刻 · AZIMUTH ${deg}°`, cx, cy + 4);
+      ctx.fillText(`${getCopy().s7GoldenHour} ${deg}°`, cx, cy + 4);
       ctx.restore();
     }
 
     if (w2 > 0.01) {
       ctx.save();
       ctx.globalAlpha = w2;
+      const nLabels = getCopy().s7Nodes;
       const nodes = [
-        { x: w * 0.46, y: h * 0.46, name: '北京 · BEIJING' },
-        { x: w * 0.65, y: h * 0.24, name: '雷克雅未克 · REYKJAVIK' },
-        { x: w * 0.84, y: h * 0.56, name: '皇后镇 · QUEENSTOWN' }
+        { x: w * 0.46, y: h * 0.46, name: nLabels[0] },
+        { x: w * 0.65, y: h * 0.24, name: nLabels[1] },
+        { x: w * 0.84, y: h * 0.56, name: nLabels[2] }
       ];
 
       ctx.font = '500 11px "PingFang SC", "Microsoft YaHei", sans-serif';
@@ -851,6 +1142,10 @@
 
   function open(opts = {}) {
     buildDom();
+    const detected = detectInitialLang();
+    if (detected !== currentLang) {
+      applyLocale(detected);
+    }
     if (isOpen && !isClosing) return;
     isClosing = false;
     isOpen = true;
@@ -1011,6 +1306,14 @@
   global.StoryPrologue = {
     open,
     close,
-    isOpen: () => isOpen
+    isOpen: () => isOpen,
+    refreshLocale: (langId) => {
+      if (langId && PROLOGUE_COPY[langId]) {
+        currentLang = langId;
+        if (built) applyLocale(langId);
+      }
+    },
+    getLocaleCopy: (langId) => getCopy(langId),
+    getCurrentLang: () => currentLang
   };
 })(window);

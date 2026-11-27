@@ -27,6 +27,19 @@
     return global.AppI18n ? global.AppI18n.tx(str) : (str || '');
   }
 
+  function getLang() {
+    return global.AppI18n && typeof global.AppI18n.getLang === 'function' ? global.AppI18n.getLang() : 'zh-CN';
+  }
+
+  function L(zh, en) {
+    const lang = getLang();
+    if (lang === 'en') return en;
+    if (lang === 'zh-TW' && global.AppI18n && typeof global.AppI18n.toTraditional === 'function') {
+      return global.AppI18n.toTraditional(zh);
+    }
+    return zh;
+  }
+
   async function hashSyncKey(passphrase) {
     const enc = new TextEncoder().encode(`wtg_sync_v1:${passphrase}`);
     if (global.crypto && global.crypto.subtle) {
@@ -248,16 +261,19 @@
       if (!reportChart) reportChart = echarts.init(el);
 
       const destMap = new Map(allDests.map((d) => [d.id, d]));
-      const contNames = {
-        asia: '亚洲',
-        europe: '欧洲',
-        oceania: '大洋洲',
-        north_america: '北美洲',
-        south_america: '南美洲',
-        africa_antarctica: '非洲/南极'
+      const contKeys = ['asia', 'europe', 'oceania', 'north_america', 'south_america', 'africa_antarctica'];
+      const contFallback = {
+        asia: '亚洲', europe: '欧洲', oceania: '大洋洲',
+        north_america: '北美洲', south_america: '南美洲', africa_antarctica: '非洲/南极'
       };
+      const contLabels = {};
+      contKeys.forEach((k) => {
+        contLabels[k] = global.AppI18n && typeof global.AppI18n.tContinent === 'function'
+          ? global.AppI18n.tContinent(k)
+          : contFallback[k];
+      });
       const counts = {};
-      Object.keys(contNames).forEach((k) => { counts[k] = 0; });
+      contKeys.forEach((k) => { counts[k] = 0; });
       statuses.filter((s) => s.status === 'visited').forEach((s) => {
         const d = destMap.get(s.destId);
         if (d && counts[d.continent] !== undefined) counts[d.continent]++;
@@ -267,13 +283,13 @@
         backgroundColor: 'transparent',
         tooltip: { trigger: 'axis' },
         grid: { left: 42, right: 16, top: 20, bottom: 26 },
-        xAxis: { type: 'category', data: Object.keys(contNames).map((k) => contNames[k]), axisLabel: { color: '#A1A1AA', fontSize: 10.5 } },
+        xAxis: { type: 'category', data: contKeys.map((k) => contLabels[k]), axisLabel: { color: '#A1A1AA', fontSize: 10.5 } },
         yAxis: { type: 'value', minInterval: 1, axisLabel: { color: '#A1A1AA', fontSize: 10.5 }, splitLine: { lineStyle: { color: 'rgba(255,255,255,0.08)' } } },
         series: [
           {
-            name: '已去过城市数',
+            name: L('已去过城市数', 'Visited Cities'),
             type: 'bar',
-            data: Object.keys(contNames).map((k) => counts[k]),
+            data: contKeys.map((k) => counts[k]),
             itemStyle: { color: '#34D399', borderRadius: [4, 4, 0, 0] }
           }
         ]
@@ -548,10 +564,10 @@
       img.addEventListener('click', () => {
         if (!global.MediaGallery) return;
         const items = photos.map((p) => ({
-          title: p.caption || '个人摄影作品',
+          title: p.caption || L('个人摄影作品', 'Personal Photo'),
           fullUrl: p.dataUrl,
           thumbUrl: p.thumbUrl || p.dataUrl,
-          author: '个人档案上传',
+          author: L('个人档案上传', 'Personal Upload'),
           license: 'Private Local Storage'
         }));
         global.MediaGallery.openLightbox(items, Number(img.dataset.idx));
@@ -570,7 +586,7 @@
       if (!amt) return;
       await global.StorageDB.saveExpense({
         date: view.querySelector('#ar-exp-date').value,
-        note: view.querySelector('#ar-exp-note').value.trim() || '旅行消费',
+        note: view.querySelector('#ar-exp-note').value.trim() || L('旅行消费', 'Travel Expense'),
         amountRmb: amt
       });
       renderWorkspace();
@@ -601,7 +617,7 @@
         await global.StorageDB.importAllUserData(parsed, 'merge');
         renderWorkspace();
       } catch (err) {
-        view.querySelector('#ar-share-msg').textContent = '导入失败：JSON 格式无效。';
+        view.querySelector('#ar-share-msg').textContent = L('导入失败：JSON 格式无效。', 'Import failed: invalid JSON file.');
       }
     });
 
@@ -610,7 +626,10 @@
       if (global.navigator && global.navigator.clipboard) {
         await global.navigator.clipboard.writeText(url).catch(() => {});
       }
-      view.querySelector('#ar-share-msg').textContent = `足迹地图分享链接已复制（${url.length} 字符）。`;
+      view.querySelector('#ar-share-msg').textContent = L(
+        `足迹地图分享链接已复制（${url.length} 字符）。`,
+        `Footprint share link copied (${url.length} chars).`
+      );
     });
 
     view.querySelector('#ar-wipe-all').addEventListener('click', async () => {
@@ -622,7 +641,7 @@
       const pass = view.querySelector('#ar-sync-pass').value.trim();
       const msgEl = view.querySelector('#ar-sync-msg');
       if (!pass) {
-        msgEl.textContent = '请先输入私人同步口令。';
+        msgEl.textContent = L('请先输入私人同步口令。', 'Enter your private sync passphrase first.');
         return;
       }
       await global.StorageDB.setSetting('cloudSyncPassphrase', pass);
@@ -639,7 +658,7 @@
           const j = await res.json();
           if (res.status === 409) {
             if (global.ProfileCRDT) {
-              msgEl.textContent = '检测到云端更新，正在执行 CRDT 无损合并并重推…';
+              msgEl.textContent = L('检测到云端更新，正在执行 CRDT 无损合并并重推…', 'Remote changes detected; merging via CRDT and retrying push…');
               const pullRes = await fetch('/api/profile', { headers: { 'X-Sync-Key': keyHash } });
               const pullJson = await pullRes.json().catch(() => null);
               if (pullRes.ok && pullJson && pullJson.data) {
@@ -656,19 +675,29 @@
                 if (retryRes.ok && retryJson.updatedAt && global.localStorage) {
                   global.localStorage.setItem('wtg_cloud_updated_at', String(retryJson.updatedAt));
                 }
-                const tombNote = stats.deletedByTombstone ? ` · 删除同步 ${stats.deletedByTombstone}` : '';
+                const tombNote = stats.deletedByTombstone
+                  ? L(` · 删除同步 ${stats.deletedByTombstone}`, ` · deletions synced ${stats.deletedByTombstone}`)
+                  : '';
                 msgEl.textContent = retryRes.ok
-                  ? `CRDT 无损合并完成（新增 ${stats.addedFromRemote} · 解决冲突 ${stats.conflictsResolved}${tombNote}）并已安全推送至云端。`
-                  : `CRDT 合并后推送失败 (${retryRes.status})`;
+                  ? L(
+                      `CRDT 无损合并完成（新增 ${stats.addedFromRemote} · 解决冲突 ${stats.conflictsResolved}${tombNote}）并已安全推送至云端。`,
+                      `CRDT merge complete (+${stats.addedFromRemote} remote · ${stats.conflictsResolved} resolved${tombNote}) and pushed to cloud.`
+                    )
+                  : L(`CRDT 合并后推送失败 (${retryRes.status})`, `Push failed after CRDT merge (${retryRes.status})`);
                 renderWorkspace();
                 return;
               }
             }
-            msgEl.textContent = '云端档案已被另一台设备更新，本地未覆盖云端。请先点“从云端拉取”合并，再重新推送。';
+            msgEl.textContent = L(
+              '云端档案已被另一台设备更新，本地未覆盖云端。请先点“从云端拉取”合并，再重新推送。',
+              'Cloud profile updated on another device. Pull & merge first before pushing.'
+            );
             return;
           }
           if (res.ok && j.updatedAt && global.localStorage) global.localStorage.setItem('wtg_cloud_updated_at', String(j.updatedAt));
-          msgEl.textContent = res.ok ? '已安全同步至 Cloudflare D1。' : `云同步未启用 (${res.status}): ${j.error || 'D1 Not Configured'}`;
+          msgEl.textContent = res.ok
+            ? L('已安全同步至 Cloudflare D1。', 'Synced securely to Cloudflare D1.')
+            : L(`云同步未启用 (${res.status}): ${j.error || 'D1 Not Configured'}`, `Cloud sync unavailable (${res.status}): ${j.error || 'D1 Not Configured'}`);
         } else {
           const res = await fetch('/api/profile', { headers: { 'X-Sync-Key': keyHash } });
           const j = await res.json();
@@ -680,19 +709,24 @@
               const { merged, stats } = global.ProfileCRDT.mergeUserProfiles(localPayload, j.data);
               const cleanMerged = global.ProfileCRDT.sanitizeProfileForSync(merged);
               await global.StorageDB.importAllUserData(cleanMerged, 'crdt');
-              const tombNote = stats.deletedByTombstone ? ` · 删除同步 ${stats.deletedByTombstone}` : '';
-              msgEl.textContent = `已通过 CRDT 无损合并云端档案（新增 ${stats.addedFromRemote} · 冲突消解 ${stats.conflictsResolved}${tombNote}）。`;
+              const tombNote = stats.deletedByTombstone
+                ? L(` · 删除同步 ${stats.deletedByTombstone}`, ` · deletions synced ${stats.deletedByTombstone}`)
+                : '';
+              msgEl.textContent = L(
+                `已通过 CRDT 无损合并云端档案（新增 ${stats.addedFromRemote} · 冲突消解 ${stats.conflictsResolved}${tombNote}）。`,
+                `Merged cloud profile via CRDT (+${stats.addedFromRemote} · ${stats.conflictsResolved} resolved${tombNote}).`
+              );
             } else {
               await global.StorageDB.importAllUserData(j.data, 'merge');
-              msgEl.textContent = '已从云端合并恢复档案！';
+              msgEl.textContent = L('已从云端合并恢复档案！', 'Merged and restored profile from cloud.');
             }
             renderWorkspace();
           } else {
-            msgEl.textContent = `拉取失败 (${res.status}): ${j.error || '未找到数据或 D1 未配置'}`;
+            msgEl.textContent = L(`拉取失败 (${res.status}): ${j.error || '未找到数据或 D1 未配置'}`, `Pull failed (${res.status}): ${j.error || 'Not found or D1 unconfigured'}`);
           }
         }
       } catch (err) {
-        msgEl.textContent = '当前环境不支持云同步 API，已保留完整本地 IndexedDB 档案。';
+        msgEl.textContent = L('当前环境不支持云同步 API，已保留完整本地 IndexedDB 档案。', 'Cloud sync API unavailable here; local IndexedDB archive preserved.');
       }
     };
     view.querySelector('#ar-cloud-push').addEventListener('click', () => handleSync('push'));

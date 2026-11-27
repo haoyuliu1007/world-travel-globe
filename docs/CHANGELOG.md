@@ -1,5 +1,16 @@
 # 更新日志 (CHANGELOG)
 
+## [4.4.0] - 2026-11-27 · Full Global English Content Layer, Prologue Language Switcher & Scenery Filter
+
+### 新增与全面国际化升级 (Added & Fixed)
+- **首页入场序章首屏三语切换 (`assets/prologue/prologue.js`, `assets/prologue/prologue.css`, `index.html`, `js/app.js`)**：
+  - 在序章首屏右上角加入毛玻璃分段语言开关（`简 / 繁 / EN`），海外访客第一眼即可切换全英文体验；同步更新 `localStorage` 与 `<html lang>`，联动 `CosmicIntro` 视频字幕与后端地球仪界面。
+  - 完成序章 8 大章节、Canvas 物候/日照罗盘/大圆航迹标签、以及 30+ 静态/动态 `aria-label` 与 `title` 无障碍属性的完整三语覆盖。
+- **全内容层英文化 (`photo-simulator.js`, `viewfinder-3d.js`, `phenology-engine.js`, `aesthetic-index.js`, `weather-service.js`, `weather-panel.js`, `trip-planner.js`, `travel-archive.js`, `media-gallery.js`, `streetview.js`)**：
+  - 彻底清除「光影 (Sun & Light)」、「物候 (Seasons)」、「气候 (Weather)」、Wikidata 地理核验卡、360° 街景弹窗、智能行程默认预算分类与足迹洲际图表的英文模式残留中文。
+- **东南亚/全球目的地画廊风景优选 (`js/services/media-wikidata.js`)**：
+  - 扩充非风景食物/菜品过滤词表（覆盖 `gaeng`/`nam phrik`/`phak` 等）并提升城市建筑/山水景观与 Wikipedia 主图权重（缓存前缀升级至 `photos:v5`）。
+
 ## [4.3.0] - 2026-11-27 · Living Earth, 722 SEO Pages, Poster Share & Embed Widget
 
 ### 新增与深化升级 (Added & Upgraded)

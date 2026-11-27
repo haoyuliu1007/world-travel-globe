@@ -28,7 +28,37 @@
   const DICT = {
     'zh-CN': {
       appTitle: 'World Travel Globe',
-      pageTitle: 'World Travel Globe · 全球旅行地理图鉴 V4.2',
+      pageTitle: 'World Travel Globe · 全球旅行地理图鉴 V4.4',
+      ariaMap: '全球旅行 3D 交互卫星地球仪',
+      ariaCosmicIntro: '宇宙开场',
+      ariaCosmicPlay: '暂停',
+      ariaCosmicMute: '静音',
+      ariaCosmicProgress: '播放进度',
+      ariaSidebarToggle: '展开或收起目的地清单',
+      ariaFilterBtn: '主题与气候筛选',
+      ariaFavFilterBtn: '仅看收藏目的地',
+      ariaViewMode: '视图模式',
+      ariaCollapseSidebar: '收起',
+      ariaContinents: '大洲切换',
+      ariaPhenologyBar: '全球物候月份轴',
+      ariaSelectMonth: '选择月份',
+      ariaOrbitRail: '视角与缩放微操',
+      ariaZoomIn: '放大',
+      ariaZoomOut: '缩小',
+      ariaGlobeControls: '底图与视角控制',
+      ariaDetailDrawer: '目的地档案',
+      ariaDrawerDrag: '拖拽调节抽屉高度',
+      ariaBookmarkDest: '收藏目的地',
+      ariaPrevDest: '上一站',
+      ariaNextDest: '下一站',
+      ariaDrawerExpand: '展开或收起',
+      ariaPhenologyRibbon: '12个月最佳观赏指数',
+      ariaPalette: '全局搜索面板',
+      ariaLightbox: '全屏照片查看器',
+      prologueReplay: '探索序章',
+      cosmicReplay: '重播宇宙开场',
+      cosmicCredits: '影像来源',
+      terrainExagLabel: '起伏倍率',
       searchPlaceholderShort: '搜索 722 城与 5,414 机位…',
       palettePlaceholder: '搜索国家、城市、精准机位或英文 ID（如：京都、冰岛、kerala）…',
       modeMap: '地球',
@@ -310,7 +340,37 @@
     },
     'zh-TW': {
       appTitle: 'World Travel Globe',
-      pageTitle: 'World Travel Globe · 全球旅行地理圖鑑 V4.2',
+      pageTitle: 'World Travel Globe · 全球旅行地理圖鑑 V4.4',
+      ariaMap: '全球旅行 3D 互動衛星地球儀',
+      ariaCosmicIntro: '宇宙開場',
+      ariaCosmicPlay: '暫停',
+      ariaCosmicMute: '靜音',
+      ariaCosmicProgress: '播放進度',
+      ariaSidebarToggle: '展開或收合目的地清單',
+      ariaFilterBtn: '主題與氣候篩選',
+      ariaFavFilterBtn: '僅看收藏目的地',
+      ariaViewMode: '檢視模式',
+      ariaCollapseSidebar: '收合',
+      ariaContinents: '大洲切換',
+      ariaPhenologyBar: '全球物候月份軸',
+      ariaSelectMonth: '選擇月份',
+      ariaOrbitRail: '視角與縮放微操',
+      ariaZoomIn: '放大',
+      ariaZoomOut: '縮小',
+      ariaGlobeControls: '底圖與視角控制',
+      ariaDetailDrawer: '目的地檔案',
+      ariaDrawerDrag: '拖曳調整抽屜高度',
+      ariaBookmarkDest: '收藏目的地',
+      ariaPrevDest: '上一站',
+      ariaNextDest: '下一站',
+      ariaDrawerExpand: '展開或收合',
+      ariaPhenologyRibbon: '12個月最佳觀賞指數',
+      ariaPalette: '全域搜尋面板',
+      ariaLightbox: '全螢幕照片檢視器',
+      prologueReplay: '探索序章',
+      cosmicReplay: '重播宇宙開場',
+      cosmicCredits: '影像來源',
+      terrainExagLabel: '起伏倍率',
       searchPlaceholderShort: '搜尋 722 城與 5,414 機位…',
       palettePlaceholder: '搜尋國家、城市、精準機位或英文 ID（如：京都、冰島、kerala）…',
       modeMap: '地球',
@@ -592,7 +652,37 @@
     },
     en: {
       appTitle: 'World Travel Globe',
-      pageTitle: 'World Travel Globe · Geo Intelligence Atlas V4.2',
+      pageTitle: 'World Travel Globe · Geo Intelligence Atlas V4.4',
+      ariaMap: 'World Travel 3D Interactive Satellite Globe',
+      ariaCosmicIntro: 'Cosmic Intro',
+      ariaCosmicPlay: 'Pause / Play',
+      ariaCosmicMute: 'Mute / Unmute',
+      ariaCosmicProgress: 'Playback progress',
+      ariaSidebarToggle: 'Toggle destination list',
+      ariaFilterBtn: 'Filter by theme & weather',
+      ariaFavFilterBtn: 'Show saved destinations only',
+      ariaViewMode: 'View mode',
+      ariaCollapseSidebar: 'Collapse list',
+      ariaContinents: 'Filter by continent',
+      ariaPhenologyBar: 'Global phenology timeline',
+      ariaSelectMonth: 'Select travel month',
+      ariaOrbitRail: 'Orbit and zoom controls',
+      ariaZoomIn: 'Zoom in',
+      ariaZoomOut: 'Zoom out',
+      ariaGlobeControls: 'Map layers and focus controls',
+      ariaDetailDrawer: 'Destination dossier',
+      ariaDrawerDrag: 'Drag to resize drawer',
+      ariaBookmarkDest: 'Save destination',
+      ariaPrevDest: 'Previous destination',
+      ariaNextDest: 'Next destination',
+      ariaDrawerExpand: 'Expand or collapse drawer',
+      ariaPhenologyRibbon: '12-month viewing index',
+      ariaPalette: 'Global search palette',
+      ariaLightbox: 'Fullscreen photo viewer',
+      prologueReplay: 'Story Prologue',
+      cosmicReplay: 'Replay Cosmic Film',
+      cosmicCredits: 'Footage Credits',
+      terrainExagLabel: 'Terrain Scale',
       searchPlaceholderShort: 'Search 722 cities & 5,414 spots…',
       palettePlaceholder: 'Search country, city, viewpoint, or ID (e.g. Kyoto, Iceland, kerala)…',
       modeMap: 'Globe',
@@ -959,14 +1049,17 @@
       const qLang = params.get('lang');
       if (qLang && DICT[qLang]) {
         currentLang = qLang;
-        return currentLang;
-      }
-      const saved = global.localStorage.getItem(LANG_KEY);
-      if (saved && DICT[saved]) {
-        currentLang = saved;
+      } else {
+        const saved = global.localStorage.getItem(LANG_KEY);
+        if (saved && DICT[saved]) {
+          currentLang = saved;
+        }
       }
     } catch (e) {
       // ignore
+    }
+    if (typeof document !== 'undefined' && document.documentElement) {
+      document.documentElement.lang = currentLang;
     }
     return currentLang;
   }
@@ -1042,6 +1135,14 @@
     document.querySelectorAll('[data-i18n-placeholder]').forEach((el) => {
       const k = el.getAttribute('data-i18n-placeholder');
       if (k) el.setAttribute('placeholder', t(k));
+    });
+    document.querySelectorAll('[data-i18n-aria]').forEach((el) => {
+      const k = el.getAttribute('data-i18n-aria');
+      if (k) el.setAttribute('aria-label', t(k));
+    });
+    document.querySelectorAll('[data-i18n-title]').forEach((el) => {
+      const k = el.getAttribute('data-i18n-title');
+      if (k) el.setAttribute('title', t(k));
     });
     const codeBadge = document.getElementById('lang-code-badge');
     if (codeBadge) codeBadge.textContent = getLangMeta(currentLang).code;

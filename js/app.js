@@ -3193,6 +3193,9 @@
     invalidateSearchHaystack();
     renderLanguageGrid();
     refreshAllTexts();
+    if (global.StoryPrologue && typeof global.StoryPrologue.refreshLocale === 'function') {
+      global.StoryPrologue.refreshLocale(langId);
+    }
     const langEl = document.getElementById('lang-popover');
     const langBtn = document.getElementById('lang-btn');
     if (langEl) langEl.classList.add('is-hidden');
@@ -3212,6 +3215,7 @@
       });
     }
   }
+  global.switchAppLanguage = switchLanguage;
 
   function refreshAllTexts() {
     labelWidthCache.clear();
@@ -3226,6 +3230,10 @@
         cities: all.length,
         spots: totalSpots.toLocaleString('en-US')
       });
+    }
+    const summaryEl = document.getElementById('popover-match-summary');
+    if (summaryEl) {
+      summaryEl.textContent = t('matchFmt', { count: lastMatchedIds.size || all.length });
     }
     renderContinentTabs();
     renderPhenologyBar();

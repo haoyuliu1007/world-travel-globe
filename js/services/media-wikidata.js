@@ -158,7 +158,7 @@
   }
 
   const IRRELEVANT_PHOTO_RE =
-    /(?:\b(?:curry|food|dish|meal|soup|noodle|rice|salad|vegetable|fruit|dessert|menu|plate|bowl|restaurant|cuisine|cooking|eating|breakfast|lunch|dinner|snack|beverage|drink|cocktail|logo|flag|state flag|coat of arms|emblem|seal of|map of|locator|diagram|chart|graph|portrait|selfie|headshot|ticket|stamp|coin|banknote|qr code|screenshot|signpost|gravestone|tombstone|kaeng|khao soi|pad thai|som tam)\b|flag_of|coat_of_arms|seal_of|locator_map|blank_map|emblem_of|us_state)/i;
+    /(?:\b(?:curry|food|dish|meal|soup|noodle|rice|salad|vegetable|fruit|dessert|menu|plate|bowl|restaurant|cuisine|gastronomy|recipe|ingredient|cooking|eating|breakfast|lunch|dinner|snack|beverage|drink|cocktail|ramen|sushi|bento|dumpling|hotpot|kebab|taco|pizza|pasta|burger|steak|pork|beef|chicken|mutton|lamb|duck|seafood|shrimp|prawn|crab|sausage|bacon|tofu|egg|chili|chilli|garlic|herb|greens|cabbage|lettuce|spinach|coriander|basil|sauce|dip|paste|stew|braised|fried|grilled|roasted|steamed|boiled|baked|skewer|wok|kitchen|spoon|fork|chopstick|tableware|logo|flag|state flag|coat of arms|emblem|seal of|map of|locator|diagram|chart|graph|portrait|selfie|headshot|ticket|stamp|coin|banknote|qr code|screenshot|signpost|gravestone|tombstone|kaeng|gaeng|kang|nam.?phrik|nam.?prik|phak|laab|larb|sai.?ua|khao|khanom|tom.?yum|tom.?kha|phad|pad thai|som tam)\b|flag_of|coat_of_arms|seal_of|locator_map|blank_map|emblem_of|us_state)/i;
 
   const SCENERY_PHOTO_RE =
     /\b(temple|wat|mountain|peak|lake|sunset|sunrise|view|panorama|skyline|bridge|palace|cathedral|church|castle|fjord|glacier|coast|beach|valley|old town|night|aerial|landscape|river|forest|park|garden|pagoda|shrine|monastery|harbor|bay|canyon|waterfall|cliff|summit|island|arch|square|plaza|cityscape|hall|chapel|library)\b/i;
@@ -199,6 +199,7 @@
 
     if (w >= 1000) score += 10;
     if (SCENERY_PHOTO_RE.test(text)) score += 18;
+    if (!isIrrelevant && photo.provider === 'Wikipedia PageImage') score += 22;
 
     const cleanPlace = cleanQueryName(placeName || '').toLowerCase();
     if (cleanPlace && cleanPlace.length >= 2 && text.toLowerCase().includes(cleanPlace)) {
@@ -228,7 +229,7 @@
     const radiusM = Math.min(10000, o.radiusM || 3500);
     const Api = global.ApiClient;
     const caps = Api ? await Api.detectWorkerCapabilities() : { available: false };
-    const cachePrefix = caps && caps.available && caps.features && caps.features.img ? 'photos:v4p' : 'photos:v4';
+    const cachePrefix = caps && caps.available && caps.features && caps.features.img ? 'photos:v5p' : 'photos:v5';
     const cacheKey = `${cachePrefix}:${o.id || ''}:${lat.toFixed(3)},${lng.toFixed(3)}:${cleanQueryName(o.name)}:${limit}`;
 
     if (global.StorageDB) {
@@ -257,8 +258,11 @@
       // fall through to text search
     }
 
-    const cleanCount = photos.filter((p) => !scoreTravelPhoto(p, o.name, o.country).isIrrelevant).length;
-    if (cleanCount < 2 && o.name) {
+    const sceneryCount = photos.filter((p) => {
+      const r = scoreTravelPhoto(p, o.name, o.country);
+      return !r.isIrrelevant && (SCENERY_PHOTO_RE.test(`${p.title || ''} ${p.description || ''}`) || radiusM < 3000);
+    }).length;
+    if ((sceneryCount < 3 || photos.length < 2) && o.name) {
       try {
         const q = `${cleanQueryName(o.name)} ${cleanQueryName(o.country || '')}`.trim();
         const searchRes = await queryCommonsApi({
@@ -284,7 +288,7 @@
       }
     }
 
-    if (photos.length === 0 && o.name) {
+    if ((photos.length === 0 || (radiusM >= 3000 && sceneryCount < 2)) && o.name) {
       try {
         const wpRes = await queryWikipediaSummarySearch(cleanQueryName(o.name), /[\u4e00-\u9fa5]/.test(o.name) ? 'zh' : 'en');
         const pages = wpRes && wpRes.query && wpRes.query.pages ? Object.values(wpRes.query.pages) : [];

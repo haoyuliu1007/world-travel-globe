@@ -43,6 +43,35 @@
     return global.AppIcons ? global.AppIcons.svg(name, size || 14) : '';
   }
 
+  function getLang() {
+    return global.AppI18n && typeof global.AppI18n.getLang === 'function' ? global.AppI18n.getLang() : 'zh-CN';
+  }
+
+  function L(zh, en) {
+    const lang = getLang();
+    if (lang === 'en') return en;
+    if (lang === 'zh-TW' && global.AppI18n && typeof global.AppI18n.toTraditional === 'function') {
+      return global.AppI18n.toTraditional(zh);
+    }
+    return zh;
+  }
+
+  function tx(str) {
+    return global.AppI18n && typeof global.AppI18n.tx === 'function' ? global.AppI18n.tx(str) : (str || '');
+  }
+
+  function getSensorLabel(preset) {
+    if (!preset) return '';
+    const enMap = {
+      fullFrame: 'Full Frame 35mm',
+      apsc: 'APS-C (1.5×)',
+      m43: 'M4/3 (2.0×)',
+      medium: 'Medium Format 44×33',
+      custom: 'Custom'
+    };
+    return L(preset.label, enMap[preset.id] || preset.label);
+  }
+
   function estimateUtcOffsetMinutes(lng, weatherUtcOffsetSec) {
     if (Number.isFinite(Number(weatherUtcOffsetSec))) {
       return Math.round(Number(weatherUtcOffsetSec) / 60);
@@ -71,7 +100,7 @@
   }
 
   function formatTimeInOffset(dt, utcOffsetMin) {
-    if (!(dt instanceof Date) || Number.isNaN(dt.getTime())) return '极昼/极夜';
+    if (!(dt instanceof Date) || Number.isNaN(dt.getTime())) return L('极昼/极夜', 'Polar Day/Night');
     const off = Number.isFinite(Number(utcOffsetMin)) ? Number(utcOffsetMin) : 0;
     const shifted = new Date(dt.getTime() + off * 60000);
     const hh = String(shifted.getUTCHours()).padStart(2, '0');
@@ -83,38 +112,40 @@
     if (Number.isFinite(Number(utcOffsetMin))) {
       return formatTimeInOffset(dt, utcOffsetMin);
     }
-    if (!(dt instanceof Date) || Number.isNaN(dt.getTime())) return '极昼/极夜';
+    if (!(dt instanceof Date) || Number.isNaN(dt.getTime())) return L('极昼/极夜', 'Polar Day/Night');
     const hh = String(dt.getHours()).padStart(2, '0');
     const mm = String(dt.getMinutes()).padStart(2, '0');
     return `${hh}:${mm}`;
   }
 
   function compassDirName(deg) {
-    const dirs = ['N 北', 'NE 东北', 'E 东', 'SE 东南', 'S 南', 'SW 西南', 'W 西', 'NW 西北'];
+    const dirs = getLang() === 'en'
+      ? ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
+      : ['N 北', 'NE 东北', 'E 东', 'SE 东南', 'S 南', 'SW 西南', 'W 西', 'NW 西北'];
     const idx = Math.round(((deg % 360) + 360) % 360 / 45) % 8;
-    return dirs[idx];
+    return L(dirs[idx], dirs[idx]);
   }
 
   function classifyLightAngle(sunAz, camAz, sunAlt) {
-    if (sunAlt < -6) return { label: '天文暗夜 / 星空窗口', badge: '夜间' };
-    if (sunAlt < 0) return { label: '曙暮光 / 蓝调时刻', badge: '蓝调' };
+    if (sunAlt < -6) return { label: L('天文暗夜 / 星空窗口', 'Astro Night / Star Window'), badge: L('夜间', 'Night') };
+    if (sunAlt < 0) return { label: L('曙暮光 / 蓝调时刻', 'Twilight / Blue Hour'), badge: L('蓝调', 'Blue Hour') };
     const diff = Math.abs((((sunAz - camAz) % 360) + 540) % 360 - 180);
-    if (diff <= 28) return { label: '正逆光 · 剪影/轮廓光绝佳 (注意眩光)', badge: '逆光' };
-    if (diff <= 65) return { label: '侧逆光 · 立体质感与水面反光强', badge: '侧逆光' };
-    if (diff <= 115) return { label: '90° 侧光 · 建筑与山体明暗对比强烈', badge: '侧光' };
-    if (diff <= 152) return { label: '侧顺光 · 色彩饱和且保留层次', badge: '侧顺光' };
-    return { label: '正顺光 · 色彩通透还原度高', badge: '顺光' };
+    if (diff <= 28) return { label: L('正逆光 · 剪影/轮廓光绝佳 (注意眩光)', 'Direct Backlight · Silhouettes & Rim Light (Watch Flare)'), badge: L('逆光', 'Backlight') };
+    if (diff <= 65) return { label: L('侧逆光 · 立体质感与水面反光强', 'Side-Backlight · Dramatic Texture & Water Glint'), badge: L('侧逆光', 'Side-Back') };
+    if (diff <= 115) return { label: L('90° 侧光 · 建筑与山体明暗对比强烈', '90° Side Light · Strong Relief & Shadow Contrast'), badge: L('侧光', 'Side Light') };
+    if (diff <= 152) return { label: L('侧顺光 · 色彩饱和且保留层次', 'Side-Front Light · Rich Color & Balanced Depth'), badge: L('侧顺光', 'Side-Front') };
+    return { label: L('正顺光 · 色彩通透还原度高', 'Front Light · Vivid True Color'), badge: L('顺光', 'Front Light') };
   }
 
   function moonPhaseLabel(phase) {
-    if (phase < 0.04 || phase >= 0.96) return '新月 New Moon (适合拍银河)';
-    if (phase < 0.22) return '蛾眉月 Waxing Crescent';
-    if (phase < 0.28) return '上弦月 First Quarter';
-    if (phase < 0.47) return '盈凸月 Waxing Gibbous';
-    if (phase < 0.53) return '满月 Full Moon (月光强烈)';
-    if (phase < 0.72) return '亏凸月 Waning Gibbous';
-    if (phase < 0.78) return '下弦月 Last Quarter';
-    return '残月 Waning Crescent';
+    if (phase < 0.04 || phase >= 0.96) return L('新月 New Moon (适合拍银河)', 'New Moon (Ideal for Milky Way)');
+    if (phase < 0.22) return L('蛾眉月 Waxing Crescent', 'Waxing Crescent');
+    if (phase < 0.28) return L('上弦月 First Quarter', 'First Quarter');
+    if (phase < 0.47) return L('盈凸月 Waxing Gibbous', 'Waxing Gibbous');
+    if (phase < 0.53) return L('满月 Full Moon (月光强烈)', 'Full Moon (Bright Moonlight)');
+    if (phase < 0.72) return L('亏凸月 Waning Gibbous', 'Waning Gibbous');
+    if (phase < 0.78) return L('下弦月 Last Quarter', 'Last Quarter');
+    return L('残月 Waning Crescent', 'Waning Crescent');
   }
 
   /**
@@ -162,7 +193,7 @@
     const dFov = Number((2 * Math.atan(diag / (2 * f)) * (180 / Math.PI)).toFixed(2));
     return {
       sensorKey: preset.id,
-      sensorLabel: preset.label,
+      sensorLabel: getSensorLabel(preset),
       sensorW: Number(activeW.toFixed(2)),
       sensorH: Number(activeH.toFixed(2)),
       aspect,
@@ -386,7 +417,7 @@
       : '';
 
     return `
-      <svg width="192" height="192" viewBox="0 0 192 192" aria-label="太阳方位与机位朝向罗盘">
+      <svg width="192" height="192" viewBox="0 0 192 192" aria-label="${esc(L('太阳方位与机位朝向罗盘', 'Sun azimuth and camera bearing compass'))}">
         <circle cx="${cx}" cy="${cy}" r="${r}" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.16)" stroke-width="1" />
         <circle cx="${cx}" cy="${cy}" r="${r * 0.55}" fill="none" stroke="rgba(255,255,255,0.08)" stroke-dasharray="2 3" />
         <path d="${fovPath}" fill="rgba(56,189,248,0.20)" stroke="rgba(56,189,248,0.68)" stroke-width="1" />
@@ -420,14 +451,14 @@
     const curY = midY - (sim.sunPos.altitude / 90) * 42;
 
     return `
-      <svg width="100%" height="${h}" viewBox="0 0 ${w} ${h}" style="display:block;width:100%;height:${h}px;margin-top:6px;" aria-label="24小时太阳高度角曲线">
+      <svg width="100%" height="${h}" viewBox="0 0 ${w} ${h}" style="display:block;width:100%;height:${h}px;margin-top:6px;" aria-label="${esc(L('24小时太阳高度角曲线', '24-hour solar altitude curve'))}">
         <rect x="0" y="${midY}" width="${w}" height="${h - midY}" fill="rgba(15,23,42,0.28)" />
         <line x1="0" y1="${midY}" x2="${w}" y2="${midY}" stroke="rgba(255,255,255,0.2)" stroke-width="1" />
         <polyline fill="none" stroke="#FBBF24" stroke-width="1.8" points="${pts}" />
         <line x1="${curX.toFixed(1)}" y1="4" x2="${curX.toFixed(1)}" y2="${h - 4}" stroke="#38BDF8" stroke-width="1" stroke-dasharray="2 2" />
         <circle cx="${curX.toFixed(1)}" cy="${curY.toFixed(1)}" r="4" fill="#FBBF24" stroke="#09090B" stroke-width="1.2" />
         <text x="4" y="12" fill="#A1A1AA" font-size="9">+90°</text>
-        <text x="4" y="${midY - 3}" fill="#A1A1AA" font-size="9">地平线 0°</text>
+        <text x="4" y="${midY - 3}" fill="#A1A1AA" font-size="9">${esc(L('地平线 0°', 'Horizon 0°'))}</text>
         <text x="${w - 34}" y="${h - 4}" fill="#A1A1AA" font-size="9">24:00</text>
       </svg>
     `;
@@ -447,7 +478,7 @@
     const poly = `0,${baseY} ${pts.join(' ')} ${w},${baseY}`;
     const camX = (((camAz % 360) + 360) % 360) / 360 * w;
     return `
-      <svg width="100%" height="${h}" viewBox="0 0 ${w} ${h}" style="display:block;width:100%;height:${h}px;margin-top:6px;" aria-label="360度真实地形地平线遮挡剖面">
+      <svg width="100%" height="${h}" viewBox="0 0 ${w} ${h}" style="display:block;width:100%;height:${h}px;margin-top:6px;" aria-label="${esc(L('360度真实地形地平线遮挡剖面', '360-degree terrain horizon profile'))}">
         <polygon points="${poly}" fill="rgba(226,192,125,0.22)" stroke="#E2C07D" stroke-width="1.4" />
         <line x1="${camX.toFixed(1)}" y1="6" x2="${camX.toFixed(1)}" y2="${baseY}" stroke="#38BDF8" stroke-width="1.2" stroke-dasharray="2 2" />
         <text x="4" y="13" fill="#A1A1AA" font-size="9">+${Math.round(maxScaleDeg)}°</text>
@@ -569,42 +600,47 @@
     });
     const sim = computeSimulation(coords[1], coords[0], state.dateStr, state.minutes, state.cameraAzimuth, utcOffsetMin);
     if (!sim) {
-      containerEl.innerHTML = `<div class="sim-card">SunCalc 天文库未就绪。</div>`;
+      containerEl.innerHTML = `<div class="sim-card">${esc(L('SunCalc 天文库未就绪。', 'SunCalc astronomy engine unavailable.'))}</div>`;
       return;
     }
 
     const tzOff = sim.utcOffsetMin;
     const timeText = `${String(Math.floor(state.minutes / 60)).padStart(2, '0')}:${String(state.minutes % 60).padStart(2, '0')}`;
     const targetOptions = [
-      `<option value="-1" ${state.spotIdx < 0 ? 'selected' : ''}>城市中心 · ${esc(dest.shortName || dest.name)}</option>`,
-      ...spots.map((s, idx) => `<option value="${idx}" ${state.spotIdx === idx ? 'selected' : ''}>机位 ${idx + 1} · ${esc(s.name)}</option>`)
+      `<option value="-1" ${state.spotIdx < 0 ? 'selected' : ''}>${esc(L('城市中心', 'City Center'))} · ${esc(tx(dest.shortName || dest.name))}</option>`,
+      ...spots.map((s, idx) => `<option value="${idx}" ${state.spotIdx === idx ? 'selected' : ''}>${esc(L(`机位 ${idx + 1}`, `Spot ${idx + 1}`))} · ${esc(tx(s.name))}</option>`)
     ].join('');
 
     const sensorOptions = Object.values(SENSOR_PRESETS)
-      .map((s) => `<option value="${s.id}" ${state.sensorKey === s.id ? 'selected' : ''}>${esc(s.label)}</option>`)
+      .map((s) => `<option value="${s.id}" ${state.sensorKey === s.id ? 'selected' : ''}>${esc(getSensorLabel(s))}</option>`)
       .join('');
 
     const astro = sim.astroExtras;
+    const moonHint = sim.moonIllum.fraction < 0.25
+      ? L('弱光极佳', 'Dark-Sky Ideal')
+      : sim.moonIllum.fraction < 0.65
+        ? L('中等干扰', 'Moderate Glow')
+        : L('强月光明显', 'Strong Moonlight');
     const mwCardHtml = astro && astro.available
       ? `
         <div class="sim-card">
           <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap;">
-            <strong>${icon('sparkles', 14)} 星空与银河摄影窗口</strong>
+            <strong>${icon('sparkles', 14)} ${esc(L('星空与银河摄影窗口', 'Milky Way & Dark-Sky Window'))}</strong>
             <span class="source-tag astronomy">Astronomy Engine · ${esc(sim.utcOffsetLabel)}</span>
           </div>
           <div style="font-size:11.5px;line-height:1.65;margin-top:6px;">
-            <div>银河核心 (Sgr A*)：方位 <strong class="mono-num">${astro.gcAzimuth}°</strong> (${compassDirName(astro.gcAzimuth)}) · 高度 <strong class="mono-num">${astro.gcAltitude}°</strong></div>
-            <div>天文黑夜 (-18°)：<strong class="mono-num">${fmtTime(astro.astroDusk, tzOff)}</strong> — <strong class="mono-num">${fmtTime(astro.astroDawn, tzOff)}</strong></div>
-            <div>今晚银心可拍窗口：${
+            <div>${esc(L('银河核心 (Sgr A*)：方位', 'Galactic Center (Sgr A*): Az'))} <strong class="mono-num">${astro.gcAzimuth}°</strong> (${compassDirName(astro.gcAzimuth)}) · ${esc(L('高度', 'Alt'))} <strong class="mono-num">${astro.gcAltitude}°</strong></div>
+            <div>${esc(L('天文黑夜 (-18°)：', 'Astronomical Night (-18°): '))}<strong class="mono-num">${fmtTime(astro.astroDusk, tzOff)}</strong> — <strong class="mono-num">${fmtTime(astro.astroDawn, tzOff)}</strong></div>
+            <div>${esc(L('今晚银心可拍窗口：', 'Tonight Core Window: '))}${
               astro.mwWindowStart && astro.mwWindowEnd
-                ? `<strong class="mono-num">${fmtTime(astro.mwWindowStart, tzOff)}–${fmtTime(astro.mwWindowEnd, tzOff)}</strong> (最高仰角 <span class="mono-num">${astro.mwPeakAlt}°</span> @ ${astro.mwPeakAz}°)`
-                : '<span style="color:var(--text-secondary);">当晚银心高度偏低或极昼无天文黑夜</span>'
+                ? `<strong class="mono-num">${fmtTime(astro.mwWindowStart, tzOff)}–${fmtTime(astro.mwWindowEnd, tzOff)}</strong> (${esc(L('最高仰角', 'Peak Alt'))} <span class="mono-num">${astro.mwPeakAlt}°</span> @ ${astro.mwPeakAz}°)`
+                : `<span style="color:var(--text-secondary);">${esc(L('当晚银心高度偏低或极昼无天文黑夜', 'Core too low or polar twilight tonight'))}</span>`
             }</div>
-            <div style="color:var(--text-secondary);">月光干扰参考：照明度 <span class="mono-num">${Math.round(sim.moonIllum.fraction * 100)}%</span> (${sim.moonIllum.fraction < 0.25 ? '弱光极佳' : sim.moonIllum.fraction < 0.65 ? '中等干扰' : '强月光明显'})</div>
+            <div style="color:var(--text-secondary);">${esc(L('月光干扰参考：照明度', 'Moonlight Interference: Illum'))} <span class="mono-num">${Math.round(sim.moonIllum.fraction * 100)}%</span> (${esc(moonHint)})</div>
           </div>
           <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">
-            <button class="mini-action-pill" id="sim-toggle-blackmarble" type="button">${icon('moon', 12)} 暗夜灯光图层</button>
-            <button class="mini-action-pill" id="sim-toggle-aurora" type="button">${icon('aurora', 12)} 实时极光带</button>
+            <button class="mini-action-pill" id="sim-toggle-blackmarble" type="button">${icon('moon', 12)} ${esc(L('暗夜灯光图层', 'Night Lights'))}</button>
+            <button class="mini-action-pill" id="sim-toggle-aurora" type="button">${icon('aurora', 12)} ${esc(L('实时极光带', 'Live Aurora'))}</button>
           </div>
         </div>
       `
@@ -613,40 +649,40 @@
     containerEl.innerHTML = `
       <div class="sim-card">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap;">
-          <strong>${icon('sunrise', 14)} 专业摄影机位光影模拟器</strong>
-          <span class="source-tag astronomy">目的地时间 ${esc(sim.utcOffsetLabel)} · SunCalc</span>
+          <strong>${icon('sunrise', 14)} ${esc(L('专业摄影机位光影模拟器', 'Sun & Light Spot Simulator'))}</strong>
+          <span class="source-tag astronomy">${esc(L('目的地时间', 'Local Time'))} ${esc(sim.utcOffsetLabel)} · SunCalc</span>
         </div>
 
         <div style="margin-top:8px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
-          <select class="sim-input" id="sim-spot-select" style="flex:1;min-width:140px;" aria-label="选择模拟机位">${targetOptions}</select>
+          <select class="sim-input" id="sim-spot-select" style="flex:1;min-width:140px;" aria-label="${esc(L('选择模拟机位', 'Select spot'))}">${targetOptions}</select>
           <button class="mini-action-pill sim-vf-launch" id="sim-open-viewfinder-btn" type="button">
-            ${icon('camera', 12)} 3D 取景器
+            ${icon('camera', 12)} ${esc(L('3D 取景器', '3D Viewfinder'))}
           </button>
         </div>
 
         <div class="sim-controls-row">
-          <input class="sim-input mono-num" id="sim-date-input" type="date" value="${esc(state.dateStr)}" aria-label="模拟日期" />
+          <input class="sim-input mono-num" id="sim-date-input" type="date" value="${esc(state.dateStr)}" aria-label="${esc(L('模拟日期', 'Simulation date'))}" />
           <div style="display:flex;align-items:center;gap:6px;">
             <span id="sim-time-label" class="mono-num" style="font-size:12px;min-width:44px;">${timeText}</span>
-            <input id="sim-time-range" type="range" min="0" max="1439" step="5" value="${state.minutes}" style="flex:1;" aria-label="模拟时刻" />
+            <input id="sim-time-range" type="range" min="0" max="1439" step="5" value="${state.minutes}" style="flex:1;" aria-label="${esc(L('模拟时刻', 'Simulation time'))}" />
           </div>
         </div>
 
         <div class="sim-presets">
-          <button class="mini-action-pill sim-preset-btn" data-preset="now" type="button">此刻</button>
-          <button class="mini-action-pill sim-preset-btn" data-preset="dawn" type="button">蓝调晨</button>
-          <button class="mini-action-pill sim-preset-btn" data-preset="sunrise" type="button">日出</button>
-          <button class="mini-action-pill sim-preset-btn" data-preset="goldenM" type="button">黄金晨</button>
-          <button class="mini-action-pill sim-preset-btn" data-preset="goldenE" type="button">黄金昏</button>
-          <button class="mini-action-pill sim-preset-btn" data-preset="sunset" type="button">日落</button>
-          <button class="mini-action-pill sim-preset-btn" data-preset="dusk" type="button">蓝调昏</button>
+          <button class="mini-action-pill sim-preset-btn" data-preset="now" type="button">${esc(L('此刻', 'Now'))}</button>
+          <button class="mini-action-pill sim-preset-btn" data-preset="dawn" type="button">${esc(L('蓝调晨', 'Blue Dawn'))}</button>
+          <button class="mini-action-pill sim-preset-btn" data-preset="sunrise" type="button">${esc(L('日出', 'Sunrise'))}</button>
+          <button class="mini-action-pill sim-preset-btn" data-preset="goldenM" type="button">${esc(L('黄金晨', 'Golden AM'))}</button>
+          <button class="mini-action-pill sim-preset-btn" data-preset="goldenE" type="button">${esc(L('黄金昏', 'Golden PM'))}</button>
+          <button class="mini-action-pill sim-preset-btn" data-preset="sunset" type="button">${esc(L('日落', 'Sunset'))}</button>
+          <button class="mini-action-pill sim-preset-btn" data-preset="dusk" type="button">${esc(L('蓝调昏', 'Blue Dusk'))}</button>
         </div>
 
         <div class="sim-lens-bar">
           <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:space-between;">
-            <select class="sim-input" id="sim-sensor-select" style="width:auto;min-width:128px;height:28px;font-size:11.5px;" aria-label="传感器画幅">${sensorOptions}</select>
+            <select class="sim-input" id="sim-sensor-select" style="width:auto;min-width:128px;height:28px;font-size:11.5px;" aria-label="${esc(L('传感器画幅', 'Sensor format'))}">${sensorOptions}</select>
             <span class="mono-num" style="font-size:11px;color:var(--text-secondary);">
-              视角 ${lensFov.hFov.toFixed(1)}°×${lensFov.vFov.toFixed(1)}° · 等效 ${lensFov.eqFocalMm}mm
+              ${esc(L('视角', 'FOV'))} ${lensFov.hFov.toFixed(1)}°×${lensFov.vFov.toFixed(1)}° · ${esc(L('等效', 'Eq.'))} ${lensFov.eqFocalMm}mm
             </span>
           </div>
           <div class="sim-focal-pills">
@@ -657,20 +693,20 @@
         <div class="sim-compass-wrap">
           <div id="sim-compass-host">${buildCompassSvg(sim, state.cameraAzimuth, lensFov.hFov)}</div>
           <div id="sim-sun-stats" style="flex:1;min-width:155px;font-size:11.5px;line-height:1.6;">
-            <div>太阳方位：<strong class="mono-num">${sim.sunPos.azimuth.toFixed(1)}°</strong> (${compassDirName(sim.sunPos.azimuth)})</div>
-            <div>太阳高度：<strong class="mono-num">${sim.sunPos.altitude.toFixed(1)}°</strong></div>
-            <div>机位朝向：<strong class="mono-num">${state.cameraAzimuth}°</strong> (${compassDirName(state.cameraAzimuth)})</div>
+            <div>${esc(L('太阳方位：', 'Sun Azimuth: '))}<strong class="mono-num">${sim.sunPos.azimuth.toFixed(1)}°</strong> (${compassDirName(sim.sunPos.azimuth)})</div>
+            <div>${esc(L('太阳高度：', 'Sun Altitude: '))}<strong class="mono-num">${sim.sunPos.altitude.toFixed(1)}°</strong></div>
+            <div>${esc(L('机位朝向：', 'Camera Bearing: '))}<strong class="mono-num">${state.cameraAzimuth}°</strong> (${compassDirName(state.cameraAzimuth)})</div>
             <div style="margin-top:4px;"><span class="source-tag astronomy">${esc(sim.lightRelation.badge)}</span> ${esc(sim.lightRelation.label)}</div>
           </div>
         </div>
 
         <div style="margin-top:6px;">
           <div style="display:flex;justify-content:space-between;align-items:center;font-size:11.5px;">
-            <span>调整机位拍摄朝向：<strong id="sim-azimuth-label" class="mono-num">${state.cameraAzimuth}°</strong></span>
+            <span>${esc(L('调整机位拍摄朝向：', 'Camera Azimuth: '))}<strong id="sim-azimuth-label" class="mono-num">${state.cameraAzimuth}°</strong></span>
             <div style="display:flex;gap:6px;">
-              <button class="mini-action-pill" id="sim-align-cam-btn" type="button">同步地球视角</button>
+              <button class="mini-action-pill" id="sim-align-cam-btn" type="button">${esc(L('同步地球视角', 'Sync Globe View'))}</button>
               <label style="display:inline-flex;align-items:center;gap:4px;cursor:pointer;">
-                <input id="sim-globe-toggle" type="checkbox" ${state.showOnGlobe ? 'checked' : ''} /> 地球射线
+                <input id="sim-globe-toggle" type="checkbox" ${state.showOnGlobe ? 'checked' : ''} /> ${esc(L('地球射线', 'Globe Rays'))}
               </label>
             </div>
           </div>
@@ -680,29 +716,29 @@
         <div id="sim-curve-host">${buildCurveSvg(sim, state.minutes)}</div>
 
         <div class="sim-times-grid">
-          <div class="sim-time-cell"><span>🌅 蓝调晨 (Dawn)</span><strong class="mono-num">${fmtTime(sim.times.dawn, tzOff)}</strong></div>
-          <div class="sim-time-cell"><span>☀️ 日出 (${sim.sunrisePos ? `${sim.sunrisePos.azimuth.toFixed(0)}°` : '--'})</span><strong class="mono-num">${fmtTime(sim.times.sunrise, tzOff)}</strong></div>
-          <div class="sim-time-cell"><span>✨ 黄金晨结束</span><strong class="mono-num">${fmtTime(sim.times.goldenHourEnd, tzOff)}</strong></div>
-          <div class="sim-time-cell"><span>✨ 黄金昏开始</span><strong class="mono-num">${fmtTime(sim.times.goldenHour, tzOff)}</strong></div>
-          <div class="sim-time-cell"><span>🌇 日落 (${sim.sunsetPos ? `${sim.sunsetPos.azimuth.toFixed(0)}°` : '--'})</span><strong class="mono-num">${fmtTime(sim.times.sunset, tzOff)}</strong></div>
-          <div class="sim-time-cell"><span>🌆 蓝调昏 (Dusk)</span><strong class="mono-num">${fmtTime(sim.times.dusk, tzOff)}</strong></div>
+          <div class="sim-time-cell"><span>🌅 ${esc(L('蓝调晨 (Dawn)', 'Blue Dawn'))}</span><strong class="mono-num">${fmtTime(sim.times.dawn, tzOff)}</strong></div>
+          <div class="sim-time-cell"><span>☀️ ${esc(L('日出', 'Sunrise'))} (${sim.sunrisePos ? `${sim.sunrisePos.azimuth.toFixed(0)}°` : '--'})</span><strong class="mono-num">${fmtTime(sim.times.sunrise, tzOff)}</strong></div>
+          <div class="sim-time-cell"><span>✨ ${esc(L('黄金晨结束', 'Golden AM End'))}</span><strong class="mono-num">${fmtTime(sim.times.goldenHourEnd, tzOff)}</strong></div>
+          <div class="sim-time-cell"><span>✨ ${esc(L('黄金昏开始', 'Golden PM Start'))}</span><strong class="mono-num">${fmtTime(sim.times.goldenHour, tzOff)}</strong></div>
+          <div class="sim-time-cell"><span>🌇 ${esc(L('日落', 'Sunset'))} (${sim.sunsetPos ? `${sim.sunsetPos.azimuth.toFixed(0)}°` : '--'})</span><strong class="mono-num">${fmtTime(sim.times.sunset, tzOff)}</strong></div>
+          <div class="sim-time-cell"><span>🌆 ${esc(L('蓝调昏 (Dusk)', 'Blue Dusk'))}</span><strong class="mono-num">${fmtTime(sim.times.dusk, tzOff)}</strong></div>
         </div>
 
         <div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border-hairline);font-size:11.5px;">
-          <div>🌙 <strong>月相与月出月落</strong>：${esc(moonPhaseLabel(sim.moonIllum.phase))} · 照明度 <span class="mono-num">${Math.round(sim.moonIllum.fraction * 100)}%</span></div>
+          <div>🌙 <strong>${esc(L('月相与月出月落', 'Moon Phase & Rise/Set'))}</strong>：${esc(moonPhaseLabel(sim.moonIllum.phase))} · ${esc(L('照明度', 'Illum'))} <span class="mono-num">${Math.round(sim.moonIllum.fraction * 100)}%</span></div>
           <div style="color:var(--text-secondary);margin-top:2px;">
-            月出：<span class="mono-num">${fmtTime(sim.moonTimes.rise, tzOff)}</span> · 月落：<span class="mono-num">${fmtTime(sim.moonTimes.set, tzOff)}</span> · 月亮方位 <span class="mono-num">${sim.moonPos.azimuth.toFixed(0)}°</span> / 高度 <span class="mono-num">${sim.moonPos.altitude.toFixed(1)}°</span>
+            ${esc(L('月出：', 'Moonrise: '))}<span class="mono-num">${fmtTime(sim.moonTimes.rise, tzOff)}</span> · ${esc(L('月落：', 'Moonset: '))}<span class="mono-num">${fmtTime(sim.moonTimes.set, tzOff)}</span> · ${esc(L('月亮方位', 'Moon Az'))} <span class="mono-num">${sim.moonPos.azimuth.toFixed(0)}°</span> / ${esc(L('高度', 'Alt'))} <span class="mono-num">${sim.moonPos.altitude.toFixed(1)}°</span>
           </div>
         </div>
       </div>
 
       <div class="sim-card" id="sim-terrain-box">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap;">
-          <strong>${icon('mountain', 14)} 观测点地形遮挡与光照推演</strong>
-          <span class="source-tag astronomy">多分辨率 DEM 射线</span>
+          <strong>${icon('mountain', 14)} ${esc(L('观测点地形遮挡与光照推演', 'Terrain Horizon Obstruction'))}</strong>
+          <span class="source-tag astronomy">${esc(L('多分辨率 DEM 射线', 'Multi-Res DEM Rays'))}</span>
         </div>
         <div id="sim-terrain-status" style="font-size:11.5px;color:var(--text-secondary);margin-top:6px;">
-          正在读取周边 AWS Terrarium DEM 高程瓦片计算 360° 山体遮挡…
+          ${esc(L('正在读取周边 DEM 高程瓦片计算 360° 山体遮挡…', 'Sampling surrounding DEM elevation tiles for 360° ridge profile…'))}
         </div>
       </div>
 
@@ -710,18 +746,18 @@
 
       <div class="sim-card" id="sim-advice-box">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-          <strong>拍摄窗口综合建议</strong>
-          <span class="source-tag empirical">区分天文 / 预报 / 经验</span>
+          <strong>${esc(L('拍摄窗口综合建议', 'Shooting Window Advice'))}</strong>
+          <span class="source-tag empirical">${esc(L('区分天文 / 预报 / 经验', 'Astronomy / Forecast / Field'))}</span>
         </div>
         <div id="sim-wx-advice" style="font-size:11.5px;color:var(--text-secondary);margin-bottom:6px;">
-          <span class="source-tag realtime">气象预报</span> 正在比对未来 7 日云量与降水预报…
+          <span class="source-tag realtime">${esc(L('气象预报', 'Forecast'))}</span> ${esc(L('正在比对未来 7 日云量与降水预报…', 'Checking 7-day cloud cover & rain probability…'))}
         </div>
         ${
           activeSpot
             ? `<div style="font-size:11.5px;line-height:1.55;">
-                <span class="source-tag empirical">经验建议 · 实地档案</span>
-                <strong>${esc(activeSpot.bestTime || '')}</strong><br/>
-                <span style="color:var(--text-secondary);">${esc(activeSpot.tips || '')}</span>
+                <span class="source-tag empirical">${esc(L('经验建议 · 实地档案', 'Field Notes · Archive'))}</span>
+                <strong>${esc(tx(activeSpot.bestTime || ''))}</strong><br/>
+                <span style="color:var(--text-secondary);">${esc(tx(activeSpot.tips || ''))}</span>
               </div>`
             : ''
         }
@@ -741,14 +777,14 @@
       if (idx >= 0) {
         const cc = hourly.cloud_cover[idx];
         const pop = hourly.precipitation_probability[idx];
-        let verdict = '光影条件良好，适合常规拍摄。';
-        if (pop >= 55) verdict = '降水概率偏高，建议做好防雨或转向室内/雨景构图。';
-        else if (cc >= 25 && cc <= 65) verdict = '中低云量适中，日出日落出现火烧云/层次光概率较高。';
-        else if (cc < 25) verdict = '天空极通透，适合星空、清晰远景与强对比日光。';
-        else verdict = '云层较厚，适合柔和漫射光、建筑摄影或长曝光。';
-        wxAdviceEl.innerHTML = `<span class="source-tag realtime">Open-Meteo 预报</span> 选定时刻预报云量 <strong class="mono-num">${cc}%</strong> · 降水概率 <strong class="mono-num">${pop}%</strong> — ${esc(verdict)}`;
+        let verdict = L('光影条件良好，适合常规拍摄。', 'Favorable lighting conditions for shooting.');
+        if (pop >= 55) verdict = L('降水概率偏高，建议做好防雨或转向室内/雨景构图。', 'High rain probability — bring weather protection or plan moody/rain shots.');
+        else if (cc >= 25 && cc <= 65) verdict = L('中低云量适中，日出日落出现火烧云/层次光概率较高。', 'Balanced mid/low cloud cover — high odds of dramatic sunset color.');
+        else if (cc < 25) verdict = L('天空极通透，适合星空、清晰远景与强对比日光。', 'Crystal-clear skies — great for crisp vistas and night stars.');
+        else verdict = L('云层较厚，适合柔和漫射光、建筑摄影或长曝光。', 'Heavy overcast — ideal for soft diffused light and long exposures.');
+        wxAdviceEl.innerHTML = `<span class="source-tag realtime">${esc(L('Open-Meteo 预报', 'Open-Meteo Forecast'))}</span> ${esc(L('选定时刻预报云量', 'Forecast Cloud'))} <strong class="mono-num">${cc}%</strong> · ${esc(L('降水概率', 'Precip'))} <strong class="mono-num">${pop}%</strong> — ${esc(verdict)}`;
       } else {
-        wxAdviceEl.innerHTML = `<span class="source-tag astronomy">天文计算</span> 所选日期超出 7 日实况预报窗口，请结合下方历史气候统计与经验时段安排机位。`;
+        wxAdviceEl.innerHTML = `<span class="source-tag astronomy">${esc(L('天文计算', 'Astronomy'))}</span> ${esc(L('所选日期超出 7 日实况预报窗口，请结合下方历史气候统计与经验时段安排机位。', 'Selected date is beyond the 7-day live forecast window; use the 5-year climate archive and field notes.'))}`;
       }
     };
 
@@ -769,9 +805,9 @@
       if (compassHost) compassHost.innerHTML = buildCompassSvg(nextSim, state.cameraAzimuth, lensFov.hFov);
       if (sunStats) {
         sunStats.innerHTML = `
-          <div>太阳方位：<strong class="mono-num">${nextSim.sunPos.azimuth.toFixed(1)}°</strong> (${compassDirName(nextSim.sunPos.azimuth)})</div>
-          <div>太阳高度：<strong class="mono-num">${nextSim.sunPos.altitude.toFixed(1)}°</strong></div>
-          <div>机位朝向：<strong class="mono-num">${state.cameraAzimuth}°</strong> (${compassDirName(state.cameraAzimuth)})</div>
+          <div>${esc(L('太阳方位：', 'Sun Azimuth: '))}<strong class="mono-num">${nextSim.sunPos.azimuth.toFixed(1)}°</strong> (${compassDirName(nextSim.sunPos.azimuth)})</div>
+          <div>${esc(L('太阳高度：', 'Sun Altitude: '))}<strong class="mono-num">${nextSim.sunPos.altitude.toFixed(1)}°</strong></div>
+          <div>${esc(L('机位朝向：', 'Camera Bearing: '))}<strong class="mono-num">${state.cameraAzimuth}°</strong> (${compassDirName(state.cameraAzimuth)})</div>
           <div style="margin-top:4px;"><span class="source-tag astronomy">${esc(nextSim.lightRelation.badge)}</span> ${esc(nextSim.lightRelation.label)}</div>
         `;
       }
@@ -892,7 +928,7 @@
       const renderHorizonResult = (hRes) => {
         if (!document.body.contains(terrainEl)) return;
         if (!hRes || !hRes.available) {
-          terrainEl.innerHTML = `<span class="source-tag empirical">DEM 暂不可用</span> 无法获取高程瓦片（离线或受限），仅显示几何地平线日出日落。`;
+          terrainEl.innerHTML = `<span class="source-tag empirical">${esc(L('DEM 暂不可用', 'DEM Unavailable'))}</span> ${esc(L('无法获取高程瓦片（离线或受限），仅显示几何地平线日出日落。', 'Terrain tiles unavailable (offline/restricted); showing geometric horizon times.'))}`;
           return;
         }
         const adj = global.Terrain3DModule.estimateTerrainAdjustedSunTimes(
@@ -904,13 +940,13 @@
           tzOff
         );
         terrainEl.innerHTML = `
-          <div>观测点高程 <strong class="mono-num">${hRes.observerElevation}m</strong> (机位 +${state.observerHeightM}m) · 最大山脊仰角 <strong class="mono-num">${hRes.maxObstacleDeg}°</strong> · ${esc(hRes.demSource || 'Terrarium DEM')}</div>
+          <div>${esc(L('观测点高程', 'Observer Elev'))} <strong class="mono-num">${hRes.observerElevation}m</strong> (${esc(L('机位', 'Tripod'))} +${state.observerHeightM}m) · ${esc(L('最大山脊仰角', 'Max Ridge'))} <strong class="mono-num">${hRes.maxObstacleDeg}°</strong> · ${esc(hRes.demSource || 'Terrarium DEM')}</div>
           ${
             adj
-              ? `<div style="margin-top:3px;">观测点遮挡日出：<strong class="mono-num">${fmtTime(adj.adjSunrise, tzOff)}</strong> (晚 <span class="mono-num">+${adj.sunriseDelayMin}</span> 分钟) · 遮挡日落：<strong class="mono-num">${fmtTime(adj.adjSunset, tzOff)}</strong> (提前 <span class="mono-num">-${adj.sunsetEarlyMin}</span> 分钟)</div>`
+              ? `<div style="margin-top:3px;">${esc(L('观测点遮挡日出：', 'Terrain Sunrise: '))}<strong class="mono-num">${fmtTime(adj.adjSunrise, tzOff)}</strong> (${esc(L('晚', 'later'))} <span class="mono-num">+${adj.sunriseDelayMin}</span> ${esc(L('分钟', 'min'))}) · ${esc(L('遮挡日落：', 'Terrain Sunset: '))}<strong class="mono-num">${fmtTime(adj.adjSunset, tzOff)}</strong> (${esc(L('提前', 'earlier'))} <span class="mono-num">-${adj.sunsetEarlyMin}</span> ${esc(L('分钟', 'min'))})</div>`
               : ''
           }
-          <div style="font-size:10.5px;color:var(--text-muted);margin-top:2px;">说明：计算相机观测点见光时间；远处高海拔主峰（如“日照金山”）通常早于低处机位受光。</div>
+          <div style="font-size:10.5px;color:var(--text-muted);margin-top:2px;">${esc(L('说明：计算相机观测点见光时间；远处高海拔主峰（如“日照金山”）通常早于低处机位受光。', 'Note: computed for observer spot elevation; distant high peaks catch alpenglow earlier.'))}</div>
           ${buildHorizonProfileSvg(hRes.profile, state.cameraAzimuth)}
         `;
       };
@@ -940,7 +976,7 @@
           renderWeatherAdvice(live);
         } catch (e) {
           if (document.body.contains(wxAdviceEl)) {
-            wxAdviceEl.innerHTML = `<span class="source-tag empirical">离线模式</span> 气象预报暂不可用，天文太阳/月相计算仍可离线精确运行。`;
+            wxAdviceEl.innerHTML = `<span class="source-tag empirical">${esc(L('离线模式', 'Offline Mode'))}</span> ${esc(L('气象预报暂不可用，天文太阳/月相计算仍可离线精确运行。', 'Weather forecast unavailable; Sun & Moon calculations work offline.'))}`;
           }
         }
       }

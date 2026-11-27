@@ -16,6 +16,19 @@
     return global.AppIcons ? global.AppIcons.svg(name, size || 14) : '';
   }
 
+  function L(zh, en) {
+    const lang = global.AppI18n && typeof global.AppI18n.getLang === 'function' ? global.AppI18n.getLang() : 'zh-CN';
+    if (lang === 'en') return en;
+    if (lang === 'zh-TW' && global.AppI18n && typeof global.AppI18n.toTraditional === 'function') {
+      return global.AppI18n.toTraditional(zh);
+    }
+    return zh;
+  }
+
+  function tx(str) {
+    return global.AppI18n && typeof global.AppI18n.tx === 'function' ? global.AppI18n.tx(str) : (str || '');
+  }
+
   function destroyViewer() {
     if (activeViewer && typeof activeViewer.remove === 'function') {
       try {
@@ -169,7 +182,7 @@
     containerEl.innerHTML = `
       <div class="pano-stage-wrap">
         <canvas class="pano-webgl-canvas"></canvas>
-        <div class="pano-overlay-hint">拖拽环视 360° · 滚轮缩放视角 · 双击回正</div>
+        <div class="pano-overlay-hint">${esc(L('拖拽环视 360° · 滚轮缩放视角 · 双击回正', 'Drag 360° · Scroll to zoom · Double-click to reset'))}</div>
       </div>
     `;
 
@@ -180,14 +193,14 @@
     const fallbackFlat = (reason) => {
       wrap.innerHTML = `
         <div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px;gap:8px;">
-          <img src="${esc(imageUrl)}" alt="360° 全景影像" style="max-width:100%;max-height:calc(100% - 28px);object-fit:contain;border-radius:10px;" />
-          <div style="font-size:11px;color:var(--text-secondary);">${esc(reason || '已切换至高清平面全景浏览')}</div>
+          <img src="${esc(imageUrl)}" alt="${esc(L('360° 全景影像', '360° Panorama'))}" style="max-width:100%;max-height:calc(100% - 28px);object-fit:contain;border-radius:10px;" />
+          <div style="font-size:11px;color:var(--text-secondary);">${esc(reason || L('已切换至高清平面全景浏览', 'Switched to flat panorama viewer'))}</div>
         </div>
       `;
     };
 
     if (!gl) {
-      fallbackFlat('当前设备不支持 WebGL，已降级为高清实景视图');
+      fallbackFlat(L('当前设备不支持 WebGL，已降级为高清实景视图', 'WebGL unavailable — showing flat HD view'));
       return { remove: () => {} };
     }
 
@@ -291,11 +304,11 @@
         textureReady = true;
         scheduleDraw();
       } catch (err) {
-        fallbackFlat('全景原图跨域受限，已自动切换为高清实景视图');
+        fallbackFlat(L('全景原图跨域受限，已自动切换为高清实景视图', 'Cross-origin restricted for WebGL texture; showing flat HD view'));
       }
     };
     img.onerror = () => {
-      if (!disposed) fallbackFlat('全景图像加载失败');
+      if (!disposed) fallbackFlat(L('全景图像加载失败', 'Failed to load panorama image'));
     };
     img.src = imageUrl;
 
@@ -388,19 +401,19 @@
     const coords = (spot && spot.coords) || dest.coords;
     if (!Array.isArray(coords) || coords.length < 2) return;
     const [lng, lat] = coords;
-    const title = spot ? `${dest.shortName || dest.name} · ${spot.name}` : dest.name;
+    const title = spot ? `${tx(dest.shortName || dest.name)} · ${tx(spot.name)}` : tx(dest.name);
 
     modal.classList.remove('is-hidden');
     modal.innerHTML = `
       <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border-hairline);gap:10px;">
         <div style="min-width:0;">
-          <div style="font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${icon('eye', 15)} 360° 全景与街景探索 · ${esc(title)}</div>
-          <div id="sv-status-line" style="font-size:11.5px;color:var(--text-secondary);margin-top:2px;">正在检索 Panoramax 免密钥 360° 全景与 Mapillary 街景…</div>
+          <div style="font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${icon('eye', 15)} ${esc(L('360° 全景与街景探索', '360° Panorama & Street View'))} · ${esc(title)}</div>
+          <div id="sv-status-line" style="font-size:11.5px;color:var(--text-secondary);margin-top:2px;">${esc(L('正在检索 Panoramax 免密钥 360° 全景与 Mapillary 街景…', 'Searching Panoramax open 360° panoramas & Mapillary street view…'))}</div>
         </div>
-        <button class="icon-btn" id="sv-close-btn" type="button" aria-label="关闭">${icon('x', 16)}</button>
+        <button class="icon-btn" id="sv-close-btn" type="button" aria-label="${esc(L('关闭', 'Close'))}">${icon('x', 16)}</button>
       </div>
       <div class="streetview-body" id="sv-stage">
-        <div class="globe-loader" style="position:static;transform:none;"><div class="loader-ring"></div><span>正在检查开放全景资源…</span></div>
+        <div class="globe-loader" style="position:static;transform:none;"><div class="loader-ring"></div><span>${esc(L('正在检查开放全景资源…', 'Checking open street imagery…'))}</span></div>
       </div>
       <div id="sv-footer" style="padding:10px 16px;border-top:1px solid var(--border-hairline);display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;font-size:11.5px;">
         <span class="mono-num">${lat.toFixed(5)}, ${lng.toFixed(5)}</span>
@@ -436,7 +449,7 @@
         if (item.coords && item.coords.length >= 2) {
           syncGlobePosition(item.coords[0], item.coords[1], item.azimuth);
         }
-        statusEl.innerHTML = `<span class="source-tag routing">Panoramax 开放街景${item.isPano ? ' · 360° 全景' : ''}</span> ${esc(item.author)} · ${esc(item.capturedAt)} · ${esc(item.license)}`;
+        statusEl.innerHTML = `<span class="source-tag routing">${esc(L('Panoramax 开放街景', 'Panoramax Open Street View'))}${item.isPano ? esc(L(' · 360° 全景', ' · 360° Pano')) : ''}</span> ${esc(item.author)} · ${esc(item.capturedAt)} · ${esc(item.license)}`;
 
         stageEl.innerHTML = `
           <div style="width:100%;height:100%;display:flex;flex-direction:column;">
@@ -447,15 +460,15 @@
                   .map(
                     (it, idx) => `
                   <button class="mini-action-pill pnx-pick-btn ${it.id === item.id ? 'active' : ''}" data-idx="${idx}" type="button">
-                    ${it.isPano ? '360°' : '街景'} #${idx + 1} (${Math.round(it.azimuth)}°)
+                    ${it.isPano ? '360°' : esc(L('街景', 'Street'))} #${idx + 1} (${Math.round(it.azimuth)}°)
                   </button>
                 `
                   )
                   .join('')}
               </div>
               <div style="display:flex;gap:6px;">
-                <button class="mini-action-pill" id="pnx-prev-btn" type="button" ${item.prevUrl ? '' : 'disabled'}>← 上一站</button>
-                <button class="mini-action-pill" id="pnx-next-btn" type="button" ${item.nextUrl ? '' : 'disabled'}>下一站 →</button>
+                <button class="mini-action-pill" id="pnx-prev-btn" type="button" ${item.prevUrl ? '' : 'disabled'}>${esc(L('← 上一站', '← Prev'))}</button>
+                <button class="mini-action-pill" id="pnx-next-btn" type="button" ${item.nextUrl ? '' : 'disabled'}>${esc(L('下一站 →', 'Next →'))}</button>
               </div>
             </div>
           </div>
@@ -515,7 +528,7 @@
       const imgs = mlyResult.images;
       const first = imgs[0];
       const panoCount = imgs.filter((i) => i.is_pano).length;
-      statusEl.innerHTML = `<span class="source-tag routing">已覆盖 · ${imgs.length} 张街景${panoCount ? ` (含 ${panoCount} 张 360° 全景)` : ''}</span> · Mapillary CC BY-SA 4.0`;
+      statusEl.innerHTML = `<span class="source-tag routing">${esc(L(`已覆盖 · ${imgs.length} 张街景`, `Covered · ${imgs.length} shots`))}${panoCount ? esc(L(` (含 ${panoCount} 张 360° 全景)`, ` (${panoCount} 360°)`)) : ''}</span> · Mapillary CC BY-SA 4.0`;
 
       if (mlyResult.token && global.LazyLoader) {
         try {
@@ -547,7 +560,7 @@
               .map(
                 (im, idx) => `
               <button class="sv-pick-btn mini-action-pill" data-idx="${idx}" type="button">
-                ${im.is_pano ? '360°' : '街景'} #${idx + 1} (${Math.round(im.compass_angle || 0)}°)
+                ${im.is_pano ? '360°' : esc(L('街景', 'Street'))} #${idx + 1} (${Math.round(im.compass_angle || 0)}°)
               </button>
             `
               )
@@ -568,7 +581,7 @@
     }
 
     // Tier 3: Graceful Degradation to Wikimedia Commons real/panoramic photos
-    statusEl.innerHTML = `<span class="source-tag empirical">附近暂无开放街景 · 已自动降级为 Wikimedia 实景照片</span>`;
+    statusEl.innerHTML = `<span class="source-tag empirical">${esc(L('附近暂无开放街景 · 已自动降级为 Wikimedia 实景照片', 'No open street view nearby · Falling back to Wikimedia field photos'))}</span>`;
 
     try {
       const photos = global.MediaWikidataService
@@ -587,8 +600,8 @@
       if (!photos.length) {
         stageEl.innerHTML = `
           <div style="text-align:center;color:var(--text-secondary);padding:24px;max-width:440px;">
-            <div style="font-size:15px;font-weight:600;color:var(--text-primary);margin-bottom:8px;">附近暂无开放街景或实景照片</div>
-            <p style="font-size:12.5px;line-height:1.6;">可使用下方按钮直接在 Panoramax、Mapillary、KartaView 或 Google Street View 地图页面查看该坐标周边最新全景。</p>
+            <div style="font-size:15px;font-weight:600;color:var(--text-primary);margin-bottom:8px;">${esc(L('附近暂无开放街景或实景照片', 'No open street view or field photos nearby'))}</div>
+            <p style="font-size:12.5px;line-height:1.6;">${esc(L('可使用下方按钮直接在 Panoramax、Mapillary、KartaView 或 Google Street View 地图页面查看该坐标周边最新全景。', 'Use the links below to inspect live Panoramax, Mapillary, KartaView, or Google Street View coverage at these coordinates.'))}</p>
           </div>
         `;
         return;
@@ -601,7 +614,7 @@
           <div style="width:100%;height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:16px;gap:10px;">
             <img src="${esc(p.fullUrl || p.thumbUrl)}" alt="${esc(p.title)}" style="max-width:100%;max-height:calc(100% - 88px);object-fit:contain;border-radius:10px;" />
             <div style="color:#E4E4E7;font-size:12px;text-align:center;">
-              <strong>${esc(p.title)}</strong> ${p.isPano ? '<span class="source-tag realtime">全景幅</span>' : ''} · ${esc(p.author)} (${esc(p.license)})
+              <strong>${esc(p.title)}</strong> ${p.isPano ? `<span class="source-tag realtime">${esc(L('全景幅', 'Panorama'))}</span>` : ''} · ${esc(p.author)} (${esc(p.license)})
             </div>
             <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;">
               ${photos.map((_, idx) => `<button class="mini-action-pill sv-fb-btn ${idx === curIdx ? 'active' : ''}" data-idx="${idx}" type="button">#${idx + 1}</button>`).join('')}
@@ -617,7 +630,7 @@
       };
       renderFallback();
     } catch (e) {
-      stageEl.innerHTML = `<div style="color:var(--text-secondary);padding:24px;">实景加载失败，请使用下方外部街景链接。</div>`;
+      stageEl.innerHTML = `<div style="color:var(--text-secondary);padding:24px;">${esc(L('实景加载失败，请使用下方外部街景链接。', 'Failed to load imagery; use the external links below.'))}</div>`;
     }
   }
 

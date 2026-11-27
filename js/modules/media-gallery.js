@@ -23,6 +23,19 @@
     return global.AppI18n ? global.AppI18n.t(key, vars) : key;
   }
 
+  function L(zh, en) {
+    const lang = global.AppI18n && typeof global.AppI18n.getLang === 'function' ? global.AppI18n.getLang() : 'zh-CN';
+    if (lang === 'en') return en;
+    if (lang === 'zh-TW' && global.AppI18n && typeof global.AppI18n.toTraditional === 'function') {
+      return global.AppI18n.toTraditional(zh);
+    }
+    return zh;
+  }
+
+  function tx(str) {
+    return global.AppI18n && typeof global.AppI18n.tx === 'function' ? global.AppI18n.tx(str) : (str || '');
+  }
+
   function openLightbox(items, startIdx) {
     if (!Array.isArray(items) || !items.length) return;
     lightboxItems = items;
@@ -44,9 +57,9 @@
     const item = lightboxItems[lightboxIndex];
     el.classList.remove('is-hidden');
     el.innerHTML = `
-      <button class="lightbox-close" id="lb-close-btn" type="button" aria-label="关闭">${icon('x', 18)}</button>
-      ${lightboxItems.length > 1 ? `<button class="lightbox-nav prev" id="lb-prev-btn" type="button" aria-label="上一张">${icon('chevronLeft', 20)}</button>` : ''}
-      ${lightboxItems.length > 1 ? `<button class="lightbox-nav next" id="lb-next-btn" type="button" aria-label="下一张">${icon('chevronRight', 20)}</button>` : ''}
+      <button class="lightbox-close" id="lb-close-btn" type="button" aria-label="${esc(t('paletteClose'))}">${icon('x', 18)}</button>
+      ${lightboxItems.length > 1 ? `<button class="lightbox-nav prev" id="lb-prev-btn" type="button" aria-label="${esc(L('上一张', 'Previous photo'))}">${icon('chevronLeft', 20)}</button>` : ''}
+      ${lightboxItems.length > 1 ? `<button class="lightbox-nav next" id="lb-next-btn" type="button" aria-label="${esc(L('下一张', 'Next photo'))}">${icon('chevronRight', 20)}</button>` : ''}
       <div class="lightbox-stage">
         <img src="${esc(item.fullUrl || item.thumbUrl)}" alt="${esc(item.title || '')}" />
       </div>
@@ -208,40 +221,40 @@
 
   async function loadWikidataBadge(dest, containerEl) {
     if (!dest || !containerEl || !global.MediaWikidataService) return;
-    containerEl.innerHTML = `<div class="wikidata-card"><span style="color:var(--text-muted);">正在与 Wikidata 交叉核验地理与建筑元数据…</span></div>`;
+    containerEl.innerHTML = `<div class="wikidata-card"><span style="color:var(--text-muted);">${esc(L('正在与 Wikidata 交叉核验地理与建筑元数据…', 'Cross-verifying coordinates & metadata with Wikidata…'))}</span></div>`;
     try {
       const rec = await global.MediaWikidataService.verifyWithWikidata(dest);
       if (!document.body.contains(containerEl) || !rec) return;
 
       const confMap = {
-        high: { cls: 'high', label: '高可信度 (坐标一致)' },
-        medium: { cls: 'medium', label: '中等可信度 (区域范围)' },
-        review: { cls: 'review', label: '已记录坐标差异审核队列' },
-        empirical: { cls: 'empirical', label: '本地实地档案 (未匹配 QID)' }
+        high: { cls: 'high', label: L('高可信度 (坐标一致)', 'High Confidence (Coords Match)') },
+        medium: { cls: 'medium', label: L('中等可信度 (区域范围)', 'Medium Confidence (Regional)') },
+        review: { cls: 'review', label: L('已记录坐标差异审核队列', 'Logged to Coord Review') },
+        empirical: { cls: 'empirical', label: L('本地实地档案 (未匹配 QID)', 'Local Field Archive (No QID)') }
       };
       const cm = confMap[rec.confidence] || confMap.empirical;
       const p = rec.payload;
       const details = p
         ? [
             p.labelEn ? `EN: ${esc(p.labelEn)}` : '',
-            p.elevationM !== null ? `Wikidata 海拔: ${p.elevationM}m` : '',
-            p.instanceOf && p.instanceOf.length ? `类型: ${esc(p.instanceOf.join(' / '))}` : '',
-            p.architects && p.architects.length ? `建筑师: ${esc(p.architects.join(', '))}` : '',
-            p.heritage && p.heritage.length ? `遗产: ${esc(p.heritage.join(', '))}` : '',
-            rec.coordDeltaKm !== null ? `坐标偏差: ${rec.coordDeltaKm} km` : ''
+            p.elevationM !== null ? `${L('Wikidata 海拔', 'Wikidata Elev')}: ${p.elevationM}m` : '',
+            p.instanceOf && p.instanceOf.length ? `${L('类型', 'Type')}: ${esc(p.instanceOf.join(' / '))}` : '',
+            p.architects && p.architects.length ? `${L('建筑师', 'Architects')}: ${esc(p.architects.join(', '))}` : '',
+            p.heritage && p.heritage.length ? `${L('遗产', 'Heritage')}: ${esc(p.heritage.join(', '))}` : '',
+            rec.coordDeltaKm !== null ? `${L('坐标偏差', 'Coord Delta')}: ${rec.coordDeltaKm} km` : ''
           ]
             .filter(Boolean)
             .join(' · ')
-        : '保留原始人工采集数据，未覆盖任何源字段。';
+        : L('保留原始人工采集数据，未覆盖任何源字段。', 'Preserves original curated field notes without overwriting.');
 
       containerEl.innerHTML = `
         <div class="wikidata-card">
           <div class="wikidata-head">
-            <strong>${icon('shield', 13)} Wikidata 地理核验 ${p ? `(${esc(rec.qid)})` : ''}</strong>
-            <span class="confidence-badge ${cm.cls}">${cm.label}</span>
+            <strong>${icon('shield', 13)} ${esc(L('Wikidata 地理核验', 'Wikidata Verification'))} ${p ? `(${esc(rec.qid)})` : ''}</strong>
+            <span class="confidence-badge ${cm.cls}">${esc(cm.label)}</span>
           </div>
           <div style="color:var(--text-secondary);line-height:1.5;">${details}</div>
-          ${p && p.wikidataUrl ? `<div style="margin-top:4px;"><a href="${esc(p.wikidataUrl)}" target="_blank" rel="noopener noreferrer" style="color:var(--accent-primary);">查看 Wikidata 条目 ↗</a> · 核验时间：${new Date(rec.updatedAt).toLocaleDateString()}</div>` : ''}
+          ${p && p.wikidataUrl ? `<div style="margin-top:4px;"><a href="${esc(p.wikidataUrl)}" target="_blank" rel="noopener noreferrer" style="color:var(--accent-primary);">${esc(L('查看 Wikidata 条目 ↗', 'View on Wikidata ↗'))}</a> · ${esc(L('核验时间：', 'Verified: '))}${new Date(rec.updatedAt).toLocaleDateString()}</div>` : ''}
         </div>
       `;
     } catch (e) {

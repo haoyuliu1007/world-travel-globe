@@ -31,6 +31,19 @@
       .replace(/"/g, '&quot;');
   }
 
+  function L(zh, en) {
+    const lang = global.AppI18n && typeof global.AppI18n.getLang === 'function' ? global.AppI18n.getLang() : 'zh-CN';
+    if (lang === 'en') return en;
+    if (lang === 'zh-TW' && global.AppI18n && typeof global.AppI18n.toTraditional === 'function') {
+      return global.AppI18n.toTraditional(zh);
+    }
+    return zh;
+  }
+
+  function tx(str) {
+    return global.AppI18n && typeof global.AppI18n.tx === 'function' ? global.AppI18n.tx(str) : (str || '');
+  }
+
   function applyMapFov(map, vFov) {
     if (!map) return;
     const clamped = Math.max(18, Math.min(65, Number(vFov) || 40));
@@ -142,15 +155,16 @@
     const timeText = `${String(Math.floor(state.minutes / 60)).padStart(2, '0')}:${String(state.minutes % 60).padStart(2, '0')}`;
     const tzBadge = (sim && sim.utcOffsetLabel) || 'Local';
     const title = state.spot
-      ? `${state.dest.shortName || state.dest.name} · ${state.spot.name}`
-      : (state.dest.shortName || state.dest.name);
+      ? `${tx(state.dest.shortName || state.dest.name)} · ${tx(state.spot.name)}`
+      : tx(state.dest.shortName || state.dest.name);
 
     const optModeChip = proj.isTelephotoCrop
-      ? `<span class="vf-mode-chip tele">光学裁切 · 真实视角 ${proj.cropPct}% (WebGL 下限 18°)</span>`
+      ? `<span class="vf-mode-chip tele">${esc(L(`光学裁切 · 真实视角 ${proj.cropPct}% (WebGL 下限 18°)`, `Optical Crop · True View ${proj.cropPct}% (WebGL min 18°)`))}</span>`
       : proj.isWideApproximation
-        ? `<span class="vf-mode-chip wide">超广角近似 · 视口上限 65°</span>`
+        ? `<span class="vf-mode-chip wide">${esc(L('超广角近似 · 视口上限 65°', 'Wide Approx · Viewport max 65°'))}</span>`
         : '';
 
+    const orientLabel = state.orientation === 'portrait' ? L('竖构图', 'Portrait') : L('横构图', 'Landscape');
     hud.innerHTML = `
       <div class="vf-top-bar">
         <div class="vf-title-pill">
@@ -162,7 +176,7 @@
           <div class="vf-tape-center"></div>
           ${buildCompassMarkers(bearing, lens.hFov, sim)}
         </div>
-        <button id="vf-close-btn" class="vf-exit-btn" type="button">退出取景 <kbd>Esc</kbd></button>
+        <button id="vf-close-btn" class="vf-exit-btn" type="button">${esc(L('退出取景', 'Exit'))} <kbd>Esc</kbd></button>
       </div>
 
       <div class="vf-frame-stage">
@@ -175,40 +189,40 @@
           <div class="vf-thirds-h2"></div>
           <div class="vf-thirds-v1"></div>
           <div class="vf-thirds-v2"></div>
-          <div class="vf-hud-meta-tl mono-num">${state.focalMm}mm · ${esc(lens.sensorLabel)} · ${state.orientation === 'portrait' ? '竖构图' : '横构图'} (${esc(lens.aspect)})</div>
-          <div class="vf-hud-meta-tr mono-num">FOV ${lens.hFov.toFixed(1)}° × ${lens.vFov.toFixed(1)}° · 等效 ${lens.eqFocalMm}mm</div>
+          <div class="vf-hud-meta-tl mono-num">${state.focalMm}mm · ${esc(lens.sensorLabel)} · ${esc(orientLabel)} (${esc(lens.aspect)})</div>
+          <div class="vf-hud-meta-tr mono-num">FOV ${lens.hFov.toFixed(1)}° × ${lens.vFov.toFixed(1)}° · ${esc(L('等效', 'Eq.'))} ${lens.eqFocalMm}mm</div>
           <div class="vf-hud-meta-bl" id="vf-light-badge">${lightRel ? `${esc(lightRel.badge)} · ${esc(lightRel.label)}` : ''}</div>
-          <div class="vf-hud-meta-br mono-num">海拔 ${esc(elevLabel)} · ${esc(tzBadge)}</div>
+          <div class="vf-hud-meta-br mono-num">${esc(L('海拔', 'Elev'))} ${esc(elevLabel)} · ${esc(tzBadge)}</div>
           ${optModeChip ? `<div class="vf-hud-opt-chip">${optModeChip}</div>` : ''}
         </div>
       </div>
 
       <div class="vf-bottom-dock">
         <div class="vf-focal-row">
-          <select id="vf-sensor-select" class="vf-select" aria-label="画幅">
-            <option value="fullFrame" ${state.sensorKey === 'fullFrame' ? 'selected' : ''}>全画幅</option>
+          <select id="vf-sensor-select" class="vf-select" aria-label="${esc(L('画幅', 'Sensor'))}">
+            <option value="fullFrame" ${state.sensorKey === 'fullFrame' ? 'selected' : ''}>${esc(L('全画幅', 'Full Frame'))}</option>
             <option value="apsc" ${state.sensorKey === 'apsc' ? 'selected' : ''}>APS-C</option>
             <option value="m43" ${state.sensorKey === 'm43' ? 'selected' : ''}>M4/3</option>
-            <option value="medium" ${state.sensorKey === 'medium' ? 'selected' : ''}>中画幅</option>
+            <option value="medium" ${state.sensorKey === 'medium' ? 'selected' : ''}>${esc(L('中画幅', 'Med Format'))}</option>
           </select>
-          <select id="vf-aspect-select" class="vf-select" aria-label="构图比">
-            <option value="native" ${state.aspectOverride === 'native' ? 'selected' : ''}>原生画幅</option>
+          <select id="vf-aspect-select" class="vf-select" aria-label="${esc(L('构图比', 'Aspect ratio'))}">
+            <option value="native" ${state.aspectOverride === 'native' ? 'selected' : ''}>${esc(L('原生画幅', 'Native'))}</option>
             <option value="3:2" ${state.aspectOverride === '3:2' ? 'selected' : ''}>3:2</option>
             <option value="4:3" ${state.aspectOverride === '4:3' ? 'selected' : ''}>4:3</option>
             <option value="16:9" ${state.aspectOverride === '16:9' ? 'selected' : ''}>16:9</option>
             <option value="1:1" ${state.aspectOverride === '1:1' ? 'selected' : ''}>1:1</option>
           </select>
           <button id="vf-orient-btn" class="vf-focal-btn ${state.orientation === 'portrait' ? 'active' : ''}" type="button">
-            ${state.orientation === 'portrait' ? '竖构图' : '横构图'}
+            ${esc(orientLabel)}
           </button>
           ${FOCAL_LIST.map((f) => `<button class="vf-focal-btn ${state.focalMm === f ? 'active' : ''}" data-focal="${f}" type="button">${f}mm</button>`).join('')}
         </div>
         <div class="vf-time-row">
           <span class="mono-num vf-focal-readout">${state.focalMm}mm</span>
-          <input id="vf-focal-slider" class="vf-focal-slider" type="range" min="14" max="600" step="1" value="${Math.min(600, state.focalMm)}" aria-label="自定义焦距" />
-          <input id="vf-date-input" class="vf-date-input mono-num" type="date" value="${esc(state.dateStr)}" aria-label="日期" />
+          <input id="vf-focal-slider" class="vf-focal-slider" type="range" min="14" max="600" step="1" value="${Math.min(600, state.focalMm)}" aria-label="${esc(L('自定义焦距', 'Custom focal length'))}" />
+          <input id="vf-date-input" class="vf-date-input mono-num" type="date" value="${esc(state.dateStr)}" aria-label="${esc(L('日期', 'Date'))}" />
           <span class="mono-num vf-time-val">${timeText}</span>
-          <input id="vf-time-range" class="vf-time-range" type="range" min="0" max="1439" step="5" value="${state.minutes}" aria-label="时刻" />
+          <input id="vf-time-range" class="vf-time-range" type="range" min="0" max="1439" step="5" value="${state.minutes}" aria-label="${esc(L('时刻', 'Time'))}" />
         </div>
       </div>
     `;

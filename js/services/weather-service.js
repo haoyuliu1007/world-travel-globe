@@ -34,8 +34,53 @@
     99: '强雷暴伴冰雹'
   };
 
+  const WMO_LABELS_EN = {
+    0: 'Clear',
+    1: 'Mostly Clear',
+    2: 'Partly Cloudy',
+    3: 'Overcast',
+    45: 'Fog',
+    48: 'Rime Fog',
+    51: 'Light Drizzle',
+    53: 'Drizzle',
+    55: 'Dense Drizzle',
+    61: 'Light Rain',
+    63: 'Rain',
+    65: 'Heavy Rain',
+    66: 'Freezing Rain',
+    67: 'Heavy Freezing Rain',
+    71: 'Light Snow',
+    73: 'Snow',
+    75: 'Heavy Snow',
+    77: 'Snow Grains',
+    80: 'Rain Showers',
+    81: 'Moderate Showers',
+    82: 'Heavy Showers',
+    85: 'Snow Showers',
+    86: 'Heavy Snow Showers',
+    95: 'Thunderstorm',
+    96: 'Storm + Hail',
+    99: 'Severe Hailstorm'
+  };
+
+  function getLang() {
+    return global.AppI18n && typeof global.AppI18n.getLang === 'function' ? global.AppI18n.getLang() : 'zh-CN';
+  }
+
+  function L(zh, en) {
+    const lang = getLang();
+    if (lang === 'en') return en;
+    if (lang === 'zh-TW' && global.AppI18n && typeof global.AppI18n.toTraditional === 'function') {
+      return global.AppI18n.toTraditional(zh);
+    }
+    return zh;
+  }
+
   function describeWmoCode(code) {
-    return WMO_LABELS[Number(code)] || `WMO ${code}`;
+    const n = Number(code);
+    if (getLang() === 'en') return WMO_LABELS_EN[n] || `WMO ${code}`;
+    const zh = WMO_LABELS[n];
+    return zh ? L(zh, WMO_LABELS_EN[n] || zh) : `WMO ${code}`;
   }
 
   async function requestWeatherEndpoint(base, params, cacheKey, ttlMs, sourceName) {
@@ -207,30 +252,30 @@
     ].filter(Number.isFinite);
     const peakPollen = pollens.length ? Math.max(...pollens) : null;
 
-    let aqiLevel = '通透优';
+    let aqiLevel = L('通透优', 'Crystal Clear');
     let aqiColor = '#34D399';
     if (!Number.isFinite(aqi)) {
       aqiLevel = '--';
       aqiColor = '#A1A1AA';
     } else if (aqi > 150) {
-      aqiLevel = '雾霾强遮蔽';
+      aqiLevel = L('雾霾强遮蔽', 'Heavy Haze');
       aqiColor = '#FB7185';
     } else if (aqi > 100) {
-      aqiLevel = '轻度灰霾';
+      aqiLevel = L('轻度灰霾', 'Light Haze');
       aqiColor = '#F59E0B';
     } else if (aqi > 50) {
-      aqiLevel = '良好通透';
+      aqiLevel = L('良好通透', 'Good Clarity');
       aqiColor = '#38BDF8';
     }
 
     let uvLevel = '--';
     if (Number.isFinite(uv)) {
-      uvLevel = uv >= 8 ? '极强防晒' : uv >= 5 ? '中等强' : uv >= 2 ? '适中' : '微弱';
+      uvLevel = uv >= 8 ? L('极强防晒', 'Very High UV') : uv >= 5 ? L('中等强', 'High UV') : uv >= 2 ? L('适中', 'Moderate') : L('微弱', 'Low');
     }
 
-    let pollenLabel = '无显著花粉';
+    let pollenLabel = L('无显著花粉', 'No Pollen Data');
     if (peakPollen !== null) {
-      pollenLabel = peakPollen >= 50 ? '花粉偏高' : peakPollen >= 10 ? '轻度花粉' : '低花粉';
+      pollenLabel = peakPollen >= 50 ? L('花粉偏高', 'High Pollen') : peakPollen >= 10 ? L('轻度花粉', 'Moderate Pollen') : L('低花粉', 'Low Pollen');
     }
 
     return {

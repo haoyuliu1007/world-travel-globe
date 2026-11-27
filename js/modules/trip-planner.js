@@ -30,6 +30,49 @@
     return global.AppI18n ? global.AppI18n.tx(str) : (str || '');
   }
 
+  function getLang() {
+    return global.AppI18n && typeof global.AppI18n.getLang === 'function' ? global.AppI18n.getLang() : 'zh-CN';
+  }
+
+  function L(zh, en) {
+    const lang = getLang();
+    if (lang === 'en') return en;
+    if (lang === 'zh-TW' && global.AppI18n && typeof global.AppI18n.toTraditional === 'function') {
+      return global.AppI18n.toTraditional(zh);
+    }
+    return zh;
+  }
+
+  const CAT_EN_MAP = {
+    交通与接驳: 'Transport & Transfers',
+    住宿体验: 'Lodging & Stays',
+    餐饮美食: 'Dining & Cuisine',
+    门票向导: 'Tickets & Guides',
+    其他支出: 'Other Expenses',
+    消费: 'Expense',
+    新增项目: 'New Item',
+    '城际/当地交通估算': 'Intercity & local transport (est.)',
+    '当地特色风味估算': 'Local dining & coffee (est.)',
+    '景点预约与活动估算': 'Tickets & activities (est.)',
+    '探索路线': 'Explore Route',
+    '出发地（本地/机场）': 'Origin (Home / Airport)',
+    '自由组合': 'Custom Stops',
+    '分享行程': 'Shared Trip'
+  };
+
+  function translatePlannerText(str) {
+    if (!str) return '';
+    if (getLang() === 'en') {
+      if (CAT_EN_MAP[str]) return CAT_EN_MAP[str];
+      const mDay = String(str).match(/^Day\s+(\d+)\s*·\s*(.+)$/);
+      if (mDay && CAT_EN_MAP[mDay[2]]) return `Day ${mDay[1]} · ${CAT_EN_MAP[mDay[2]]}`;
+      const mStay = String(str).match(/^(\d+)\s*晚精选住宿估算$/);
+      if (mStay) return `${mStay[1]}-night stay (est.)`;
+      return tx(str);
+    }
+    return L(tx(str), str);
+  }
+
   function haversineKm(a, b) {
     const r = Math.PI / 180;
     const dLat = (b[1] - a[1]) * r;
@@ -116,7 +159,7 @@
 
     const dayBuckets = Array.from({ length: days }, (_, idx) => ({
       day: idx + 1,
-      title: (dest && Array.isArray(dest.itinerary) && dest.itinerary[idx] && dest.itinerary[idx].title) || `Day ${idx + 1} · 探索路线`,
+      title: (dest && Array.isArray(dest.itinerary) && dest.itinerary[idx] && dest.itinerary[idx].title) || `Day ${idx + 1} · ${L('探索路线', 'Explore Route')}`,
       stops: [],
       routeSummary: null
     }));
@@ -147,24 +190,25 @@
       const ratio = budgetRmb / baseSum;
       budgetItems = comfortItems.map((it, idx) => ({
         id: `bi_${idx}`,
-        category: it.category || '消费',
+        category: it.category || L('消费', 'Expense'),
         detail: it.detail || '',
         cost: Math.round((Number(it.cost) || 0) * ratio),
         priceType: 'estimated'
       }));
     } else {
       budgetItems = [
-        { id: 'bi_1', category: '交通与接驳', detail: '城际/当地交通估算', cost: Math.round(budgetRmb * 0.35), priceType: 'estimated' },
-        { id: 'bi_2', category: '住宿体验', detail: `${days} 晚精选住宿估算`, cost: Math.round(budgetRmb * 0.35), priceType: 'estimated' },
-        { id: 'bi_3', category: '餐饮美食', detail: '当地特色风味估算', cost: Math.round(budgetRmb * 0.18), priceType: 'estimated' },
-        { id: 'bi_4', category: '门票向导', detail: '景点预约与活动估算', cost: Math.round(budgetRmb * 0.12), priceType: 'estimated' }
+        { id: 'bi_1', category: L('交通与接驳', 'Transport & Transfers'), detail: L('城际/当地交通估算', 'Intercity & local transport (est.)'), cost: Math.round(budgetRmb * 0.35), priceType: 'estimated' },
+        { id: 'bi_2', category: L('住宿体验', 'Lodging & Stays'), detail: L(`${days} 晚精选住宿估算`, `${days}-night stay (est.)`), cost: Math.round(budgetRmb * 0.35), priceType: 'estimated' },
+        { id: 'bi_3', category: L('餐饮美食', 'Dining & Cuisine'), detail: L('当地特色风味估算', 'Local dining & coffee (est.)'), cost: Math.round(budgetRmb * 0.18), priceType: 'estimated' },
+        { id: 'bi_4', category: L('门票向导', 'Tickets & Guides'), detail: L('景点预约与活动估算', 'Tickets & activities (est.)'), cost: Math.round(budgetRmb * 0.12), priceType: 'estimated' }
       ];
     }
 
+    const dName = dest ? (dest.shortName || dest.name) : L('全球', 'Global');
     return {
       id: `trip_${Date.now().toString(36)}`,
-      name: opts.name || `${(dest && (dest.shortName || dest.name)) || '全球'} ${days}日深度行程`,
-      origin: opts.origin || '出发地（本地/机场）',
+      name: opts.name || L(`${dName} ${days}日深度行程`, `${tx(dName)} ${days}-Day Itinerary`),
+      origin: opts.origin || L('出发地（本地/机场）', 'Origin (Home / Airport)'),
       destId: dest ? dest.id : '',
       destName: dest ? (dest.shortName || dest.name) : '',
       daysCount: days,
@@ -362,7 +406,7 @@
   async function addSpotToActiveTrip(dest, spot) {
     await ensureActiveTrip();
     if (!activeTrip.days || !activeTrip.days.length) {
-      activeTrip.days = [{ day: 1, title: 'Day 1 · 自由组合', stops: [], routeSummary: null }];
+      activeTrip.days = [{ day: 1, title: `Day 1 · ${L('自由组合', 'Custom Stops')}`, stops: [], routeSummary: null }];
     }
     activeTrip.days[0].stops.push({
       id: `st_${Date.now().toString(36)}`,
@@ -387,7 +431,7 @@
         routeChart = null;
       }
       if (!routeChart) routeChart = echarts.init(el);
-      const data = (trip.budgetItems || []).map((b) => ({ name: b.category, value: Number(b.cost) || 0 }));
+      const data = (trip.budgetItems || []).map((b) => ({ name: translatePlannerText(b.category), value: Number(b.cost) || 0 }));
       routeChart.setOption({
         backgroundColor: 'transparent',
         tooltip: { trigger: 'item', formatter: '{b}: ¥{c} ({d}%)' },
@@ -464,7 +508,7 @@
                   </select>
                 </label>
                 <label class="form-field"><span>${esc(t('plannerOrigin'))}</span>
-                  <input id="tp-origin" class="sim-input" type="text" value="${esc(activeTrip.origin)}" />
+                  <input id="tp-origin" class="sim-input" type="text" value="${esc(translatePlannerText(activeTrip.origin))}" />
                 </label>
                 <label class="form-field"><span>${esc(t('plannerDest'))}</span>
                   <input id="tp-dest-search" class="sim-input" list="tp-dest-datalist" value="${esc(tx(activeTrip.destName))}" placeholder="${esc(t('plannerDestPlaceholder'))}" />
@@ -513,9 +557,9 @@
                 ${(activeTrip.budgetItems || [])
                   .map(
                     (b, idx) => `
-                  <div style="display:grid;grid-template-columns:80px 1fr 78px 26px;gap:5px;align-items:center;margin-bottom:6px;">
-                    <input class="sim-input tp-bi-cat" data-idx="${idx}" value="${esc(tx(b.category))}" style="height:28px;font-size:11px;" />
-                    <input class="sim-input tp-bi-det" data-idx="${idx}" value="${esc(tx(b.detail))}" style="height:28px;font-size:11px;" />
+                  <div style="display:grid;grid-template-columns:92px 1fr 78px 26px;gap:5px;align-items:center;margin-bottom:6px;">
+                    <input class="sim-input tp-bi-cat" data-idx="${idx}" value="${esc(translatePlannerText(b.category))}" style="height:28px;font-size:11px;" />
+                    <input class="sim-input tp-bi-det" data-idx="${idx}" value="${esc(translatePlannerText(b.detail))}" style="height:28px;font-size:11px;" />
                     <input class="sim-input mono-num tp-bi-cost" data-idx="${idx}" type="number" value="${b.cost}" style="height:28px;font-size:11px;" />
                     <button class="icon-btn tp-bi-del" data-idx="${idx}" type="button">${icon('trash', 12)}</button>
                   </div>
@@ -553,7 +597,7 @@
                 (dy, dIdx) => `
               <div class="day-card" data-day-idx="${dIdx}">
                 <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
-                  <strong>Day ${dy.day} · ${esc(tx(dy.title))}</strong>
+                  <strong>Day ${dy.day} · ${esc(translatePlannerText(dy.title))}</strong>
                   <span class="mono-num" style="font-size:11px;color:var(--text-secondary);">
                     ${dy.routeSummary ? `${dy.routeSummary.totalRoutedKm} km · ${dy.routeSummary.totalMinutes} min` : `${dy.stops.length} stops`}
                   </span>
@@ -648,7 +692,7 @@
     });
 
     view.querySelector('#tp-calc-route-btn').addEventListener('click', async (e) => {
-      e.target.textContent = '正在请求真实路网…';
+      e.target.textContent = L('正在请求真实路网…', 'Computing real road routes…');
       activeTrip.mode = view.querySelector('#tp-mode').value;
       await computeAllDayRoutes(activeTrip);
       renderWorkspace();
@@ -684,7 +728,7 @@
       });
     });
     view.querySelector('#tp-add-budget-btn').addEventListener('click', () => {
-      activeTrip.budgetItems.push({ id: `bi_${Date.now()}`, category: '其他支出', detail: '新增项目', cost: 500 });
+      activeTrip.budgetItems.push({ id: `bi_${Date.now()}`, category: L('其他支出', 'Other Expenses'), detail: L('新增项目', 'New Item'), cost: 500 });
       saveBudgetPatch();
     });
 
@@ -767,10 +811,10 @@
       printEl.classList.remove('is-hidden');
       printEl.innerHTML = `
         <h1>${esc(activeTrip.name)}</h1>
-        <p>出发地：${esc(activeTrip.origin)} · 目的地：${esc(activeTrip.destName)} · 交通：${esc(activeTrip.mode)} · 预算：¥${totalBudget.toLocaleString()}</p>
+        <p>${esc(L('出发地：', 'Origin: '))}${esc(translatePlannerText(activeTrip.origin))} · ${esc(L('目的地：', 'Dest: '))}${esc(tx(activeTrip.destName))} · ${esc(L('交通：', 'Mode: '))}${esc(activeTrip.mode)} · ${esc(L('预算：', 'Budget: '))}¥${totalBudget.toLocaleString()}</p>
         ${(activeTrip.days || [])
           .map(
-            (d) => `<h3>Day ${d.day} · ${esc(d.title)}</h3><ol>${d.stops.map((s) => `<li>${esc(s.name)} (${s.coords ? s.coords.join(', ') : ''})</li>`).join('')}</ol>`
+            (d) => `<h3>Day ${d.day} · ${esc(translatePlannerText(d.title))}</h3><ol>${d.stops.map((s) => `<li>${esc(tx(s.name))} (${s.coords ? s.coords.join(', ') : ''})</li>`).join('')}</ol>`
           )
           .join('')}
       `;
@@ -782,7 +826,10 @@
       const msgEl = view.querySelector('#tp-share-msg');
       try {
         if (global.navigator && global.navigator.clipboard) await global.navigator.clipboard.writeText(shareUrl);
-        msgEl.textContent = `已复制分享链接（${shareUrl.length} 字符）：打开链接即可自动恢复完整行程。`;
+        msgEl.textContent = L(
+          `已复制分享链接（${shareUrl.length} 字符）：打开链接即可自动恢复完整行程。`,
+          `Share link copied (${shareUrl.length} chars) — opening it restores this full itinerary.`
+        );
       } catch (e) {
         msgEl.textContent = shareUrl;
       }

@@ -38,6 +38,28 @@
   let activeContinent = 'global';
   let loadedSaved = false;
 
+  function getLang() {
+    return global.AppI18n && typeof global.AppI18n.getLang === 'function' ? global.AppI18n.getLang() : 'zh-CN';
+  }
+
+  function L(zh, en) {
+    const lang = getLang();
+    if (lang === 'en') return en;
+    if (lang === 'zh-TW' && global.AppI18n && typeof global.AppI18n.toTraditional === 'function') {
+      return global.AppI18n.toTraditional(zh);
+    }
+    return zh;
+  }
+
+  function tx(str) {
+    return global.AppI18n && typeof global.AppI18n.tx === 'function' ? global.AppI18n.tx(str) : (str || '');
+  }
+
+  const MONTH_SHORT_EN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  function fmtMonth(m) {
+    return getLang() === 'en' ? (MONTH_SHORT_EN[m - 1] || `M${m}`) : L(`${m} 月`, `M${m}`);
+  }
+
   async function ensureWeightsLoaded() {
     if (loadedSaved || !global.StorageDB) return;
     loadedSaved = true;
@@ -157,13 +179,13 @@
     const costCrowd = Math.max(35, Math.min(95, rawScore <= 3 ? 82 : rawScore === 4 ? 68 : 54));
 
     const dims = [
-      { key: 'tempComfort', label: '气温舒适度', score: tempComfort, weight: w.tempComfort, source: tempSource },
-      { key: 'precipScore', label: '降水适配度', score: precipScore, weight: w.precipScore, source: precipSource },
-      { key: 'clearSkyScore', label: '晴天概率', score: clearSkyScore, weight: w.clearSkyScore, source: clearSource },
-      { key: 'lightCloudScore', label: '黄金光影时长', score: lightCloudScore, weight: w.lightCloudScore, source: lightSource },
-      { key: 'landscapeSeason', label: '季节景观峰度', score: landscapeSeason, weight: w.landscapeSeason, source: 'empirical' },
-      { key: 'phenologySnowVeg', label: '植被积雪物候', score: phenologySnowVeg, weight: w.phenologySnowVeg, source: phenoSource },
-      { key: 'costCrowd', label: '错峰性价比(估算)', score: costCrowd, weight: w.costCrowd, source: 'estimated' }
+      { key: 'tempComfort', label: L('气温舒适度', 'Temperature Comfort'), score: tempComfort, weight: w.tempComfort, source: tempSource },
+      { key: 'precipScore', label: L('降水适配度', 'Precipitation Fit'), score: precipScore, weight: w.precipScore, source: precipSource },
+      { key: 'clearSkyScore', label: L('晴天概率', 'Clear-Sky Odds'), score: clearSkyScore, weight: w.clearSkyScore, source: clearSource },
+      { key: 'lightCloudScore', label: L('黄金光影时长', 'Golden Hour Quality'), score: lightCloudScore, weight: w.lightCloudScore, source: lightSource },
+      { key: 'landscapeSeason', label: L('季节景观峰度', 'Seasonal Peak'), score: landscapeSeason, weight: w.landscapeSeason, source: 'empirical' },
+      { key: 'phenologySnowVeg', label: L('植被积雪物候', 'Phenology & Snow'), score: phenologySnowVeg, weight: w.phenologySnowVeg, source: phenoSource },
+      { key: 'costCrowd', label: L('错峰性价比(估算)', 'Off-Peak Value (Est.)'), score: costCrowd, weight: w.costCrowd, source: 'estimated' }
     ];
 
     let totalWeight = 0;
@@ -186,10 +208,10 @@
   }
 
   function sourceBadgeHtml(src) {
-    if (src === 'realtime') return '<span class="source-tag realtime">ERA5 再分析气候</span>';
-    if (src === 'astronomy') return '<span class="source-tag astronomy">SunCalc 天文</span>';
-    if (src === 'estimated') return '<span class="source-tag empirical">参考估算 · 非实时</span>';
-    return '<span class="source-tag empirical">实地档案经验</span>';
+    if (src === 'realtime') return `<span class="source-tag realtime">${L('ERA5 再分析气候', 'ERA5 Reanalysis')}</span>`;
+    if (src === 'astronomy') return `<span class="source-tag astronomy">${L('SunCalc 天文', 'SunCalc Astronomy')}</span>`;
+    if (src === 'estimated') return `<span class="source-tag empirical">${L('参考估算 · 非实时', 'Reference Est.')}</span>`;
+    return `<span class="source-tag empirical">${L('实地档案经验', 'Field Archive')}</span>`;
   }
 
   async function mountDrawerBreakdown(dest, monthNum, containerEl) {
@@ -209,11 +231,14 @@
     containerEl.innerHTML = `
       <div class="index-breakdown-card">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
-          <strong>全球追美指数 · ${res.month} 月评分依据</strong>
+          <strong>${L(`全球追美指数 · ${res.month} 月评分依据`, `Aesthetic Index · ${fmtMonth(res.month)} Breakdown`)}</strong>
           <span class="mono-num" style="font-size:15px;font-weight:700;color:var(--accent-primary);">${res.total} / 100 (${res.stars}★)</span>
         </div>
         <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">
-          严格区分 Open-Meteo ERA5 再分析气候、SunCalc 天文光影与人工实地档案；未缓存历史气候时点击「气候」页签可加载 5 年再分析网格均值。
+          ${L(
+            '严格区分 Open-Meteo ERA5 再分析气候、SunCalc 天文光影与人工实地档案；未缓存历史气候时点击「气候」页签可加载 5 年再分析网格均值。',
+            'Separates Open-Meteo ERA5 reanalysis climate, SunCalc solar light, and curated field archive; open the Weather tab to fetch 5-year reanalysis normals.'
+          )}
         </div>
         ${res.dimensions
           .map(
@@ -221,7 +246,7 @@
           <div class="dim-row">
             <div class="dim-row-top">
               <span>${d.label} ${sourceBadgeHtml(d.source)}</span>
-              <span class="mono-num">${d.score}分 · 权重${d.weight}</span>
+              <span class="mono-num">${d.score}${L('分', 'pts')} · ${L('权重', 'Wt ')}${d.weight}</span>
             </div>
             <div class="dim-bar-track"><div class="dim-bar-fill" style="width:${d.score}%"></div></div>
           </div>
@@ -250,18 +275,18 @@
     const esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
     const weightSliders = [
-      ['tempComfort', '气温舒适'],
-      ['precipScore', '降水适配'],
-      ['clearSkyScore', '晴天概率'],
-      ['lightCloudScore', '黄金光影'],
-      ['landscapeSeason', '景观峰度'],
-      ['phenologySnowVeg', '物候积雪'],
-      ['costCrowd', '错峰估算']
+      ['tempComfort', L('气温舒适', 'Temp Comfort')],
+      ['precipScore', L('降水适配', 'Rain Fit')],
+      ['clearSkyScore', L('晴天概率', 'Clear Odds')],
+      ['lightCloudScore', L('黄金光影', 'Golden Hour')],
+      ['landscapeSeason', L('景观峰度', 'Peak Beauty')],
+      ['phenologySnowVeg', L('物候积雪', 'Phenology')],
+      ['costCrowd', L('错峰估算', 'Off-Peak')]
     ]
       .map(
         ([k, lbl]) => `
       <label style="display:flex;align-items:center;gap:6px;font-size:11px;">
-        <span style="min-width:60px;">${lbl}</span>
+        <span style="min-width:68px;">${lbl}</span>
         <input class="idx-weight-slider" data-wkey="${k}" type="range" min="0" max="40" value="${activeWeights[k]}" style="flex:1;" />
         <span class="mono-num" style="min-width:22px;text-align:right;">${activeWeights[k]}</span>
       </label>
@@ -269,51 +294,54 @@
       )
       .join('');
 
+    const presetEn = { balanced: 'Balanced', photo: 'Landscape Photo', comfort: 'Comfort Stay', snowAurora: 'Snow & Aurora' };
     const rowsHtml = ranked
       .slice(0, 48)
       .map(
         (item, i) => `
         <button class="gallery-card idx-rank-card" data-id="${esc(item.dest.id)}" type="button" style="text-align:left;">
           <div class="gallery-card-top">
-            <span class="mono-num" style="color:var(--accent-primary);font-weight:700;">#${i + 1} · ${item.idx.total} 分</span>
-            <span class="gallery-card-coords">${esc(item.dest.country)}</span>
+            <span class="mono-num" style="color:var(--accent-primary);font-weight:700;">#${i + 1} · ${item.idx.total} ${L('分', 'pts')}</span>
+            <span class="gallery-card-coords">${esc(tx(item.dest.country))}</span>
           </div>
-          <h3 class="gallery-card-title">${esc(item.dest.name)}</h3>
-          <p class="gallery-card-sub">${esc(item.dest.subtitle || item.dest.heroSummary)}</p>
+          <h3 class="gallery-card-title">${esc(tx(item.dest.name))}</h3>
+          <p class="gallery-card-sub">${esc(tx(item.dest.subtitle || item.dest.heroSummary))}</p>
           <div class="gallery-card-foot">
-            <span class="mono-num">${item.idx.month}月 · ${'★'.repeat(item.idx.stars)}</span>
-            <span class="gallery-card-cta">飞往坐标 →</span>
+            <span class="mono-num">${fmtMonth(item.idx.month)} · ${'★'.repeat(item.idx.stars)}</span>
+            <span class="gallery-card-cta">${L('飞往坐标 →', 'Fly Here →')}</span>
           </div>
         </button>
       `
       )
       .join('');
 
+    const tCont = (k, zh) => (global.AppI18n && typeof global.AppI18n.tContinent === 'function' ? global.AppI18n.tContinent(k) : zh);
+
     gridEl.innerHTML = `
       <div class="panel-box" style="grid-column:1 / -1;">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
           <div>
-            <h3 style="margin:0;">全球追美指数引擎 · ${activeMonth} 月综合推荐榜 (共 ${ranked.length} 座)</h3>
-            <div style="font-size:11.5px;color:var(--text-muted);margin-top:2px;">支持自定义 7 维权重；气温/光影结合 SunCalc 与实地物候档案，错峰成本为参考估算。</div>
+            <h3 style="margin:0;">${L(`全球追美指数引擎 · ${activeMonth} 月综合推荐榜 (共 ${ranked.length} 座)`, `Global Aesthetic Index · ${fmtMonth(activeMonth)} Rankings (${ranked.length})`)}</h3>
+            <div style="font-size:11.5px;color:var(--text-muted);margin-top:2px;">${L('支持自定义 7 维权重；气温/光影结合 SunCalc 与实地物候档案，错峰成本为参考估算。', 'Customize 7 weighting dimensions combining SunCalc solar windows & seasonal field archives.')}</div>
           </div>
           <div style="display:flex;gap:6px;flex-wrap:wrap;">
             <select id="idx-month-select" class="sim-input" style="width:92px;">
-              ${Array.from({ length: 12 }, (_, m) => `<option value="${m + 1}" ${activeMonth === m + 1 ? 'selected' : ''}>${m + 1} 月</option>`).join('')}
+              ${Array.from({ length: 12 }, (_, m) => `<option value="${m + 1}" ${activeMonth === m + 1 ? 'selected' : ''}>${fmtMonth(m + 1)}</option>`).join('')}
             </select>
-            <select id="idx-cont-select" class="sim-input" style="width:110px;">
-              <option value="global" ${activeContinent === 'global' ? 'selected' : ''}>全球大洲</option>
-              <option value="asia" ${activeContinent === 'asia' ? 'selected' : ''}>亚洲</option>
-              <option value="europe" ${activeContinent === 'europe' ? 'selected' : ''}>欧洲</option>
-              <option value="oceania" ${activeContinent === 'oceania' ? 'selected' : ''}>大洋洲</option>
-              <option value="north_america" ${activeContinent === 'north_america' ? 'selected' : ''}>北美洲</option>
-              <option value="south_america" ${activeContinent === 'south_america' ? 'selected' : ''}>南美洲</option>
-              <option value="africa_antarctica" ${activeContinent === 'africa_antarctica' ? 'selected' : ''}>非洲 / 南极</option>
+            <select id="idx-cont-select" class="sim-input" style="width:118px;">
+              <option value="global" ${activeContinent === 'global' ? 'selected' : ''}>${esc(L('全球大洲', tCont('global', 'Global')))}</option>
+              <option value="asia" ${activeContinent === 'asia' ? 'selected' : ''}>${esc(tCont('asia', '亚洲'))}</option>
+              <option value="europe" ${activeContinent === 'europe' ? 'selected' : ''}>${esc(tCont('europe', '欧洲'))}</option>
+              <option value="oceania" ${activeContinent === 'oceania' ? 'selected' : ''}>${esc(tCont('oceania', '大洋洲'))}</option>
+              <option value="north_america" ${activeContinent === 'north_america' ? 'selected' : ''}>${esc(tCont('north_america', '北美洲'))}</option>
+              <option value="south_america" ${activeContinent === 'south_america' ? 'selected' : ''}>${esc(tCont('south_america', '南美洲'))}</option>
+              <option value="africa_antarctica" ${activeContinent === 'africa_antarctica' ? 'selected' : ''}>${esc(tCont('africa_antarctica', '非洲 / 南极'))}</option>
             </select>
           </div>
         </div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">
           ${Object.keys(PRESETS)
-            .map((pk) => `<button class="mini-action-pill idx-preset-btn" data-preset="${pk}" type="button">${PRESETS[pk].label}</button>`)
+            .map((pk) => `<button class="mini-action-pill idx-preset-btn" data-preset="${pk}" type="button">${esc(L(PRESETS[pk].label, presetEn[pk] || PRESETS[pk].label))}</button>`)
             .join('')}
         </div>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:8px;">

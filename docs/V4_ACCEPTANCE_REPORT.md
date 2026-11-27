@@ -1,12 +1,23 @@
-# World Travel Globe V4.3.0 验收报告
+# World Travel Globe V4.4.0 验收报告
 
-- **当前版本**：`v4.3.0` (Living Earth & Viral Atlas)
-- **前置版本**：`v4.0.0` (`6218599`), `v4.1.0` (`43a939b`), `v4.2.0` (`9298f4a`)
+- **当前版本**：`v4.4.0` (Full Global Trilingual & Scenery Precision)
+- **前置版本**：`v4.0.0` (`6218599`), `v4.1.0` (`43a939b`), `v4.2.0` (`9298f4a`), `v4.3.0` (`5061cb1`)
 - **更新日期**：2026-11-27
 
 ---
 
-## 一、V4.3.0 新增五大高杠杆升级实测验收
+## 一、V4.4.0 国际化与媒体质量专项升级
+
+1. **首屏序章三语切换与 8 幕全文本国际化 (`assets/prologue/prologue.js`, `assets/prologue/prologue.css`)**：
+   - 首屏右上角新增 `简 / 繁 / EN` 切换胶囊，点击即时无刷新重绘全部 8 幕序章、Canvas 仪器刻度与坐标锁定标签，并通过 `<html lang>` 同步驱动 CosmicIntro 与地球仪主界面。
+2. **内容层全量英文化 + 无障碍 `aria-label` 水合**：
+   - 完整翻译光影模拟器 & 3D 取景器、科学物候 & 追美指数、实时气象与 5 年 ERA5 图表、Wikidata 核验卡、360° 街景弹窗、规划默认预算分类、足迹大洲轴及静态 HTML `data-i18n-aria` / `data-i18n-title`。
+3. **目的地实景画廊去美食化优选 (`js/services/media-wikidata.js`)**：
+   - 强化菜品关键词拦截并提高景点文字检索与 Wikipedia Lead Image 权重，避免地标英雄图误配周边美食照。
+
+---
+
+## 二、V4.3.0 新增五大高杠杆升级（沿用）
 
 1. **太阳驱动「真·昼夜晨昏地球」(`js/modules/solar-terminator.js`)**：
    - 纯天文离线实时计算太阳直射点、0°/民用/航海三层晨昏线球面阴影及暖金色晨昏晕，联动 MapLibre `setLight` 与夜面 Black Marble 灯光，支持 24 小时 UTC 滑动推演。

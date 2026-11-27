@@ -1,4 +1,6 @@
-/* World Travel Globe — Cloudflare Workers Edge API Proxy & Optional D1/R2 Adapter */
+/* KAIROS V5.0 (World Travel Globe) — Cloudflare Workers Edge API Proxy, Auth, Collab & D1/R2 Adapter */
+import { handleAuthRequest } from './auth.js';
+import { handleCollabRequest } from './collab.js';
 
 const RATE_WINDOW_MS = 60_000;
 const RATE_LIMIT_MAX = 90;
@@ -71,10 +73,18 @@ async function handleApi(request, env) {
 
   const p = url.pathname;
 
+  if (p.startsWith('/api/auth/') || p.startsWith('/api/account')) {
+    return handleAuthRequest(request, env);
+  }
+  if (p.startsWith('/api/collab/')) {
+    return handleCollabRequest(request, env);
+  }
+
   if (p === '/api/health') {
     return jsonResponse({
       ok: true,
       runtime: 'cloudflare-worker',
+      version: '5.0.0',
       features: {
         weather: true,
         commons: true,
@@ -93,7 +103,12 @@ async function handleApi(request, env) {
         pois: true, // Overpass fallback works without a key; OTM key only enhances it
         poisEnhanced: Boolean(env && env.OTM_API_KEY),
         d1: Boolean(env && env.DB),
-        r2: Boolean(env && env.PHOTOS_BUCKET)
+        r2: Boolean(env && env.PHOTOS_BUCKET),
+        auth: Boolean(env && env.DB),
+        oauthGoogle: Boolean(env && env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET),
+        emailDelivery: Boolean(env && env.RESEND_API_KEY),
+        collab: Boolean(env && env.DB),
+        fx: true
       }
     });
   }
@@ -477,23 +492,48 @@ async function handleApi(request, env) {
     });
   }
 
+  if (p === '/api/fx') {
+    const base = String(url.searchParams.get('from') || 'CNY').replace(/[^A-Z]/gi, '').toUpperCase() || 'CNY';
+    const to = String(url.searchParams.get('to') || 'USD,EUR,JPY,GBP,HKD,TWD,CHF,AUD,CAD,SGD,KRW,THB').replace(/[^A-Z,]/gi, '').toUpperCase();
+    const upstream = `https://api.frankfurter.app/latest?from=${encodeURIComponent(base)}&to=${encodeURIComponent(to)}`;
+    return cachedUpstreamJson(request.url, upstream, 43200, {
+      headers: { 'User-Agent': 'KAIROS-Atlas/5.0 (https://world-travel-globe.globe-app.workers.dev)' }
+    });
+  }
+
   if (p === '/api/epic') {
     const cache = typeof caches !== 'undefined' ? caches.default : null;
+    const reqUrl = new URL(request.url);
+    const reqDateRaw = (reqUrl.searchParams.get('date') || '').trim();
+    const requestedDate = /^\d{4}-\d{2}-\d{2}$/.test(reqDateRaw) ? reqDateRaw : null;
     const cacheUrl = new URL(request.url);
-    cacheUrl.searchParams.set('_v', '4.5');
+    cacheUrl.searchParams.set('_v', '5.0');
     const cacheReq = new Request(cacheUrl.toString(), { method: 'GET' });
     if (cache) {
       const hit = await cache.match(cacheReq);
       if (hit) return hit;
     }
-    const res = await fetch('https://epic.gsfc.nasa.gov/api/natural', {
+
+    const upstreamUrl = requestedDate
+      ? `https://epic.gsfc.nasa.gov/api/natural/date/${requestedDate}`
+      : 'https://epic.gsfc.nasa.gov/api/natural';
+    let res = await fetch(upstreamUrl, {
       signal: AbortSignal.timeout(12000),
-      headers: { 'User-Agent': 'WorldTravelGlobe/4.5 (https://world-travel-globe.globe-app.workers.dev)' }
+      headers: { 'User-Agent': 'KAIROS-Atlas/5.0 (https://world-travel-globe.globe-app.workers.dev)' }
     });
-    if (!res.ok) {
+    let raw = res.ok ? await res.json().catch(() => []) : [];
+    let fallbackToLatest = false;
+    if (requestedDate && (!Array.isArray(raw) || !raw.length)) {
+      fallbackToLatest = true;
+      res = await fetch('https://epic.gsfc.nasa.gov/api/natural', {
+        signal: AbortSignal.timeout(12000),
+        headers: { 'User-Agent': 'KAIROS-Atlas/5.0 (https://world-travel-globe.globe-app.workers.dev)' }
+      });
+      raw = res.ok ? await res.json().catch(() => []) : [];
+    }
+    if (!res.ok && (!Array.isArray(raw) || !raw.length)) {
       return jsonResponse({ ok: false, error: 'NASA EPIC upstream unavailable' }, 502);
     }
-    const raw = await res.json().catch(() => []);
     const frames = (Array.isArray(raw) ? raw : []).slice(0, 8).map((item) => {
       const datePart = String(item.date || '').split(' ')[0].replace(/-/g, '/');
       const imgName = item.image || '';
@@ -511,7 +551,15 @@ async function handleApi(request, env) {
         fullUrl
       };
     });
-    const out = jsonResponse({ ok: true, source: 'NASA DSCOVR EPIC', frames }, 200, 'public, max-age=21600');
+    const actualDate = frames[0] && frames[0].date ? String(frames[0].date).split(' ')[0] : null;
+    const out = jsonResponse({
+      ok: true,
+      source: 'NASA DSCOVR EPIC',
+      requestedDate,
+      actualDate,
+      fallbackToLatest,
+      frames
+    }, 200, 'public, max-age=21600');
     if (cache && frames.length) {
       await cache.put(cacheReq, out.clone());
     }
@@ -536,7 +584,10 @@ export default {
       const ct = assetRes.headers.get('content-type') || '';
       if (ct.includes('text/html') || url.pathname === '/' || url.pathname.endsWith('/')) {
         const hdrs = new Headers(assetRes.headers);
-        if (!hdrs.has('Content-Security-Policy')) {
+        const modeParam = url.searchParams.get('mode');
+        if (modeParam === 'account' || modeParam === 'archive') {
+          hdrs.set('Content-Security-Policy', "frame-ancestors 'none'");
+        } else if (!hdrs.has('Content-Security-Policy')) {
           hdrs.set('Content-Security-Policy', 'frame-ancestors *');
         }
         if (!hdrs.has('X-Content-Type-Options')) {

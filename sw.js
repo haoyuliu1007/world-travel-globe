@@ -1,6 +1,6 @@
 /* World Travel Globe Offline-First Service Worker */
 const CACHE_NAME = 'wtg-shell-__BUILD_VER__';
-const DATA_CACHE = 'wtg-data-v4';
+const DATA_CACHE = 'kairos-data-v5';
 
 const CORE_ASSETS = /* __SW_CORE_ASSETS__ */ ['./', './index.html'];
 
@@ -19,7 +19,12 @@ self.addEventListener('activate', (event) => {
           .filter((k) => k !== CACHE_NAME && k !== DATA_CACHE)
           .map((k) => caches.delete(k))
       )
-    )
+    ).then(() => self.clients.matchAll({ type: 'window' }))
+      .then((clients) => {
+        clients.forEach((c) => {
+          try { c.postMessage({ type: 'KAIROS_SW_UPDATED', cache: CACHE_NAME }); } catch (e) { /* ignore */ }
+        });
+      })
   );
   self.clients.claim();
 });
@@ -44,10 +49,14 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Cache-first for lazy region chunks, i18n chunks, and vendor libs
+  // Cache-first for lazy region/i18n/docs/transport/lazy-UI/brand chunks and vendor libs
   if (
     url.pathname.includes('/data/regions/') ||
     url.pathname.includes('/data/i18n/') ||
+    url.pathname.includes('/data/docs/') ||
+    url.pathname.includes('/data/transport/') ||
+    url.pathname.includes('/js/lazy/') ||
+    url.pathname.includes('/assets/brand/') ||
     url.pathname.includes('/vendor/')
   ) {
     event.respondWith(

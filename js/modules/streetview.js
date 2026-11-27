@@ -467,6 +467,8 @@
                   .join('')}
               </div>
               <div style="display:flex;gap:6px;">
+                <button class="mini-action-pill" id="pnx-sync-cam-btn" type="button">${esc(L('罗盘同步', 'Compass Sync'))}</button>
+                <button class="mini-action-pill" id="pnx-return-spot-btn" type="button">${esc(L('回到机位', 'Return to Spot'))}</button>
                 <button class="mini-action-pill" id="pnx-prev-btn" type="button" ${item.prevUrl ? '' : 'disabled'}>${esc(L('← 上一站', '← Prev'))}</button>
                 <button class="mini-action-pill" id="pnx-next-btn" type="button" ${item.nextUrl ? '' : 'disabled'}>${esc(L('下一站 →', 'Next →'))}</button>
               </div>
@@ -506,8 +508,20 @@
         };
         const prevBtn = stageEl.querySelector('#pnx-prev-btn');
         const nextBtn = stageEl.querySelector('#pnx-next-btn');
+        const syncCamBtn = stageEl.querySelector('#pnx-sync-cam-btn');
+        const retSpotBtn = stageEl.querySelector('#pnx-return-spot-btn');
         if (prevBtn && curItem.prevUrl) prevBtn.addEventListener('click', () => stepSequence(curItem.prevUrl));
         if (nextBtn && curItem.nextUrl) nextBtn.addEventListener('click', () => stepSequence(curItem.nextUrl));
+        if (syncCamBtn) {
+          syncCamBtn.addEventListener('click', () => {
+            if (curItem.coords) syncGlobePosition(curItem.coords[0], curItem.coords[1], curItem.azimuth);
+          });
+        }
+        if (retSpotBtn) {
+          retSpotBtn.addEventListener('click', () => {
+            syncGlobePosition(lng, lat, curItem.azimuth || 0);
+          });
+        }
       };
 
       renderPanoramaxItem(pnxItems[0]);

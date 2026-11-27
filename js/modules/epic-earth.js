@@ -48,13 +48,23 @@
     return raw;
   }
 
-  async function fetchEpicFrames() {
+  let selectedDateStr = '';
+  let lastMeta = { requestedDate: null, actualDate: null, fallbackToLatest: false };
+
+  async function fetchEpicFrames(dateStr) {
     const Api = global.ApiClient;
     const caps = Api ? await Api.detectWorkerCapabilities().catch(() => null) : null;
+    const reqDate = /^\d{4}-\d{2}-\d{2}$/.test(String(dateStr || '').trim()) ? String(dateStr).trim() : '';
     if (caps && caps.available && caps.features && caps.features.epic) {
+      const apiPath = reqDate ? `/api/epic?date=${encodeURIComponent(reqDate)}` : '/api/epic';
       const json = Api
-        ? await Api.fetchJson('/api/epic', { cacheKey: 'nasa:epic:v2', ttlMs: ONE_HOUR_MS, source: 'NASA DSCOVR EPIC', serviceId: 'nasa-epic', timeoutMs: 9000 })
-        : await (await fetch('/api/epic')).json();
+        ? await Api.fetchJson(apiPath, { cacheKey: `nasa:epic:v5:${reqDate || 'latest'}`, ttlMs: ONE_HOUR_MS, source: 'NASA DSCOVR EPIC', serviceId: 'nasa-epic', timeoutMs: 9000 })
+        : await (await fetch(apiPath)).json();
+      lastMeta = {
+        requestedDate: json && json.requestedDate ? json.requestedDate : reqDate || null,
+        actualDate: json && json.actualDate ? json.actualDate : null,
+        fallbackToLatest: Boolean(json && json.fallbackToLatest)
+      };
       const rawFrames = Array.isArray(json && json.frames) ? json.frames : [];
       return rawFrames.map((f) => {
         const med = deriveMediumFromUrls(f);
@@ -71,9 +81,23 @@
       });
     }
 
-    const res = await fetch('https://epic.gsfc.nasa.gov/api/natural');
-    if (!res.ok) throw new Error(`NASA EPIC HTTP ${res.status}`);
-    const list = await res.json();
+    const upstream = reqDate
+      ? `https://epic.gsfc.nasa.gov/api/natural/date/${reqDate}`
+      : 'https://epic.gsfc.nasa.gov/api/natural';
+    let res = await fetch(upstream);
+    let list = res.ok ? await res.json().catch(() => []) : [];
+    let fallbackToLatest = false;
+    if (reqDate && (!Array.isArray(list) || !list.length)) {
+      fallbackToLatest = true;
+      res = await fetch('https://epic.gsfc.nasa.gov/api/natural');
+      list = res.ok ? await res.json().catch(() => []) : [];
+    }
+    if (!res.ok && (!Array.isArray(list) || !list.length)) throw new Error(`NASA EPIC HTTP ${res.status}`);
+    lastMeta = {
+      requestedDate: reqDate || null,
+      actualDate: list[0] && list[0].date ? String(list[0].date).split(' ')[0] : null,
+      fallbackToLatest
+    };
     return (Array.isArray(list) ? list : []).slice(0, 8).map((item) => {
       const dp = String(item.date || '').split(' ')[0].replace(/-/g, '/');
       const img = item.image || '';
@@ -134,7 +158,16 @@
           <p style="font-size:12.5px;color:var(--text-secondary);">${esc(L('暂未获取到 NASA EPIC L1 拉格朗日点影像，请稍后重试。', 'Unable to fetch NASA EPIC L1 imagery right now. Please try again later.'))}</p>
         </div>
       `;
-      modal.querySelector('#epic-close-btn').addEventListener('click', close);
+      const dateInp = modal.querySelector('#epic-date-input');
+    if (dateInp) {
+      dateInp.addEventListener('change', async (e) => {
+        selectedDateStr = e.target.value || '';
+        activeIdx = 0;
+        framesCache = await fetchEpicFrames(selectedDateStr).catch(() => []);
+        renderModal(framesCache);
+      });
+    }
+    modal.querySelector('#epic-close-btn').addEventListener('click', close);
       return;
     }
 
@@ -152,11 +185,15 @@
       <div class="epic-dialog">
         <div class="epic-head">
           <div>
-            <strong>${icon('globe', 15)} ${esc(L('NASA DSCOVR EPIC · 今日真实整盘地球', 'NASA DSCOVR EPIC · Live Full-Disk Earth'))}</strong>
-            <div style="font-size:11px;color:var(--text-muted);">${esc(L(`日地拉格朗日 L1 点实拍 (距地 ${distKm} km · 公共领域 NASA Public Domain)`, `Captured from Sun-Earth L1 (${distKm} km · NASA Public Domain)`))}</div>
+            <strong>${icon('globe', 15)} ${esc(L('NASA DSCOVR EPIC · 真实整盘地球', 'NASA DSCOVR EPIC · Full-Disk Earth'))}</strong>
+            <div style="font-size:11px;color:var(--text-muted);">${esc(L(`日地拉格朗日 L1 点实拍 (距地 ${distKm} km · NASA Public Domain)`, `Captured from Sun-Earth L1 (${distKm} km · NASA Public Domain)`))}</div>
           </div>
-          <button id="epic-close-btn" class="icon-btn" type="button" aria-label="${esc(L('关闭', 'Close'))}">${icon('x', 15)}</button>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <input id="epic-date-input" class="sim-input mono-num" type="date" value="${esc(selectedDateStr || (lastMeta.actualDate || ''))}" max="${new Date().toISOString().slice(0, 10)}" style="height:28px;font-size:11.5px;width:auto;" aria-label="${esc(L('选择 EPIC 日期', 'Select EPIC date'))}" />
+            <button id="epic-close-btn" class="icon-btn" type="button" aria-label="${esc(L('关闭', 'Close'))}">${icon('x', 15)}</button>
+          </div>
         </div>
+        ${lastMeta.fallbackToLatest ? `<div style="margin:6px 0 0;padding:5px 8px;border-radius:6px;background:rgba(232,163,61,0.12);font-size:11px;color:var(--accent-primary);">${esc(L(`所选日期 ${lastMeta.requestedDate} 暂无 EPIC 成像，已诚实回退至最近实拍日期 ${lastMeta.actualDate || ''}。`, `No EPIC frames captured on ${lastMeta.requestedDate}; displaying nearest actual capture date ${lastMeta.actualDate || ''}.`))}</div>` : ''}
         <div class="epic-stage">
           <img id="epic-stage-img" src="${esc(displayUrl)}" alt="${esc(f.caption || 'Earth from DSCOVR EPIC')}" decoding="async" />
         </div>
@@ -183,6 +220,15 @@
       }, { once: true });
     }
 
+    const dateInp = modal.querySelector('#epic-date-input');
+    if (dateInp) {
+      dateInp.addEventListener('change', async (e) => {
+        selectedDateStr = e.target.value || '';
+        activeIdx = 0;
+        framesCache = await fetchEpicFrames(selectedDateStr).catch(() => []);
+        renderModal(framesCache);
+      });
+    }
     modal.querySelector('#epic-close-btn').addEventListener('click', close);
     modal.querySelector('#epic-prev-btn').addEventListener('click', () => {
       stopPlayback();

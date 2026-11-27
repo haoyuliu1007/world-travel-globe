@@ -1,0 +1,391 @@
+{
+  "schemaVersion": "5.0.0",
+  "generatedAt": "2026-11-27T16:56:11.331Z",
+  "methodology": "Odd-year climatological normal fit vs even-year holdout validation (2015-2024 representative series)",
+  "coverage": {
+    "totalDestinationsInAtlas": 722,
+    "calibratedSubsetCount": 23,
+    "blossomBenchmarks": 13,
+    "autumnBenchmarks": 11
+  },
+  "models": {
+    "blossom": {
+      "name": "Thermal-Latitude Spring Bloom Index",
+      "params": {
+        "intercept": 131.732,
+        "slope": 1.215
+      },
+      "holdoutMaeDays": 2.89,
+      "holdoutRmseDays": 3.64
+    },
+    "autumn": {
+      "name": "Autumn Cooling-Elevation-Photoperiod Index",
+      "params": {
+        "intercept": 266.598,
+        "slope": 0.911
+      },
+      "holdoutMaeDays": 4.84,
+      "holdoutRmseDays": 6.03
+    }
+  },
+  "calibratedById": {
+    "cn-wuhan": {
+      "blossom": {
+        "id": "cn-wuhan",
+        "name": "Wuhan (Cherry Blossom)",
+        "predictedPeakDoy": 78,
+        "predictedMonth": 3,
+        "predictedDayLabel": "3/19",
+        "observedHoldoutMeanDoy": 78,
+        "observedMonth": 3,
+        "observedDayLabel": "3/19",
+        "holdoutMaeDays": 1.8,
+        "uncertaintyDays": 3,
+        "source": "Wuhan University / CMA Public Archive"
+      }
+    },
+    "cn-nanjing": {
+      "blossom": {
+        "id": "cn-nanjing",
+        "name": "Nanjing (Xuanwu Cherry)",
+        "predictedPeakDoy": 83,
+        "predictedMonth": 3,
+        "predictedDayLabel": "3/24",
+        "observedHoldoutMeanDoy": 81,
+        "observedMonth": 3,
+        "observedDayLabel": "3/22",
+        "holdoutMaeDays": 2.6,
+        "uncertaintyDays": 4,
+        "source": "CMA Jiangsu Public Archive"
+      }
+    },
+    "cn-hangzhou": {
+      "blossom": {
+        "id": "cn-hangzhou",
+        "name": "Hangzhou (West Lake Peach/Cherry)",
+        "predictedPeakDoy": 75,
+        "predictedMonth": 3,
+        "predictedDayLabel": "3/16",
+        "observedHoldoutMeanDoy": 75,
+        "observedMonth": 3,
+        "observedDayLabel": "3/16",
+        "holdoutMaeDays": 1.4,
+        "uncertaintyDays": 3,
+        "source": "Zhejiang Meteorological Archive"
+      }
+    },
+    "cn-linzhi": {
+      "blossom": {
+        "id": "cn-linzhi",
+        "name": "Nyingchi (Wild Peach Valley)",
+        "predictedPeakDoy": 94,
+        "predictedMonth": 4,
+        "predictedDayLabel": "4/4",
+        "observedHoldoutMeanDoy": 88,
+        "observedMonth": 3,
+        "observedDayLabel": "3/29",
+        "holdoutMaeDays": 6.4,
+        "uncertaintyDays": 10,
+        "source": "Tibet Tourism / CMA Climatology"
+      }
+    },
+    "jp-kanto-tokyo": {
+      "blossom": {
+        "id": "jp-kanto-tokyo",
+        "name": "Tokyo (Yasukuni Somei-Yoshino)",
+        "predictedPeakDoy": 82,
+        "predictedMonth": 3,
+        "predictedDayLabel": "3/23",
+        "observedHoldoutMeanDoy": 84,
+        "observedMonth": 3,
+        "observedDayLabel": "3/25",
+        "holdoutMaeDays": 3,
+        "uncertaintyDays": 5,
+        "source": "Japan Meteorological Agency (JMA)"
+      }
+    },
+    "jp-kansai-kyoto": {
+      "blossom": {
+        "id": "jp-kansai-kyoto",
+        "name": "Kyoto (Somei-Yoshino Full Bloom)",
+        "predictedPeakDoy": 85,
+        "predictedMonth": 3,
+        "predictedDayLabel": "3/26",
+        "observedHoldoutMeanDoy": 89,
+        "observedMonth": 3,
+        "observedDayLabel": "3/30",
+        "holdoutMaeDays": 4.2,
+        "uncertaintyDays": 7,
+        "source": "Japan Meteorological Agency (JMA)"
+      },
+      "autumn": {
+        "id": "jp-kansai-kyoto",
+        "name": "Kyoto (Arashiyama / Tofuku-ji Momiji)",
+        "predictedPeakDoy": 321,
+        "predictedMonth": 11,
+        "predictedDayLabel": "11/17",
+        "observedHoldoutMeanDoy": 327,
+        "observedMonth": 11,
+        "observedDayLabel": "11/23",
+        "holdoutMaeDays": 6.4,
+        "uncertaintyDays": 10,
+        "source": "Japan Meteorological Agency (JMA)"
+      }
+    },
+    "jp-kansai-nara-yoshino": {
+      "blossom": {
+        "id": "jp-kansai-nara-yoshino",
+        "name": "Yoshino Lower Slope (Sakura)",
+        "predictedPeakDoy": 94,
+        "predictedMonth": 4,
+        "predictedDayLabel": "4/4",
+        "observedHoldoutMeanDoy": 96,
+        "observedMonth": 4,
+        "observedDayLabel": "4/6",
+        "holdoutMaeDays": 2.4,
+        "uncertaintyDays": 4,
+        "source": "Nara / Yoshinoyama Archive"
+      }
+    },
+    "jp-kanto-fuji-hakone": {
+      "blossom": {
+        "id": "jp-kanto-fuji-hakone",
+        "name": "Kawaguchiko Fuji (Sakura)",
+        "predictedPeakDoy": 101,
+        "predictedMonth": 4,
+        "predictedDayLabel": "4/11",
+        "observedHoldoutMeanDoy": 104,
+        "observedMonth": 4,
+        "observedDayLabel": "4/14",
+        "holdoutMaeDays": 2.8,
+        "uncertaintyDays": 5,
+        "source": "JMA Yamanashi Normal"
+      }
+    },
+    "kr-mainland-seoul": {
+      "blossom": {
+        "id": "kr-mainland-seoul",
+        "name": "Seoul (Yeouido Cherry Blossom)",
+        "predictedPeakDoy": 96,
+        "predictedMonth": 4,
+        "predictedDayLabel": "4/6",
+        "observedHoldoutMeanDoy": 95,
+        "observedMonth": 4,
+        "observedDayLabel": "4/5",
+        "holdoutMaeDays": 2.6,
+        "uncertaintyDays": 4,
+        "source": "Korea Meteorological Admin (KMA)"
+      }
+    },
+    "us-ne-metro-washington-philadelphia": {
+      "blossom": {
+        "id": "us-ne-metro-washington-philadelphia",
+        "name": "Washington DC (Tidal Basin Peak)",
+        "predictedPeakDoy": 89,
+        "predictedMonth": 3,
+        "predictedDayLabel": "3/30",
+        "observedHoldoutMeanDoy": 88,
+        "observedMonth": 3,
+        "observedDayLabel": "3/29",
+        "holdoutMaeDays": 2.2,
+        "uncertaintyDays": 4,
+        "source": "US National Park Service (NPS)"
+      }
+    },
+    "jp-hokkaido-hakodate-toya": {
+      "blossom": {
+        "id": "jp-hokkaido-hakodate-toya",
+        "name": "Hakodate (Goryokaku Sakura)",
+        "predictedPeakDoy": 120,
+        "predictedMonth": 4,
+        "predictedDayLabel": "4/30",
+        "observedHoldoutMeanDoy": 121,
+        "observedMonth": 5,
+        "observedDayLabel": "5/1",
+        "holdoutMaeDays": 2.6,
+        "uncertaintyDays": 4,
+        "source": "Japan Meteorological Agency (JMA)"
+      }
+    },
+    "jp-hokkaido-sapporo-otaru": {
+      "blossom": {
+        "id": "jp-hokkaido-sapporo-otaru",
+        "name": "Sapporo (Maruyama Sakura)",
+        "predictedPeakDoy": 124,
+        "predictedMonth": 5,
+        "predictedDayLabel": "5/4",
+        "observedHoldoutMeanDoy": 125,
+        "observedMonth": 5,
+        "observedDayLabel": "5/5",
+        "holdoutMaeDays": 2.8,
+        "uncertaintyDays": 5,
+        "source": "Japan Meteorological Agency (JMA)"
+      }
+    },
+    "benelux-amsterdam-tulip-fields": {
+      "blossom": {
+        "id": "benelux-amsterdam-tulip-fields",
+        "name": "Keukenhof / Bollenstreek (Tulip Peak)",
+        "predictedPeakDoy": 110,
+        "predictedMonth": 4,
+        "predictedDayLabel": "4/20",
+        "observedHoldoutMeanDoy": 108,
+        "observedMonth": 4,
+        "observedDayLabel": "4/18",
+        "holdoutMaeDays": 2.8,
+        "uncertaintyDays": 5,
+        "source": "KNMI / Keukenhof Seasonal Archive"
+      }
+    },
+    "ca-banff-lake-louise-moraine": {
+      "autumn": {
+        "id": "ca-banff-lake-louise-moraine",
+        "name": "Lake Louise / Moraine (Golden Larch)",
+        "predictedPeakDoy": 260,
+        "predictedMonth": 9,
+        "predictedDayLabel": "9/17",
+        "observedHoldoutMeanDoy": 265,
+        "observedMonth": 9,
+        "observedDayLabel": "9/22",
+        "holdoutMaeDays": 5,
+        "uncertaintyDays": 8,
+        "source": "Parks Canada Seasonal Archive"
+      }
+    },
+    "cn-kanas": {
+      "autumn": {
+        "id": "cn-kanas",
+        "name": "Kanas & Hemu (Birch / Larch)",
+        "predictedPeakDoy": 268,
+        "predictedMonth": 9,
+        "predictedDayLabel": "9/25",
+        "observedHoldoutMeanDoy": 267,
+        "observedMonth": 9,
+        "observedDayLabel": "9/24",
+        "holdoutMaeDays": 2.2,
+        "uncertaintyDays": 4,
+        "source": "Altay Meteorological / Scenic Archive"
+      }
+    },
+    "us-or-co-aspen-san-juan": {
+      "autumn": {
+        "id": "us-or-co-aspen-san-juan",
+        "name": "Aspen / Maroon Bells (Aspen Peak)",
+        "predictedPeakDoy": 277,
+        "predictedMonth": 10,
+        "predictedDayLabel": "10/4",
+        "observedHoldoutMeanDoy": 271,
+        "observedMonth": 9,
+        "observedDayLabel": "9/28",
+        "holdoutMaeDays": 6,
+        "uncertaintyDays": 9,
+        "source": "Colorado Forest Service / USDA"
+      }
+    },
+    "us-ne-nature-stowe-green-mountains": {
+      "autumn": {
+        "id": "us-ne-nature-stowe-green-mountains",
+        "name": "Stowe Vermont (Sugar Maple Peak)",
+        "predictedPeakDoy": 291,
+        "predictedMonth": 10,
+        "predictedDayLabel": "10/18",
+        "observedHoldoutMeanDoy": 279,
+        "observedMonth": 10,
+        "observedDayLabel": "10/6",
+        "holdoutMaeDays": 12,
+        "uncertaintyDays": 18,
+        "source": "Vermont Foliage / NOAA Archive"
+      }
+    },
+    "jp-hokuriku-karuizawa-matsumoto": {
+      "autumn": {
+        "id": "jp-hokuriku-karuizawa-matsumoto",
+        "name": "Karuizawa (Highland Maple Peak)",
+        "predictedPeakDoy": 298,
+        "predictedMonth": 10,
+        "predictedDayLabel": "10/25",
+        "observedHoldoutMeanDoy": 299,
+        "observedMonth": 10,
+        "observedDayLabel": "10/26",
+        "holdoutMaeDays": 2.4,
+        "uncertaintyDays": 4,
+        "source": "JMA Nagano Koyo Archive"
+      }
+    },
+    "jp-hokuriku-shirakawago-takayama": {
+      "autumn": {
+        "id": "jp-hokuriku-shirakawago-takayama",
+        "name": "Shirakawa-go & Takayama (Autumn)",
+        "predictedPeakDoy": 303,
+        "predictedMonth": 10,
+        "predictedDayLabel": "10/30",
+        "observedHoldoutMeanDoy": 303,
+        "observedMonth": 10,
+        "observedDayLabel": "10/30",
+        "holdoutMaeDays": 2.4,
+        "uncertaintyDays": 4,
+        "source": "JMA Gifu Koyo Archive"
+      }
+    },
+    "at-hallstatt-gosau": {
+      "autumn": {
+        "id": "at-hallstatt-gosau",
+        "name": "Hallstatt & Gosausee (Alpine Larch/Beech)",
+        "predictedPeakDoy": 291,
+        "predictedMonth": 10,
+        "predictedDayLabel": "10/18",
+        "observedHoldoutMeanDoy": 292,
+        "observedMonth": 10,
+        "observedDayLabel": "10/19",
+        "holdoutMaeDays": 2.2,
+        "uncertaintyDays": 4,
+        "source": "ZAMG / GeoSphere Austria"
+      }
+    },
+    "cn-jiuzhaigou": {
+      "autumn": {
+        "id": "cn-jiuzhaigou",
+        "name": "Jiuzhaigou (Colorful Forest Peak)",
+        "predictedPeakDoy": 288,
+        "predictedMonth": 10,
+        "predictedDayLabel": "10/15",
+        "observedHoldoutMeanDoy": 295,
+        "observedMonth": 10,
+        "observedDayLabel": "10/22",
+        "holdoutMaeDays": 7,
+        "uncertaintyDays": 11,
+        "source": "Sichuan Forestry / Scenic Archive"
+      }
+    },
+    "cn-beijing": {
+      "autumn": {
+        "id": "cn-beijing",
+        "name": "Beijing (Fragrant Hills Smoke Tree)",
+        "predictedPeakDoy": 310,
+        "predictedMonth": 11,
+        "predictedDayLabel": "11/6",
+        "observedHoldoutMeanDoy": 305,
+        "observedMonth": 11,
+        "observedDayLabel": "11/1",
+        "holdoutMaeDays": 4.8,
+        "uncertaintyDays": 8,
+        "source": "Beijing Meteorological Bureau"
+      }
+    },
+    "cn-wuyuan-jdz": {
+      "autumn": {
+        "id": "cn-wuyuan-jdz",
+        "name": "Wuyuan (Shicheng Red Maple Peak)",
+        "predictedPeakDoy": 325,
+        "predictedMonth": 11,
+        "predictedDayLabel": "11/21",
+        "observedHoldoutMeanDoy": 323,
+        "observedMonth": 11,
+        "observedDayLabel": "11/19",
+        "holdoutMaeDays": 2.8,
+        "uncertaintyDays": 5,
+        "source": "Jiangxi Meteorological Bureau"
+      }
+    }
+  }
+}

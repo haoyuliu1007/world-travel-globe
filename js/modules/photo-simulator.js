@@ -11,6 +11,16 @@
   };
   const FOCAL_PRESETS = [14, 24, 35, 50, 85, 135, 200, 400];
   const ASPECT_RATIOS = ['native', '3:2', '4:3', '16:9', '1:1'];
+  const SCENE_PRESETS = {
+    sunrise_sunset: { id: 'sunrise_sunset', labelZh: '日出/日落黄金光', labelEn: 'Sunrise / Sunset', sunWeight: 0.45, cloudWeight: 0.3, darkWeight: 0, moonWeight: 0.05, windWeight: 0.2, idealFocalMm: 24 },
+    mountain: { id: 'mountain', labelZh: '雪山/日照金山', labelEn: 'Alpine / Alpenglow', sunWeight: 0.4, cloudWeight: 0.3, darkWeight: 0, moonWeight: 0.05, windWeight: 0.25, idealFocalMm: 70 },
+    city_night: { id: 'city_night', labelZh: '城市蓝调/夜景', labelEn: 'City Blue Hour', sunWeight: 0.35, cloudWeight: 0.25, darkWeight: 0.2, moonWeight: 0.05, windWeight: 0.15, idealFocalMm: 35 },
+    milky_way: { id: 'milky_way', labelZh: '银河/暗夜星空', labelEn: 'Milky Way / Astro', sunWeight: 0.15, cloudWeight: 0.3, darkWeight: 0.35, moonWeight: 0.2, windWeight: 0, idealFocalMm: 14 },
+    coast: { id: 'coast', labelZh: '海岸/灯塔慢门', labelEn: 'Coast / Seascape', sunWeight: 0.35, cloudWeight: 0.25, darkWeight: 0.05, moonWeight: 0.05, windWeight: 0.3, idealFocalMm: 24 },
+    blossom: { id: 'blossom', labelZh: '花海/春樱人像', labelEn: 'Spring Blossoms', sunWeight: 0.35, cloudWeight: 0.25, darkWeight: 0, moonWeight: 0, windWeight: 0.4, idealFocalMm: 50 },
+    snow: { id: 'snow', labelZh: '雪景/雾凇极寒', labelEn: 'Snow / Frost', sunWeight: 0.35, cloudWeight: 0.25, darkWeight: 0, moonWeight: 0.05, windWeight: 0.35, idealFocalMm: 35 },
+    architecture: { id: 'architecture', labelZh: '建筑几何光影', labelEn: 'Architecture Light', sunWeight: 0.45, cloudWeight: 0.35, darkWeight: 0.05, moonWeight: 0, windWeight: 0.15, idealFocalMm: 24 }
+  };
   const horizonCache = new Map();
   const weatherCache = new Map();
   const WEATHER_TTL_MS = 900000;
@@ -27,6 +37,7 @@
     orientation: 'landscape',
     aspectOverride: 'native',
     observerHeightM: 1.6,
+    sceneType: 'sunrise_sunset',
     customW: 36.0,
     customH: 24.0
   };
@@ -343,6 +354,139 @@
         Math.cos(dR) - Math.sin(lat1) * Math.sin(lat2)
       );
     return [(lon2 / DEG2RAD + 540) % 360 - 180, lat2 / DEG2RAD];
+  }
+
+  /**
+   * Computes observer vs distant high-peak alpenglow illumination offset.
+   * Distant peaks receive sunrise earlier and lose sunset later than valley spots.
+   */
+  function computePeakAlpenglowEstimate(observerElevM, peakElevM, sunriseDate, sunsetDate) {
+    const obsM = Number(observerElevM) || 0;
+    const peakM = Number(peakElevM) || obsM;
+    const diffM = Math.max(0, peakM - obsM);
+    const leadMinutes = diffM > 50 ? Math.min(18, Math.max(2, Math.round(0.24 * Math.sqrt(diffM)))) : 0;
+    const addMin = (dt, dMin) => (dt instanceof Date && !Number.isNaN(dt.getTime()) ? new Date(dt.getTime() + dMin * 60000) : null);
+    return {
+      observerElevM: obsM,
+      peakElevM: peakM,
+      elevationDiffM: diffM,
+      leadMinutes,
+      peakFirstLight: addMin(sunriseDate, -leadMinutes),
+      peakLastLight: addMin(sunsetDate, leadMinutes),
+      note: diffM > 50
+        ? L(`主峰高出机位 ${diffM}m，理论约提前 ${leadMinutes} 分钟受光、延后 ${leadMinutes} 分钟褪红（日照金山窗口）。`, `Target peak rises ${diffM}m higher: ~${leadMinutes} min earlier first light & later alpenglow.`)
+        : L('机位与目标高程相近，受光时刻基本同步。', 'Observer and target share similar elevation; illumination timing is nearly synchronized.'),
+      demDisclaimer: L('基于 ~30–90m Terrarium DEM 网格估算，未计入局地云层遮挡与大气折射。', 'Estimated from ~30–90m Terrarium DEM grids; ignores local clouds and refraction.')
+    };
+  }
+
+  /**
+   * Photo Opportunity Index (0–100) across 8 scene archetypes.
+   * Enforces a strict 14-day forecast guard: live weather is excluded beyond 14 days.
+   */
+  function computePhotoOpportunityIndex(params) {
+    const p = params || {};
+    const sceneKey = SCENE_PRESETS[p.sceneType] ? p.sceneType : 'sunrise_sunset';
+    const preset = SCENE_PRESETS[sceneKey];
+    const sim = p.sim || computeSimulation(p.lat || 0, p.lng || 0, p.dateStr || new Date().toISOString().slice(0, 10), p.minutes ?? 360, p.cameraAzimuth ?? 180);
+
+    const nowDt = p.nowDate instanceof Date ? p.nowDate : new Date();
+    const targetDt = p.dateStr ? new Date(`${p.dateStr}T12:00:00Z`) : nowDt;
+    const daysAhead = Math.round((targetDt.getTime() - nowDt.getTime()) / 86400000);
+    const withinForecastHorizon = daysAhead >= -1 && daysAhead <= 14;
+    const hasWx = withinForecastHorizon && p.weather && (
+      Number.isFinite(Number(p.weather.cloudCover)) ||
+      Number.isFinite(Number(p.weather.precipProb)) ||
+      Number.isFinite(Number(p.weather.windKmh))
+    );
+
+    const sunAlt = sim && sim.sunPos ? sim.sunPos.altitude : 0;
+    const moonIllum = sim && sim.moonIllum ? sim.moonIllum.fraction : 0.5;
+    const astroDark = sim && sim.astroExtras && sim.astroExtras.available ? (sunAlt <= -12 ? 95 : 35) : (sunAlt <= -6 ? 78 : 30);
+
+    let sunScore = 65;
+    if (sceneKey === 'milky_way') {
+      sunScore = sunAlt <= -15 ? 96 : (sunAlt <= -10 ? 75 : 22);
+    } else if (sceneKey === 'city_night') {
+      sunScore = (sunAlt >= -8 && sunAlt <= 2) ? 95 : (sunAlt < -8 ? 78 : 42);
+    } else {
+      sunScore = (sunAlt >= -3 && sunAlt <= 14) ? 94 : (sunAlt > 14 && sunAlt <= 35 ? 72 : 38);
+    }
+    if (sim && sim.lightRelation && (sim.lightRelation.badge.includes('顺') || sim.lightRelation.badge.includes('侧') || /Front|Side/i.test(sim.lightRelation.badge))) {
+      sunScore = Math.min(100, sunScore + 6);
+    }
+
+    const positiveDrivers = [];
+    const negativeDrivers = [];
+    if (sunScore >= 80) positiveDrivers.push(L('太阳/蓝调角度契合主题', 'Optimal solar / twilight angle'));
+    else negativeDrivers.push(L('当前时刻非典型黄金/暗夜光角', 'Off-peak solar elevation for this scene'));
+
+    let cloudScore = 70;
+    let windScore = 78;
+    const moonScore = sceneKey === 'milky_way' ? Math.round((1 - moonIllum) * 100) : 75;
+
+    if (hasWx) {
+      const cc = Number(p.weather.cloudCover);
+      const pop = Number(p.weather.precipProb) || 0;
+      const wind = Number(p.weather.windKmh) || 10;
+      if (sceneKey === 'sunrise_sunset' || sceneKey === 'mountain') {
+        cloudScore = (cc >= 20 && cc <= 60) ? 94 : (cc < 20 ? 82 : Math.max(20, 100 - cc));
+      } else if (sceneKey === 'milky_way') {
+        cloudScore = Math.max(10, 100 - cc * 1.1);
+      } else {
+        cloudScore = Math.max(25, 95 - cc * 0.65);
+      }
+      if (pop >= 50) {
+        cloudScore = Math.max(12, cloudScore - 30);
+        negativeDrivers.push(L(`降水概率较高 (${pop}%)`, `High precip probability (${pop}%)`));
+      } else if (cc <= 65) {
+        positiveDrivers.push(L(`预报云量 ${cc}% 利于成片`, `Forecast cloud ${cc}% favors framing`));
+      } else {
+        negativeDrivers.push(L(`厚云遮挡风险 (${cc}%)`, `Heavy cloud cover (${cc}%)`));
+      }
+      windScore = wind <= 15 ? 92 : wind <= 30 ? 72 : 42;
+      if (wind > 30) negativeDrivers.push(L(`阵风较强 (${wind} km/h)`, `Strong wind (${wind} km/h)`));
+    }
+
+    if (sceneKey === 'milky_way') {
+      if (moonIllum <= 0.25) positiveDrivers.push(L(`弱月光干扰 (${Math.round(moonIllum * 100)}%)`, `Low moonlight interference (${Math.round(moonIllum * 100)}%)`));
+      else negativeDrivers.push(L(`月光偏亮 (${Math.round(moonIllum * 100)}%) 压制银河反差`, `Bright moon (${Math.round(moonIllum * 100)}%) washes contrast`));
+    }
+
+    const wSum = preset.sunWeight + (hasWx ? preset.cloudWeight + preset.windWeight : 0) + preset.darkWeight + preset.moonWeight;
+    const rawScore = (
+      sunScore * preset.sunWeight +
+      (hasWx ? cloudScore * preset.cloudWeight + windScore * preset.windWeight : 0) +
+      astroDark * preset.darkWeight +
+      moonScore * preset.moonWeight
+    ) / (wSum || 1);
+
+    const score = Math.max(5, Math.min(100, Math.round(rawScore)));
+    const sunriseDt = sim && sim.times ? sim.times.sunrise : null;
+    const sunsetDt = sim && sim.times ? sim.times.sunset : null;
+    const tzOff = sim ? sim.utcOffsetMin : 0;
+    const recommendedTime = sceneKey === 'milky_way'
+      ? '23:30'
+      : (sceneKey === 'city_night' ? fmtTime(sim && sim.times ? sim.times.dusk : null, tzOff) : fmtTime(sunriseDt || sunsetDt, tzOff));
+    const backupWindow = sunsetDt ? `${fmtTime(sunsetDt, tzOff)} ± 25m` : '18:00 ± 30m';
+
+    return {
+      score,
+      sceneType: sceneKey,
+      sceneLabel: L(preset.labelZh, preset.labelEn),
+      recommendedTime,
+      recommendedBearing: sim && sim.sunrisePos ? Math.round(sim.sunrisePos.azimuth) : (Number(p.cameraAzimuth) || 180),
+      recommendedFocalMm: preset.idealFocalMm,
+      positiveDrivers,
+      negativeDrivers,
+      backupWindow,
+      dataQuality: hasWx ? 'astronomy+14d-forecast' : 'astronomy+archive-only',
+      weatherIncluded: Boolean(hasWx),
+      daysAhead,
+      indexDisclaimer: withinForecastHorizon
+        ? L('评分结合太阳/月相星历、DEM 朝向与 14 天内实况云风预报，仅作构图窗口参考。', 'Combines solar/lunar ephemeris, DEM bearing & <=14-day live weather; advisory only.')
+        : L('所选日期超出 14 天可靠气象预报上限，已自动屏蔽实时天气因子，仅依据天文星历、地形朝向与历史节律评估，绝不伪造远期预报。', 'Date exceeds the 14-day reliable weather horizon: live weather excluded; computed strictly from astronomy & terrain norms (never fabricated).')
+    };
   }
 
   function computeSimulation(lat, lng, dateStr, minutes, cameraAzimuth, utcOffsetMin) {
@@ -763,6 +907,21 @@
 
       ${mwCardHtml}
 
+      <div class="sim-card" id="sim-poi-box" style="margin-bottom:8px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap;">
+          <strong>🎯 ${esc(L('KAIROS 拍摄窗口机会指数', 'KAIROS Photo Opportunity Index'))} <span id="sim-poi-score" class="mono-num" style="color:var(--accent-primary);">--/100</span></strong>
+          <select id="sim-poi-scene" class="sim-input" style="width:auto;height:28px;font-size:11.5px;" aria-label="${esc(L('拍摄主题', 'Photo scene'))}">
+            ${Object.values(SCENE_PRESETS).map((sc) => `<option value="${sc.id}" ${state.sceneType === sc.id ? 'selected' : ''}>${esc(L(sc.labelZh, sc.labelEn))}</option>`).join('')}
+          </select>
+        </div>
+        <div id="sim-poi-body" style="font-size:11.5px;line-height:1.55;margin-top:6px;"></div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">
+          <button class="mini-action-pill" id="sim-add-trip-btn" type="button">➕ ${esc(L('加入当前行程', 'Add Window to Trip'))}</button>
+          <button class="mini-action-pill" id="sim-save-preset-btn" type="button">★ ${esc(L('保存机位预设', 'Save Photo Preset'))}</button>
+          <button class="mini-action-pill" id="sim-share-window-btn" type="button">↗ ${esc(L('分享 / 发起投票', 'Share / Poll'))}</button>
+        </div>
+      </div>
+
       <div class="sim-card" id="sim-advice-box">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
           <strong>${esc(L('拍摄窗口综合建议', 'Shooting Window Advice'))}</strong>
@@ -844,7 +1003,99 @@
       if (cachedWx && Date.now() - cachedWx.ts < WEATHER_TTL_MS) {
         renderWeatherAdvice(cachedWx.data);
       }
+      renderPoiCard(cachedWx ? cachedWx.data : null);
     };
+
+    const renderPoiCard = (liveWx) => {
+      const scoreEl = containerEl.querySelector('#sim-poi-score');
+      const bodyEl = containerEl.querySelector('#sim-poi-body');
+      if (!scoreEl || !bodyEl || !document.body.contains(bodyEl)) return;
+      let wxSlice = null;
+      if (liveWx && liveWx.hourly && Array.isArray(liveWx.hourly.time)) {
+        const targetPrefix = `${state.dateStr}T${String(Math.floor(state.minutes / 60)).padStart(2, '0')}`;
+        const idx = liveWx.hourly.time.findIndex((t) => t.startsWith(targetPrefix));
+        if (idx >= 0) {
+          wxSlice = {
+            cloudCover: liveWx.hourly.cloud_cover[idx],
+            precipProb: liveWx.hourly.precipitation_probability ? liveWx.hourly.precipitation_probability[idx] : 0,
+            windKmh: liveWx.hourly.wind_speed_10m ? liveWx.hourly.wind_speed_10m[idx] : 10
+          };
+        }
+      }
+      const curSim = computeSimulation(coords[1], coords[0], state.dateStr, state.minutes, state.cameraAzimuth, tzOff);
+      const poi = computePhotoOpportunityIndex({
+        lat: coords[1],
+        lng: coords[0],
+        dateStr: state.dateStr,
+        minutes: state.minutes,
+        cameraAzimuth: state.cameraAzimuth,
+        sceneType: state.sceneType,
+        sim: curSim,
+        weather: wxSlice
+      });
+      scoreEl.textContent = `${poi.score}/100`;
+      bodyEl.innerHTML = `
+        <div><strong>${esc(L('推荐窗口：', 'Window: '))}</strong><span class="mono-num">${esc(poi.recommendedTime)}</span> · ${esc(L('建议焦段', 'Lens'))} <span class="mono-num">${poi.recommendedFocalMm}mm</span> · ${esc(L('备选', 'Backup'))} <span class="mono-num">${esc(poi.backupWindow)}</span></div>
+        ${poi.positiveDrivers.length ? `<div style="color:#34d399;margin-top:2px;">✓ ${esc(poi.positiveDrivers.join(' · '))}</div>` : ''}
+        ${poi.negativeDrivers.length ? `<div style="color:#fbbf24;margin-top:2px;">! ${esc(poi.negativeDrivers.join(' · '))}</div>` : ''}
+        <div style="font-size:10.5px;color:var(--text-muted);margin-top:3px;">${esc(poi.indexDisclaimer)}</div>
+      `;
+    };
+
+    renderPoiCard(null);
+    const poiSceneSel = containerEl.querySelector('#sim-poi-scene');
+    if (poiSceneSel) {
+      poiSceneSel.addEventListener('change', (e) => {
+        state.sceneType = e.target.value;
+        const cw = weatherCache.get(wxKey);
+        renderPoiCard(cw ? cw.data : null);
+      });
+    }
+    const addTripBtn = containerEl.querySelector('#sim-add-trip-btn');
+    if (addTripBtn) {
+      addTripBtn.addEventListener('click', () => {
+        if (global.TripPlanner && typeof global.TripPlanner.addSpotToActiveTrip === 'function' && activeSpot) {
+          global.TripPlanner.addSpotToActiveTrip(dest, Object.assign({}, activeSpot, {
+            bestTime: `${state.dateStr} ${String(Math.floor(state.minutes / 60)).padStart(2, '0')}:${String(state.minutes % 60).padStart(2, '0')}`
+          }));
+          addTripBtn.textContent = `✓ ${L('已加入行程', 'Added to Trip')}`;
+        }
+      });
+    }
+    const savePresetBtn = containerEl.querySelector('#sim-save-preset-btn');
+    if (savePresetBtn) {
+      savePresetBtn.addEventListener('click', () => {
+        try {
+          const raw = localStorage.getItem('wtg_photo_presets_v5');
+          const list = raw ? JSON.parse(raw) : [];
+          list.unshift({
+            destId: dest.id,
+            spotName: activeSpot ? activeSpot.name : dest.name,
+            dateStr: state.dateStr,
+            minutes: state.minutes,
+            cameraAzimuth: state.cameraAzimuth,
+            focalMm: state.focalMm,
+            sensorKey: state.sensorKey,
+            sceneType: state.sceneType,
+            savedAt: new Date().toISOString()
+          });
+          localStorage.setItem('wtg_photo_presets_v5', JSON.stringify(list.slice(0, 30)));
+          savePresetBtn.textContent = `✓ ${L('已保存预设', 'Preset Saved')}`;
+        } catch (e) { /* ignore storage restrictions */ }
+      });
+    }
+    const shareWinBtn = containerEl.querySelector('#sim-share-window-btn');
+    if (shareWinBtn) {
+      shareWinBtn.addEventListener('click', () => {
+        if (global.ShareCenter && typeof global.ShareCenter.open === 'function') {
+          global.ShareCenter.open({ type: 'photo_window', dest, spot: activeSpot, state: Object.assign({}, state) });
+        } else if (global.LazyLoader && typeof global.LazyLoader.loadScript === 'function') {
+          global.LazyLoader.loadScript('js/lazy/share-center.js').then(() => {
+            if (global.ShareCenter) global.ShareCenter.open({ type: 'photo_window', dest, spot: activeSpot, state: Object.assign({}, state) });
+          }).catch(() => {});
+        }
+      });
+    }
 
     containerEl.querySelector('#sim-spot-select').addEventListener('change', (e) => {
       state.spotIdx = Number(e.target.value);
@@ -996,11 +1247,13 @@
       const cachedWx = weatherCache.get(wxKey);
       if (cachedWx && Date.now() - cachedWx.ts < WEATHER_TTL_MS) {
         renderWeatherAdvice(cachedWx.data);
+        renderPoiCard(cachedWx.data);
       } else {
         try {
           const live = await global.WeatherService.fetchLiveWeather(coords[1], coords[0]);
           weatherCache.set(wxKey, { data: live, ts: Date.now() });
           renderWeatherAdvice(live);
+          renderPoiCard(live);
         } catch (e) {
           if (document.body.contains(wxAdviceEl)) {
             wxAdviceEl.innerHTML = `<span class="source-tag empirical">${esc(L('离线模式', 'Offline Mode'))}</span> ${esc(L('气象预报暂不可用，天文太阳/月相计算仍可离线精确运行。', 'Weather forecast unavailable; Sun & Moon calculations work offline.'))}`;
@@ -1014,11 +1267,14 @@
     SENSOR_PRESETS,
     FOCAL_PRESETS,
     ASPECT_RATIOS,
+    SCENE_PRESETS,
     estimateUtcOffsetMinutes,
     formatUtcOffset,
     localWallTimeToUtcDate,
     formatTimeInOffset,
     computeSimulation,
+    computePhotoOpportunityIndex,
+    computePeakAlpenglowEstimate,
     classifyLightAngle,
     computeLensFov,
     computeViewfinderProjection,

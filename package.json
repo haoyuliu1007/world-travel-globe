@@ -1,8 +1,8 @@
 {
   "name": "world-travel-globe",
-  "version": "4.5.0",
+  "version": "5.0.0",
   "private": true,
-  "description": "World Travel Globe V4.5.0 — Engineering Hardening, IANA Timezones, Spherical Terminator, Resvg 1200x630 PNG OG Cards, Full-Disk EPIC & CRDT Join-Semilattice.",
+  "description": "KAIROS. — World Travel Atlas V5.0 (Cloudflare Workers, D1 Auth/Collab, Multimodal Planner, Tier A/B/C Phenology, Photo Opportunity Index & 30-Chapter Trilingual Manual).",
   "scripts": {
     "build": "node build-dist.js",
     "audit": "node scripts/audit-data.js",

@@ -4,6 +4,8 @@ const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
 
+const { runPhenologyValidation } = require('./validate-phenology');
+
 const rootDir = path.resolve(__dirname, '..');
 const outDir = path.join(rootDir, 'data', 'enrichment');
 const outPath = path.join(outDir, 'atlas-enrichment.json');
@@ -75,7 +77,12 @@ function main() {
     }
   }
 
+  const validationReport = runPhenologyValidation(true);
+  const calibratedById = validationReport.calibratedById || {};
+  const generatedIso = new Date().toISOString();
+
   const byId = {};
+  let tierCounts = { A: 0, B: 0, C: 0 };
   for (const dest of all) {
     const spots = Array.isArray(dest.spots) ? dest.spots : [];
     const textBlob = [
@@ -103,22 +110,50 @@ function main() {
       source: 'empirical-archive'
     }));
 
+    const elevM = parseElevationMeters(dest.elevation);
+    const hasNumericClimate = monthlyClimateSummary.some((c) => Number.isFinite(c.tempMeanC));
+    const cal = calibratedById[dest.id] || null;
+    const phenologyModelTier = cal
+      ? 'C'
+      : (hasNumericClimate && (elevM !== null || landscapeTypes.length > 0))
+        ? 'B'
+        : 'A';
+    tierCounts[phenologyModelTier] += 1;
+
+    const missingFields = [];
+    if (elevM === null) missingFields.push('elevationM');
+    if (!hasNumericClimate) missingFields.push('monthlyClimateTemp');
+    if (!spots.length) missingFields.push('spots');
+
     const outlierSpotsCount = outlierCountByCity.get(dest.id) || 0;
+    const coords = Array.isArray(dest.coords) ? dest.coords : [null, null];
     byId[dest.id] = {
       id: dest.id,
-      elevationM: parseElevationMeters(dest.elevation),
+      elevationM: elevM,
       landscapeTypes,
       peakMonths,
       comfortBudgetRmb: sumBudgetTier(dest.budget && dest.budget.comfort),
       luxuryBudgetRmb: sumBudgetTier(dest.budget && dest.budget.luxury),
       budgetSource: 'archive-estimate',
       monthlyClimateSummary,
+      phenologyModelTier,
+      calibratedPhenology: cal || undefined,
+      provenance: {
+        source: cal ? 'KAIROS Curated Atlas + Benchmark Phenology Archive' : 'KAIROS Curated Travel Atlas Archive',
+        sampleCoords: coords,
+        spatialResolution: cal ? 'city-park-benchmark' : 'destination-centroid',
+        timeCoverage: cal ? '2015-2024 historical normals' : 'climatological multi-year archive',
+        generatedAt: generatedIso,
+        qualityGrade: phenologyModelTier === 'C' ? 'calibrated-subset' : (outlierSpotsCount > 0 ? 'review-flagged' : 'archive-verified'),
+        missingFields,
+        license: 'Project Internal Curated Metadata + Public Meteorological Normals'
+      },
       quality: {
         spotCount: spots.length,
         outlierSpotsCount,
         verificationStatus: outlierSpotsCount > 0 ? 'needs-review' : 'verified-internal',
-        confidence: outlierSpotsCount > 0 ? 'medium' : 'high',
-        source: 'World Travel Globe Curated Atlas (Non-Destructive Layer)'
+        confidence: phenologyModelTier === 'C' ? 'high' : (outlierSpotsCount > 0 ? 'medium' : 'standard'),
+        source: 'KAIROS World Travel Atlas Curated Layer (Non-Destructive)'
       }
     };
   }
@@ -127,11 +162,17 @@ function main() {
   const datasetVersion = `${now.getUTCFullYear()}.${String(now.getUTCMonth() + 1).padStart(2, '0')}.${String(now.getUTCDate()).padStart(2, '0')}`;
 
   const output = {
-    schemaVersion: '4.0.0',
+    schemaVersion: '5.0.0',
     datasetVersion,
-    generatedAt: now.toISOString(),
+    generatedAt: generatedIso,
     nonDestructive: true,
     totalCities: all.length,
+    tierCounts,
+    phenologyValidation: {
+      methodology: validationReport.methodology,
+      coverage: validationReport.coverage,
+      models: validationReport.models
+    },
     byId
   };
 

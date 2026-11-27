@@ -28,3 +28,7 @@
 | **OpenRouteService** | Directions API v2（可选） | OpenRouteService Terms | 免费额度 2,000 req/day，配置 Key 后作为增强路由选项 |
 | **Mapillary** | Graph API v4 & MapillaryJS（可选） | CC BY-SA 4.0 / MIT | 配置免费 Client Token 后提供街景与 360° 全景联动 |
 | **Esri / CartoDB 底图瓦片** | 原有内置底图 | 各底图服务条款 | 保持原有底图源与归属标注 |
+| **OurAirports** | Airport/Runway Dataset | Public Domain | 构建期筛选生成 `data/transport/hubs.json`（722 城最近门户机场 IATA 与距离） |
+| **Frankfurter API (ECB)** | Latest Reference Rates (`api.frankfurter.app`) | MIT / ECB Public Reference | `/api/fx` 多币种行程预算实时参考汇率 |
+| **Playwright Core** | `playwright-core@^1.65.1`（开发依赖） | Apache-2.0 | E2E 多视口仿真与多上下文协同自动化回归测试 |
+| **OpenCV (`cv2` build-time)** | 构建期脚本依赖 | Apache-2.0 | 一次性从品牌原始 PNG 设计稿提取并优化母版矢量轮廓与 Bezier 曲线（不进入运行时产物） |

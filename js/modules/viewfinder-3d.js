@@ -20,6 +20,7 @@
     orientation: 'landscape',
     aspectOverride: 'native',
     bearing: 0,
+    showThirds: true,
     utcOffsetMin: null
   };
 
@@ -171,12 +172,17 @@
         : '';
 
     const orientLabel = state.orientation === 'portrait' ? L('竖构图', 'Portrait') : L('横构图', 'Landscape');
+    const pitchDeg = map && typeof map.getPitch === 'function' ? Math.round(map.getPitch()) : 75;
+    const cropModeChip = proj.mode === 'webgl-digital-crop'
+      ? `<span class="vf-mode-chip tele">${esc(L(`WebGL 数码裁切 · 光学视场 ${proj.appliedMapVFov.toFixed(0)}°`, `WebGL Digital Crop · Optical FOV ${proj.appliedMapVFov.toFixed(0)}°`))}</span>`
+      : optModeChip || `<span class="vf-mode-chip optical">${esc(L(`光学视场 ${proj.appliedMapVFov.toFixed(0)}°`, `Optical FOV ${proj.appliedMapVFov.toFixed(0)}°`))}</span>`;
     hud.innerHTML = `
       <div class="vf-top-bar">
         <div class="vf-title-pill">
           <span class="vf-live-dot"></span>
           <span>${esc(title)}</span>
           <span class="mono-num vf-bearing-chip">${bearing}°</span>
+          <span class="mono-num vf-bearing-chip" id="vf-pitch-badge" title="${esc(L('俯仰倾角', 'Horizon Pitch'))}">↕${pitchDeg}°</span>
         </div>
         <div class="vf-compass-tape" id="vf-compass-tape">
           <div class="vf-tape-center"></div>
@@ -191,15 +197,12 @@
           <span class="vf-corner tr"></span>
           <span class="vf-corner bl"></span>
           <span class="vf-corner br"></span>
-          <div class="vf-thirds-h1"></div>
-          <div class="vf-thirds-h2"></div>
-          <div class="vf-thirds-v1"></div>
-          <div class="vf-thirds-v2"></div>
+          ${state.showThirds ? `<div class="vf-thirds-h1"></div><div class="vf-thirds-h2"></div><div class="vf-thirds-v1"></div><div class="vf-thirds-v2"></div>` : ''}
           <div class="vf-hud-meta-tl mono-num">${state.focalMm}mm · ${esc(lens.sensorLabel)} · ${esc(orientLabel)} (${esc(lens.aspect)})</div>
           <div class="vf-hud-meta-tr mono-num">FOV ${lens.hFov.toFixed(1)}° × ${lens.vFov.toFixed(1)}° · ${esc(L('等效', 'Eq.'))} ${lens.eqFocalMm}mm</div>
           <div class="vf-hud-meta-bl" id="vf-light-badge">${lightRel ? `${esc(lightRel.badge)} · ${esc(lightRel.label)}` : ''}</div>
           <div class="vf-hud-meta-br mono-num">${esc(L('海拔', 'Elev'))} ${esc(elevLabel)} · ${esc(tzBadge)}</div>
-          ${optModeChip ? `<div class="vf-hud-opt-chip">${optModeChip}</div>` : ''}
+          <div class="vf-hud-opt-chip">${cropModeChip}</div>
         </div>
       </div>
 
@@ -220,6 +223,9 @@
           </select>
           <button id="vf-orient-btn" class="vf-focal-btn ${state.orientation === 'portrait' ? 'active' : ''}" type="button">
             ${esc(orientLabel)}
+          </button>
+          <button id="vf-thirds-btn" class="vf-focal-btn ${state.showThirds ? 'active' : ''}" type="button">
+            ${esc(L('九宫格', 'Grid'))}
           </button>
           ${FOCAL_LIST.map((f) => `<button class="vf-focal-btn ${state.focalMm === f ? 'active' : ''}" data-focal="${f}" type="button">${f}mm</button>`).join('')}
         </div>
@@ -244,6 +250,13 @@
       state.sensorKey = e.target.value;
       applyAndRedraw();
     });
+    const thirdsBtn = hud.querySelector('#vf-thirds-btn');
+    if (thirdsBtn) {
+      thirdsBtn.addEventListener('click', () => {
+        state.showThirds = !state.showThirds;
+        renderHud();
+      });
+    }
     hud.querySelector('#vf-aspect-select').addEventListener('change', (e) => {
       state.aspectOverride = e.target.value;
       applyAndRedraw();
@@ -347,10 +360,13 @@
         if (!active) return;
         const tape = document.getElementById('vf-compass-tape');
         const bChip = hud.querySelector('.vf-bearing-chip');
+        const pBadge = document.getElementById('vf-pitch-badge');
         const lightEl = document.getElementById('vf-light-badge');
         const b = Math.round(((map.getBearing() % 360) + 360) % 360);
+        const p = Math.round(map.getPitch ? map.getPitch() : 75);
         state.bearing = b;
         if (bChip) bChip.textContent = `${b}°`;
+        if (pBadge) pBadge.textContent = `↕${p}°`;
         if (global.PhotoSimulator && cachedSim) {
           if (tape) {
             const curLens = currentLens();

@@ -14,7 +14,7 @@ try {
   resvgPkgPath = null;
 }
 
-const OG_CACHE_VER = 'v4.5.3';
+const OG_CACHE_VER = 'v5.0.0';
 const FONT_CANDIDATES = [
   'C:/Windows/Fonts/simhei.ttf',
   '/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc',
@@ -184,7 +184,7 @@ function generateOgSvg(dest) {
   <circle cx="${pinX}" cy="${pinY}" r="6" fill="#E2C07D" stroke="#09090B" stroke-width="2"/>
   <text x="64" y="408" fill="#CBD5E1" font-size="16" font-weight="600" font-family="sans-serif">12-MONTH PHENOLOGY INDEX</text>
   ${barsSvg}
-  <text x="64" y="582" fill="#E2C07D" font-size="18" font-weight="600" font-family="sans-serif">World Travel Globe · 全球旅行地理图鉴</text>
+  <text x="64" y="582" fill="#E8A33D" font-size="18" font-weight="600" font-family="sans-serif">KAIROS. · WORLD TRAVEL ATLAS</text>
   <text x="1136" y="582" text-anchor="end" fill="#94A3B8" font-size="16" font-family="monospace">${SITE_ORIGIN.replace('https://', '')}</text>
 </svg>`;
 }
@@ -196,7 +196,7 @@ function buildDestPageHtml(dest, neighbors, enDict) {
   const coordText = `${Math.abs(lat).toFixed(4)}°${lat >= 0 ? 'N' : 'S'}, ${Math.abs(lng).toFixed(4)}°${lng >= 0 ? 'E' : 'W'}`;
   const canonicalUrl = `${SITE_ORIGIN}/p/${encodeURIComponent(id)}/`;
   const enName = (enDict && enDict[dest.name]) || (enDict && enDict[dest.shortName]) || '';
-  const titleText = `${dest.name}${enName ? ` (${enName})` : ''} · 机位/物候/气候摄影指南 | World Travel Globe`;
+  const titleText = `${dest.name}${enName ? ` (${enName})` : ''} · 机位/物候/气候摄影指南 | KAIROS · World Travel Atlas`;
   const descText = String(dest.heroSummary || dest.subtitle || '').slice(0, 155);
   const spots = Array.isArray(dest.spots) ? dest.spots : [];
   const months = Array.isArray(dest.months) ? dest.months : [];
@@ -213,7 +213,8 @@ function buildDestPageHtml(dest, neighbors, enDict) {
     url: canonicalUrl,
     image: ogImageUrl,
     geo: { '@type': 'GeoCoordinates', latitude: lat, longitude: lng },
-    containedInPlace: { '@type': 'Country', name: dest.country || '' }
+    containedInPlace: { '@type': 'Country', name: dest.country || '' },
+    publisher: { '@type': 'Organization', name: 'KAIROS · World Travel Atlas', url: SITE_ORIGIN }
   };
 
   return `<!DOCTYPE html>
@@ -222,6 +223,7 @@ function buildDestPageHtml(dest, neighbors, enDict) {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${esc(titleText)}</title>
+  <link rel="icon" type="image/svg+xml" href="../../assets/brand/icons/favicon.svg" />
   <meta name="description" content="${esc(descText)}" />
   <link rel="canonical" href="${esc(canonicalUrl)}" />
   <meta property="og:type" content="article" />
@@ -259,7 +261,7 @@ function buildDestPageHtml(dest, neighbors, enDict) {
 <body>
   <main class="wrap">
     <nav class="nav">
-      <span><a href="../../">World Travel Globe</a> / <a href="../">${esc(contLabel || '全球目录')}</a> / ${esc(dest.country || '')}</span>
+      <span><a href="../../">KAIROS. · World Travel Atlas</a> / <a href="../">${esc(contLabel || '全球目录')}</a> / ${esc(dest.country || '')}</span>
       <span class="mono">${esc(coordText)}</span>
     </nav>
     <h1>${esc(dest.name)}${enName ? ` · ${esc(enName)}` : ''}</h1>
@@ -321,13 +323,14 @@ function buildDirectoryHtml(all) {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>全球 722 座目的地索引目录 | World Travel Globe</title>
+  <title>全球 722 座目的地索引目录 | KAIROS · World Travel Atlas</title>
   <meta name="description" content="覆盖全球七大洲 137 个国家和地区、722 座精选目的地与 5,414 个摄影机位的地理目录。" />
   <link rel="canonical" href="${SITE_ORIGIN}/p/" />
+  <link rel="icon" type="image/svg+xml" href="../assets/brand/icons/favicon.svg" />
   <style>
     body{margin:0;background:#070B16;color:#F8FAFC;font-family:system-ui,-apple-system,sans-serif;line-height:1.6}
     .wrap{max-width:1120px;margin:0 auto;padding:28px 18px 64px}
-    a{color:#E2C07D;text-decoration:none}
+    a{color:#E8A33D;text-decoration:none}
     .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;margin-bottom:28px}
     .item{display:flex;flex-direction:column;gap:2px;background:#0F172A;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:10px 12px}
     .item span{font-size:12px;color:#94A3B8}
@@ -335,8 +338,8 @@ function buildDirectoryHtml(all) {
 </head>
 <body>
   <main class="wrap">
-    <p><a href="../">← 返回 3D 交互卫星地球仪</a></p>
-    <h1>World Travel Globe · 全球 ${all.length} 座目的地目录</h1>
+    <p><a href="../">← 返回 KAIROS 3D 交互地球仪</a></p>
+    <h1>KAIROS. · World Travel Atlas · 全球 ${all.length} 座目的地目录</h1>
     ${sections}
   </main>
 </body>
@@ -398,7 +401,8 @@ async function buildSeoPages(allDestinations, distDir, opts) {
   fs.mkdirSync(ogDir, { recursive: true });
   fs.mkdirSync(cacheDir, { recursive: true });
 
-  const fallbackCoverBuf = generateFallbackCoverPng();
+  const brandCoverPath = path.join(rootDir, 'assets', 'brand', 'social', 'og-cover.png');
+  const fallbackCoverBuf = fs.existsSync(brandCoverPath) ? fs.readFileSync(brandCoverPath) : generateFallbackCoverPng();
   fs.writeFileSync(path.join(ogDir, 'cover.png'), fallbackCoverBuf);
 
   const missJobs = [];

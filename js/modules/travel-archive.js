@@ -324,15 +324,31 @@
       wishlist: t('statusWishlist').replace(/^[★\s]+/, '')
     };
 
+    const privCfg = await getPrivacySettings();
+    const journals = await getJournals();
+    const hasCloudSync = Boolean(caps && caps.available && caps.features && caps.features.d1);
+
     view.innerHTML = `
+      <div class="workspace-sticky-nav">
+        <button class="gallery-back-btn" id="ar-sticky-back-btn" type="button">${icon('chevronLeft', 14)} ${esc(t('archiveBack'))}</button>
+        <div class="workspace-sticky-title">KAIROS · ${esc(t('archiveTitle'))}</div>
+        <button class="secondary-btn" id="ar-help-btn" type="button" style="height:30px;padding:0 10px;">?</button>
+      </div>
       <div class="workspace-container">
         <div class="gallery-head">
           <div>
-            <span class="gallery-kicker">PRIVATE TRAVEL ARCHIVE · LOCAL-FIRST & OPTIONAL CLOUD SYNC</span>
+            <span class="gallery-kicker">KAIROS · PRIVATE TRAVEL ARCHIVE · ${privCfg.publicProfile ? 'OPT-IN PUBLIC SHOWCASE' : 'PRIVATE BY DEFAULT'}</span>
             <h2>${esc(t('archiveTitle'))}</h2>
             <p class="gallery-lead">
               ${esc(sharedFootprint ? t('archiveSharedLead') : t('archiveLead'))}
             </p>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;align-items:center;">
+              <button class="mini-action-pill ${privCfg.publicProfile ? 'active' : ''}" id="ar-toggle-privacy" type="button">
+                ${privCfg.publicProfile ? esc(L('🔓 已开启公开主页展示（点击设为私密）', '🔓 Public Showcase On (Set Private)')) : esc(L('🔒 默认完全私密（点击开启精选展示）', '🔒 Private by Default (Opt-in Public)'))}
+              </button>
+              <span class="source-tag empirical">${hasCloudSync ? esc(L('IndexedDB 本地 + D1 可选同步', 'IndexedDB + Optional D1 Sync')) : esc(L('仅本地 IndexedDB 存储', 'Local IndexedDB Only'))}</span>
+              <span class="source-tag astronomy">${esc(L('照片默认剥离 EXIF GPS', 'Canvas EXIF GPS Stripped'))}</span>
+            </div>
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
             ${sharedFootprint ? `<button class="secondary-btn" id="ar-exit-shared-btn" type="button">${esc(t('archiveExitShared'))}</button>` : ''}
@@ -415,8 +431,46 @@
 
           <div>
             <div class="panel-box">
-              <h3>${esc(t('archiveAnnualTitle'))}</h3>
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px;">
+                <h3 style="margin:0;">${esc(t('archiveAnnualTitle'))}</h3>
+                <button class="mini-action-pill" id="ar-annual-poster-btn" type="button">${icon('image', 12)} ${esc(L('生成年度长图', 'Annual Card'))}</button>
+              </div>
               <div class="echarts-box" id="ar-report-chart" style="height:200px;"></div>
+            </div>
+
+            <div class="panel-box" id="ar-journal-box">
+              <h3>${esc(L(`旅行游记与机位打卡 (${journals.length})`, `Travel Journal & Spot Check-ins (${journals.length})`))}</h3>
+              <div style="display:grid;grid-template-columns:1fr 110px 85px 76px;gap:6px;margin-bottom:6px;">
+                <input id="ar-jn-title" class="sim-input" type="text" placeholder="${esc(L('目的地 / 机位名（如：京都清水寺）', 'Spot or city title'))}" />
+                <input id="ar-jn-date" class="sim-input mono-num" type="date" value="${new Date().toISOString().slice(0, 10)}" />
+                <select id="ar-jn-mood" class="sim-input" aria-label="${esc(L('体验心情', 'Mood'))}">
+                  <option value="awed">${esc(L('震撼', 'Awed'))}</option>
+                  <option value="serene">${esc(L('治愈', 'Serene'))}</option>
+                  <option value="inspired">${esc(L('出片', 'Photogenic'))}</option>
+                  <option value="challenging">${esc(L('硬核', 'Gritty'))}</option>
+                </select>
+                <select id="ar-jn-rating" class="sim-input mono-num" aria-label="${esc(L('评分', 'Rating'))}">
+                  <option value="5">5★</option>
+                  <option value="4">4★</option>
+                  <option value="3">3★</option>
+                  <option value="2">2★</option>
+                  <option value="1">1★</option>
+                </select>
+              </div>
+              <div style="display:flex;gap:6px;margin-bottom:8px;">
+                <input id="ar-jn-note" class="sim-input" type="text" placeholder="${esc(L('记录光影、交通体感、避坑或装备建议…', 'Field notes, lighting, transit tips…'))}" />
+                <button id="ar-jn-add" class="primary-btn" type="button" style="white-space:nowrap;">${esc(L('记一笔', 'Save'))}</button>
+              </div>
+              ${journals.slice(0, 12).map((j) => `
+                <div style="padding:7px 9px;border-radius:8px;background:var(--bg-hover);margin-bottom:6px;display:flex;justify-content:space-between;gap:8px;font-size:12px;">
+                  <div>
+                    <strong>${esc(j.title)}</strong> <span class="mono-num" style="color:var(--accent-primary);">${'★'.repeat(j.rating || 5)}</span>
+                    <span class="mono-num" style="color:var(--text-muted);font-size:11px;">· ${esc(j.date)} · ${esc(j.mood || '')}</span>
+                    ${j.note ? `<div style="color:var(--text-secondary);margin-top:2px;">${esc(j.note)}</div>` : ''}
+                  </div>
+                  <button class="icon-btn ar-del-journal" data-id="${esc(j.id)}" type="button" aria-label="Delete">${icon('trash', 12)}</button>
+                </div>
+              `).join('') || `<div style="font-size:11.5px;color:var(--text-muted);">${esc(L('尚无游记，写下你的第一条真实旅途打卡吧。', 'No journal entries yet — log your first check-in.'))}</div>`}
             </div>
 
             <div class="panel-box">
@@ -514,18 +568,63 @@
       });
     }
     const posterBtn = view.querySelector('#ar-poster-btn');
-    if (posterBtn && global.PosterShare) {
-      posterBtn.addEventListener('click', async () => {
-        const m = typeof global.getGlobeMap === 'function' ? global.getGlobeMap() : null;
-        const poster = await global.PosterShare.generateFootprintPoster(stats, activeStatuses, allDests, m);
-        if (poster) global.PosterShare.openPosterModal(poster);
+    const annualPosterBtn = view.querySelector('#ar-annual-poster-btn');
+    const triggerFootprintPoster = async () => {
+      if (!global.PosterShare) return;
+      const m = typeof global.getGlobeMap === 'function' ? global.getGlobeMap() : null;
+      const poster = await global.PosterShare.generateFootprintPoster(stats, activeStatuses, allDests, m);
+      if (poster) global.PosterShare.openPosterModal(poster);
+    };
+    if (posterBtn && global.PosterShare) posterBtn.addEventListener('click', triggerFootprintPoster);
+    if (annualPosterBtn && global.PosterShare) annualPosterBtn.addEventListener('click', triggerFootprintPoster);
+
+    const privBtn = view.querySelector('#ar-toggle-privacy');
+    if (privBtn) {
+      privBtn.addEventListener('click', async () => {
+        await setPublicProfile(!privCfg.publicProfile);
+        renderWorkspace();
       });
     }
+    const jnAddBtn = view.querySelector('#ar-jn-add');
+    if (jnAddBtn) {
+      jnAddBtn.addEventListener('click', async () => {
+        const title = (view.querySelector('#ar-jn-title') && view.querySelector('#ar-jn-title').value || '').trim();
+        if (!title) return;
+        await saveJournalEntry({
+          title,
+          date: (view.querySelector('#ar-jn-date') && view.querySelector('#ar-jn-date').value) || new Date().toISOString().slice(0, 10),
+          mood: (view.querySelector('#ar-jn-mood') && view.querySelector('#ar-jn-mood').value) || 'inspired',
+          rating: Number((view.querySelector('#ar-jn-rating') && view.querySelector('#ar-jn-rating').value) || 5),
+          note: (view.querySelector('#ar-jn-note') && view.querySelector('#ar-jn-note').value || '').trim()
+        });
+        renderWorkspace();
+      });
+    }
+    view.querySelectorAll('.ar-del-journal').forEach((b) => {
+      b.addEventListener('click', async () => {
+        await deleteJournalEntry(b.dataset.id);
+        renderWorkspace();
+      });
+    });
     view.querySelector('#ar-footprint-globe-btn').addEventListener('click', () => {
       const map = typeof global.getGlobeMap === 'function' ? global.getGlobeMap() : null;
       if (typeof global.setAppViewMode === 'function') global.setAppViewMode('map');
       applyFootprintLayer(map, true);
     });
+    const arStickyBack = view.querySelector('#ar-sticky-back-btn');
+    if (arStickyBack) {
+      arStickyBack.addEventListener('click', () => {
+        if (typeof global.setAppViewMode === 'function') global.setAppViewMode('map');
+      });
+    }
+    const arHelpBtn = view.querySelector('#ar-help-btn');
+    if (arHelpBtn) {
+      arHelpBtn.addEventListener('click', () => {
+        if (global.HelpCenter && typeof global.HelpCenter.openTopic === 'function') {
+          global.HelpCenter.openTopic('travel-archive');
+        }
+      });
+    }
 
     view.querySelector('#ar-create-list-btn').addEventListener('click', async () => {
       const name = view.querySelector('#ar-new-list-name').value.trim();
@@ -555,7 +654,8 @@
         caption: file.name.replace(/\.[^.]+$/, ''),
         dataUrl: compressed.dataUrl,
         thumbUrl: compressed.thumbUrl,
-        sizeBytes: compressed.sizeBytes
+        sizeBytes: compressed.sizeBytes,
+        exifStripped: true
       });
       renderWorkspace();
     });
@@ -756,6 +856,66 @@
     return false;
   }
 
+  const PRIVACY_KEY = 'wtg_archive_privacy_v5';
+  const JOURNALS_KEY = 'wtg_travel_journals_v5';
+  let fallbackPrivacy = { publicProfile: false, retainUploadGps: false };
+  let fallbackJournals = [];
+
+  async function getPrivacySettings() {
+    if (global.StorageDB && typeof global.StorageDB.getSetting === 'function') {
+      const v = await global.StorageDB.getSetting(PRIVACY_KEY, null);
+      if (v && typeof v === 'object') return Object.assign({ publicProfile: false, retainUploadGps: false }, v);
+    }
+    return Object.assign({}, fallbackPrivacy);
+  }
+
+  async function setPublicProfile(isPublic) {
+    const next = Object.assign(await getPrivacySettings(), { publicProfile: Boolean(isPublic) });
+    fallbackPrivacy = next;
+    if (global.StorageDB && typeof global.StorageDB.setSetting === 'function') {
+      await global.StorageDB.setSetting(PRIVACY_KEY, next);
+    }
+    return next;
+  }
+
+  async function getJournals() {
+    if (global.StorageDB && typeof global.StorageDB.getSetting === 'function') {
+      const list = await global.StorageDB.getSetting(JOURNALS_KEY, null);
+      if (Array.isArray(list)) return list;
+    }
+    return fallbackJournals.slice();
+  }
+
+  async function saveJournalEntry(entry) {
+    const e = entry || {};
+    const list = await getJournals();
+    const rec = {
+      id: e.id || `jn_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      title: String(e.title || '').trim() || 'Travel Log',
+      date: e.date || new Date().toISOString().slice(0, 10),
+      mood: e.mood || 'inspired',
+      rating: Math.max(1, Math.min(5, Number(e.rating) || 5)),
+      note: String(e.note || '').trim(),
+      updatedAt: Date.now()
+    };
+    const next = [rec, ...list.filter((x) => x.id !== rec.id)].slice(0, 120);
+    fallbackJournals = next;
+    if (global.StorageDB && typeof global.StorageDB.setSetting === 'function') {
+      await global.StorageDB.setSetting(JOURNALS_KEY, next);
+    }
+    return rec;
+  }
+
+  async function deleteJournalEntry(id) {
+    const list = await getJournals();
+    const next = list.filter((x) => x.id !== id);
+    fallbackJournals = next;
+    if (global.StorageDB && typeof global.StorageDB.setSetting === 'function') {
+      await global.StorageDB.setSetting(JOURNALS_KEY, next);
+    }
+    return next;
+  }
+
   return {
     encodeFootprintShare,
     decodeFootprintShare,
@@ -763,6 +923,11 @@
     renderDrawerStatusBar,
     applyFootprintLayer,
     renderWorkspace,
-    restoreFootprintFromUrl
+    restoreFootprintFromUrl,
+    getPrivacySettings,
+    setPublicProfile,
+    getJournals,
+    saveJournalEntry,
+    deleteJournalEntry
   };
 });

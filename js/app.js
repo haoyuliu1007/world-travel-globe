@@ -2248,12 +2248,13 @@
   }
 
   /* View Mode (3D Map / Aesthetic Gallery / Trip Planner / Private Archive) */
-  function setViewMode(mode, skipUrl) {
+  function setViewMode(mode, skipUrl, pushHistory) {
     const valid = ['map', 'gallery', 'planner', 'archive'];
     let requested = valid.includes(mode) ? mode : 'map';
     if (isEmbedMode && (requested === 'archive' || requested === 'planner')) {
       requested = 'map';
     }
+    const prevMode = state.mode;
     state.mode = requested;
 
     const mapBtn = document.getElementById('mode-map-btn');
@@ -2276,6 +2277,12 @@
       btn.setAttribute('aria-selected', active ? 'true' : 'false');
     });
 
+    document.querySelectorAll('#mobile-bottom-nav [data-mob-mode]').forEach((btn) => {
+      const active = btn.getAttribute('data-mob-mode') === state.mode;
+      btn.classList.toggle('active', active);
+      btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+
     if (galView) galView.classList.toggle('is-hidden', state.mode !== 'gallery');
     if (planView) planView.classList.toggle('is-hidden', state.mode !== 'planner');
     if (archView) archView.classList.toggle('is-hidden', state.mode !== 'archive');
@@ -2289,7 +2296,7 @@
       global.TravelArchive.renderWorkspace();
     }
     scheduleLabelLayout();
-    if (!skipUrl) syncUrlState(false);
+    if (!skipUrl) syncUrlState(Boolean(pushHistory !== false && prevMode !== state.mode));
   }
   global.setAppViewMode = setViewMode;
 
@@ -2344,6 +2351,12 @@
     if (state.mode !== 'map') params.set('mode', state.mode);
     else params.delete('mode');
 
+    if (global.AppI18n && typeof global.AppI18n.getLang === 'function') {
+      const lngCode = global.AppI18n.getLang();
+      if (lngCode && lngCode !== 'zh-CN') params.set('lang', lngCode);
+      else params.delete('lang');
+    }
+
     params.delete('instant');
 
     const nextHref = `${url.pathname}${params.toString() ? '?' + params.toString() : ''}${url.hash}`;
@@ -2373,7 +2386,19 @@
     if (skin && SKIN_META[skin]) state.skin = skin;
 
     const mode = params.get('mode');
-    if (mode === 'gallery') state.mode = 'gallery';
+    if (mode === 'gallery' || mode === 'planner' || mode === 'archive') state.mode = mode;
+
+    const urlLang = params.get('lang');
+    if ((urlLang === 'zh-CN' || urlLang === 'zh-TW' || urlLang === 'en') && global.AppI18n && typeof global.AppI18n.setLang === 'function') {
+      global.AppI18n.setLang(urlLang, { persist: false });
+    }
+
+    const spotRaw = params.get('spot');
+    const spotIdx = spotRaw !== null && spotRaw !== '' && Number.isFinite(Number(spotRaw)) ? Number(spotRaw) : null;
+    const camRaw = params.get('cam');
+    const camBearing = camRaw !== null && camRaw !== '' && Number.isFinite(Number(camRaw)) ? Number(camRaw) : null;
+    const dateStr = params.get('date') || null;
+    const layersParam = params.get('layers') ? params.get('layers').split(',').filter(Boolean) : [];
 
     const embed = params.get('embed');
     return {
@@ -2383,11 +2408,99 @@
       chromeOff: params.get('chrome') === 'off',
       autoSpin: params.get('spin') === '1',
       autoDayNight: params.get('daynight') === '1',
-      autoTerrain: params.get('terrain') === '1'
+      autoTerrain: params.get('terrain') === '1',
+      spotIdx,
+      camBearing,
+      dateStr,
+      layers: layersParam
     };
   }
 
   function bindEvents() {
+    // Brand home button -> return to globe & fly global
+    const brandHomeBtn = document.getElementById('brand-home-btn');
+    if (brandHomeBtn) {
+      brandHomeBtn.addEventListener('click', () => {
+        if (state.mode !== 'map') setViewMode('map');
+        flyContinent('global');
+      });
+    }
+
+    // Mobile bottom navigation bar
+    document.querySelectorAll('#mobile-bottom-nav [data-mob-mode]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const m = btn.getAttribute('data-mob-mode');
+        if (m) setViewMode(m);
+      });
+    });
+    const mobLayersBtn = document.getElementById('mob-layers-btn');
+    if (mobLayersBtn) {
+      mobLayersBtn.addEventListener('click', () => {
+        const lBtn = document.getElementById('layers-popover-btn');
+        if (lBtn) lBtn.click();
+      });
+    }
+
+    // Lazy proxies for V5 HelpCenter & ShareCenter so every module entry works on first click
+    if (!global.HelpCenter && global.LazyLoader && typeof global.LazyLoader.loadScript === 'function') {
+      global.HelpCenter = {
+        open: (slug) => global.LazyLoader.loadScript('js/lazy/help-center.js').then(() => global.HelpCenter && global.HelpCenter.open(slug)).catch(() => {}),
+        openTopic: (slug) => global.LazyLoader.loadScript('js/lazy/help-center.js').then(() => global.HelpCenter && global.HelpCenter.openTopic(slug)).catch(() => {})
+      };
+    }
+    if (!global.ShareCenter && global.LazyLoader && typeof global.LazyLoader.loadScript === 'function') {
+      global.ShareCenter = {
+        open: (ctx) => global.LazyLoader.loadScript('js/lazy/share-center.js').then(() => global.ShareCenter && global.ShareCenter.open(ctx)).catch(() => {})
+      };
+    }
+
+    // Account Center & Help Center triggers
+    const accBtn = document.getElementById('account-btn');
+    if (accBtn) {
+      accBtn.addEventListener('click', () => {
+        if (global.AuthService && typeof global.AuthService.openAccountCenter === 'function') {
+          global.AuthService.openAccountCenter();
+        }
+      });
+    }
+    const helpBtn = document.getElementById('help-btn');
+    if (helpBtn) {
+      helpBtn.addEventListener('click', () => {
+        if (global.HelpCenter && typeof global.HelpCenter.open === 'function') {
+          global.HelpCenter.open('quick-start');
+        }
+      });
+    }
+    document.addEventListener('keydown', (e) => {
+      if (e.key === '?' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        const tag = (e.target && e.target.tagName) || '';
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (e.target && e.target.isContentEditable)) return;
+        e.preventDefault();
+        if (global.HelpCenter && typeof global.HelpCenter.open === 'function') {
+          global.HelpCenter.open('keyboard-and-feedback');
+        }
+      }
+    });
+    global.syncAccountBadgeUI = () => {
+      const btn = document.getElementById('account-btn');
+      if (!btn || !global.AuthService) return;
+      const u = global.AuthService.getCurrentUser();
+      btn.classList.toggle('active', Boolean(u));
+      if (u) btn.title = `${u.displayName || u.email}`;
+    };
+
+    // Gallery sticky back + help
+    const galStickyBack = document.getElementById('gallery-sticky-back-btn');
+    if (galStickyBack) galStickyBack.addEventListener('click', () => setViewMode('map'));
+    const galHelpBtn = document.getElementById('gallery-help-btn');
+    if (galHelpBtn) {
+      galHelpBtn.addEventListener('click', () => {
+        if (global.HelpCenter && typeof global.HelpCenter.openTopic === 'function') {
+          global.HelpCenter.openTopic('destination-details');
+        }
+      });
+    }
+
     // Mode switch
     document.getElementById('mode-map-btn').addEventListener('click', () => setViewMode('map'));
     document.getElementById('mode-gallery-btn').addEventListener('click', () => setViewMode('gallery'));
@@ -2452,6 +2565,78 @@
       }
       closeAllPopovers(null);
     });
+
+    if (layersEl) {
+      const LAYER_SPECS = {
+        'toggle-weather-layer-btn': {
+          title: 'Global Weather / Radar',
+          badge: 'Live (10–30m)',
+          desc: 'Source: RainViewer / NOAA Radar · Res: ~1–5km global · Reflectivity & cloud deck.'
+        },
+        'toggle-timemachine-btn': {
+          title: 'NASA GIBS Earth Time Machine',
+          badge: 'Historical Daily',
+          desc: 'Source: NASA EOSDIS GIBS (MODIS/VIIRS) · Res: 250m–1km · Daily archival compositing (cloud gaps possible).'
+        },
+        'toggle-nightlights-btn': {
+          title: 'NASA Black Marble Night Lights',
+          badge: 'Historical Mosaic',
+          desc: 'Source: NASA VIIRS Day/Night Band · Res: ~500m · Cloud-free artificial skyglow composite.'
+        },
+        'toggle-aurora-btn': {
+          title: 'NOAA OVATION Aurora Oval',
+          badge: 'Live Space Weather',
+          desc: 'Source: NOAA SWPC OVATION + Kp Index · Res: ~1° lat/lon · Updates every 15–30 min.'
+        },
+        'toggle-daynight-btn': {
+          title: 'Solar Terminator',
+          badge: 'Live Ephemeris',
+          desc: 'Source: SunCalc Astronomical Model · Exact subsolar point, twilight & polar circle boundary.'
+        },
+        'toggle-pheno-heat-btn': {
+          title: 'KAIROS Phenology Heatmap',
+          badge: 'Archive + Calibrated',
+          desc: 'Source: Atlas Curated Phenology + ERA5 Normals · Tier A/B/C seasonal suitability index (0–100).'
+        },
+        'toggle-terrain-btn': {
+          title: '3D Terrain Elevation',
+          badge: 'Static DEM',
+          desc: 'Source: Terrarium / Mapterhorn RGB DEM · Res: ~30–76m mesh · Adjustable exaggeration (1.0×–1.8×).'
+        },
+        'toggle-contour-btn': {
+          title: 'Topographic Contours',
+          badge: 'Static DEM',
+          desc: 'Source: MapLibre Contour Vector · Active at Zoom >= 9 · Elevation interval lines.'
+        }
+      };
+      layersEl.addEventListener('click', (ev) => {
+        const btn = ev.target.closest('button[id]');
+        const spec = btn && LAYER_SPECS[btn.id];
+        if (!spec) return;
+        const tEl = document.getElementById('layer-meta-title');
+        const bEl = document.getElementById('layer-meta-badge');
+        const dEl = document.getElementById('layer-meta-desc');
+        if (tEl) tEl.textContent = spec.title;
+        if (bEl) bEl.textContent = spec.badge;
+        if (dEl) dEl.textContent = spec.desc;
+      });
+      const opSlider = document.getElementById('layer-global-opacity');
+      const opVal = document.getElementById('layer-global-opacity-val');
+      if (opSlider) {
+        opSlider.addEventListener('input', () => {
+          const v = Number(opSlider.value) / 100;
+          if (opVal) opVal.textContent = `${opSlider.value}%`;
+          if (map && typeof map.getStyle === 'function') {
+            ['layer-gibs-a', 'layer-v4-phenology-heat', 'layer-daynight-terminator'].forEach((lid) => {
+              if (map.getLayer(lid)) {
+                const prop = lid.includes('heat') ? 'heatmap-opacity' : (lid.includes('terminator') ? 'fill-opacity' : 'raster-opacity');
+                try { map.setPaintProperty(lid, prop, v); } catch (e) { /* ignore */ }
+              }
+            });
+          }
+        });
+      }
+    }
 
     function updateLayersBadge() {
       const badge = document.getElementById('layers-active-badge');
@@ -2949,10 +3134,14 @@
       }
     });
 
-    // Browser Back/Forward support
+    // Browser Back/Forward support (restores both view mode and destination focus)
     global.addEventListener('popstate', () => {
       suppressPopState = true;
       const params = new URLSearchParams(global.location.search);
+      const nextMode = params.get('mode') || 'map';
+      if (['map', 'gallery', 'planner', 'archive'].includes(nextMode) && nextMode !== state.mode) {
+        setViewMode(nextMode, true, false);
+      }
       const focusId = params.get('focus');
       if (focusId && ATLAS.getById(focusId)) {
         selectDestination(focusId, { skipUrl: true });
@@ -3631,8 +3820,77 @@
         global.DiagnosticsModule.startWatchdog();
       }
     }
+    // Offline Travel Pack helper (IndexedDB cache with explicit timestamp, zero bulk tile scraping)
+    global.saveOfflineTravelPack = async function (destId) {
+      if (!global.StorageDB || !global.TRAVEL_ATLAS) return { ok: false };
+      const dest = (await global.TRAVEL_ATLAS.ensureDetail(destId)) || global.TRAVEL_ATLAS.getAll().find((d) => d.id === destId);
+      if (!dest) return { ok: false };
+      let hub = null;
+      try {
+        const res = await fetch('data/transport/hubs.json');
+        if (res.ok) {
+          const j = await res.json();
+          hub = j && j.byId ? j.byId[destId] : null;
+        }
+      } catch (e) { /* ignore offline hub fetch */ }
+      const enr = global.PhenologyEngine && typeof global.PhenologyEngine.getEnrichmentMap === 'function'
+        ? (global.PhenologyEngine.getEnrichmentMap() || {})[destId] || null
+        : null;
+      const pack = {
+        destId,
+        cachedAt: new Date().toISOString(),
+        dest,
+        hub,
+        enrichment: enr,
+        note: 'Offline pack stores itinerary, destination metadata, spots & gateways (does not bulk-scrape map tiles).'
+      };
+      await global.StorageDB.setCache(`offline_pack:${destId}`, pack, 30 * 24 * 3600 * 1000);
+      return { ok: true, cachedAt: pack.cachedAt, destId };
+    };
+
+    // PWA install prompt & SW update listener
+    let deferredInstallPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredInstallPrompt = e;
+      const topbar = document.getElementById('topbar');
+      if (topbar && !document.getElementById('pwa-install-btn')) {
+        const instBtn = document.createElement('button');
+        instBtn.id = 'pwa-install-btn';
+        instBtn.type = 'button';
+        instBtn.className = 'capsule-icon-btn';
+        instBtn.title = 'Install KAIROS App';
+        instBtn.setAttribute('aria-label', 'Install KAIROS App');
+        instBtn.textContent = '⊕';
+        instBtn.addEventListener('click', async () => {
+          if (!deferredInstallPrompt) return;
+          deferredInstallPrompt.prompt();
+          await deferredInstallPrompt.userChoice.catch(() => {});
+          deferredInstallPrompt = null;
+          instBtn.remove();
+        });
+        topbar.appendChild(instBtn);
+      }
+    });
+
     if (global.navigator && 'serviceWorker' in global.navigator && global.location && (global.location.protocol === 'https:' || global.location.hostname === '127.0.0.1' || global.location.hostname === 'localhost')) {
-      global.navigator.serviceWorker.register('sw.js').catch(() => {});
+      global.navigator.serviceWorker.register('sw.js').then((reg) => {
+        if (!reg) return;
+        reg.addEventListener('updatefound', () => {
+          const nw = reg.installing;
+          if (!nw) return;
+          nw.addEventListener('statechange', () => {
+            if (nw.state === 'installed' && global.navigator.serviceWorker.controller) {
+              const toast = document.getElementById('subspot-toast');
+              const txt = document.getElementById('subspot-toast-text');
+              if (toast && txt) {
+                txt.textContent = 'KAIROS V5.0 updated — reload anytime for latest build';
+                toast.classList.remove('is-hidden');
+              }
+            }
+          });
+        });
+      }).catch(() => {});
     }
   }
 

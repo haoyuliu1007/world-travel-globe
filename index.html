@@ -3,17 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#F2F4F8" />
+  <meta name="theme-color" content="#16283F" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="description" content="覆盖全球七大洲 137 国/地区、722 座顶级目的地与 5,414 个精准摄影机位的 3D 交互卫星旅行地球仪。" />
-  <meta property="og:title" content="World Travel Globe · 全球旅行地理图鉴" />
-  <meta property="og:description" content="全球七大洲 137 国/地区、722 座目的地与 5,414 个机位，物候时间轴、全气候指南与双档预算动线。" />
+  <meta name="description" content="KAIROS · World Travel Atlas — 覆盖全球七大洲 137 国/地区、722 座顶级目的地与 5,414 个精准摄影机位的 3D 智能旅行与天文光影平台。" />
+  <meta property="og:title" content="KAIROS. · World Travel Atlas | 全球智能旅行平台" />
+  <meta property="og:description" content="以天文学的精度去旅行——全球七大洲 137 国/地区、722 座目的地与 5,414 个机位，物候时间轴、天文光影、多模式交通与协作行程规划。" />
   <meta property="og:type" content="website" />
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23F5F5F7%22 stroke-width=%221.75%22><circle cx=%2212%22 cy=%2212%22 r=%229.5%22/><path d=%22M2.5 12h19M12 2.5a14.5 14.5 0 0 1 0 19M12 2.5a14.5 14.5 0 0 0 0 19%22/></svg>" />
+  <meta property="og:image" content="assets/brand/social/og-cover.png" />
+  <link rel="icon" type="image/svg+xml" href="assets/brand/icons/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/brand/icons/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="assets/brand/icons/favicon-16.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/brand/icons/apple-touch-icon.png" />
   <link rel="manifest" href="manifest.webmanifest" />
-  <title>World Travel Globe · 全球旅行地理图鉴</title>
+  <title>KAIROS. · World Travel Atlas | 全球智能旅行平台</title>
   <link rel="stylesheet" href="vendor/maplibre-gl.css" />
+  <link rel="stylesheet" href="assets/brand/brand-tokens.css" />
   <link rel="stylesheet" href="css/styles.css?v=41" />
   <link rel="stylesheet" href="css/upgrades.css?v=39" />
   <link rel="stylesheet" href="assets/prologue/prologue.css?v=6" />
@@ -61,8 +66,8 @@
 
   <!-- Minimalist Loading Indicator -->
   <div class="globe-loader" id="globe-loader" role="status" aria-live="polite">
-    <div class="loader-ring" aria-hidden="true"></div>
-    <span class="loader-text" id="loader-text" data-i18n="loaderText">正在载入全球 722 座目的地…</span>
+    <img src="assets/brand/svg/kairos-symbol-dark.svg" alt="" width="20" height="20" class="kairos-loader-enso" aria-hidden="true" />
+    <span class="loader-text" id="loader-text" data-i18n="loaderText">正在载入 KAIROS 全球 722 座目的地…</span>
   </div>
 
   <!-- WebGL Recovery Notice -->
@@ -93,9 +98,18 @@
 
   <div id="story-prologue" class="story-prologue" role="dialog" aria-modal="true" aria-label="探索序章" data-i18n-aria="prologueReplay" hidden></div>
 
-  <!-- Top Spatial Islands: Left Directory/Filter · Center Nav/Search · Right Radio/Appearance -->
+  <!-- Top Spatial Islands: Left Brand/Directory/Filter · Center Nav/Search · Right Radio/Appearance -->
   <header class="top-dock" id="topbar">
     <div class="dock-island dock-left-island">
+      <button class="kairos-brand-link" id="brand-home-btn" type="button" aria-label="KAIROS World Travel Atlas" title="KAIROS · World Travel Atlas">
+        <img src="assets/brand/svg/kairos-horizontal.svg" alt="KAIROS" class="kairos-brand-wordmark kairos-logo-light" height="22" />
+        <img src="assets/brand/svg/kairos-horizontal-dark.svg" alt="KAIROS" class="kairos-brand-wordmark kairos-logo-dark" height="22" />
+        <img src="assets/brand/svg/kairos-symbol.svg" alt="KAIROS" class="kairos-brand-symbol kairos-logo-light" width="22" height="22" />
+        <img src="assets/brand/svg/kairos-symbol-dark.svg" alt="KAIROS" class="kairos-brand-symbol kairos-logo-dark" width="22" height="22" />
+      </button>
+
+      <div class="capsule-sep"></div>
+
       <button class="capsule-pill-btn" id="sidebar-toggle-btn" type="button" aria-label="展开或收起目的地清单" data-i18n-aria="ariaSidebarToggle" title="目的地清单" data-i18n-title="sidebarTitle">
         <span data-icon="list" data-size="15"></span>
         <span class="sidebar-toggle-label" data-i18n="sidebarToggleLabel">清单</span>
@@ -148,6 +162,14 @@
       <button class="capsule-lang-btn" id="lang-btn" type="button" aria-expanded="false" aria-controls="lang-popover" aria-label="切换语言" data-i18n-aria="languageTitle" title="切换语言" data-i18n-title="languageTitle">
         <span data-icon="languages" data-size="14"></span>
         <span class="lang-code-badge mono-num" id="lang-code-badge">简</span>
+      </button>
+
+      <button class="capsule-icon-btn" id="account-btn" type="button" aria-label="账号与云端档案" title="账号中心" data-i18n-title="accountBtnTitle">
+        <span data-icon="user" data-size="14"></span>
+      </button>
+
+      <button class="capsule-icon-btn" id="help-btn" type="button" aria-label="用户手册与帮助" title="帮助中心 (?)" data-i18n-title="helpCenterTitle">
+        <span class="mono-num" style="font-weight:700;font-size:13px;">?</span>
       </button>
     </div>
   </header>
@@ -406,6 +428,24 @@
       </div>
     </div>
 
+    <div class="popover-section" id="layer-meta-inspector" style="padding:8px 10px;border-radius:8px;background:rgba(255,255,255,0.03);border:1px solid var(--border-hairline);font-size:11px;line-height:1.5;margin-bottom:8px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;">
+        <strong id="layer-meta-title">Satellite &amp; Telemetry Inspector</strong>
+        <span class="source-tag realtime" id="layer-meta-badge">Live / Historical</span>
+      </div>
+      <div id="layer-meta-desc" style="color:var(--text-secondary);margin-top:3px;">Source: ESRI / NASA GIBS / NOAA OVATION / MapLibre DEM · Click any science layer to inspect cadence, resolution &amp; legend.</div>
+      <div id="layer-meta-legend" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;font-size:10.5px;color:var(--text-muted);">
+        <span>■ Radar/Cloud: RainViewer / GIBS</span>
+        <span>■ Aurora: NOAA Kp 0–9</span>
+        <span>■ Heat: Phenology 0–100</span>
+      </div>
+      <label style="display:flex;align-items:center;gap:6px;margin-top:6px;font-size:10.5px;color:var(--text-secondary);">
+        <span>Opacity</span>
+        <input id="layer-global-opacity" type="range" min="15" max="100" value="80" style="flex:1;" />
+        <span id="layer-global-opacity-val" class="mono-num">80%</span>
+      </label>
+    </div>
+
     <div class="popover-section layers-footer-row">
       <button class="layer-foot-btn" id="toggle-tile-cdn-btn" type="button" title="切换底图线路（标准 / 国内极速）" data-i18n-title="tileRouteAuto" data-i18n="tileRouteAuto">自动线路</button>
       <button class="layer-foot-btn" id="open-diagnostics-btn" type="button" aria-label="系统诊断与配置" data-i18n-aria="layerDiagnostics" title="系统诊断、质量审核与设置" data-i18n-title="layerDiagnostics">
@@ -504,6 +544,14 @@
 
   <!-- Global Aesthetic Gallery View -->
   <section class="gallery-view is-hidden" id="gallery-view" aria-label="全球地理美学图鉴" data-i18n-aria="galleryTitle">
+    <div class="workspace-sticky-nav">
+      <button class="gallery-back-btn" id="gallery-sticky-back-btn" type="button">
+        <span data-icon="chevronLeft" data-size="14"></span>
+        <span data-i18n="backToGlobe">返回地球</span>
+      </button>
+      <div class="workspace-sticky-title">KAIROS · <span data-i18n="galleryTitle">全球旅行地理图鉴</span></div>
+      <button class="secondary-btn" id="gallery-help-btn" type="button" style="height:30px;padding:0 10px;">?</button>
+    </div>
     <div class="gallery-container">
       <div class="gallery-head">
         <div>
@@ -569,6 +617,30 @@
     <span data-i18n="exitFullscreen">退出全屏</span>
     <kbd>F</kbd>
   </button>
+
+  <!-- Mobile Fixed Bottom Navigation Bar (<=768px) -->
+  <nav class="mobile-bottom-nav" id="mobile-bottom-nav" aria-label="移动端主导航" data-i18n-aria="ariaViewMode">
+    <button class="mob-nav-btn active" data-mob-mode="map" type="button">
+      <span data-icon="globe" data-size="18"></span>
+      <span data-i18n="modeMap">地球</span>
+    </button>
+    <button class="mob-nav-btn" data-mob-mode="gallery" type="button">
+      <span data-icon="image" data-size="18"></span>
+      <span data-i18n="modeGallery">图鉴</span>
+    </button>
+    <button class="mob-nav-btn" data-mob-mode="planner" type="button">
+      <span data-icon="compass" data-size="18"></span>
+      <span data-i18n="modePlanner">规划</span>
+    </button>
+    <button class="mob-nav-btn" data-mob-mode="archive" type="button">
+      <span data-icon="user" data-size="18"></span>
+      <span data-i18n="modeArchive">档案</span>
+    </button>
+    <button class="mob-nav-btn" id="mob-layers-btn" type="button">
+      <span data-icon="layers" data-size="18"></span>
+      <span data-i18n="layersBtnShort">图层</span>
+    </button>
+  </nav>
 
   <!-- Upgrade Workspaces & Modals -->
   <section class="workspace-view is-hidden" id="planner-view" aria-label="智能旅行规划系统" data-i18n-aria="plannerTitle"></section>
@@ -660,9 +732,12 @@
   <script src="js/services/crdt-merge.js?v=45"></script>
   <script src="js/services/timezone-service.js?v=45"></script>
   <script src="js/services/api-client.js?v=36"></script>
+  <script src="js/services/auth-service.js?v=1"></script>
   <script src="js/services/media-wikidata.js?v=36"></script>
   <script src="js/services/weather-service.js?v=36"></script>
   <script src="js/services/routing-service.js?v=36"></script>
+  <script src="js/services/transport-service.js?v=1"></script>
+  <script src="js/services/qr-code.js?v=1"></script>
   <script src="js/modules/media-gallery.js?v=36"></script>
   <script src="js/modules/weather-panel.js?v=36"></script>
   <script src="js/modules/photo-simulator.js?v=36"></script>

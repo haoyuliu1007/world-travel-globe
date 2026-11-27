@@ -1,0 +1,490 @@
+{
+  "schemaVersion": "5.0.0",
+  "brand": "KAIROS. — WORLD TRAVEL ATLAS",
+  "lang": "en",
+  "chapterCount": 30,
+  "chapters": [
+    {
+      "id": 1,
+      "slug": "quick-start",
+      "group": "Getting Started",
+      "title": "5-Minute KAIROS Quick Start",
+      "purpose": "Learn the core loop: discover destinations, check phenology, simulate lighting, and plan trips.",
+      "entry": "Launch the 3D globe from the home page; use the top island bar and right drawer.",
+      "steps": [
+        "Zoom/rotate the 3D globe or click continent pills to fly smoothly",
+        "Filter peak months (4-5 star suitability) from the top bar",
+        "Select any destination marker to inspect 5,414 curated photo spots",
+        "Click \"Add to Trip\" to launch the Multimodal Trip Planner"
+      ],
+      "example": "Search \"Kyoto\" -> pick April Tier-C bloom -> preview Kiyomizu-dera SunCalc -> add to a 4-day trip.",
+      "issues": "3D globe requires WebGL2; switch tile routes in Layers if tiles load slowly.",
+      "limits": "Core globe works offline/guest-only; multi-user cloud sync requires sign-in."
+    },
+    {
+      "id": 2,
+      "slug": "kairos-philosophy",
+      "group": "Getting Started",
+      "title": "KAIROS Philosophy & Ephemeris Precision",
+      "purpose": "Understand \"Right place, exact astronomical window\" and scientific transparency.",
+      "entry": "Available from Story Prologue and source badges across modules.",
+      "steps": [
+        "Astronomy badge = deterministic orbital ephemeris",
+        "Realtime badge = live telemetry/forecasts <=14 days",
+        "Empirical badge = curated atlas & historical climatology"
+      ],
+      "example": "60 days ahead keeps exact solar azimuths while excluding live weather forecasts.",
+      "issues": "Historical climate normals represent multi-year averages, not single-day guarantees.",
+      "limits": "Zero fabricated long-range weather predictions beyond 14 days."
+    },
+    {
+      "id": 3,
+      "slug": "globe-controls",
+      "group": "Explore Atlas",
+      "title": "3D Globe Navigation & Base Skins",
+      "purpose": "Master 3D camera controls and Satellite, NatGeo, Physical, and Dark base maps.",
+      "entry": "Layers button in the top bar or mobile bottom navigation.",
+      "steps": [
+        "Pick a base skin inside Layers popover",
+        "Right-drag or Ctrl+drag adjusts camera pitch and bearing",
+        "Zoom in to inspect 722 curated cities across 137 countries",
+        "Click compass or KAIROS home logo to reset"
+      ],
+      "example": "Use Dark skin for aurora/night lights and Physical skin for alpine ridges.",
+      "issues": "Lower pixel ratio in Diagnostics if GPU frame rate drops.",
+      "limits": "Maximum satellite zoom detail depends on public tile providers."
+    },
+    {
+      "id": 4,
+      "slug": "natural-search",
+      "group": "Explore Atlas",
+      "title": "Natural-Language Search & Destination Comparison",
+      "purpose": "Query by month, budget, exclusions, transit pace, and compare 2-4 cities side by side.",
+      "entry": "Search pill / Cmd+K; \"⚖ Compare\" button in Destination Drawer.",
+      "steps": [
+        "Type natural criteria like \"Oct Japan rail autumn foliage no beach under $1200\"",
+        "Inspect parsed filter chips and negative exclusions",
+        "Open side-by-side matrix for budgets, seasonality, and gateways"
+      ],
+      "example": "Inspect Kyoto -> Compare to discover similar off-peak or lower-budget matches.",
+      "issues": "Separate exclusion clauses with spaces or commas for accurate parsing.",
+      "limits": "Similarity uses a 10-dimension interpretable vector rather than subjective reviews."
+    },
+    {
+      "id": 5,
+      "slug": "destination-details",
+      "group": "Explore Atlas",
+      "title": "Destination Drawer & Multi-Tab Inspector",
+      "purpose": "Explore monthly ribbons, spots, budgets, climate normals, and Wikidata verification.",
+      "entry": "Click any destination marker on the globe or gallery card.",
+      "steps": [
+        "Tap any month in the 12-month phenology ribbon",
+        "Switch between Spots, Photo Sim, Months, Budget, and Local Details tabs",
+        "Mobile users can drag the sheet handle across peek, half, and full heights"
+      ],
+      "example": "Expand spot cards to jump directly into 3D Viewfinder or Panoramax Street View.",
+      "issues": "Custom unindexed stops can still be added directly inside Trip Planner.",
+      "limits": "Displayed budgets are reference tiers; confirm live prices on booking sites."
+    },
+    {
+      "id": 6,
+      "slug": "phenology-tiers",
+      "group": "Science Engines",
+      "title": "Three-Tier Phenology & Holdout Validation",
+      "purpose": "Understand Tier A Archive, Tier B Climate-Elevation, and Tier C Calibrated models.",
+      "entry": "Destination Drawer -> Months/Phenology tab.",
+      "steps": [
+        "Check the Tier A/B/C badge and data provenance line",
+        "Review peak date estimates plus +/- uncertainty bounds",
+        "Switch landscape categories (blossom, autumn, snow, alpine flower, glacier)"
+      ],
+      "example": "23 temperate benchmark cities report Tier C holdout MAE in days.",
+      "issues": "Unusual warm springs shift actual bloom dates beyond climatological means.",
+      "limits": "Tier C calibration applies strictly to the 23 benchmark cities."
+    },
+    {
+      "id": 7,
+      "slug": "aurora-space-weather",
+      "group": "Science Engines",
+      "title": "Aurora & Space Weather Telemetry",
+      "purpose": "Assess aurora probability via geomagnetic latitude, polar night, and NOAA SWPC.",
+      "entry": "Layers -> Aurora Oval, or Phenology card -> Aurora tab.",
+      "steps": [
+        "Enable NOAA OVATION Aurora overlay from Layers",
+        "Inspect geomagnetic latitude and monthly astronomical darkness hours",
+        "Verify both Kp activity and cloud cover before heading out"
+      ],
+      "example": "Tromso (~67° mag lat) peaks geometrically from late Sep through Mar.",
+      "issues": "Polar summer daylight prevents aurora observation regardless of Kp.",
+      "limits": "Solar storms cannot be forecast weeks or months ahead."
+    },
+    {
+      "id": 8,
+      "slug": "photo-simulator",
+      "group": "Photo Lab",
+      "title": "Photo Simulator & Ephemeris Clock",
+      "purpose": "Compute solar azimuth, altitude curves, moonrise, and Milky Way core visibility.",
+      "entry": "Drawer -> Photo Sim tab, or \"Simulate\" pill on any spot card.",
+      "steps": [
+        "Pick a spot and date (auto-applies local IANA timezone & DST)",
+        "Scrub time or tap Dawn/Sunrise/Golden Hour presets",
+        "Rotate camera azimuth slider to evaluate Front/Side/Back lighting",
+        "Check Galactic Core elevation and moonlight percentage"
+      ],
+      "example": "Preview July Galactic Core altitude and moonset interference cleanly.",
+      "issues": "Always verify destination DST offset displayed at top of the simulator.",
+      "limits": "Polar latitudes experience continuous day/night during solstices."
+    },
+    {
+      "id": 9,
+      "slug": "photo-opportunity-index",
+      "group": "Photo Lab",
+      "title": "8-Scene Opportunity Index & Alpenglow Lead",
+      "purpose": "Score 8 shooting archetypes with 14-day weather guard and peak alpenglow timing.",
+      "entry": "Photo Simulator -> Photo Opportunity Index card.",
+      "steps": [
+        "Pick 1 of 8 presets (Sunrise, Mountain Alpenglow, Milky Way, Architecture, etc.)",
+        "Inspect positive & negative scoring drivers",
+        "Use Action Buttons: Add Window to Trip, Save Preset, or Share/Poll"
+      ],
+      "example": "Dates >14 days ahead omit live weather and explain astronomy-only scoring.",
+      "issues": "Distant high peaks glow several minutes before sunlight reaches lower viewpoints.",
+      "limits": "30-90m DEM grids exclude foreground trees and buildings."
+    },
+    {
+      "id": 10,
+      "slug": "viewfinder-3d",
+      "group": "Photo Lab",
+      "title": "3D Viewfinder, Grid & Optical Crop",
+      "purpose": "Frame 3D terrain using real sensor formats, focal lengths, aspect ratios, and pitch HUD.",
+      "entry": "Click \"3D Viewfinder\" from Photo Simulator or spot cards.",
+      "steps": [
+        "Select sensor, aspect ratio, and landscape/portrait framing",
+        "Toggle Rule-of-Thirds grid and monitor pitch + compass HUD",
+        "Long telephotos display WebGL Digital Crop vs Optical FOV indicator",
+        "Press Esc or Exit to restore your previous globe camera"
+      ],
+      "example": "Test 200mm portrait framing vs 24mm wide landscape cleanly in 3D.",
+      "issues": "Terrain exaggeration restores cleanly when closing Viewfinder 3D.",
+      "limits": "Extreme focal lengths are approximated within WebGL 18°-65° vertical FOV."
+    },
+    {
+      "id": 11,
+      "slug": "time-machine",
+      "group": "Satellite & Layers",
+      "title": "Time Machine Split Swipe & NASA EPIC Date Picker",
+      "purpose": "Browse NASA GIBS archival layers, scrub split-date comparison, and inspect historical EPIC frames.",
+      "entry": "Layers -> Earth Time Machine or NASA EPIC Earth.",
+      "steps": [
+        "Pick a GIBS imagery product and Date A in Time Machine dock",
+        "Enable Dual-Date Compare, pick Date B, and drag split/mix slider",
+        "Pick custom dates in the EPIC modal with transparent nearest-date fallback"
+      ],
+      "example": "Compare spring snowmelt vs autumn coverage; unavailable EPIC dates fall back honestly.",
+      "issues": "Dark orbital gaps occur naturally over cloudy or polar-night zones.",
+      "limits": "NASA public imagery carries normal 6-24h orbital processing latency."
+    },
+    {
+      "id": 12,
+      "slug": "media-and-seasons",
+      "group": "Satellite & Layers",
+      "title": "Four-Season Commons Gallery & Street View 2.0",
+      "purpose": "Filter landscape Commons media by real EXIF season and hop through 360° Panoramax panoramas.",
+      "entry": "Drawer Media Strip, Photo Gallery view, and Street View buttons.",
+      "steps": [
+        "Filter gallery strip by Spring/Summer/Autumn/Winter/Undated EXIF tags",
+        "Click photos to open lightbox with Wikimedia author & license credits",
+        "Use Compass Sync, Prev/Next hops, and Return to Spot in Street View"
+      ],
+      "example": "Rice terraces & wild ducks pass relevance scoring while restaurant dishes are filtered out.",
+      "issues": "Undated images stay in \"Undated\" rather than inventing false seasonal tags.",
+      "limits": "Falls back to geo-tagged Commons shots when no open street view covers remote peaks."
+    },
+    {
+      "id": 13,
+      "slug": "planner-v5-core",
+      "group": "Trip Planner",
+      "title": "Trip Planner 2.0: Exact City Resolution & Draft Safety",
+      "purpose": "Eliminate silent fallback mismatches with explicit draft locks and fuzzy suggestion picking.",
+      "entry": "Click Trip Planner from top capsule or mobile navigation.",
+      "steps": [
+        "Click \"+ New Trip\" for a clean draft and type origin & destination",
+        "Pick an exact match from the suggestion dropdown and inspect preview summary",
+        "Unknown queries display an explicit error instead of falling back silently"
+      ],
+      "example": "Typing \"北京\" resolves cn-beijing cleanly without ever reverting to a prior city.",
+      "issues": "Ambiguous city names ask you to pick from top candidates.",
+      "limits": "Auto-scheduling optimizes curated spots plus user-added custom pins."
+    },
+    {
+      "id": 14,
+      "slug": "multimodal-transport",
+      "group": "Trip Planner",
+      "title": "3-Tier Multimodal Transport: Flight, HSR, Rail, Ferry & Drive",
+      "purpose": "Compare intercity flights/HSR/rail/ferry/drive, airport transfers, and city transit.",
+      "entry": "Trip Planner -> Intercity selector and Transport/Route tab.",
+      "steps": [
+        "Select preferred intercity mode and open Transport tab",
+        "Inspect nearest OurAirports gateways, great-circle distance, and rail operators",
+        "Review airport-to-downtown options and official booking/reference links"
+      ],
+      "example": "Beijing to Shanghai compares HSR (~5h city-center) vs flight (incl. airport transfer).",
+      "issues": "Trans-oceanic pairs reject OSRM land routes and display honest great-circle arcs.",
+      "limits": "Zero fabricated live flight numbers, train IDs, or ticket inventories."
+    },
+    {
+      "id": 15,
+      "slug": "itinerary-lock-timeline",
+      "group": "Trip Planner",
+      "title": "Multi-City, Locked Stops, Calendar & Conflict Alerts",
+      "purpose": "Lock must-keep reservations, toggle Timeline vs Calendar, and catch schedule conflicts.",
+      "entry": "Trip Planner -> Itinerary Timeline tab.",
+      "steps": [
+        "Toggle Lock on fixed stops (e.g., sunrise spot or hotel check-in)",
+        "Click Re-optimize Unlocked to reorder only flexible items cleanly",
+        "Switch between Timeline list and Day Calendar grid",
+        "Review automatic transfer and time-overlap conflict warnings"
+      ],
+      "example": "Lock dawn photo stop while optimizing midday cafe and temple stops.",
+      "issues": "Re-optimization preserves relative order of all locked items.",
+      "limits": "Verify special holiday closures on official venue websites."
+    },
+    {
+      "id": 16,
+      "slug": "budget-and-fx",
+      "group": "Trip Planner",
+      "title": "9-Category Multi-Currency Budget, FX & Prep Kit",
+      "purpose": "Track est vs actual expenses across 9 categories, live FX rates, and country prep kits.",
+      "entry": "Trip Planner -> Budget & FX and Prep Kit tabs.",
+      "steps": [
+        "Review 9 expense categories (Est vs Actual) in Budget & FX tab",
+        "Switch currency and convert via Frankfurter FX (with offline fallback rate)",
+        "Check voltage/plug types, emergency numbers, and official embassy links in Prep Kit"
+      ],
+      "example": "Convert Tokyo trip budget to JPY and verify Japan plug Type A + 110/119 info.",
+      "issues": "ECB FX rates refresh daily and serve as planning guidance only.",
+      "limits": "Always confirm current visa rules via government or IATA links provided."
+    },
+    {
+      "id": 17,
+      "slug": "account-auth-security",
+      "group": "Accounts & Collab",
+      "title": "Optional Account Auth, Guest Mode & Safe Migration",
+      "purpose": "Use KAIROS freely as a guest, or sign in for cross-device sync and safe archive import.",
+      "entry": "Account icon pill in top navigation capsule.",
+      "steps": [
+        "Email auth uses PBKDF2-SHA256 hashing and HttpOnly SameSite cookies",
+        "First login lets you back up and migrate guest data safely with full user isolation",
+        "Export all personal records or delete your cloud account permanently anytime"
+      ],
+      "example": "Guest trips and footprints merge cleanly into your newly registered account.",
+      "issues": "If D1 backend is unconfigured, guest local mode continues seamlessly.",
+      "limits": "Email verification & Google OAuth require deploying optional Worker secrets."
+    },
+    {
+      "id": 18,
+      "slug": "collab-rbac-votes",
+      "group": "Accounts & Collab",
+      "title": "Multi-User Collaboration, RBAC & Team Polls",
+      "purpose": "Share expiring invite codes, assign Owner/Editor/Viewer roles, comment, and vote.",
+      "entry": "Trip Planner -> Collaboration & Split tab.",
+      "steps": [
+        "Owner generates a time-limited invite code (Editor or Viewer) revocable anytime",
+        "Collaborators post comments, vote in polls, and inspect version snapshots",
+        "Concurrent edits converge deterministically via CRDT LWW + tombstones"
+      ],
+      "example": "3 teammates vote on day-trip options and merge stops deterministically.",
+      "issues": "Revoked members or Viewer roles cannot mutate shared trips on Worker API.",
+      "limits": "Uses D1 sync + BroadcastChannel rather than paid WebSocket Durable Objects."
+    },
+    {
+      "id": 19,
+      "slug": "expense-splitter",
+      "group": "Accounts & Collab",
+      "title": "Group Expense Ledger & Minimum-Transfer Settlement",
+      "purpose": "Log group expenses (equal or custom weights) and compute minimum settlement transfers.",
+      "entry": "Trip Planner -> Collaboration & Split -> Expense Splitter.",
+      "steps": [
+        "Add participants, pick the payer, and choose equal or weighted splits",
+        "Inspect net positive/negative balances for every member",
+        "Follow minimum-transfer settlement instructions and export CSV summary"
+      ],
+      "example": "12 shared bills across 4 travelers settle cleanly in at most 3 transfers.",
+      "issues": "Convert multi-currency expenses into a base currency before final settlement.",
+      "limits": "Ledger/calculation tool only; zero financial payment or banking integration."
+    },
+    {
+      "id": 20,
+      "slug": "travel-archive-privacy",
+      "group": "Archive & Journal",
+      "title": "Private-by-Default Archive, Journals & EXIF Stripping",
+      "purpose": "Track visited/planned/wishlist places, field journals, and EXIF-stripped photos privately.",
+      "entry": "Click My Archive from top island or mobile nav.",
+      "steps": [
+        "Archives default to private local IndexedDB storage",
+        "Photos undergo Canvas re-encoding to strip sensitive EXIF GPS coordinates",
+        "Log rich travel journals with dates, moods, 1-5★ ratings, and notes"
+      ],
+      "example": "Log journal notes locally with automatic GPS EXIF removal before cloud backup.",
+      "issues": "Export backup JSON before clearing browser site data in guest mode.",
+      "limits": "Cross-device photo blob sync requires binding an optional Cloudflare R2 bucket."
+    },
+    {
+      "id": 21,
+      "slug": "annual-report-footprint",
+      "group": "Archive & Journal",
+      "title": "Footprint Globe Overlay & Annual Travel Report",
+      "purpose": "Visualize explored countries on the 3D globe and generate ECharts annual stats.",
+      "entry": "Archive -> Show on Globe or Annual Report Card button.",
+      "steps": [
+        "Tag destinations as Visited, Planned, or Wishlist",
+        "Inspect lazy-loaded ECharts coverage & monthly stats",
+        "Generate high-DPI annual footprint posters or URL-encoded read-only links"
+      ],
+      "example": "Render golden globe markers and download a 9:16 annual summary poster.",
+      "issues": "Serverless URL footprint links encode statuses compactly in URL params.",
+      "limits": "Stats reflect only recorded trips, check-ins, and expenses."
+    },
+    {
+      "id": 22,
+      "slug": "export-formats",
+      "group": "Share & Export",
+      "title": "8 Open Export Formats (ICS, GPX, KML, GeoJSON, CSV, PDF)",
+      "purpose": "Export itineraries into calendars, GPS devices, GIS tools, spreadsheets, and print PDFs.",
+      "entry": "Trip Planner -> Export & Share buttons.",
+      "steps": [
+        "ICS imports directly into Apple, Google, or Outlook Calendar",
+        "GPX 1.1, KML 2.2 & GeoJSON open in outdoor GPS apps & GIS software",
+        "BOM UTF-8 CSV opens cleanly in Excel; Print view creates clean PDF roadbooks"
+      ],
+      "example": "Download .gpx and .ics before departure for zero-network trail and calendar backups.",
+      "issues": "If popups are blocked, PDF falls back cleanly to printable HTML download.",
+      "limits": "Only stops with valid coordinates appear in spatial GPX/KML tracks."
+    },
+    {
+      "id": 23,
+      "slug": "global-share-center",
+      "group": "Share & Export",
+      "title": "Global Share Center, 6 Aspect Posters & Local QR Codes",
+      "purpose": "Share 12 object types with 6 social ratios, web intents, and 100% local QR SVG.",
+      "entry": "Share buttons across drawer, photo lab, planner, and archive.",
+      "steps": [
+        "Choose from 6 aspect ratios tailored to Instagram, Stories, XHS, X, and WeChat",
+        "QR codes render locally in-browser as pure SVG with zero external tracking",
+        "Uses Web Share API, X/WhatsApp/Telegram intents, or Download Poster + Copy Caption"
+      ],
+      "example": "Export a 3:4 photo-window poster with scannable local QR back to the exact camera azimuth.",
+      "issues": "Signed-in private share tokens can be revoked at any time.",
+      "limits": "Platforms lacking open web-post APIs honestly use Poster + Caption + QR."
+    },
+    {
+      "id": 24,
+      "slug": "deep-links",
+      "group": "Share & Export",
+      "title": "Deep-Link URLs & Legacy V4 Compatibility",
+      "purpose": "Restore exact destination, spot, azimuth, date, active layers, and language via URL.",
+      "entry": "Copied from Share Center or browser address bar.",
+      "steps": [
+        "Supports ?focus=, ?spot=, ?cam=, ?date=, ?layers=, and ?lang=",
+        "Preserves 100% compatibility with legacy ?trip=, ?footprint=, and ?embed= links"
+      ],
+      "example": "Open deep-link parameters to jump straight to a curated camera angle and locale.",
+      "issues": "Very large offline trips share best via signed-in invite links or JSON export.",
+      "limits": "Stateless URL payloads stay bounded to safe browser URL lengths."
+    },
+    {
+      "id": 25,
+      "slug": "pwa-offline-pack",
+      "group": "Offline & PWA",
+      "title": "PWA App Install & Offline Travel Pack",
+      "purpose": "Install KAIROS as a standalone app and cache destination packs cleanly for offline flights.",
+      "entry": "Install App trigger (when eligible) and Offline Travel Pack button.",
+      "steps": [
+        "Install KAIROS when your browser supports beforeinstallprompt or Add to Home Screen",
+        "Save Offline Travel Pack into IndexedDB with an explicit \"Cached at ...\" timestamp",
+        "Ephemeris solar/lunar tools, AA splitter, and saved packs run 100% offline"
+      ],
+      "example": "Save your Hokkaido trip pack before boarding to inspect sun azimuths mid-flight.",
+      "issues": "Respects tile provider terms: never bulk-scrapes satellite map tiles.",
+      "limits": "iOS Safari installs PWAs manually via Share -> Add to Home Screen."
+    },
+    {
+      "id": 26,
+      "slug": "seo-and-embed",
+      "group": "Ecosystem & Diagnostics",
+      "title": "722 SEO City Pages & Embeddable Globe Widget",
+      "purpose": "Use 722 static city cards (with 1200×630 OG PNG) and iframe globe embeds.",
+      "entry": "Static paths /p/<city-id>.html or Embed snippet in Share Center.",
+      "steps": [
+        "Copy customizable <iframe> embed code from Share Center",
+        "Use ?embed=<id>&chrome=off&spin=1 to embed minimalist rotating globes"
+      ],
+      "example": "Embed Kyoto with day/night terminator right inside Markdown/Notion/blogs.",
+      "issues": "Auth and account endpoints enforce frame-ancestors none against clickjacking.",
+      "limits": "Sandboxed iframes default to read-only guest visualization."
+    },
+    {
+      "id": 27,
+      "slug": "trilingual-i18n",
+      "group": "Ecosystem & Diagnostics",
+      "title": "Seamless Simplified, Traditional Chinese & English UI",
+      "purpose": "Switch dynamically across zh-CN, zh-TW, and en across every V5 module.",
+      "entry": "Language pill in the top bar or ?lang= URL parameter.",
+      "steps": [
+        "Toggle locale without losing active map view or trip state",
+        "zh-TW maps domain-accurate terminology cleanly"
+      ],
+      "example": "Add &lang=en to any link so international collaborators see native English UI.",
+      "issues": "User-submitted Wikimedia photo titles retain original uploader language.",
+      "limits": "Regional translation dictionaries load lazily per continent."
+    },
+    {
+      "id": 28,
+      "slug": "diagnostics-perf",
+      "group": "Ecosystem & Diagnostics",
+      "title": "Diagnostics Console, 11-Service Health & Performance Tiers",
+      "purpose": "Monitor upstream service circuit breakers, WebGL FPS, and clear stale caches safely.",
+      "entry": "Layers popover -> Diagnostics button.",
+      "steps": [
+        "Check worker proxy flags and API latency per upstream service",
+        "Throttle render quality tier on low-power devices",
+        "Clear API tile caches safely without wiping personal archives or trips"
+      ],
+      "example": "Verify tile CDN response health before choosing Auto/Mirror tile routing.",
+      "issues": "Circuit breakers prevent retry storms during upstream rate limits.",
+      "limits": "Health probes measure reachability from your live browser network."
+    },
+    {
+      "id": 29,
+      "slug": "privacy-and-limits",
+      "group": "Trust & Support",
+      "title": "Data Provenance, Open Licenses & Known Scientific Limits",
+      "purpose": "Understand exact upstream data sources, licenses, modeling assumptions, and boundaries.",
+      "entry": "In-app Help Center + repository docs/DATA_SOURCES.md & KNOWN_LIMITATIONS.md.",
+      "steps": [
+        "Weather: Open-Meteo (CC BY 4.0, capped at 14 days)",
+        "Astronomy: SunCalc & Astronomy Engine offline ephemeris",
+        "Earth/Media: NASA GIBS & EPIC, Panoramax, Wikimedia Commons",
+        "Routing/Hubs: OurAirports & OpenStreetMap / OSRM"
+      ],
+      "example": "Source badges across the UI always expose whether telemetry is live, orbital, or archive.",
+      "issues": "Zero unauthorized scraping or paid commercial data simulation.",
+      "limits": "No live commercial flight/rail ticketing inventory; intercity leg times are estimates."
+    },
+    {
+      "id": 30,
+      "slug": "keyboard-and-feedback",
+      "group": "Trust & Support",
+      "title": "Keyboard Shortcuts, Troubleshooting FAQ & Feedback",
+      "purpose": "Look up keyboard shortcuts, debug common issues, and submit pre-filled GitHub feedback.",
+      "entry": "Press ? anywhere or click the \"?\" Help button in top/workspace bars.",
+      "steps": [
+        "Shortcuts: Cmd/Ctrl+K Search, ? Help Manual, Esc Close modals/viewfinder",
+        "Click \"Report Issue\" in Help Center to open a sanitized GitHub Issue template"
+      ],
+      "example": "Report missing spot notes via the privacy-safe pre-filled GitHub Issue button.",
+      "issues": "Feedback never transmits personal tokens, coordinates, or local photos.",
+      "limits": "Submitting a GitHub Issue requires internet connectivity."
+    }
+  ]
+}

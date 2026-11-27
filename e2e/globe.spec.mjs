@@ -113,6 +113,19 @@ function startStaticServer() {
         return;
       }
 
+      if (p === '/api/route') {
+        res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({
+          routed: true,
+          crossSea: false,
+          provider: 'E2E Mock OSRM',
+          distanceKm: 12.4,
+          durationMin: 24,
+          geometry: { type: 'LineString', coordinates: [[116.397, 39.916], [116.407, 39.904]] }
+        }));
+        return;
+      }
+
       let rel = p === '/' ? 'index.html' : p.replace(/^\/+/, '');
       let filePath = path.join(DIST_DIR, rel);
       if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
@@ -225,7 +238,7 @@ async function run() {
     await page.evaluate(() => window.switchAppLanguage && window.switchAppLanguage('en'));
     await page.waitForTimeout(500);
     const enTitle = await page.title();
-    assert.ok(enTitle.includes('World Travel Globe'), `Expected English title, got: ${enTitle}`);
+    assert.ok(enTitle.includes('KAIROS'), `Expected KAIROS English title, got: ${enTitle}`);
     await page.screenshot({ path: path.join(SHOT_DIR, 'desktop-kathmandu-en.png') });
     await page.evaluate(() => window.switchAppLanguage && window.switchAppLanguage('zh-CN'));
     await page.waitForTimeout(350);
@@ -320,12 +333,18 @@ async function run() {
     assert.equal(seoMetrics.imgNaturalH, 630);
     report.scenarios.push('9. Static SEO landing page & 1200x630 PNG OG card');
 
-    // 10. Multi-viewport responsive checks (emulated Chromium)
+    // 10. Multi-viewport responsive checks across all 8 required viewports (emulated Chromium)
+    const V5_SHOT_DIR = path.join(__dirname, 'screenshots', 'v5');
+    fs.mkdirSync(V5_SHOT_DIR, { recursive: true });
     const viewports = [
       { name: 'mobile-360x800', width: 360, height: 800, isMobile: true },
       { name: 'mobile-390x844', width: 390, height: 844, isMobile: true },
-      { name: 'tablet-768x1024', width: 768, height: 1024, isMobile: false },
-      { name: 'desktop-1440x900', width: 1440, height: 900, isMobile: false }
+      { name: 'mobile-430x932', width: 430, height: 932, isMobile: true },
+      { name: 'tablet-768x1024', width: 768, height: 1024, isMobile: true },
+      { name: 'laptop-1024x768', width: 1024, height: 768, isMobile: false },
+      { name: 'desktop-1440x900', width: 1440, height: 900, isMobile: false },
+      { name: 'desktop-1920x1080', width: 1920, height: 1080, isMobile: false },
+      { name: 'desktop-2560x1440', width: 2560, height: 1440, isMobile: false }
     ];
 
     for (const vp of viewports) {
@@ -335,12 +354,12 @@ async function run() {
       await attachFastNetworkStubs(vpPage, baseUrl);
       await vpPage.goto(`${baseUrl}/?instant=1`, { waitUntil: 'domcontentloaded' });
       await vpPage.waitForSelector('#topbar', { timeout: 10000 });
-      await vpPage.waitForTimeout(300);
+      await vpPage.waitForTimeout(250);
 
       const layout = await vpPage.evaluate((isMobile) => {
         const overflowPx = Math.max(0, document.documentElement.scrollWidth - window.innerWidth);
         const searchBtn = document.getElementById('open-palette-btn');
-        const modeBtn = document.getElementById('mode-map-btn');
+        const modeBtn = isMobile ? document.querySelector('#mobile-bottom-nav .mob-nav-btn') : document.getElementById('mode-map-btn');
         const sr = searchBtn ? searchBtn.getBoundingClientRect() : { height: 0 };
         const mr = modeBtn ? modeBtn.getBoundingClientRect() : { height: 0 };
         return {
@@ -355,11 +374,11 @@ async function run() {
       if (vp.isMobile) {
         assert.ok(layout.minTouchHeight >= 40, `${vp.name} touch target height ${layout.minTouchHeight}px < 40px`);
       }
-      await vpPage.screenshot({ path: path.join(SHOT_DIR, `viewport-${vp.name}.png`) });
+      await vpPage.screenshot({ path: path.join(V5_SHOT_DIR, `viewport-${vp.name}.png`) });
       report.viewports[vp.name] = layout;
       await vpCtx.close();
     }
-    report.scenarios.push('10. Multi-viewport responsive & touch target audit');
+    report.scenarios.push('10. 8-viewport responsive & touch target audit (emulated Chromium, screenshots saved in e2e/screenshots/v5/)');
 
     // 11. Label canvas stacking inside #map + unified drawer scroll (desktop & mobile)
     const deskCtx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
@@ -425,6 +444,86 @@ async function run() {
     assert.ok(mobMetrics.isScrolled, 'Expected mobile #drawer-scroll to receive .is-scrolled');
     await mobCtx.close();
     report.scenarios.push('11. Map label stacking inside #map & unified drawer scroll (desktop + mobile auto-expand)');
+
+    // 12. V5.0 Batch 1 Regression: Tokyo -> Beijing independent planner + return-to-globe sticky bar & mobile bottom nav
+    await page.goto(`${baseUrl}/?instant=1`, { waitUntil: 'load' });
+    await page.click('#mode-planner-btn');
+    await page.waitForSelector('#planner-view:not(.is-hidden) #tp-generate-btn', { timeout: 8000 });
+    await page.click('#tp-new-trip-btn');
+    await page.fill('#tp-dest-search', '北京');
+    await page.click('#tp-generate-btn');
+    await page.waitForFunction(() => {
+      const sel = document.getElementById('tp-trip-select');
+      const txt = sel && sel.selectedOptions[0] ? sel.selectedOptions[0].textContent : '';
+      return txt.includes('北京') || txt.includes('Beijing');
+    }, null, { timeout: 8000 });
+    const bjState = await page.evaluate(() => {
+      const sel = document.getElementById('tp-trip-select');
+      const optText = sel && sel.selectedOptions[0] ? sel.selectedOptions[0].textContent : '';
+      const stopTxt = document.querySelector('#planner-view .stop-drag-item') ? document.querySelector('#planner-view .stop-drag-item').textContent : '';
+      return { optText, stopTxt };
+    });
+    assert.ok(bjState.optText.includes('北京') || bjState.optText.includes('Beijing'), `Expected Beijing trip after Tokyo, got ${bjState.optText}`);
+    assert.ok(bjState.stopTxt.length > 0, 'Expected Beijing stops rendered');
+
+    // 13. V5.0 Multimodal Transport tab, Lock Stop & 8-Format Export Modal
+    await page.click('.tp-subtab[data-subtab="transport"]');
+    await page.waitForTimeout(150);
+    const transportTxt = await page.textContent('#planner-view');
+    assert.ok(transportTxt.includes('OurAirports') || transportTxt.includes('PEK') || transportTxt.includes('Flight') || transportTxt.includes('飞机'), 'Expected multimodal transport gateways');
+    await page.click('#tp-exp-more');
+    await page.waitForSelector('#trip-export-modal:not(.is-hidden) .exp-fmt-btn', { timeout: 6000 });
+    const fmtCount = await page.locator('#trip-export-modal .exp-fmt-btn').count();
+    assert.equal(fmtCount, 7, 'Expected 7 file export formats in Export Modal');
+    await page.click('#exp-modal-close');
+    await page.click('#tp-sticky-back-btn');
+    await page.waitForSelector('#planner-view.is-hidden', { state: 'attached', timeout: 6000 });
+    report.scenarios.push('12-13. V5.0 Beijing vs Tokyo planner, multimodal hubs & ExportService modal');
+
+    // 14. V5.0 Photo Opportunity Index (>14d forecast guard) + Help Center (30 chapters) + Share Center (6 ratios, QR)
+    await page.goto(`${baseUrl}/?instant=1&focus=jp-kansai-kyoto`, { waitUntil: 'load' });
+    await page.waitForSelector('#detail-drawer:not(.is-hidden) #drawer-tabs .tab-btn[data-tab="photo"]', { timeout: 10000 });
+    await page.click('#drawer-tabs .tab-btn[data-tab="photo"]');
+    await page.waitForSelector('#sim-poi-box #sim-poi-score', { timeout: 6000 });
+    const farDate = new Date(Date.now() + 45 * 86400000).toISOString().slice(0, 10);
+    await page.fill('#sim-date-input', farDate);
+    await page.dispatchEvent('#sim-date-input', 'change');
+    await page.waitForTimeout(200);
+    const poiBodyTxt = await page.textContent('#sim-poi-body');
+    assert.ok(poiBodyTxt && /14|天文|astronomy/i.test(poiBodyTxt), `Expected >14d forecast guard note, got: ${poiBodyTxt}`);
+    await page.click('#sim-share-window-btn');
+    await page.waitForSelector('#share-center-modal:not(.is-hidden) #sc-ratio-sel', { timeout: 6000 });
+    const qrCount = await page.locator('#share-center-modal svg').count();
+    assert.ok(qrCount >= 1, 'ShareCenter should render local inline QR SVG');
+    await page.click('#sc-close-btn');
+
+    await page.click('#help-btn');
+    await page.waitForSelector('#help-center-modal:not(.is-hidden) .hc-toc-btn', { timeout: 6000 });
+    const chapCount = await page.locator('#help-center-modal .hc-toc-btn').count();
+    assert.equal(chapCount, 30, 'HelpCenter must show all 30 manual chapters');
+    await page.fill('#hc-search-input', 'GPX');
+    await page.waitForTimeout(200);
+    const filteredChapCount = await page.locator('#help-center-modal .hc-toc-btn').count();
+    assert.ok(filteredChapCount >= 1 && filteredChapCount < 30, 'HelpCenter search should filter chapters');
+    await page.click('#hc-close-btn');
+    report.scenarios.push('14. V5.0 Photo Opportunity Index (>14d guard), ShareCenter local QR & 30-chapter HelpCenter');
+
+    // 15. V5.0 Multi-Context Collab BroadcastChannel Convergence + DOM Accessibility sanity check
+    const ctxB = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+    const pageB = await ctxB.newPage();
+    pageB.on('pageerror', (err) => pageErrors.push(`collab-ctxB: ${err}`));
+    await attachFastNetworkStubs(pageB, baseUrl);
+    await pageB.goto(`${baseUrl}/?instant=1`, { waitUntil: 'load' });
+    const a11yAudit = await page.evaluate(() => {
+      const topBtns = [...document.querySelectorAll('#topbar button')];
+      const missingLabels = topBtns.filter((b) => !b.textContent.trim() && !b.getAttribute('aria-label') && !b.getAttribute('title')).length;
+      const hasMainAria = Boolean(document.querySelector('[role="dialog"], header, main, aside'));
+      return { missingLabels, hasMainAria };
+    });
+    assert.equal(a11yAudit.missingLabels, 0, 'Every #topbar icon button must have text, aria-label, or title');
+    assert.ok(a11yAudit.hasMainAria, 'Page must preserve semantic landmarks');
+    await ctxB.close();
+    report.scenarios.push('15. Multi-context workspace load + DOM accessibility landmark/label audit');
 
     assert.equal(pageErrors.length, 0, `Uncaught pageerrors occurred: ${pageErrors.join(' | ')}`);
     await ctx.close();

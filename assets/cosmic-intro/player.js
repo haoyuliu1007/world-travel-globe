@@ -6,16 +6,14 @@
   const video = document.querySelector('#cosmic-film');
   const loadingText = document.querySelector('#cosmic-loading-text');
   const progress = document.querySelector('#cosmic-progress');
-  const play = document.querySelector('#cosmic-play');
+  const playBtn = document.querySelector('#cosmic-play');
   const mute = document.querySelector('#cosmic-mute');
   const unmuteHint = document.querySelector('#cosmic-unmute-hint');
   const skip = document.querySelector('#cosmic-skip');
   const replay = document.querySelector('#cosmic-replay');
   const credits = document.querySelector('#cosmic-credits');
-  const options = replay.closest('.cosmic-options');
+  const options = replay ? replay.closest('.cosmic-options') : null;
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
-  const countKey = 'wtg-cosmic-intro-v8-plays';
-  const MAX_AUTO_PLAYS = 3;
   const supportedVideo = [
     ['assets/cosmic-intro/cosmic-slow-tour.mp4?v=6', 'video/mp4; codecs="avc1.640028"']
   ].filter(([, type]) => video.canPlayType(type) || video.canPlayType('video/mp4')).map(([url]) => url);
@@ -25,14 +23,6 @@
   let restorePending = null;
   let motionTimer;
   let introStatus = 'map';
-
-  function getPlayCount() {
-    try { return parseInt(localStorage.getItem(countKey) || '0', 10) || 0; } catch { return 0; }
-  }
-
-  function incrementPlayCount() {
-    try { localStorage.setItem(countKey, String(getPlayCount() + 1)); } catch {}
-  }
 
   function publish(status, reason = '') {
     introStatus = status;
@@ -96,8 +86,8 @@
     labels = strings[locale] || strings[locale.split('-')[0]] || strings.en;
     const [title, replayLabel, creditLabel, skipLabel, progressLabel] = labels;
     intro.setAttribute('aria-label', title);
-    replay.textContent = replayLabel;
-    credits.textContent = creditLabel;
+    if (replay) replay.textContent = replayLabel;
+    if (credits) credits.textContent = creditLabel;
     skip.querySelector('span').textContent = skipLabel;
     progress.setAttribute('aria-label', progressLabel);
     if (unmuteHint) unmuteHint.textContent = labels[9];
@@ -108,8 +98,8 @@
 
   function playButton() {
     const paused = video.paused;
-    play.textContent = paused ? '▶' : 'Ⅱ';
-    play.setAttribute('aria-label', paused ? labels[5] : labels[6]);
+    playBtn.textContent = paused ? '▶' : 'Ⅱ';
+    playBtn.setAttribute('aria-label', paused ? labels[5] : labels[6]);
   }
 
   function muteButton() {
@@ -156,6 +146,16 @@
     skip.focus({ preventScroll: true });
   }
 
+  function preload() {
+    if (!supportedVideo.length || playback) return;
+    if (!video.getAttribute('src')) {
+      video.muted = true;
+      video.volume = 0;
+      video.preload = 'auto';
+      video.src = supportedVideo[0];
+    }
+  }
+
   function finish(run, reason) {
     if (playback !== run || run.finishing) return;
     run.finishing = true;
@@ -163,29 +163,23 @@
     clearTimeout(run.stallTimer);
     cancelFrame(run);
     run.events.abort();
-    if (!run.isReplay && !run.counted && (reason === 'complete' || reason === 'skip' || reason === 'escape')) {
-      run.counted = true;
-      incrementPlayCount();
-    }
-
-    const handoffToPrologue = !run.isReplay && Boolean(window.StoryPrologue)
-      && (reason === 'complete' || reason === 'skip' || reason === 'escape');
 
     const map = currentMap();
-    const matched = !handoffToPrologue && reason === 'complete' && !reducedMotion.matches && canMatch(map);
+    const matched = reason === 'complete' && !reducedMotion.matches && canMatch(map);
     if (matched) prepareMap(map);
 
-    if (handoffToPrologue) {
-      // Unlock nodes held by intro player first, then open 5-act scroll prologue underneath
-      // so BGM continues seamlessly and OnboardingTour waits for data-intro-state="map".
-      run.inertNodes.forEach(node => { node.inert = false; });
-      run.inertNodes.clear();
-      introStatus = 'prologue';
-      window.StoryPrologue.open({ isReplay: false, keepBgm: true });
-    } else {
-      if (window.CosmicBGM) window.CosmicBGM.fadeOutAndStop(1000);
-      publish(matched ? 'handoff' : 'map', reason);
+    const landing = !location.search && !location.hash;
+    const willChainTour = Boolean(run.chainTour) && landing && Boolean(window.OnboardingTour);
+
+    if (window.CosmicBGM) {
+      if (willChainTour) {
+        window.CosmicBGM.duck(0.36, 700);
+      } else {
+        window.CosmicBGM.fadeOutAndStop(1600);
+      }
     }
+
+    publish(matched ? 'handoff' : 'map', reason);
 
     const hadFocus = intro.contains(document.activeElement);
     const release = () => {
@@ -196,23 +190,25 @@
       video.classList.remove('has-frame');
       intro.hidden = true;
       if (unmuteHint) unmuteHint.hidden = true;
-      if (!handoffToPrologue) {
-        run.inertNodes.forEach(node => { node.inert = false; });
-        run.inertNodes.clear();
-        publish('map', reason);
-      }
+      run.inertNodes.forEach(node => { node.inert = false; });
+      run.inertNodes.clear();
+      publish('map', reason);
       intro.classList.remove('is-exiting', 'is-exiting-fast', 'is-playing');
-      document.documentElement.classList.remove('cosmic-intro-boot');
+      document.documentElement.classList.remove('cosmic-intro-boot', 'prologue-boot');
       intro.inert = false;
       document.body.classList.remove('intro-active');
       playback = null;
-      if (!handoffToPrologue) {
-        revealMap();
-        if (hadFocus) (run.returnFocus || document.querySelector('#open-palette-btn'))?.focus({ preventScroll: true });
+      revealMap();
+      try { map?.resize?.(); } catch {}
+
+      if (willChainTour && window.OnboardingTour) {
+        window.OnboardingTour.start(false);
+      } else if (hadFocus) {
+        (run.returnFocus || document.querySelector('#open-palette-btn'))?.focus({ preventScroll: true });
       }
     };
 
-    if (handoffToPrologue || matched || !reducedMotion.matches) {
+    if (matched || !reducedMotion.matches) {
       intro.classList.add(matched ? 'is-exiting' : 'is-exiting-fast');
       if (unmuteHint) unmuteHint.hidden = true;
       setTimeout(release, matched ? 520 : 380);
@@ -221,14 +217,16 @@
     }
   }
 
-  function start(isReplay) {
-    if (playback || !supportedVideo.length) return;
+  function play(opts = {}) {
+    if (playback || !supportedVideo.length) return false;
     restorePending?.();
     clearTimeout(motionTimer);
     document.documentElement.classList.remove('cosmic-motion', 'cosmic-intro-boot');
+
+    const isReplay = Boolean(opts.isReplay);
     const run = {
-      isReplay: Boolean(isReplay),
-      counted: false,
+      isReplay,
+      chainTour: Boolean(opts.chainTour) && !isReplay,
       returnFocus: isReplay ? document.activeElement : null,
       inertNodes: new Set(),
       events: new AbortController(),
@@ -244,13 +242,15 @@
     revealIntro(run);
     progress.value = 0;
     progress.disabled = true;
-    play.disabled = true;
+    playBtn.disabled = true;
     if (mute) mute.disabled = false;
     if (unmuteHint) unmuteHint.hidden = true;
     publish('loading');
 
     if (window.CosmicBGM) {
-      window.CosmicBGM.start(0.58);
+      if (!opts.keepBgm || !window.CosmicBGM.isActive()) {
+        window.CosmicBGM.start(0.58);
+      }
     }
 
     const on = (type, callback) => video.addEventListener(type, callback, { signal: run.events.signal });
@@ -261,7 +261,7 @@
       const time = metadata?.mediaTime ?? video.currentTime;
       progress.value = Math.min(time, Number(progress.max));
       const handoffAt = Number.isFinite(video.duration) && video.duration > 1 ? video.duration - 0.45 : 26.15;
-      if (time >= handoffAt && (window.StoryPrologue || currentMap()?.areTilesLoaded())) {
+      if (time >= handoffAt && currentMap()?.areTilesLoaded()) {
         finish(run, 'complete');
       } else if (!video.paused) scheduleFrame();
     };
@@ -275,7 +275,10 @@
     const trySource = () => {
       const attempt = ++run.attempt;
       run.url = supportedVideo[run.index];
-      video.src = run.url;
+      const currentAttr = video.getAttribute('src');
+      if (currentAttr !== run.url || video.readyState === 0) {
+        video.src = run.url;
+      }
       // Mute raw clip audio permanently so unified CosmicBGM carries the entire soundtrack
       video.muted = true;
       video.volume = 0;
@@ -304,13 +307,9 @@
       clearTimeout(run.startupTimer);
       clearTimeout(run.stallTimer);
       run.played = true;
-      if (!run.isReplay && !run.counted) {
-        run.counted = true;
-        incrementPlayCount();
-      }
       intro.classList.add('is-playing');
       video.classList.add('has-frame');
-      play.disabled = false;
+      playBtn.disabled = false;
       if (mute) mute.disabled = false;
       publish('playing');
       playButton();
@@ -334,6 +333,7 @@
 
     run.startupTimer = setTimeout(() => finish(run, 'startup-timeout'), 9000);
     trySource();
+    return true;
   }
 
   document.addEventListener('keydown', event => {
@@ -345,8 +345,16 @@
     }
   });
   skip.addEventListener('click', () => playback && finish(playback, 'skip'));
-  replay.addEventListener('click', () => start(true));
-  play.addEventListener('click', () => {
+  if (replay) {
+    replay.addEventListener('click', () => {
+      const pop = document.getElementById('appearance-popover');
+      if (pop) pop.classList.add('is-hidden');
+      const apBtn = document.getElementById('appearance-btn');
+      if (apBtn) apBtn.setAttribute('aria-expanded', 'false');
+      play({ isReplay: true, keepBgm: false, chainTour: false });
+    });
+  }
+  playBtn.addEventListener('click', () => {
     if (!playback || introStatus === 'handoff') return;
     if (video.paused) video.play().catch(() => playback && finish(playback, 'blocked'));
     else video.pause();
@@ -380,15 +388,24 @@
     if (reducedMotion.matches && playback) finish(playback, 'reduced-motion');
   });
 
-  const desktop = matchMedia('(min-width: 800px) and (pointer: fine)');
-  const landing = !location.search && !location.hash;
+  window.CosmicIntro = {
+    play,
+    preload,
+    isSupported: () => supportedVideo.length > 0,
+    isPlaying: () => Boolean(playback)
+  };
+
   localize();
   new MutationObserver(localize).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
-  options.hidden = !supportedVideo.length;
-  if (landing && desktop.matches && getPlayCount() < MAX_AUTO_PLAYS && !reducedMotion.matches && supportedVideo.length) {
-    start(false);
+  if (options) options.hidden = !supportedVideo.length;
+
+  // Unified boot: Prologue first (max 3 times per 6-hour rolling window across all devices)
+  if (window.IntroSession && window.IntroSession.shouldAutoRun() && window.StoryPrologue) {
+    window.IntroSession.recordPlay();
+    preload();
+    window.StoryPrologue.open({ isReplay: false, keepBgm: false });
   } else {
-    document.documentElement.classList.remove('cosmic-intro-boot');
+    document.documentElement.classList.remove('prologue-boot', 'cosmic-intro-boot');
     publish('map');
   }
 })();

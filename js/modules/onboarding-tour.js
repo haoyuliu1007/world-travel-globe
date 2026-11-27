@@ -23,6 +23,9 @@
   }
 
   function hasSeen() {
+    if (global.IntroSession && typeof global.IntroSession.hasSeenTour === 'function') {
+      return global.IntroSession.hasSeenTour();
+    }
     try {
       return global.localStorage.getItem(SEEN_KEY) === '1';
     } catch (e) {
@@ -31,6 +34,10 @@
   }
 
   function markSeen() {
+    if (global.IntroSession && typeof global.IntroSession.markTourSeen === 'function') {
+      global.IntroSession.markTourSeen();
+      return;
+    }
     try {
       global.localStorage.setItem(SEEN_KEY, '1');
     } catch (e) {

@@ -16,18 +16,25 @@
   <link rel="stylesheet" href="vendor/maplibre-gl.css" />
   <link rel="stylesheet" href="css/styles.css?v=36" />
   <link rel="stylesheet" href="css/upgrades.css?v=37" />
-  <link rel="stylesheet" href="assets/prologue/prologue.css?v=2" />
+  <link rel="stylesheet" href="assets/prologue/prologue.css?v=3" />
   <link rel="stylesheet" href="assets/cosmic-intro/player.css?v=8" />
   <script>
   (function () {
     try {
-      var plays = parseInt(localStorage.getItem('wtg-cosmic-intro-v8-plays') || '0', 10) || 0;
+      var WINDOW_MS = 21600000;
+      var plays = 0;
+      var raw = localStorage.getItem('wtg_intro_window_v1');
+      if (raw) {
+        var parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === 'object' && isFinite(parsed.windowStart) && (Date.now() - parsed.windowStart) < WINDOW_MS) {
+          plays = Number(parsed.plays) || 0;
+        }
+      }
       var landing = !location.search && !location.hash;
-      var desktop = matchMedia('(min-width: 800px) and (pointer: fine)').matches;
       var reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-      if (landing && desktop && !reduced && plays < 3) {
-        document.documentElement.classList.add('cosmic-intro-boot');
-        document.documentElement.dataset.introState = 'loading';
+      if (landing && !reduced && plays < 3) {
+        document.documentElement.classList.add('prologue-boot');
+        document.documentElement.dataset.introState = 'prologue';
       }
     } catch (e) {}
   })();
@@ -59,7 +66,7 @@
   </button>
 
   <section id="cosmic-intro" aria-label="宇宙开场" role="dialog" aria-modal="true" hidden>
-    <video id="cosmic-film" playsinline preload="auto" poster="assets/cosmic-intro/poster.jpg?v=7" disablepictureinpicture></video>
+    <video id="cosmic-film" playsinline webkit-playsinline preload="auto" poster="assets/cosmic-intro/poster.jpg?v=7" disablepictureinpicture></video>
     <div id="cosmic-loading" aria-live="polite">
       <span class="cosmic-loading-ring" aria-hidden="true"></span>
       <span id="cosmic-loading-text">正在进入宇宙视界…</span>
@@ -166,9 +173,9 @@
       </button>
     </div>
   </section>
-  <script src="assets/prologue/bgm.js?v=1"></script>
-  <script src="assets/prologue/prologue.js?v=2"></script>
-  <script src="assets/cosmic-intro/player.js?v=8"></script>
+  <script src="assets/prologue/bgm.js?v=2"></script>
+  <script src="assets/prologue/prologue.js?v=3"></script>
+  <script src="assets/cosmic-intro/player.js?v=9"></script>
 
   <!-- 3-Language Selector Popover -->
   <section class="studio-popover lang-popover is-hidden" id="lang-popover" role="dialog" aria-label="界面语言选择">
@@ -561,7 +568,7 @@
   <script src="js/modules/trip-planner.js?v=36"></script>
   <script src="js/modules/travel-archive.js?v=36"></script>
   <script src="js/modules/diagnostics.js?v=36"></script>
-  <script src="js/modules/onboarding-tour.js?v=37"></script>
+  <script src="js/modules/onboarding-tour.js?v=38"></script>
   <script src="js/detail-panel.js?v=36"></script>
   <script src="js/command-palette.js?v=36"></script>
   <script src="js/gallery.js?v=36"></script>

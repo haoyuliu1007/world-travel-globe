@@ -1,32 +1,29 @@
 #story-prologue[hidden] { display: none !important; }
+html.prologue-boot #story-prologue[hidden] { display: block !important; }
+html.prologue-boot #story-prologue { opacity: 1; pointer-events: auto; }
+html.prologue-boot #globe-loader { opacity: 0 !important; pointer-events: none !important; }
 
 #story-prologue {
   --sp-bg: #05070d;
-  --sp-bg-soft: #090d16;
-  --sp-card: rgba(15, 20, 34, 0.74);
-  --sp-card-hover: rgba(20, 27, 45, 0.88);
   --sp-bone: #f5f5f7;
-  --sp-text-2: #a3aab8;
-  --sp-text-3: #6f7787;
+  --sp-text-2: #b4bac7;
+  --sp-text-3: #7d8596;
   --sp-champagne: #e0c38e;
-  --sp-blue: #4f8cff;
-  --sp-violet: #8b74ff;
   --sp-gradient: linear-gradient(95deg, #f6dfaf 0%, #e0c38e 42%, #7eaaff 100%);
-  --sp-hairline: rgba(255, 255, 255, 0.1);
-  --sp-hairline-strong: rgba(255, 255, 255, 0.18);
+  --sp-hairline: rgba(255, 255, 255, 0.12);
+  --sp-hairline-strong: rgba(255, 255, 255, 0.22);
   --sp-font: -apple-system, BlinkMacSystemFont, "SF Pro SC", "SF Pro Text", "SF Pro Display", "Helvetica Neue", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Source Han Sans SC", "Noto Sans SC", sans-serif;
   --sp-ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --sp-wide: 1120px;
-  --sp-gutter: clamp(20px, 4vw, 40px);
-  --sp-nav-h: 64px;
+  --sp-gutter: clamp(20px, 5vw, 64px);
 
   position: fixed;
   inset: 0;
   z-index: 9500;
   overflow-y: auto;
   overflow-x: hidden;
+  scroll-snap-type: y mandatory;
   scroll-behavior: smooth;
-  scroll-padding-top: calc(var(--sp-nav-h) + 20px);
+  overscroll-behavior: contain;
   background: var(--sp-bg);
   color: var(--sp-bone);
   font-family: var(--sp-font);
@@ -64,14 +61,14 @@
   display: inline-block;
 }
 
-/* Scroll Progress Hairline */
+/* Top Scroll Progress Hairline */
 #story-prologue .sp-hairline {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 2px;
-  z-index: 90;
+  z-index: 95;
   background: var(--sp-gradient);
   transform-origin: 0 50%;
   transform: scaleX(0);
@@ -79,39 +76,34 @@
   will-change: transform;
 }
 
-/* Sticky Glass Top Navigation (jmycos-inspired) */
+/* Floating Transparent Header (does not consume slide height) */
 #story-prologue .sp-nav {
-  position: sticky;
+  position: fixed;
   top: 0;
-  z-index: 80;
-  height: var(--sp-nav-h);
-  border-bottom: 1px solid transparent;
-  transition: background-color 300ms var(--sp-ease), border-color 300ms var(--sp-ease), backdrop-filter 300ms var(--sp-ease);
-}
-#story-prologue .sp-nav.is-scrolled {
-  background: rgba(7, 10, 18, 0.78);
-  border-bottom-color: var(--sp-hairline);
-  backdrop-filter: saturate(180%) blur(20px);
-  -webkit-backdrop-filter: saturate(180%) blur(20px);
-}
-#story-prologue .sp-nav-inner {
-  width: min(100% - var(--sp-gutter) * 2, var(--sp-wide));
-  height: 100%;
-  margin: 0 auto;
+  left: 0;
+  right: 0;
+  z-index: 85;
+  padding: max(18px, env(safe-area-inset-top)) clamp(18px, 3.6vw, 40px) 12px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+  pointer-events: none;
+}
+#story-prologue .sp-brand,
+#story-prologue .sp-top-controls {
+  pointer-events: auto;
 }
 #story-prologue .sp-brand {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  color: var(--sp-bone);
-  font-size: 14px;
+  color: rgba(245, 245, 247, 0.88);
+  font-size: 13.5px;
   font-weight: 600;
-  letter-spacing: 0.01em;
+  letter-spacing: 0.02em;
   white-space: nowrap;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
 }
 #story-prologue .sp-brand-dot {
   width: 8px;
@@ -120,63 +112,114 @@
   background: var(--sp-gradient);
   box-shadow: 0 0 14px rgba(224, 195, 142, 0.65);
 }
-#story-prologue .sp-nav-links {
-  display: flex;
-  align-items: center;
-  gap: 28px;
-}
-#story-prologue .sp-nav-link {
-  background: transparent;
-  border: 0;
-  padding: 6px 2px;
-  color: var(--sp-text-2);
-  font-family: var(--sp-font);
-  font-size: 13.5px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: color 200ms ease;
-}
-#story-prologue .sp-nav-link:hover,
-#story-prologue .sp-nav-link.active {
-  color: var(--sp-bone);
-}
 #story-prologue .sp-top-controls {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-}
-#story-prologue .sp-pill-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  height: 34px;
-  padding: 0 14px;
-  border-radius: 999px;
-  border: 1px solid var(--sp-hairline-strong);
-  background: rgba(16, 21, 34, 0.72);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  color: rgba(245, 245, 247, 0.9);
-  font-family: var(--sp-font);
-  font-size: 12.5px;
-  font-weight: 500;
-  letter-spacing: 0.01em;
-  cursor: pointer;
-  transition: border-color 220ms ease, color 220ms ease, background 220ms ease, transform 220ms var(--sp-ease);
-}
-#story-prologue .sp-pill-btn:hover {
-  border-color: rgba(224, 195, 142, 0.62);
-  color: #ffffff;
-  background: rgba(26, 33, 52, 0.92);
-  transform: translateY(-1px);
+  gap: 10px;
 }
 #story-prologue .sp-mute-btn {
-  padding: 0;
-  width: 34px;
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(12, 16, 28, 0.54);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  color: rgba(245, 245, 247, 0.88);
+  font-size: 14px;
+  cursor: pointer;
+  transition: border-color 220ms ease, background 220ms ease, transform 220ms var(--sp-ease);
+}
+#story-prologue .sp-mute-btn:hover {
+  border-color: rgba(224, 195, 142, 0.6);
+  background: rgba(24, 31, 50, 0.84);
+  transform: translateY(-1px);
+}
+#story-prologue .sp-skip-quiet {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 32px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(245, 245, 247, 0.46);
+  font-family: var(--sp-font);
+  font-size: 12.5px;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: color 220ms ease, background 220ms ease;
+}
+#story-prologue .sp-skip-quiet:hover {
+  color: rgba(245, 245, 247, 0.9);
+  background: rgba(255, 255, 255, 0.06);
 }
 
-/* Pure GPU Scroll Reveal System (matching jmycos.com 0.8s cubic-bezier(.22,1,.36,1)) */
+/* Right-Edge 8-Dot Chapter Rail */
+#story-prologue .sp-dot-rail {
+  position: fixed;
+  right: clamp(12px, 2vw, 26px);
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 82;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 6px;
+}
+#story-prologue .sp-dot-btn {
+  position: relative;
+  width: 6px;
+  height: 6px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.28);
+  cursor: pointer;
+  transition: height 320ms var(--sp-ease), background 240ms ease, opacity 240ms ease;
+}
+#story-prologue .sp-dot-btn:hover {
+  background: rgba(255, 255, 255, 0.65);
+}
+#story-prologue .sp-dot-btn.active {
+  height: 22px;
+  background: linear-gradient(180deg, #f6dfaf 0%, #e0c38e 55%, #7eaaff 100%);
+}
+#story-prologue .sp-dot-label {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%) translateX(4px);
+  white-space: nowrap;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(12, 16, 28, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: rgba(245, 245, 247, 0.9);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease, transform 200ms var(--sp-ease);
+}
+#story-prologue .sp-dot-btn:hover .sp-dot-label {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
+}
+
+/* Pure GPU Typography & Slide Reveal System */
+#story-prologue .sp-accent-grad {
+  background: var(--sp-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
 #story-prologue .sp-reveal {
   opacity: 0;
   transform: translate3d(0, 24px, 0);
@@ -185,13 +228,13 @@
     transform 800ms var(--sp-ease) var(--sp-delay, 0ms);
   will-change: opacity, transform;
 }
-#story-prologue .sp-reveal.is-visible,
-#story-prologue.k-ready .sp-hero .sp-reveal {
+#story-prologue .sp-slide.is-active .sp-reveal,
+#story-prologue.k-ready #sp-s1 .sp-reveal,
+#story-prologue .sp-reveal.is-visible {
   opacity: 1;
   transform: translate3d(0, 0, 0);
 }
 
-/* Masked Line Kinetic Reveal for Hero Typography (zero blur, zero reflow) */
 #story-prologue .sp-line-clip {
   display: block;
   overflow: hidden;
@@ -207,50 +250,44 @@
     opacity 540ms ease var(--sp-delay, 0ms);
   will-change: transform, opacity;
 }
-#story-prologue.k-ready .sp-line-inner {
+#story-prologue.k-ready #sp-s1 .sp-line-inner {
   opacity: 1;
   transform: translate3d(0, 0, 0);
 }
 
-#story-prologue .sp-accent-grad {
-  background: var(--sp-gradient);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-/* ACT 1 · Hero Stage */
-#story-prologue .sp-hero {
+/* Strict 100dvh Snap Slide Container */
+#story-prologue .sp-slide {
   position: relative;
-  min-height: calc(100vh - var(--sp-nav-h));
-  min-height: calc(100dvh - var(--sp-nav-h));
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  min-height: 100dvh;
+  overflow: hidden;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  text-align: center;
-  padding: clamp(56px, 9vh, 96px) var(--sp-gutter) clamp(120px, 18vh, 172px);
-  overflow: hidden;
+  padding: clamp(64px, 9vh, 88px) var(--sp-gutter) clamp(52px, 7vh, 72px);
   background: var(--sp-bg);
 }
 
-#story-prologue .sp-hero-photo {
+#story-prologue .sp-bg-photo {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center 42%;
-  opacity: 0.62;
-  transform: scale(1.04);
-  transition: transform 1800ms var(--sp-ease), opacity 1200ms ease;
   pointer-events: none;
+  transform: scale(1.04);
+  transition: transform 1600ms var(--sp-ease), opacity 900ms ease;
 }
-#story-prologue.k-ready .sp-hero-photo {
+#story-prologue .sp-slide.is-active .sp-bg-photo,
+#story-prologue.k-ready #sp-s1 .sp-bg-photo {
   transform: scale(1);
 }
 
-#story-prologue .sp-hero-grid {
+#story-prologue .sp-grid-overlay {
   position: absolute;
   inset: 0;
   background-image:
@@ -262,23 +299,49 @@
   pointer-events: none;
 }
 
-#story-prologue .sp-hero-glow {
+#story-prologue .sp-scrim-hero {
   position: absolute;
   inset: 0;
   background:
     radial-gradient(ellipse 56% 42% at 32% 28%, rgba(79, 140, 255, 0.16) 0%, transparent 70%),
     radial-gradient(ellipse 52% 40% at 70% 34%, rgba(224, 195, 142, 0.14) 0%, transparent 72%),
-    linear-gradient(180deg, rgba(5, 7, 13, 0.42) 0%, rgba(5, 7, 13, 0.25) 52%, #05070d 96%);
+    linear-gradient(180deg, rgba(5, 7, 13, 0.44) 0%, rgba(5, 7, 13, 0.26) 52%, rgba(5, 7, 13, 0.88) 100%);
   pointer-events: none;
 }
 
+#story-prologue .sp-scrim-story {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 74% 58% at 50% 50%, rgba(4, 6, 12, 0.44) 0%, rgba(4, 6, 12, 0.68) 65%, rgba(4, 6, 12, 0.9) 100%),
+    linear-gradient(180deg, rgba(5, 7, 13, 0.72) 0%, rgba(5, 7, 13, 0.16) 28%, rgba(5, 7, 13, 0.18) 72%, rgba(5, 7, 13, 0.78) 100%);
+  pointer-events: none;
+}
+
+#story-prologue .sp-scrim-earth {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(4, 7, 14, 0.9) 0%, rgba(4, 7, 14, 0.62) 48%, rgba(4, 7, 14, 0.14) 84%),
+    linear-gradient(180deg, rgba(5, 7, 13, 0.65) 0%, rgba(5, 7, 13, 0.12) 25%, rgba(5, 7, 13, 0.14) 75%, rgba(5, 7, 13, 0.75) 100%);
+  pointer-events: none;
+}
+
+#story-prologue .sp-scrim-dawn {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(5, 7, 13, 0.88) 0%, rgba(5, 7, 13, 0.36) 44%, rgba(5, 7, 13, 0.24) 72%, rgba(5, 7, 13, 0.76) 100%);
+  pointer-events: none;
+}
+
+/* Slide 1: Hero */
 #story-prologue .sp-hero-inner {
   position: relative;
   z-index: 3;
   max-width: 860px;
   width: 100%;
+  text-align: center;
 }
-
 #story-prologue .sp-badge {
   display: inline-flex;
   align-items: center;
@@ -286,13 +349,13 @@
   height: 32px;
   padding: 0 14px 0 6px;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.16);
   background: rgba(15, 20, 34, 0.72);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   font-size: 13px;
-  color: rgba(245, 245, 247, 0.86);
-  margin-bottom: 28px;
+  color: rgba(245, 245, 247, 0.88);
+  margin-bottom: 26px;
 }
 #story-prologue .sp-badge-pill {
   display: inline-flex;
@@ -306,105 +369,175 @@
   font-weight: 600;
   letter-spacing: 0.04em;
 }
-
 #story-prologue .sp-hero-title {
   font-weight: 600;
-  font-size: clamp(36px, 5.5vw, 72px);
+  font-size: clamp(34px, 5.4vw, 70px);
   line-height: 1.15;
   letter-spacing: -0.025em;
   text-wrap: balance;
 }
-
 #story-prologue .sp-hero-sub {
-  margin: 24px auto 0;
-  max-width: 640px;
-  font-size: clamp(15.5px, 1.45vw, 18.5px);
+  margin: 22px auto 0;
+  max-width: 630px;
+  font-size: clamp(15px, 1.4vw, 18px);
   line-height: 1.78;
-  color: rgba(245, 245, 247, 0.76);
+  color: rgba(245, 245, 247, 0.78);
 }
-
 #story-prologue .sp-hero-actions {
-  margin-top: 34px;
+  margin-top: 32px;
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
   gap: 12px;
 }
-
 #story-prologue .sp-btn-primary {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  height: 46px;
-  padding: 0 26px;
+  height: 48px;
+  padding: 0 30px;
   border-radius: 999px;
   border: 0;
   background: var(--sp-bone);
   color: #05070d;
   font-family: var(--sp-font);
-  font-size: 14.5px;
+  font-size: 15px;
   font-weight: 600;
+  letter-spacing: 0.02em;
   cursor: pointer;
-  box-shadow: 0 12px 32px rgba(245, 245, 247, 0.14);
+  box-shadow: 0 14px 36px rgba(245, 245, 247, 0.16);
   transition: transform 250ms var(--sp-ease), box-shadow 250ms var(--sp-ease), background 200ms ease;
 }
 #story-prologue .sp-btn-primary:hover {
   background: #ffffff;
   transform: translateY(-2px);
-  box-shadow: 0 16px 40px rgba(245, 245, 247, 0.22);
+  box-shadow: 0 18px 42px rgba(245, 245, 247, 0.24);
 }
 #story-prologue .sp-btn-primary svg {
   transition: transform 240ms var(--sp-ease);
 }
-#story-prologue .sp-btn-primary:hover svg {
+#story-prologue .sp-btn-primary:hover svg.sp-arrow-right {
   transform: translateX(3px);
 }
-
-#story-prologue .sp-btn-ghost {
-  display: inline-flex;
+#story-prologue .sp-btn-primary:hover svg.sp-arrow-down {
+  transform: translateY(2px);
+}
+#story-prologue .sp-hero-hint {
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: rgba(245, 245, 247, 0.56);
+}
+#story-prologue .sp-cue {
+  position: absolute;
+  bottom: max(18px, env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 8px;
-  height: 46px;
-  padding: 0 22px;
-  border-radius: 999px;
-  border: 1px solid var(--sp-hairline-strong);
-  background: rgba(16, 21, 34, 0.64);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  color: var(--sp-bone);
-  font-family: var(--sp-font);
-  font-size: 14.5px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: border-color 220ms ease, background 220ms ease, transform 250ms var(--sp-ease);
+  pointer-events: none;
 }
-#story-prologue .sp-btn-ghost:hover {
-  border-color: rgba(255, 255, 255, 0.34);
-  background: rgba(25, 32, 50, 0.85);
-  transform: translateY(-2px);
+#story-prologue .sp-cue-line {
+  width: 1px;
+  height: 36px;
+  background: rgba(255, 255, 255, 0.18);
+  overflow: hidden;
+  position: relative;
+}
+#story-prologue .sp-cue-line::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent, var(--sp-champagne), transparent);
+  transform: translateY(-100%);
+  animation: spCueFlow 2.4s cubic-bezier(0.45, 0, 0.25, 1) infinite;
+}
+@keyframes spCueFlow {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
 }
 
-/* Floating Glassmorphic Metrics Bar (bridges Hero into Chapters) */
-#story-prologue .sp-metrics-wrap {
+/* Slides 2..5: Single-Breath Poetic Story Frames */
+#story-prologue .sp-story-inner {
   position: relative;
-  z-index: 6;
-  width: min(100% - var(--sp-gutter) * 2, var(--sp-wide));
-  margin: -72px auto 0;
+  z-index: 3;
+  max-width: 860px;
+  width: 100%;
+  text-align: center;
+}
+#story-prologue .sp-kicker {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--sp-champagne);
+  margin-bottom: 18px;
+}
+#story-prologue .sp-story-quote {
+  font-weight: 600;
+  font-size: clamp(26px, 4.1vw, 52px);
+  line-height: 1.32;
+  letter-spacing: -0.02em;
+  color: var(--sp-bone);
+  text-wrap: balance;
+}
+#story-prologue .sp-story-rule {
+  width: 68px;
+  height: 1px;
+  margin: 24px auto 18px;
+  background: linear-gradient(90deg, transparent, var(--sp-champagne), transparent);
+  transform: scaleX(0);
+  transition: transform 820ms var(--sp-ease) 160ms;
+}
+#story-prologue .sp-slide.is-active .sp-story-rule {
+  transform: scaleX(1);
+}
+#story-prologue .sp-story-sub {
+  font-size: clamp(14px, 1.3vw, 16px);
+  letter-spacing: 0.08em;
+  color: rgba(245, 245, 247, 0.78);
+}
+
+/* Slide 6: Humboldt + Living Planetary Atlas Metrics */
+#story-prologue .sp-earth-inner {
+  position: relative;
+  z-index: 3;
+  width: min(100%, 1040px);
+}
+#story-prologue .sp-earth-copy {
+  max-width: 640px;
+}
+#story-prologue .sp-earth-title {
+  font-weight: 600;
+  font-size: clamp(28px, 4.2vw, 54px);
+  line-height: 1.22;
+  letter-spacing: -0.025em;
+  margin-bottom: 16px;
+  text-wrap: balance;
+}
+#story-prologue .sp-earth-lead {
+  font-size: clamp(14.5px, 1.3vw, 16.5px);
+  line-height: 1.8;
+  color: var(--sp-text-2);
+  max-width: 560px;
 }
 #story-prologue .sp-metrics-bar {
+  margin-top: clamp(24px, 3.6vh, 38px);
+  max-width: 740px;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  border-radius: 26px;
-  border: 1px solid rgba(255, 255, 255, 0.13);
-  background: linear-gradient(180deg, rgba(20, 26, 42, 0.84) 0%, rgba(12, 16, 27, 0.88) 100%);
-  backdrop-filter: saturate(180%) blur(24px);
-  -webkit-backdrop-filter: saturate(180%) blur(24px);
-  box-shadow: 0 24px 64px -18px rgba(0, 0, 0, 0.7);
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: linear-gradient(180deg, rgba(16, 22, 36, 0.82) 0%, rgba(9, 13, 24, 0.88) 100%);
+  backdrop-filter: saturate(180%) blur(22px);
+  -webkit-backdrop-filter: saturate(180%) blur(22px);
+  box-shadow: 0 22px 54px -18px rgba(0, 0, 0, 0.65);
   overflow: hidden;
 }
 #story-prologue .sp-metric-cell {
-  padding: clamp(24px, 3vw, 34px) clamp(20px, 3vw, 36px);
+  padding: clamp(18px, 2.4vh, 26px) clamp(14px, 2.2vw, 26px);
   text-align: center;
   position: relative;
 }
@@ -419,204 +552,71 @@
 }
 #story-prologue .sp-metric-val {
   font-weight: 600;
-  font-size: clamp(32px, 4vw, 48px);
+  font-size: clamp(28px, 3.6vw, 46px);
   line-height: 1.05;
   letter-spacing: -0.035em;
   font-variant-numeric: tabular-nums;
   color: var(--sp-bone);
 }
-#story-prologue .sp-metric-val.is-accent {
-  background: var(--sp-gradient);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
 #story-prologue .sp-metric-name {
-  margin-top: 8px;
-  font-size: 13.5px;
+  margin-top: 6px;
+  font-size: 12.5px;
   color: var(--sp-text-2);
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
 }
 
-/* Shared Section Rhythm */
-#story-prologue .sp-section {
-  padding: clamp(88px, 11vh, 128px) 0;
+/* Slide 7: Precision Instrument */
+#story-prologue .sp-inst-inner {
   position: relative;
+  z-index: 3;
+  width: min(100%, 960px);
 }
-#story-prologue .sp-section--soft {
-  background: var(--sp-bg-soft);
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-#story-prologue .sp-container {
-  width: min(100% - var(--sp-gutter) * 2, var(--sp-wide));
-  margin: 0 auto;
-}
-#story-prologue .sp-section-head {
-  max-width: 760px;
-  margin: 0 auto clamp(42px, 6vw, 64px);
+#story-prologue .sp-inst-head {
   text-align: center;
+  margin-bottom: clamp(18px, 2.8vh, 30px);
 }
-#story-prologue .sp-kicker {
-  display: inline-block;
-  font-size: 12px;
+#story-prologue .sp-inst-title {
   font-weight: 600;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--sp-champagne);
-  margin-bottom: 14px;
-}
-#story-prologue .sp-section-title {
-  font-weight: 600;
-  font-size: clamp(28px, 3.8vw, 48px);
-  line-height: 1.2;
+  font-size: clamp(24px, 3.4vw, 42px);
+  line-height: 1.22;
   letter-spacing: -0.02em;
   text-wrap: balance;
 }
-#story-prologue .sp-section-sub {
-  margin: 18px auto 0;
-  max-width: 620px;
-  font-size: clamp(15px, 1.35vw, 17.5px);
-  line-height: 1.75;
-  color: var(--sp-text-2);
-}
-
-/* Chapter 2 · Editorial Bento Grid */
-#story-prologue .sp-bento {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 20px;
-}
-#story-prologue .sp-card {
-  position: relative;
-  overflow: hidden;
-  border-radius: 28px;
-  border: 1px solid var(--sp-hairline);
-  background: var(--sp-card);
-  padding: clamp(28px, 3.4vw, 40px);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  min-height: 250px;
-  transition: transform 300ms var(--sp-ease), border-color 300ms ease, background 300ms ease, box-shadow 300ms var(--sp-ease);
-}
-#story-prologue .sp-card:hover {
-  transform: translateY(-3px);
-  border-color: var(--sp-hairline-strong);
-  background: var(--sp-card-hover);
-  box-shadow: 0 24px 54px -22px rgba(0, 0, 0, 0.75);
-}
-#story-prologue .sp-card--wide {
-  grid-column: span 2;
-  min-height: 300px;
-  display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
-  align-items: center;
-  gap: 32px;
-}
-#story-prologue .sp-card-bg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  opacity: 0.22;
-  transition: transform 600ms var(--sp-ease), opacity 400ms ease;
-  pointer-events: none;
-}
-#story-prologue .sp-card:hover .sp-card-bg {
-  transform: scale(1.03);
-  opacity: 0.3;
-}
-#story-prologue .sp-card-scrim {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, rgba(10, 14, 24, 0.92) 0%, rgba(10, 14, 24, 0.72) 55%, rgba(10, 14, 24, 0.45) 100%);
-  pointer-events: none;
-}
-#story-prologue .sp-card-body {
-  position: relative;
-  z-index: 2;
-}
-#story-prologue .sp-card-era {
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--sp-champagne);
-  margin-bottom: 12px;
-}
-#story-prologue .sp-card-title {
-  font-weight: 600;
-  font-size: clamp(20px, 2.1vw, 27px);
-  line-height: 1.34;
-  letter-spacing: -0.015em;
-  color: var(--sp-bone);
-  text-wrap: balance;
-}
-#story-prologue .sp-card--wide .sp-card-title {
-  font-size: clamp(24px, 2.7vw, 34px);
-}
-#story-prologue .sp-card-desc {
-  margin-top: 14px;
-  font-size: 15px;
-  line-height: 1.78;
-  color: var(--sp-text-2);
-}
-#story-prologue .sp-card-visual {
-  position: relative;
-  z-index: 2;
-  height: 210px;
-  border-radius: 20px;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-}
-#story-prologue .sp-card-visual img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-/* Chapter 3 · Precision Instrument Showcase */
 #story-prologue .sp-inst-shell {
-  border-radius: 28px;
+  border-radius: 26px;
   border: 1px solid var(--sp-hairline);
   background: linear-gradient(180deg, rgba(16, 22, 37, 0.92) 0%, rgba(9, 13, 22, 0.96) 100%);
-  padding: clamp(20px, 3vw, 32px);
+  padding: clamp(14px, 2.2vw, 26px);
   box-shadow: 0 28px 70px -26px rgba(0, 0, 0, 0.75);
-}
-#story-prologue .sp-tabs {
-  display: inline-flex;
-  justify-content: center;
-  gap: 6px;
-  padding: 5px;
-  border-radius: 999px;
-  border: 1px solid var(--sp-hairline);
-  background: rgba(7, 10, 18, 0.8);
-  margin: 0 auto 24px;
 }
 #story-prologue .sp-tabs-wrap {
   display: flex;
   justify-content: center;
 }
+#story-prologue .sp-tabs {
+  display: inline-flex;
+  justify-content: center;
+  gap: 6px;
+  padding: 4px;
+  border-radius: 999px;
+  border: 1px solid var(--sp-hairline);
+  background: rgba(7, 10, 18, 0.8);
+  margin: 0 auto clamp(14px, 2vh, 20px);
+}
 #story-prologue .sp-tab {
-  position: relative;
   background: transparent;
   border: 0;
-  height: 36px;
-  padding: 0 20px;
+  height: 34px;
+  padding: 0 18px;
   border-radius: 999px;
   font-family: var(--sp-font);
   font-weight: 500;
-  font-size: 13.5px;
+  font-size: 13px;
   color: var(--sp-text-2);
   cursor: pointer;
   transition: color 220ms ease, background 220ms ease;
 }
-#story-prologue .sp-tab:hover {
-  color: #ffffff;
-}
+#story-prologue .sp-tab:hover { color: #ffffff; }
 #story-prologue .sp-tab.active {
   background: var(--sp-bone);
   color: #05070d;
@@ -625,8 +625,8 @@
 #story-prologue .sp-dial-frame {
   position: relative;
   width: 100%;
-  height: clamp(320px, 44vh, 400px);
-  border-radius: 20px;
+  height: clamp(240px, 36vh, 360px);
+  border-radius: 18px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: radial-gradient(ellipse 75% 65% at 62% 42%, #141d31 0%, #0a0e18 68%, #070a12 100%);
   overflow: hidden;
@@ -640,9 +640,9 @@
 }
 #story-prologue .sp-cap-bar {
   position: absolute;
-  left: clamp(22px, 3.5vw, 38px);
-  right: clamp(22px, 3.5vw, 38px);
-  bottom: clamp(20px, 3vh, 30px);
+  left: clamp(18px, 3vw, 34px);
+  right: clamp(18px, 3vw, 34px);
+  bottom: clamp(16px, 2.4vh, 26px);
   z-index: 3;
   pointer-events: none;
 }
@@ -653,8 +653,8 @@
   right: 0;
   max-width: 520px;
   opacity: 0;
-  transform: translate3d(0, 12px, 0);
-  transition: opacity 380ms var(--sp-ease), transform 420ms var(--sp-ease);
+  transform: translate3d(0, 10px, 0);
+  transition: opacity 360ms var(--sp-ease), transform 400ms var(--sp-ease);
 }
 #story-prologue .sp-cap.active {
   opacity: 1;
@@ -662,77 +662,66 @@
 }
 #story-prologue .sp-cap h3 {
   font-weight: 600;
-  font-size: clamp(18px, 2vw, 23px);
+  font-size: clamp(17px, 1.9vw, 22px);
   letter-spacing: -0.01em;
   color: var(--sp-bone);
-  margin-bottom: 6px;
+  margin-bottom: 5px;
 }
 #story-prologue .sp-cap p {
-  font-size: 14px;
-  line-height: 1.7;
+  font-size: clamp(12.5px, 1.15vw, 14px);
+  line-height: 1.65;
   color: rgba(245, 245, 247, 0.78);
 }
 
-/* Chapter 4 · Finale CTA */
-#story-prologue .sp-finale {
-  position: relative;
-  min-height: 74vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: clamp(72px, 10vh, 110px) var(--sp-gutter);
-  overflow: hidden;
-  background: var(--sp-bg);
-}
-#story-prologue .sp-finale-bg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center bottom;
-  opacity: 0.85;
-  pointer-events: none;
-}
-#story-prologue .sp-finale-scrim {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, #05070d 0%, rgba(5, 7, 13, 0.36) 42%, rgba(5, 7, 13, 0.24) 70%, rgba(5, 7, 13, 0.82) 100%);
-  pointer-events: none;
-}
+/* Slide 8: Finale CTA */
 #story-prologue .sp-finale-inner {
   position: relative;
   z-index: 3;
   max-width: 780px;
+  width: 100%;
+  text-align: center;
 }
 #story-prologue .sp-finale-title {
   font-weight: 600;
-  font-size: clamp(32px, 5vw, 58px);
+  font-size: clamp(30px, 4.8vw, 58px);
   line-height: 1.18;
   letter-spacing: -0.025em;
-  margin-bottom: 18px;
+  margin-bottom: 16px;
   text-wrap: balance;
 }
 #story-prologue .sp-finale-sub {
-  font-size: 15px;
+  font-size: clamp(13.5px, 1.25vw, 15px);
   letter-spacing: 0.08em;
-  color: rgba(245, 245, 247, 0.78);
-  margin-bottom: 34px;
+  color: rgba(245, 245, 247, 0.8);
+  margin-bottom: 32px;
 }
 #story-prologue .sp-footnotes {
-  margin-top: 64px;
-  font-size: 11.5px;
-  letter-spacing: 0.06em;
-  color: rgba(200, 206, 220, 0.58);
-  max-width: 740px;
-  line-height: 1.9;
+  margin-top: clamp(32px, 6vh, 64px);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  color: rgba(200, 206, 220, 0.56);
+  max-width: 720px;
+  margin-inline: auto;
+  line-height: 1.85;
 }
 
-@media (max-width: 820px) {
-  #story-prologue .sp-nav-links { display: none; }
-  #story-prologue .sp-metrics-bar { grid-template-columns: 1fr; }
+@media (max-width: 768px) {
+  #story-prologue .sp-slide {
+    padding: 64px 20px 44px;
+  }
+  #story-prologue .sp-dot-rail {
+    right: 8px;
+    gap: 8px;
+  }
+  #story-prologue .sp-dot-label {
+    display: none;
+  }
+  #story-prologue .sp-metrics-bar {
+    grid-template-columns: 1fr;
+  }
+  #story-prologue .sp-metric-cell {
+    padding: 12px 16px;
+  }
   #story-prologue .sp-metric-cell + .sp-metric-cell::before {
     left: 16%;
     right: 16%;
@@ -741,27 +730,50 @@
     width: auto;
     height: 1px;
   }
-  #story-prologue .sp-bento { grid-template-columns: 1fr; }
-  #story-prologue .sp-card--wide {
-    grid-column: span 1;
-    grid-template-columns: 1fr;
+  #story-prologue .sp-dial-frame {
+    height: clamp(230px, 38vh, 320px);
   }
-  #story-prologue .sp-metrics-wrap { margin-top: -40px; }
+  #story-prologue .sp-tab {
+    padding: 0 13px;
+    font-size: 12.5px;
+  }
+}
+
+@media (max-width: 480px) {
+  #story-prologue .sp-dot-rail {
+    display: none;
+  }
+}
+
+@media (max-height: 740px) {
+  #story-prologue .sp-slide {
+    padding-top: 56px;
+    padding-bottom: 34px;
+  }
+  #story-prologue .sp-badge { margin-bottom: 16px; }
+  #story-prologue .sp-hero-actions { margin-top: 22px; }
+  #story-prologue .sp-cue { display: none; }
+  #story-prologue .sp-dial-frame { height: clamp(210px, 34vh, 290px); }
+  #story-prologue .sp-footnotes { margin-top: 22px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   #story-prologue { scroll-behavior: auto; transition: none; }
+  #story-prologue .sp-cue-line::after { animation: none; }
   #story-prologue .sp-reveal,
   #story-prologue .sp-line-inner {
     opacity: 1;
     transform: none;
     transition: none;
   }
-  #story-prologue .sp-hero-photo,
-  #story-prologue .sp-card,
+  #story-prologue .sp-story-rule {
+    transform: scaleX(1);
+    transition: none;
+  }
+  #story-prologue .sp-bg-photo,
   #story-prologue .sp-cap,
   #story-prologue .sp-btn-primary,
-  #story-prologue .sp-btn-ghost {
+  #story-prologue .sp-dot-btn {
     transition: none;
   }
 }

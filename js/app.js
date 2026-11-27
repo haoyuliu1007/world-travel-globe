@@ -2327,6 +2327,16 @@
       scheduleLabelLayout();
     });
 
+    const onFullscreenResize = () => {
+      if (map) {
+        map.resize();
+        resizeLabelCanvas();
+        scheduleLabelLayout();
+      }
+    };
+    document.addEventListener('fullscreenchange', onFullscreenResize);
+    document.addEventListener('webkitfullscreenchange', onFullscreenResize);
+
     // WebGL Context Loss & Restore Handling
     const canvas = map.getCanvas();
     if (canvas) {

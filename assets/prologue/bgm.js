@@ -193,4 +193,104 @@
     isActive: () => active,
     onChange
   };
+
+  const WINDOW_KEY = 'wtg_intro_window_v1';
+  const WINDOW_MS = 6 * 60 * 60 * 1000;
+  const MAX_PLAYS = 3;
+
+  function writeSessionState(state) {
+    try {
+      if (global.localStorage) {
+        global.localStorage.setItem(WINDOW_KEY, JSON.stringify(state));
+      }
+    } catch {}
+  }
+
+  function readSessionState(now = Date.now()) {
+    let parsed = null;
+    try {
+      const raw = global.localStorage ? global.localStorage.getItem(WINDOW_KEY) : null;
+      if (raw) parsed = JSON.parse(raw);
+    } catch {}
+    if (!parsed || typeof parsed !== 'object' || !Number.isFinite(parsed.windowStart) || (now - parsed.windowStart) >= WINDOW_MS) {
+      const fresh = { windowStart: now, plays: 0, tourSeen: false };
+      writeSessionState(fresh);
+      return fresh;
+    }
+    return {
+      windowStart: parsed.windowStart,
+      plays: Number(parsed.plays) || 0,
+      tourSeen: Boolean(parsed.tourSeen)
+    };
+  }
+
+  function getState(now = Date.now()) {
+    return readSessionState(now);
+  }
+
+  function shouldAutoRun(opts = {}) {
+    const landing = opts.landing !== undefined
+      ? Boolean(opts.landing)
+      : Boolean(!global.location || (!global.location.search && !global.location.hash));
+    if (!landing) return false;
+
+    const reduced = opts.reducedMotion !== undefined
+      ? Boolean(opts.reducedMotion)
+      : Boolean(typeof global.matchMedia === 'function' && global.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    if (reduced) return false;
+
+    return getState(opts.now !== undefined ? opts.now : Date.now()).plays < MAX_PLAYS;
+  }
+
+  function recordPlay(now = Date.now()) {
+    const state = readSessionState(now);
+    const next = {
+      windowStart: state.windowStart,
+      plays: state.plays + 1,
+      tourSeen: state.tourSeen
+    };
+    writeSessionState(next);
+    return next;
+  }
+
+  function hasSeenTour(now = Date.now()) {
+    return getState(now).tourSeen;
+  }
+
+  function markTourSeen(now = Date.now()) {
+    const state = readSessionState(now);
+    const next = {
+      windowStart: state.windowStart,
+      plays: state.plays,
+      tourSeen: true
+    };
+    writeSessionState(next);
+    return next;
+  }
+
+  function requestFullscreen() {
+    try {
+      const doc = global.document;
+      if (!doc) return;
+      if (doc.fullscreenElement || doc.webkitFullscreenElement) return;
+      const el = doc.documentElement;
+      if (!el) return;
+      const fn = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (typeof fn === 'function') {
+        const res = fn.call(el);
+        if (res && typeof res.catch === 'function') res.catch(() => {});
+      }
+    } catch {}
+  }
+
+  global.IntroSession = {
+    WINDOW_MS,
+    MAX_PLAYS,
+    getState,
+    shouldAutoRun,
+    recordPlay,
+    hasSeenTour,
+    markTourSeen,
+    requestFullscreen
+  };
 })(window);

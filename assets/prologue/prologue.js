@@ -15,14 +15,26 @@
   let rafId = 0;
   let activeInst = 0;
   let instBlend = 0;
+  let activeSlideIdx = 0;
+  let instNearViewport = false;
   let returnFocusEl = null;
   let bgmUnsub = null;
-  let revealObserver = null;
-  let countObserver = null;
+  let slideObserver = null;
   let navRaf = 0;
   const inertNodes = new Set();
 
   let refs = {};
+
+  const CHAPTER_LABELS = [
+    '序幕',
+    '青铜星空',
+    '丈量星球',
+    '总观效应',
+    '空间与地方',
+    '万物之网',
+    '天文仪器',
+    '启程时刻'
+  ];
 
   function buildDom() {
     if (built) return;
@@ -32,27 +44,29 @@
       <div class="sp-hairline" id="sp-hairline" aria-hidden="true"></div>
 
       <header class="sp-nav" id="sp-nav">
-        <div class="sp-nav-inner">
-          <div class="sp-brand">
-            <span class="sp-brand-dot" aria-hidden="true"></span>
-            <span>World Travel Globe</span>
-          </div>
-          <nav class="sp-nav-links" aria-label="序章章节">
-            <button class="sp-nav-link" type="button" data-scroll-target="#sp-act-chapters">探索缘起</button>
-            <button class="sp-nav-link" type="button" data-scroll-target="#sp-act-instrument">天文仪器</button>
-            <button class="sp-nav-link" type="button" data-scroll-target="#sp-act-finale">即刻出发</button>
-          </nav>
-          <div class="sp-top-controls">
-            <button class="sp-pill-btn sp-mute-btn" id="sp-mute" type="button" aria-label="静音">🔊</button>
-            <button class="sp-pill-btn" id="sp-skip" type="button">跳过，进入地球仪 <kbd style="opacity:.65;font-size:11px;margin-left:3px;">Esc</kbd></button>
-          </div>
+        <div class="sp-brand">
+          <span class="sp-brand-dot" aria-hidden="true"></span>
+          <span>World Travel Globe</span>
+        </div>
+        <div class="sp-top-controls">
+          <button class="sp-mute-btn" id="sp-mute" type="button" aria-label="静音">🔊</button>
+          <button class="sp-skip-quiet" id="sp-skip" type="button" aria-label="跳过序章直接进入地球仪">跳过</button>
         </div>
       </header>
 
-      <section class="sp-hero" id="sp-act-hero">
-        <img class="sp-hero-photo" src="assets/prologue/scene-1-origin.jpg?v=1" alt="" />
-        <div class="sp-hero-grid" aria-hidden="true"></div>
-        <div class="sp-hero-glow" aria-hidden="true"></div>
+      <nav class="sp-dot-rail" id="sp-dot-rail" aria-label="序章章节进度">
+        ${CHAPTER_LABELS.map((label, idx) => `
+          <button class="sp-dot-btn${idx === 0 ? ' active' : ''}" type="button" data-slide-idx="${idx}" aria-label="${label}">
+            <span class="sp-dot-label">${label}</span>
+          </button>
+        `).join('')}
+      </nav>
+
+      <!-- Slide 1: Hero -->
+      <section class="sp-slide is-active" id="sp-s1" data-slide="0">
+        <img class="sp-bg-photo" src="assets/prologue/scene-1-origin.jpg?v=1" alt="" />
+        <div class="sp-grid-overlay" aria-hidden="true"></div>
+        <div class="sp-scrim-hero" aria-hidden="true"></div>
 
         <div class="sp-hero-inner">
           <div class="sp-badge sp-reveal" style="--sp-delay: 20ms;">
@@ -71,133 +85,132 @@
           </p>
 
           <div class="sp-hero-actions sp-reveal" style="--sp-delay: 250ms;">
-            <button class="sp-btn-primary" id="sp-hero-enter-btn" type="button">
-              <span>进入 3D 地球仪</span>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+            <button class="sp-btn-primary" id="sp-start-btn" type="button">
+              <span>开启序章之旅</span>
+              <svg class="sp-arrow-down" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
             </button>
-            <button class="sp-btn-ghost" id="sp-hero-explore-btn" type="button">
-              <span>向下阅读序章</span>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
-            </button>
+            <div class="sp-hero-hint">推荐 · 开启全屏与配乐，沉浸阅读序章</div>
           </div>
+        </div>
+
+        <div class="sp-cue" aria-hidden="true">
+          <div class="sp-cue-line"></div>
         </div>
       </section>
 
-      <div class="sp-metrics-wrap" id="sp-metrics">
-        <div class="sp-metrics-bar sp-reveal" style="--sp-delay: 120ms;">
-          <div class="sp-metric-cell">
-            <div class="sp-metric-val" data-count="137">0</div>
-            <div class="sp-metric-name">国家与地区</div>
-          </div>
-          <div class="sp-metric-cell">
-            <div class="sp-metric-val" data-count="722">0</div>
-            <div class="sp-metric-name">精选目的地</div>
-          </div>
-          <div class="sp-metric-cell">
-            <div class="sp-metric-val is-accent" data-count="5414">0</div>
-            <div class="sp-metric-name">真实摄影机位</div>
-          </div>
+      <!-- Slide 2: Nebra Sky Disc -->
+      <section class="sp-slide" id="sp-s2" data-slide="1">
+        <img class="sp-bg-photo" src="assets/prologue/scene-1-origin.jpg?v=1" alt="" />
+        <div class="sp-scrim-story" aria-hidden="true"></div>
+        <div class="sp-story-inner">
+          <div class="sp-kicker sp-reveal" style="--sp-delay: 0ms;">c. 1600 BCE · Nebra Sky Disc</div>
+          <h2 class="sp-story-quote sp-reveal" style="--sp-delay: 70ms;">
+            <span class="sp-phrase">三千六百年前，人类第一次</span><br />
+            <span class="sp-phrase sp-accent-grad">把星空与季节刻上青铜。</span>
+          </h2>
+          <div class="sp-story-rule" aria-hidden="true"></div>
+          <p class="sp-story-sub sp-reveal" style="--sp-delay: 150ms;">
+            <span class="sp-phrase">只为读懂风向、物候，</span><span class="sp-phrase">与出发的准确时刻</span>
+          </p>
         </div>
-      </div>
+      </section>
 
-      <section class="sp-section" id="sp-act-chapters">
-        <div class="sp-container">
-          <div class="sp-section-head">
-            <div class="sp-kicker sp-reveal" style="--sp-delay: 0ms;">Living Planetary Atlas</div>
-            <h2 class="sp-section-title sp-reveal" style="--sp-delay: 60ms;">
-              <span class="sp-phrase">不是碎片化的攻略清单，</span><br />
-              <span class="sp-phrase sp-accent-grad">而是一整颗呼吸着的星球。</span>
+      <!-- Slide 3: Eratosthenes -->
+      <section class="sp-slide" id="sp-s3" data-slide="2">
+        <img class="sp-bg-photo" src="assets/prologue/scene-2-astrolabe.jpg?v=1" alt="" style="object-position: right center;" />
+        <div class="sp-scrim-story" aria-hidden="true"></div>
+        <div class="sp-story-inner">
+          <div class="sp-kicker sp-reveal" style="--sp-delay: 0ms;">c. 240 BCE · Eratosthenes</div>
+          <h2 class="sp-story-quote sp-reveal" style="--sp-delay: 70ms;">
+            <span class="sp-phrase">两千年前，仅凭正午 7.2° 的树影，</span><br />
+            <span class="sp-phrase sp-accent-grad">便算出整颗星球的周长。</span>
+          </h2>
+          <div class="sp-story-rule" aria-hidden="true"></div>
+          <p class="sp-story-sub sp-reveal" style="--sp-delay: 150ms;">
+            <span class="sp-phrase">人类第一次确信：脚下并非无尽平面，</span><span class="sp-phrase">而是一颗完整的球</span>
+          </p>
+        </div>
+      </section>
+
+      <!-- Slide 4: The Overview Effect -->
+      <section class="sp-slide" id="sp-s4" data-slide="3">
+        <img class="sp-bg-photo" src="assets/prologue/scene-3-earth.jpg?v=1" alt="" />
+        <div class="sp-scrim-story" aria-hidden="true"></div>
+        <div class="sp-story-inner">
+          <div class="sp-kicker sp-reveal" style="--sp-delay: 0ms;">1987 · Frank White · The Overview Effect</div>
+          <h2 class="sp-story-quote sp-reveal" style="--sp-delay: 70ms;">
+            <span class="sp-phrase">直到飞离大气层回望，</span><br />
+            <span class="sp-phrase sp-accent-grad">地图上的国界才第一次消失。</span>
+          </h2>
+          <div class="sp-story-rule" aria-hidden="true"></div>
+          <p class="sp-story-sub sp-reveal" style="--sp-delay: 150ms;">
+            <span class="sp-phrase">宇航哲学称之为「总观效应」——</span><span class="sp-phrase">万物共享同一道晨昏线</span>
+          </p>
+        </div>
+      </section>
+
+      <!-- Slide 5: Space & Place -->
+      <section class="sp-slide" id="sp-s5" data-slide="4">
+        <img class="sp-bg-photo" src="assets/prologue/scene-3-earth.jpg?v=1" alt="" style="object-position: 62% 38%;" />
+        <div class="sp-scrim-story" aria-hidden="true"></div>
+        <div class="sp-story-inner">
+          <div class="sp-kicker sp-reveal" style="--sp-delay: 0ms;">1977 · Yi-Fu Tuan · Space &amp; Place</div>
+          <h2 class="sp-story-quote sp-reveal" style="--sp-delay: 70ms;">
+            <span class="sp-phrase">当你真正认识一处坐标，</span><br />
+            <span class="sp-phrase sp-accent-grad">冷冰冰的“空间”，才成了“地方”。</span>
+          </h2>
+          <div class="sp-story-rule" aria-hidden="true"></div>
+          <p class="sp-story-sub sp-reveal" style="--sp-delay: 150ms;">
+            <span class="sp-phrase">这正是我们造这颗 3D 地球仪的起点</span>
+          </p>
+        </div>
+      </section>
+
+      <!-- Slide 6: Humboldt + Living Planetary Atlas Metrics -->
+      <section class="sp-slide" id="sp-s6" data-slide="5">
+        <img class="sp-bg-photo" src="assets/prologue/scene-3-earth.jpg?v=1" alt="" style="object-position: 75% center;" />
+        <div class="sp-scrim-earth" aria-hidden="true"></div>
+        <div class="sp-earth-inner">
+          <div class="sp-earth-copy">
+            <div class="sp-kicker sp-reveal" style="--sp-delay: 0ms;">1845 · Alexander von Humboldt · Kosmos</div>
+            <h2 class="sp-earth-title sp-reveal" style="--sp-delay: 70ms;">
+              <span class="sp-phrase">自然，是一张千万丝线</span><br />
+              <span class="sp-phrase sp-accent-grad">织成的网。</span>
             </h2>
-            <p class="sp-section-sub sp-reveal" style="--sp-delay: 120ms;">
-              <span class="sp-phrase">洪堡在《宇宙》中写下：</span><span class="sp-phrase">海拔、洋流、花期与光影从未孤立。</span>
-              <span class="sp-phrase">当你真正认识一处坐标，</span><span class="sp-phrase">冷冰冰的“空间”，才成了“地方”。</span>
+            <p class="sp-earth-lead sp-reveal" style="--sp-delay: 140ms;">
+              <span class="sp-phrase">海拔、洋流、花期与光影从未孤立。</span>
+              <span class="sp-phrase">我们把整颗地球的地形尺度、十二个月物候与太阳光线，</span><span class="sp-phrase">重新交还到你的掌心。</span>
             </p>
           </div>
 
-          <div class="sp-bento">
-            <article class="sp-card sp-card--wide sp-reveal" style="--sp-delay: 40ms;">
-              <img class="sp-card-bg" src="assets/prologue/scene-3-earth.jpg?v=1" alt="" />
-              <div class="sp-card-scrim" aria-hidden="true"></div>
-              <div class="sp-card-body">
-                <div class="sp-card-era">1845 · Alexander von Humboldt · Kosmos</div>
-                <h3 class="sp-card-title">
-                  <span class="sp-phrase">自然，是一张千万丝线</span><span class="sp-phrase">织成的网。</span>
-                </h3>
-                <p class="sp-card-desc">
-                  <span class="sp-phrase">在碎片攻略的时代，地球被切成了互不相干的打卡点。</span>
-                  <span class="sp-phrase">我们把真实卫星地形、十二个月物候规律与太阳光影，</span><span class="sp-phrase">重新缝合回同一颗连续转动的 3D 球体。</span>
-                </p>
-              </div>
-              <div class="sp-card-visual">
-                <img src="assets/prologue/scene-3-earth.jpg?v=1" alt="从轨道回望地球晨昏线" />
-              </div>
-            </article>
-
-            <article class="sp-card sp-reveal" style="--sp-delay: 80ms;">
-              <img class="sp-card-bg" src="assets/prologue/scene-1-origin.jpg?v=1" alt="" />
-              <div class="sp-card-scrim" aria-hidden="true"></div>
-              <div class="sp-card-body">
-                <div class="sp-card-era">c. 1600 BCE · Nebra Sky Disc</div>
-                <h3 class="sp-card-title">
-                  <span class="sp-phrase">三千六百年前，人类第一次</span><span class="sp-phrase">把星空与季节刻上青铜。</span>
-                </h3>
-                <p class="sp-card-desc">
-                  <span class="sp-phrase">只为读懂风向、物候，与出发的准确时刻。</span>
-                </p>
-              </div>
-            </article>
-
-            <article class="sp-card sp-reveal" style="--sp-delay: 140ms;">
-              <img class="sp-card-bg" src="assets/prologue/scene-2-astrolabe.jpg?v=1" alt="" style="object-position: right center;" />
-              <div class="sp-card-scrim" aria-hidden="true"></div>
-              <div class="sp-card-body">
-                <div class="sp-card-era">c. 240 BCE · Eratosthenes</div>
-                <h3 class="sp-card-title">
-                  <span class="sp-phrase">两千年前，仅凭正午 7.2° 树影，</span><span class="sp-phrase">便算出整颗星球的周长。</span>
-                </h3>
-                <p class="sp-card-desc">
-                  <span class="sp-phrase">人类第一次确信：脚下并非无尽平面，而是一颗完整的球。</span>
-                </p>
-              </div>
-            </article>
-
-            <article class="sp-card sp-reveal" style="--sp-delay: 100ms;">
-              <div class="sp-card-body">
-                <div class="sp-card-era">1987 · Frank White · The Overview Effect</div>
-                <h3 class="sp-card-title">
-                  <span class="sp-phrase">直到飞离大气层回望，</span><span class="sp-phrase">地图上的国界才第一次消失。</span>
-                </h3>
-                <p class="sp-card-desc">
-                  <span class="sp-phrase">宇航哲学称之为「总观效应」——万物共享同一道晨昏线。</span>
-                </p>
-              </div>
-            </article>
-
-            <article class="sp-card sp-reveal" style="--sp-delay: 160ms;">
-              <div class="sp-card-body">
-                <div class="sp-card-era">1977 · Yi-Fu Tuan · Space &amp; Place</div>
-                <h3 class="sp-card-title">
-                  <span class="sp-phrase">当你真正认识一处坐标，</span><span class="sp-phrase">冷冰冰的“空间”，才成了“地方”。</span>
-                </h3>
-                <p class="sp-card-desc">
-                  <span class="sp-phrase">这正是我们造这颗 3D 地球仪的起点。</span>
-                </p>
-              </div>
-            </article>
+          <div class="sp-metrics-bar sp-reveal" style="--sp-delay: 210ms;">
+            <div class="sp-metric-cell">
+              <div class="sp-metric-val" data-count="137">0</div>
+              <div class="sp-metric-name">国家与地区</div>
+            </div>
+            <div class="sp-metric-cell">
+              <div class="sp-metric-val" data-count="722">0</div>
+              <div class="sp-metric-name">精选目的地</div>
+            </div>
+            <div class="sp-metric-cell">
+              <div class="sp-metric-val sp-accent-grad" data-count="5414">0</div>
+              <div class="sp-metric-name">真实摄影机位</div>
+            </div>
           </div>
         </div>
       </section>
 
-      <section class="sp-section sp-section--soft" id="sp-act-instrument">
-        <div class="sp-container">
-          <div class="sp-section-head">
+      <!-- Slide 7: Precision Instrument -->
+      <section class="sp-slide" id="sp-s7" data-slide="6">
+        <div class="sp-inst-inner">
+          <div class="sp-inst-head">
             <div class="sp-kicker sp-reveal" style="--sp-delay: 0ms;">Precision Instrument</div>
-            <h2 class="sp-section-title sp-reveal" style="--sp-delay: 60ms;">
+            <h2 class="sp-inst-title sp-reveal" style="--sp-delay: 70ms;">
               <span class="sp-phrase">以天文仪器的精度，</span><span class="sp-phrase sp-accent-grad">丈量下一次出发。</span>
             </h2>
           </div>
 
-          <div class="sp-inst-shell sp-reveal" style="--sp-delay: 120ms;">
+          <div class="sp-inst-shell sp-reveal" style="--sp-delay: 140ms;">
             <div class="sp-tabs-wrap">
               <div class="sp-tabs" role="tablist" aria-label="核心仪器能力">
                 <button class="sp-tab active" data-inst="0" role="tab" aria-selected="true" type="button">物候刻度</button>
@@ -227,9 +240,10 @@
         </div>
       </section>
 
-      <section class="sp-finale" id="sp-act-finale">
-        <img class="sp-finale-bg" src="assets/prologue/scene-4-dawn.jpg?v=1" alt="" />
-        <div class="sp-finale-scrim" aria-hidden="true"></div>
+      <!-- Slide 8: Departure Finale -->
+      <section class="sp-slide" id="sp-s8" data-slide="7">
+        <img class="sp-bg-photo" src="assets/prologue/scene-4-dawn.jpg?v=1" alt="" style="object-position: center bottom;" />
+        <div class="sp-scrim-dawn" aria-hidden="true"></div>
         <div class="sp-finale-inner">
           <div class="sp-kicker sp-reveal" style="--sp-delay: 0ms;">Ready for Departure</div>
           <h2 class="sp-finale-title sp-reveal" style="--sp-delay: 70ms;">
@@ -239,7 +253,7 @@
           <div class="sp-reveal" style="--sp-delay: 190ms;">
             <button class="sp-btn-primary" id="sp-enter-btn" type="button">
               <span>进入 3D 地球仪</span>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+              <svg class="sp-arrow-right" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
             </button>
           </div>
 
@@ -252,18 +266,16 @@
 
     refs = {
       hairline: root.querySelector('#sp-hairline'),
-      nav: root.querySelector('#sp-nav'),
       muteBtn: root.querySelector('#sp-mute'),
       skipBtn: root.querySelector('#sp-skip'),
-      heroEnterBtn: root.querySelector('#sp-hero-enter-btn'),
-      heroExploreBtn: root.querySelector('#sp-hero-explore-btn'),
+      startBtn: root.querySelector('#sp-start-btn'),
       enterBtn: root.querySelector('#sp-enter-btn'),
+      slides: Array.from(root.querySelectorAll('.sp-slide')),
+      dots: Array.from(root.querySelectorAll('.sp-dot-btn')),
       instCanvas: root.querySelector('#sp-inst-canvas'),
       iCtx: root.querySelector('#sp-inst-canvas').getContext('2d'),
       tabs: Array.from(root.querySelectorAll('.sp-tab')),
       caps: Array.from(root.querySelectorAll('.sp-cap')),
-      navLinks: Array.from(root.querySelectorAll('.sp-nav-link')),
-      reveals: Array.from(root.querySelectorAll('.sp-reveal')),
       counters: Array.from(root.querySelectorAll('[data-count]'))
     };
 
@@ -278,20 +290,25 @@
       });
     });
 
-    refs.navLinks.forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const target = root.querySelector(btn.dataset.scrollTarget);
-        if (target) target.scrollIntoView({ behavior: reduced.matches ? 'auto' : 'smooth', block: 'start' });
+    refs.dots.forEach((dot) => {
+      dot.addEventListener('click', () => {
+        goToSlide(Number(dot.dataset.slideIdx));
       });
     });
 
-    refs.heroExploreBtn.addEventListener('click', () => {
-      const metrics = root.querySelector('#sp-metrics');
-      if (metrics) metrics.scrollIntoView({ behavior: reduced.matches ? 'auto' : 'smooth', block: 'center' });
+    refs.startBtn.addEventListener('click', () => {
+      if (global.IntroSession) global.IntroSession.requestFullscreen();
+      if (global.CosmicBGM) {
+        if (global.CosmicBGM.isBlocked() || global.CosmicBGM.isMuted()) {
+          global.CosmicBGM.unmute();
+        } else if (!global.CosmicBGM.isActive()) {
+          global.CosmicBGM.start(0.58);
+        }
+      }
+      goToSlide(1);
     });
 
     refs.skipBtn.addEventListener('click', () => close('skip'));
-    refs.heroEnterBtn.addEventListener('click', () => close('cta'));
     refs.enterBtn.addEventListener('click', () => close('cta'));
     refs.muteBtn.addEventListener('click', () => {
       if (global.CosmicBGM) global.CosmicBGM.toggleMute();
@@ -303,25 +320,40 @@
     });
   }
 
-  function revealVisibleInViewport() {
-    if (!isOpen) return;
+  function goToSlide(idx) {
+    const clamped = Math.max(0, Math.min(refs.slides.length - 1, idx));
+    const target = refs.slides[clamped];
+    if (!target) return;
+    activateSlide(clamped);
+    target.scrollIntoView({ behavior: reduced.matches ? 'auto' : 'smooth', block: 'start' });
+  }
+
+  function activateSlide(idx) {
+    activeSlideIdx = idx;
+    const slide = refs.slides[idx];
+    if (slide) {
+      slide.classList.add('is-active');
+      if (idx === 5) {
+        refs.counters.forEach((el) => animateCount(el));
+      }
+    }
+    refs.dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+
+    const wasNear = instNearViewport;
+    instNearViewport = idx >= 5 && idx <= 7;
+    if (instNearViewport && !wasNear && isOpen && !rafId) {
+      resizeInst();
+      rafId = requestAnimationFrame(tick);
+    }
+  }
+
+  function syncActiveSlideFromScroll() {
+    if (!isOpen || !refs.slides.length) return;
     const h = root.clientHeight || global.innerHeight || 900;
-    refs.reveals.forEach((el) => {
-      if (el.classList.contains('is-visible')) return;
-      const r = el.getBoundingClientRect();
-      if (r.top < h * 1.05 && r.bottom > -40) {
-        el.classList.add('is-visible');
-        if (revealObserver) revealObserver.unobserve(el);
-      }
-    });
-    refs.counters.forEach((el) => {
-      if (el.dataset.counted === '1') return;
-      const r = el.getBoundingClientRect();
-      if (r.top < h * 1.02 && r.bottom > 0) {
-        animateCount(el);
-        if (countObserver) countObserver.unobserve(el);
-      }
-    });
+    const approxIdx = Math.max(0, Math.min(refs.slides.length - 1, Math.round(root.scrollTop / Math.max(1, h))));
+    if (approxIdx !== activeSlideIdx || !refs.slides[approxIdx].classList.contains('is-active')) {
+      activateSlide(approxIdx);
+    }
   }
 
   function onScroll() {
@@ -333,10 +365,7 @@
       if (refs.hairline) {
         refs.hairline.style.transform = `scaleX(${clamp01(y / maxS).toFixed(4)})`;
       }
-      if (refs.nav) {
-        refs.nav.classList.toggle('is-scrolled', y > 8);
-      }
-      revealVisibleInViewport();
+      syncActiveSlideFromScroll();
     });
   }
 
@@ -367,53 +396,38 @@
   function setupObservers() {
     teardownObservers();
 
+    refs.slides.forEach((s, i) => s.classList.toggle('is-active', i === 0));
+    refs.dots.forEach((d, i) => d.classList.toggle('active', i === 0));
+    refs.counters.forEach((el) => {
+      el.dataset.counted = '0';
+      el.textContent = reduced.matches ? Number(el.dataset.count || 0).toLocaleString('en-US') : '0';
+    });
+
     if (reduced.matches || typeof IntersectionObserver === 'undefined') {
-      refs.reveals.forEach((el) => el.classList.add('is-visible'));
+      refs.slides.forEach((s) => s.classList.add('is-active'));
       refs.counters.forEach((el) => animateCount(el));
+      instNearViewport = true;
       return;
     }
 
-    refs.reveals.forEach((el) => el.classList.remove('is-visible'));
-    refs.counters.forEach((el) => {
-      el.dataset.counted = '0';
-      el.textContent = '0';
-    });
-
-    revealObserver = new IntersectionObserver(
+    slideObserver = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('is-visible');
-            revealObserver.unobserve(entry.target);
+          if (entry.isIntersecting && entry.intersectionRatio >= 0.45) {
+            const idx = Number(entry.target.dataset.slide);
+            if (!Number.isNaN(idx)) activateSlide(idx);
           }
         });
       },
-      { root, threshold: 0.12, rootMargin: '0px 0px -30px 0px' }
+      { root, threshold: [0.45, 0.7] }
     );
-    refs.reveals.forEach((el) => revealObserver.observe(el));
-
-    countObserver = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            animateCount(entry.target);
-            countObserver.unobserve(entry.target);
-          }
-        });
-      },
-      { root, threshold: 0.65 }
-    );
-    refs.counters.forEach((el) => countObserver.observe(el));
+    refs.slides.forEach((s) => slideObserver.observe(s));
   }
 
   function teardownObservers() {
-    if (revealObserver) {
-      revealObserver.disconnect();
-      revealObserver = null;
-    }
-    if (countObserver) {
-      countObserver.disconnect();
-      countObserver = null;
+    if (slideObserver) {
+      slideObserver.disconnect();
+      slideObserver = null;
     }
   }
 
@@ -439,7 +453,7 @@
 
   function lockBackground() {
     Array.from(document.body.children).forEach((node) => {
-      if (node !== root && node.tagName !== 'SCRIPT' && !node.inert) {
+      if (node !== root && node.id !== 'cosmic-intro' && node.tagName !== 'SCRIPT' && !node.inert) {
         node.inert = true;
         inertNodes.add(node);
       }
@@ -623,7 +637,7 @@
   }
 
   function tick(now) {
-    if (!isOpen) {
+    if (!isOpen || !instNearViewport) {
       rafId = 0;
       return;
     }
@@ -637,16 +651,14 @@
     if (event.key === 'Escape') {
       event.preventDefault();
       event.stopPropagation();
-      close('escape');
+      close('skip');
+    } else if (event.key === 'ArrowDown' || event.key === 'PageDown') {
+      event.preventDefault();
+      goToSlide(activeSlideIdx + 1);
+    } else if (event.key === 'ArrowUp' || event.key === 'PageUp') {
+      event.preventDefault();
+      goToSlide(activeSlideIdx - 1);
     }
-  }
-
-  function shouldChainTour(reason) {
-    if (isReplayRun) return false;
-    if (global.location && (global.location.search || global.location.hash)) return false;
-    if (!global.OnboardingTour) return false;
-    if (reason === 'cta') return true;
-    return typeof global.OnboardingTour.hasSeen === 'function' ? !global.OnboardingTour.hasSeen() : true;
   }
 
   function open(opts = {}) {
@@ -655,6 +667,8 @@
     isClosing = false;
     isOpen = true;
     isReplayRun = Boolean(opts.isReplay);
+    activeSlideIdx = 0;
+    instNearViewport = false;
     returnFocusEl = opts.isReplay ? document.activeElement : null;
 
     document.documentElement.dataset.introState = 'prologue';
@@ -664,10 +678,13 @@
     root.hidden = false;
     root.scrollTop = 0;
     if (refs.hairline) refs.hairline.style.transform = 'scaleX(0)';
-    if (refs.nav) refs.nav.classList.remove('is-scrolled');
     lockBackground();
     resizeInst();
     setupObservers();
+
+    if (global.CosmicIntro && typeof global.CosmicIntro.preload === 'function') {
+      global.CosmicIntro.preload();
+    }
 
     if (!opts.keepBgm && global.CosmicBGM) {
       global.CosmicBGM.start(0.58);
@@ -684,23 +701,69 @@
 
     requestAnimationFrame(() => {
       root.classList.remove('is-entering');
+      document.documentElement.classList.remove('prologue-boot');
       requestAnimationFrame(() => {
         root.classList.add('k-ready');
-        revealVisibleInViewport();
+        activateSlide(0);
       });
     });
-
-    if (!rafId) rafId = requestAnimationFrame(tick);
   }
 
-  function close(reason = 'done') {
+  function close(reason = 'skip') {
     if (!isOpen || isClosing) return;
     isClosing = true;
     document.removeEventListener('keydown', onKeydown, true);
+    document.documentElement.classList.remove('prologue-boot');
 
-    const willRunTour = shouldChainTour(reason);
+    const canHandOffToFilm =
+      reason === 'cta' &&
+      !isReplayRun &&
+      Boolean(global.CosmicIntro && global.CosmicIntro.isSupported());
+
+    if (canHandOffToFilm) {
+      if (global.IntroSession) global.IntroSession.requestFullscreen();
+      if (global.CosmicBGM) {
+        if (global.CosmicBGM.isBlocked() || global.CosmicBGM.isMuted()) {
+          global.CosmicBGM.unmute();
+        } else if (!global.CosmicBGM.isActive()) {
+          global.CosmicBGM.start(0.58);
+        }
+      }
+
+      isOpen = false;
+      isClosing = false;
+      if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
+      if (navRaf) { cancelAnimationFrame(navRaf); navRaf = 0; }
+      teardownObservers();
+      if (bgmUnsub) { bgmUnsub(); bgmUnsub = null; }
+      unlockBackground();
+
+      const filmStarted = global.CosmicIntro.play({
+        isReplay: false,
+        keepBgm: true,
+        chainTour: true
+      });
+      if (filmStarted !== false) {
+        setTimeout(() => {
+          root.hidden = true;
+          root.classList.remove('is-exiting', 'is-entering', 'k-ready');
+        }, 120);
+        return;
+      }
+      // Fallback if video couldn't start
+      isOpen = true;
+      isClosing = true;
+    }
+
+    const landing = !global.location || (!global.location.search && !global.location.hash);
+    const shouldStartTour =
+      !isReplayRun &&
+      landing &&
+      Boolean(global.OnboardingTour) &&
+      (reason === 'cta' || (typeof global.OnboardingTour.hasSeen === 'function' ? !global.OnboardingTour.hasSeen() : true));
+
     if (global.CosmicBGM) {
-      if (willRunTour) {
+      if (shouldStartTour) {
         global.CosmicBGM.duck(0.36, 700);
       } else {
         global.CosmicBGM.fadeOutAndStop(1600);
@@ -710,26 +773,17 @@
     const finalize = () => {
       isOpen = false;
       isClosing = false;
-      if (rafId) {
-        cancelAnimationFrame(rafId);
-        rafId = 0;
-      }
-      if (navRaf) {
-        cancelAnimationFrame(navRaf);
-        navRaf = 0;
-      }
+      if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
+      if (navRaf) { cancelAnimationFrame(navRaf); navRaf = 0; }
       teardownObservers();
-      if (bgmUnsub) {
-        bgmUnsub();
-        bgmUnsub = null;
-      }
+      if (bgmUnsub) { bgmUnsub(); bgmUnsub = null; }
       root.hidden = true;
       root.classList.remove('is-exiting', 'is-entering', 'k-ready');
       unlockBackground();
       document.documentElement.dataset.introState = 'map';
       document.documentElement.dataset.introReason = reason;
 
-      if (willRunTour && global.OnboardingTour) {
+      if (shouldStartTour && global.OnboardingTour) {
         global.OnboardingTour.start(false);
       } else if (returnFocusEl && typeof returnFocusEl.focus === 'function') {
         try { returnFocusEl.focus({ preventScroll: true }); } catch {}

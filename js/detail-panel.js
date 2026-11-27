@@ -303,7 +303,7 @@
       } else if (this.activeTab === 'photo') {
         contentHtml = `<div id="photo-simulator-mount"></div>`;
       } else if (this.activeTab === 'months') {
-        contentHtml = `${this.buildMonthsHtml(dest)}<div id="aesthetic-index-mount"></div>`;
+        contentHtml = `${this.buildMonthsHtml(dest)}<div id="phenology-engine-mount"></div><div id="aesthetic-index-mount"></div>`;
       } else if (this.activeTab === 'weather') {
         contentHtml = `<div id="live-weather-mount"></div>${this.buildWeatherHtml(dest)}`;
       } else if (this.activeTab === 'budget') {
@@ -332,8 +332,13 @@
       if (this.activeTab === 'weather' && global.WeatherPanel) {
         global.WeatherPanel.mount(dest, body.querySelector('#live-weather-mount'));
       }
-      if (this.activeTab === 'months' && global.AestheticIndex) {
-        global.AestheticIndex.mountDrawerBreakdown(dest, this.selectedMonth, body.querySelector('#aesthetic-index-mount'));
+      if (this.activeTab === 'months') {
+        if (global.PhenologyEngine) {
+          global.PhenologyEngine.mountDrawerCard(dest, this.selectedMonth, body.querySelector('#phenology-engine-mount'));
+        }
+        if (global.AestheticIndex) {
+          global.AestheticIndex.mountDrawerBreakdown(dest, this.selectedMonth, body.querySelector('#aesthetic-index-mount'));
+        }
       }
 
       if (this.activeTab === 'spots') {

@@ -166,6 +166,12 @@
     return { score, matchedSpot, matchedSpotIdx };
   }
 
+  const NL_EXAMPLES = [
+    '10月 欧洲 雪山 湖泊 少雨',
+    '预算8000 7天 少雨 自然风光',
+    '冬季 银河 雪山 星空'
+  ];
+
   function renderResults(rawQuery) {
     const container = document.getElementById('palette-results');
     const statsEl = document.getElementById('palette-stats');
@@ -175,7 +181,7 @@
     const qLower = q.toLowerCase();
 
     if (!qLower) {
-      // Show curated flagship recommendations + active filtered top items
+      // Show natural language inspiration pills + curated flagship recommendations
       const featured = searchIndexRef
         .filter((e) => e.dest.priority === 1)
         .slice(0, 12);
@@ -185,11 +191,82 @@
       if (statsEl) statsEl.textContent = t('paletteAllCount', { n: searchIndexRef.length });
 
       container.innerHTML = `
+        <div class="palette-nl-examples">
+          <span class="palette-nl-label">Geo Intelligence 自然语言试试：</span>
+          ${NL_EXAMPLES.map((ex) => `<button class="mini-action-pill palette-nl-chip" data-query="${escapeHtml(ex)}" type="button">${escapeHtml(ex)}</button>`).join('')}
+        </div>
         <div class="palette-section-title">${t('paletteAllCount', { n: searchIndexRef.length })}</div>
         ${currentEntries.map((item, i) => buildItemHtml(item, '', i)).join('')}
       `;
+      container.querySelectorAll('.palette-nl-chip').forEach((chip) => {
+        chip.addEventListener('click', () => {
+          const inp = document.getElementById('palette-input');
+          const clearBtn = document.getElementById('palette-clear-btn');
+          if (inp) {
+            inp.value = chip.dataset.query || '';
+            if (clearBtn) clearBtn.classList.remove('is-hidden');
+            renderResults(inp.value);
+            inp.focus();
+          }
+        });
+      });
       bindResultClicks(container);
       return;
+    }
+
+    // Geo Intelligence natural-language & MiniSearch hybrid search
+    if (global.GeoIntelligence && typeof global.GeoIntelligence.searchAndExplain === 'function') {
+      const enrMap = global.PhenologyEngine ? global.PhenologyEngine.getEnrichmentMap() : {};
+      const giOut = global.GeoIntelligence.searchAndExplain(
+        q,
+        searchIndexRef.map((e) => e.dest),
+        { enrichmentById: enrMap, limit: 28 }
+      );
+      if (giOut && giOut.intent && giOut.intent.hasIntent) {
+        currentEntries = giOut.results;
+        selectedIdx = 0;
+        if (statsEl) statsEl.textContent = t('paletteHitsCount', { n: currentEntries.length });
+
+        const chipsHtml = giOut.intent.summaryChips.length
+          ? `<div class="palette-intent-bar">${giOut.intent.summaryChips.map((c) => `<span class="palette-intent-chip">${escapeHtml(c)}</span>`).join('')}</div>`
+          : '';
+
+        if (!currentEntries.length) {
+          container.innerHTML = `
+            ${chipsHtml}
+            <div class="palette-empty">
+              <div>${t('paletteEmptyTitle')}</div>
+              <div class="palette-empty-actions">
+                <button class="mini-btn" id="palette-clear-query-btn" type="button">${t('paletteClearQuery')}</button>
+                <button class="mini-btn" id="palette-relax-filters-btn" type="button">${t('paletteRelaxFilters')}</button>
+              </div>
+            </div>
+          `;
+          const cq = document.getElementById('palette-clear-query-btn');
+          if (cq) {
+            cq.addEventListener('click', () => {
+              const inp = document.getElementById('palette-input');
+              if (inp) { inp.value = ''; inp.focus(); renderResults(''); }
+            });
+          }
+          const rf = document.getElementById('palette-relax-filters-btn');
+          if (rf) {
+            rf.addEventListener('click', () => {
+              if (typeof onRelaxCallback === 'function') onRelaxCallback();
+              close();
+            });
+          }
+          return;
+        } else {
+          container.innerHTML = `
+            ${chipsHtml}
+            <div class="palette-section-title">Geo Intelligence 推荐 (${currentEntries.length})</div>
+            ${currentEntries.map((item, i) => buildItemHtml(item, q, i)).join('')}
+          `;
+          bindResultClicks(container);
+          return;
+        }
+      }
     }
 
     const tokens = qLower.split(/\s+/).filter(Boolean);
@@ -279,12 +356,16 @@
     const subText = `${tx(d.country)} · ${tx(d.province || d.region)}${spotHint}`;
     const activeCls = idx === selectedIdx ? 'is-selected' : '';
     const dotCls = d.allWeather ? 'dot-gold' : 'dot-ice';
+    const reasonsHtml = Array.isArray(item.reasons) && item.reasons.length
+      ? `<div class="palette-reasons">${item.reasons.map((r) => `<span class="palette-reason-tag">${escapeHtml(r)}</span>`).join('')}${(item.caveats || []).map((c) => `<span class="palette-caveat-tag">${escapeHtml(c)}</span>`).join('')}</div>`
+      : '';
     return `
       <button class="palette-item ${activeCls}" data-idx="${idx}" type="button" role="option" aria-selected="${idx === selectedIdx ? 'true' : 'false'}">
         <span class="dot ${dotCls}"></span>
         <div class="palette-item-main">
           <div class="palette-item-title">${highlightMatch(tx(d.name), q)}</div>
           <div class="palette-item-sub">${highlightMatch(subText, q)}</div>
+          ${reasonsHtml}
         </div>
         <div class="palette-item-meta mono-num">
           <span>${t('spotsCountFmt', { n: d.spotCount || (d.spots ? d.spots.length : 0) })}</span>

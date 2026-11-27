@@ -479,7 +479,9 @@ async function handleApi(request, env) {
 
   if (p === '/api/epic') {
     const cache = typeof caches !== 'undefined' ? caches.default : null;
-    const cacheReq = new Request(request.url, { method: 'GET' });
+    const cacheUrl = new URL(request.url);
+    cacheUrl.searchParams.set('_v', '4.5');
+    const cacheReq = new Request(cacheUrl.toString(), { method: 'GET' });
     if (cache) {
       const hit = await cache.match(cacheReq);
       if (hit) return hit;

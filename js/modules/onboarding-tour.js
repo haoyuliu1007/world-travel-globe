@@ -394,6 +394,7 @@
     active = false;
     currentStep = -1;
     markSeen();
+    if (global.CosmicBGM) global.CosmicBGM.fadeOutAndStop(1600);
     if (rootEl) {
       rootEl.classList.add('is-hidden');
       if (spotlightEl) spotlightEl.style.opacity = '0';

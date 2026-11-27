@@ -63,6 +63,10 @@ function main() {
   }
   fs.cpSync(path.join(rootDir, 'assets', 'cosmic-intro'),
     path.join(distDir, 'assets', 'cosmic-intro'), { recursive: true });
+  if (fs.existsSync(path.join(rootDir, 'assets', 'prologue'))) {
+    fs.cpSync(path.join(rootDir, 'assets', 'prologue'),
+      path.join(distDir, 'assets', 'prologue'), { recursive: true });
+  }
 
   const workerSrcDir = path.join(rootDir, 'js', 'workers');
   if (fs.existsSync(workerSrcDir)) {
@@ -84,12 +88,20 @@ function main() {
     fs.copyFileSync(auditReportSrc, path.join(distDir, 'data', 'audit-report.json'));
   }
 
-  // Bundle CSS files (maplibre-gl.css + styles.css + upgrades.css) into one CSS request
-  const cssParts = ['vendor/maplibre-gl.css', 'css/styles.css', 'css/upgrades.css'].map((rel) =>
-    fs.readFileSync(path.join(rootDir, rel), 'utf8')
-  );
+  // Bundle CSS files (maplibre-gl.css + styles.css + upgrades.css + prologue.css) into one CSS request
+  const cssParts = ['vendor/maplibre-gl.css', 'css/styles.css', 'css/upgrades.css', 'assets/prologue/prologue.css']
+    .filter((rel) => fs.existsSync(path.join(rootDir, rel)))
+    .map((rel) => fs.readFileSync(path.join(rootDir, rel), 'utf8'));
   const cssBundle = cssParts.join('\n');
   fs.writeFileSync(path.join(distDir, 'css', 'app.bundle.min.css'), cssBundle, 'utf8');
+
+  // Bundle intro/prologue runtime (bgm + prologue + cosmic player) into one early script request
+  const introScriptRels = ['assets/prologue/bgm.js', 'assets/prologue/prologue.js', 'assets/cosmic-intro/player.js'];
+  const introBundle = introScriptRels
+    .filter((rel) => fs.existsSync(path.join(rootDir, rel)))
+    .map((rel) => fs.readFileSync(path.join(rootDir, rel), 'utf8').trim())
+    .join('\n;\n') + '\n';
+  fs.writeFileSync(path.join(distDir, 'assets', 'prologue', 'intro.bundle.min.js'), introBundle, 'utf8');
 
   // Bundle small vendor libraries into one JS request
   const vendorLibParts = [
@@ -195,20 +207,24 @@ function main() {
   const rawBytes = Buffer.byteLength(indexCode, 'utf8');
   const gzBytes = zlib.gzipSync(Buffer.from(indexCode, 'utf8'), { level: 9 }).length;
 
-  // Replace CSS, vendor libs, data/*.js, and js/*.js blocks with consolidated bundles in dist/index.html
+  // Replace CSS, intro scripts, vendor libs, data/*.js, and js/*.js blocks with consolidated bundles in dist/index.html
   const buildVer = Date.now().toString(36);
-  const cssBlockRe = /(?:\s*<link rel="stylesheet" href="(?:vendor\/maplibre-gl\.css|css\/[^"?]+)(?:\?v=\d+)?"\s*\/>\s*)+/;
+  const cssBlockRe = /(?:\s*<link rel="stylesheet" href="(?:vendor\/maplibre-gl\.css|css\/[^"?]+|assets\/prologue\/prologue\.css)(?:\?v=\d+)?"\s*\/>\s*)+/;
+  const introBlockRe = /(?:\s*<script src="assets\/(?:prologue\/(?:bgm|prologue)|cosmic-intro\/player)\.js(?:\?v=\d+)?"><\/script>\s*)+/;
   const vendorBlockRe = /(?:\s*<script src="vendor\/(?:suncalc|fuse|supercluster|dexie)\.min\.js"><\/script>\s*)+/;
   const dataBlockRe = /(?:\s*<script src="data\/[^"?]+(?:\?v=\d+)?"><\/script>\s*)+/;
   const appBlockRe = /(?:\s*<script src="js\/[^"?]+(?:\?v=\d+)?"><\/script>\s*)+/;
   if (!cssBlockRe.test(indexHtml) || !vendorBlockRe.test(indexHtml) || !dataBlockRe.test(indexHtml) || !appBlockRe.test(indexHtml)) {
     throw new Error('Could not locate expected CSS/vendor/data/js blocks in index.html');
   }
-  const distHtml = indexHtml
+  let distHtml = indexHtml
     .replace(cssBlockRe, `\n  <link rel="stylesheet" href="css/app.bundle.min.css?v=${buildVer}" />\n`)
     .replace(vendorBlockRe, `\n  <script src="vendor/libs.bundle.min.js?v=${buildVer}"></script>\n`)
     .replace(dataBlockRe, `\n  <script src="data/atlas-index.min.js?v=${buildVer}"></script>\n`)
     .replace(appBlockRe, `\n  <script src="js/app.bundle.min.js?v=${buildVer}"></script>\n`);
+  if (introBlockRe.test(distHtml)) {
+    distHtml = distHtml.replace(introBlockRe, `\n  <script src="assets/prologue/intro.bundle.min.js?v=${buildVer}"></script>\n`);
+  }
   fs.writeFileSync(path.join(distDir, 'index.html'), distHtml, 'utf8');
 
   // Stamp dist/sw.js with exact build version and bundled core assets
@@ -216,6 +232,7 @@ function main() {
     './',
     './index.html',
     `./css/app.bundle.min.css?v=${buildVer}`,
+    `./assets/prologue/intro.bundle.min.js?v=${buildVer}`,
     './vendor/maplibre-gl.js',
     `./vendor/libs.bundle.min.js?v=${buildVer}`,
     `./data/atlas-index.min.js?v=${buildVer}`,

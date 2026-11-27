@@ -14,7 +14,7 @@
   const credits = document.querySelector('#cosmic-credits');
   const options = replay.closest('.cosmic-options');
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
-  const countKey = 'wtg-cosmic-intro-v7-plays';
+  const countKey = 'wtg-cosmic-intro-v8-plays';
   const MAX_AUTO_PLAYS = 3;
   const supportedVideo = [
     ['assets/cosmic-intro/cosmic-slow-tour.mp4?v=6', 'video/mp4; codecs="avc1.640028"']
@@ -80,15 +80,15 @@
   }
 
   const strings = {
-    'zh': ['宇宙开场', '重播宇宙开场', '影像来源', '跳过', '播放进度', '播放', '暂停', '静音', '取消静音', '🔊 点击开启声音', '正在进入宇宙视界…'],
-    'zh-tw': ['宇宙開場', '重播宇宙開場', '影像來源', '略過', '播放進度', '播放', '暫停', '靜音', '取消靜音', '🔊 點擊開啟聲音', '正在進入宇宙視界…'],
-    en: ['Opening film', 'Replay opening film', 'Film credits', 'Skip', 'Playback position', 'Play', 'Pause', 'Mute', 'Unmute', '🔊 Click to enable sound', 'Entering cosmic view…'],
-    ja: ['オープニング映像', 'オープニングを再生', '映像クレジット', 'スキップ', '再生位置', '再生', '一時停止', 'ミュート', 'ミュート解除', '🔊 クリックで音声オン', '宇宙ビューを起動中…'],
-    ko: ['오프닝 영상', '오프닝 다시 보기', '영상 출처', '건너뛰기', '재생 위치', '재생', '일시 정지', '음소거', '음소거 해제', '🔊 클릭하여 소리 켜기', '우주 뷰 여는 중…'],
-    fr: ['Film d’ouverture', 'Revoir le film', 'Crédits du film', 'Passer', 'Position de lecture', 'Lire', 'Pause', 'Muet', 'Activer le son', '🔊 Cliquer pour activer le son', 'Entrée en vue cosmique…'],
-    de: ['Eröffnungsfilm', 'Eröffnungsfilm erneut ansehen', 'Bildnachweise', 'Überspringen', 'Wiedergabeposition', 'Abspielen', 'Pause', 'Stumm', 'Ton an', '🔊 Klicken für Ton', 'Kosmische Ansicht wird geladen…'],
-    es: ['Vídeo de apertura', 'Repetir la apertura', 'Créditos del vídeo', 'Omitir', 'Posición de reproducción', 'Reproducir', 'Pausa', 'Silenciar', 'Activar sonido', '🔊 Haz clic para activar el sonido', 'Entrando en vista cósmica…'],
-    ru: ['Вступительный ролик', 'Повторить вступление', 'Источники видео', 'Пропустить', 'Позиция воспроизведения', 'Воспроизвести', 'Пауза', 'Без звука', 'Включить звук', '🔊 Нажмите для звука', 'Запуск космического обзора…']
+    'zh': ['宇宙开场', '重播宇宙开场', '影像来源', '跳过', '播放进度', '播放', '暂停', '静音', '取消静音', '🔊 点击开启配乐', '正在进入宇宙视界…'],
+    'zh-tw': ['宇宙開場', '重播宇宙開場', '影像來源', '略過', '播放進度', '播放', '暫停', '靜音', '取消靜音', '🔊 點擊開啟配樂', '正在進入宇宙視界…'],
+    en: ['Opening film', 'Replay opening film', 'Film credits', 'Skip', 'Playback position', 'Play', 'Pause', 'Mute', 'Unmute', '🔊 Click to enable music', 'Entering cosmic view…'],
+    ja: ['オープニング映像', 'オープニングを再生', '映像クレジット', 'スキップ', '再生位置', '再生', '一時停止', 'ミュート', 'ミュート解除', '🔊 クリックで音楽オン', '宇宙ビューを起動中…'],
+    ko: ['오프닝 영상', '오프닝 다시 보기', '영상 출처', '건너뛰기', '재생 위치', '재생', '일시 정지', '음소거', '음소거 해제', '🔊 클릭하여 음악 켜기', '우주 뷰 여는 중…'],
+    fr: ['Film d’ouverture', 'Revoir le film', 'Crédits du film', 'Passer', 'Position de lecture', 'Lire', 'Pause', 'Muet', 'Activer la musique', '🔊 Cliquer pour la musique', 'Entrée en vue cosmique…'],
+    de: ['Eröffnungsfilm', 'Eröffnungsfilm erneut ansehen', 'Bildnachweise', 'Überspringen', 'Wiedergabeposition', 'Abspielen', 'Pause', 'Stumm', 'Ton an', '🔊 Klicken für Musik', 'Kosmische Ansicht wird geladen…'],
+    es: ['Vídeo de apertura', 'Repetir la apertura', 'Créditos del vídeo', 'Omitir', 'Posición de reproducción', 'Reproducir', 'Pausa', 'Silenciar', 'Activar música', '🔊 Haz clic para la música', 'Entrando en vista cósmica…'],
+    ru: ['Вступительный ролик', 'Повторить вступление', 'Источники видео', 'Пропустить', 'Позиция воспроизведения', 'Воспроизвести', 'Пауза', 'Без звука', 'Включить музыку', '🔊 Нажмите для музыки', 'Запуск космического обзора…']
   };
   let labels = strings.en;
   function localize() {
@@ -114,10 +114,17 @@
 
   function muteButton() {
     if (!mute) return;
-    const isMuted = video.muted;
+    const bgm = window.CosmicBGM;
+    const isMuted = bgm ? (bgm.isMuted() || bgm.isBlocked()) : true;
     mute.textContent = isMuted ? '🔇' : '🔊';
     mute.setAttribute('aria-label', isMuted ? labels[8] : labels[7]);
-    if (unmuteHint && !isMuted) unmuteHint.hidden = true;
+    if (unmuteHint) {
+      unmuteHint.hidden = !(playback && !playback.finishing && bgm && bgm.isBlocked() && !bgm.isMuted());
+    }
+  }
+
+  if (window.CosmicBGM) {
+    window.CosmicBGM.onChange(() => muteButton());
   }
 
   function cancelFrame(run) {
@@ -130,7 +137,7 @@
   function lockBackground(run) {
     if (playback !== run || run.finishing) return;
     Array.from(document.body.children).forEach(node => {
-      if (node !== intro && node.tagName !== 'SCRIPT' && !node.inert) {
+      if (node !== intro && node.id !== 'story-prologue' && node.tagName !== 'SCRIPT' && !node.inert) {
         node.inert = true;
         run.inertNodes.add(node);
       }
@@ -160,44 +167,55 @@
       run.counted = true;
       incrementPlayCount();
     }
+
+    const handoffToPrologue = !run.isReplay && Boolean(window.StoryPrologue)
+      && (reason === 'complete' || reason === 'skip' || reason === 'escape');
+
     const map = currentMap();
-    const matched = reason === 'complete' && !reducedMotion.matches && canMatch(map);
+    const matched = !handoffToPrologue && reason === 'complete' && !reducedMotion.matches && canMatch(map);
     if (matched) prepareMap(map);
-    publish(matched ? 'handoff' : 'map', reason);
+
+    if (handoffToPrologue) {
+      // Unlock nodes held by intro player first, then open 5-act scroll prologue underneath
+      // so BGM continues seamlessly and OnboardingTour waits for data-intro-state="map".
+      run.inertNodes.forEach(node => { node.inert = false; });
+      run.inertNodes.clear();
+      introStatus = 'prologue';
+      window.StoryPrologue.open({ isReplay: false, keepBgm: true });
+    } else {
+      if (window.CosmicBGM) window.CosmicBGM.fadeOutAndStop(1000);
+      publish(matched ? 'handoff' : 'map', reason);
+    }
+
     const hadFocus = intro.contains(document.activeElement);
     const release = () => {
       if (playback !== run) return;
-      clearInterval(run.audioFadeTimer);
       video.pause();
-      video.volume = 1;
       video.removeAttribute('src');
       video.load();
       video.classList.remove('has-frame');
       intro.hidden = true;
       if (unmuteHint) unmuteHint.hidden = true;
-      run.inertNodes.forEach(node => { node.inert = false; });
-      run.inertNodes.clear();
+      if (!handoffToPrologue) {
+        run.inertNodes.forEach(node => { node.inert = false; });
+        run.inertNodes.clear();
+        publish('map', reason);
+      }
       intro.classList.remove('is-exiting', 'is-exiting-fast', 'is-playing');
       document.documentElement.classList.remove('cosmic-intro-boot');
       intro.inert = false;
       document.body.classList.remove('intro-active');
-      publish('map', reason);
       playback = null;
-      revealMap();
-      if (hadFocus) (run.returnFocus || document.querySelector('#open-palette-btn'))?.focus({ preventScroll: true });
+      if (!handoffToPrologue) {
+        revealMap();
+        if (hadFocus) (run.returnFocus || document.querySelector('#open-palette-btn'))?.focus({ preventScroll: true });
+      }
     };
-    if (matched || !reducedMotion.matches) {
-      const fadeDuration = matched ? 480 : 280;
-      const exitDelay = matched ? 520 : 360;
+
+    if (handoffToPrologue || matched || !reducedMotion.matches) {
       intro.classList.add(matched ? 'is-exiting' : 'is-exiting-fast');
       if (unmuteHint) unmuteHint.hidden = true;
-      const startVol = video.volume;
-      const fadeStart = performance.now();
-      run.audioFadeTimer = setInterval(() => {
-        const t = Math.min(1, (performance.now() - fadeStart) / fadeDuration);
-        video.volume = Math.max(0, startVol * (1 - t));
-      }, 30);
-      setTimeout(release, exitDelay);
+      setTimeout(release, matched ? 520 : 380);
     } else {
       release();
     }
@@ -227,9 +245,14 @@
     progress.value = 0;
     progress.disabled = true;
     play.disabled = true;
-    if (mute) mute.disabled = true;
+    if (mute) mute.disabled = false;
     if (unmuteHint) unmuteHint.hidden = true;
     publish('loading');
+
+    if (window.CosmicBGM) {
+      window.CosmicBGM.start(0.58);
+    }
+
     const on = (type, callback) => video.addEventListener(type, callback, { signal: run.events.signal });
 
     const tick = (_now, metadata) => {
@@ -238,7 +261,7 @@
       const time = metadata?.mediaTime ?? video.currentTime;
       progress.value = Math.min(time, Number(progress.max));
       const handoffAt = Number.isFinite(video.duration) && video.duration > 1 ? video.duration - 0.45 : 26.15;
-      if (time >= handoffAt && currentMap()?.areTilesLoaded()) {
+      if (time >= handoffAt && (window.StoryPrologue || currentMap()?.areTilesLoaded())) {
         finish(run, 'complete');
       } else if (!video.paused) scheduleFrame();
     };
@@ -253,21 +276,13 @@
       const attempt = ++run.attempt;
       run.url = supportedVideo[run.index];
       video.src = run.url;
-      video.muted = false;
-      video.volume = 1;
+      // Mute raw clip audio permanently so unified CosmicBGM carries the entire soundtrack
+      video.muted = true;
+      video.volume = 0;
       muteButton();
       video.play().catch(error => {
-        if (playback !== run || run.finishing || attempt !== run.attempt) return;
-        if (error.name === 'NotAllowedError') {
-          // Browser blocked unmuted autoplay on initial visit: fall back cleanly to muted + unmute prompt
-          video.muted = true;
-          muteButton();
-          if (unmuteHint && !isReplay) unmuteHint.hidden = false;
-          video.play().catch(err2 => {
-            if (playback === run && !run.finishing && attempt === run.attempt && err2.name === 'NotAllowedError') {
-              finish(run, 'blocked');
-            }
-          });
+        if (playback === run && !run.finishing && attempt === run.attempt && error.name === 'NotAllowedError') {
+          finish(run, 'blocked');
         }
       });
     };
@@ -297,7 +312,6 @@
       video.classList.add('has-frame');
       play.disabled = false;
       if (mute) mute.disabled = false;
-      if (unmuteHint) unmuteHint.hidden = !video.muted;
       publish('playing');
       playButton();
       muteButton();
@@ -337,25 +351,25 @@
     if (video.paused) video.play().catch(() => playback && finish(playback, 'blocked'));
     else video.pause();
   });
-  const enableAudio = () => {
-    if (!playback || introStatus === 'handoff') return;
-    video.muted = false;
-    video.volume = 1;
-    if (unmuteHint) unmuteHint.hidden = true;
-    muteButton();
-  };
   if (mute) {
     mute.addEventListener('click', () => {
       if (!playback || introStatus === 'handoff') return;
-      video.muted = !video.muted;
-      if (!video.muted) video.volume = 1;
-      if (unmuteHint) unmuteHint.hidden = !video.muted;
+      if (window.CosmicBGM) window.CosmicBGM.toggleMute();
       muteButton();
     });
   }
-  if (unmuteHint) unmuteHint.addEventListener('click', enableAudio);
+  if (unmuteHint) {
+    unmuteHint.addEventListener('click', () => {
+      if (!playback || introStatus === 'handoff') return;
+      if (window.CosmicBGM) window.CosmicBGM.unmute();
+      muteButton();
+    });
+  }
   video.addEventListener('click', () => {
-    if (playback && playback.activated && video.muted) enableAudio();
+    if (playback && window.CosmicBGM && window.CosmicBGM.isBlocked()) {
+      window.CosmicBGM.unmute();
+      muteButton();
+    }
   });
   progress.addEventListener('input', () => {
     if (playback && !playback.finishing && video.readyState > 0) {

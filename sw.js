@@ -30,8 +30,8 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
-  // Let the media server handle byte ranges and avoid caching the entire intro in the shell.
-  if (req.headers.has('Range') || /\/assets\/cosmic-intro\/[^/]+\.(?:mp4|webm)$/.test(url.pathname)) return;
+  // Let the media server handle byte ranges and avoid caching large intro media in the shell.
+  if (req.headers.has('Range') || /(?:\/assets\/cosmic-intro\/[^/]+\.(?:mp4|webm)|\/assets\/prologue\/[^/]+\.mp3)$/.test(url.pathname)) return;
 
   // Network-first for Worker /api/* endpoints
   if (url.pathname.startsWith('/api/')) {

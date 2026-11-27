@@ -16,11 +16,12 @@
   <link rel="stylesheet" href="vendor/maplibre-gl.css" />
   <link rel="stylesheet" href="css/styles.css?v=36" />
   <link rel="stylesheet" href="css/upgrades.css?v=36" />
-  <link rel="stylesheet" href="assets/cosmic-intro/player.css?v=7" />
+  <link rel="stylesheet" href="assets/prologue/prologue.css?v=1" />
+  <link rel="stylesheet" href="assets/cosmic-intro/player.css?v=8" />
   <script>
   (function () {
     try {
-      var plays = parseInt(localStorage.getItem('wtg-cosmic-intro-v7-plays') || '0', 10) || 0;
+      var plays = parseInt(localStorage.getItem('wtg-cosmic-intro-v8-plays') || '0', 10) || 0;
       var landing = !location.search && !location.hash;
       var desktop = matchMedia('(min-width: 800px) and (pointer: fine)').matches;
       var reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -71,6 +72,8 @@
       <button id="cosmic-skip" type="button"><span>跳过</span> <kbd>Esc</kbd></button>
     </div>
   </section>
+
+  <div id="story-prologue" class="story-prologue" role="dialog" aria-modal="true" aria-label="探索序章" hidden></div>
 
   <!-- Top-Left Floating Spatial Command Cluster (Google Earth / Apple Maps Pattern) -->
   <header class="top-dock" id="topbar">
@@ -152,14 +155,20 @@
       <button id="cosmic-replay" type="button">重播宇宙开场</button>
       <a id="cosmic-credits" href="assets/cosmic-intro/credits.html" target="_blank" rel="noopener">影像来源</a>
     </div>
-    <div class="studio-section tour-options">
+    <div class="studio-section tour-options" style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="studio-action-btn" id="prologue-replay-btn" type="button">
+        <span data-icon="compass" data-size="13"></span>
+        <span>探索序章</span>
+      </button>
       <button class="studio-action-btn" id="onboarding-replay-btn" type="button">
         <span data-icon="sparkles" data-size="13"></span>
         <span data-i18n="tourReplay">新手导览</span>
       </button>
     </div>
   </section>
-  <script src="assets/cosmic-intro/player.js?v=7"></script>
+  <script src="assets/prologue/bgm.js?v=1"></script>
+  <script src="assets/prologue/prologue.js?v=1"></script>
+  <script src="assets/cosmic-intro/player.js?v=8"></script>
 
   <!-- 3-Language Selector Popover -->
   <section class="studio-popover lang-popover is-hidden" id="lang-popover" role="dialog" aria-label="界面语言选择">

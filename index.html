@@ -14,7 +14,7 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <title>World Travel Globe · 全球旅行地理图鉴</title>
   <link rel="stylesheet" href="vendor/maplibre-gl.css" />
-  <link rel="stylesheet" href="css/styles.css?v=37" />
+  <link rel="stylesheet" href="css/styles.css?v=38" />
   <link rel="stylesheet" href="css/upgrades.css?v=38" />
   <link rel="stylesheet" href="assets/prologue/prologue.css?v=5" />
   <link rel="stylesheet" href="assets/cosmic-intro/player.css?v=8" />
@@ -159,6 +159,10 @@
           <input type="color" id="custom-accent-input" value="#B47D22" aria-label="自定义主题色" />
         </span>
       </label>
+    </div>
+    <div class="studio-section">
+      <div class="popover-label" data-i18n="skyboxLabel">深空背景</div>
+      <div class="skybox-grid" id="skybox-preset-grid" role="group" aria-label="深空背景风格"></div>
     </div>
     <div class="studio-section cosmic-options" hidden>
       <button id="cosmic-replay" type="button">重播宇宙开场</button>
@@ -560,7 +564,7 @@
   <script src="data/africa_antarctica/antarctica_subantarctic.js?v=10"></script>
   <!-- App Logic & Services -->
   <script src="js/icons.js?v=38"></script>
-  <script src="js/i18n.js?v=38"></script>
+  <script src="js/i18n.js?v=39"></script>
   <script src="js/theme.js?v=36"></script>
   <script src="js/services/lazy-loader.js?v=36"></script>
   <script src="js/services/storage-db.js?v=36"></script>
@@ -582,6 +586,6 @@
   <script src="js/detail-panel.js?v=36"></script>
   <script src="js/command-palette.js?v=36"></script>
   <script src="js/gallery.js?v=36"></script>
-  <script src="js/app.js?v=39"></script>
+  <script src="js/app.js?v=40"></script>
 </body>
 </html>

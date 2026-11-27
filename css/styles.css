@@ -494,6 +494,84 @@ input:focus-visible {
   background: var(--bg-active);
 }
 
+/* Deep Space Skybox Preset Grid */
+.skybox-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.skybox-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 4px 6px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-hairline);
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: border-color var(--dur-fast) ease, background var(--dur-fast) ease, color var(--dur-fast) ease, transform var(--dur-fast) var(--ease-spring);
+}
+
+.skybox-btn:hover {
+  background: var(--bg-active);
+  color: var(--text-primary);
+  transform: translateY(-1px);
+}
+
+.skybox-btn.active {
+  border-color: var(--accent-primary);
+  background: var(--accent-primary-soft);
+  color: var(--text-primary);
+}
+
+.skybox-thumb {
+  width: 100%;
+  height: 28px;
+  border-radius: 7px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.14);
+}
+
+.skybox-thumb-milkyway {
+  background:
+    radial-gradient(ellipse 95% 42% at 50% 54%, rgba(226, 206, 178, 0.55) 0%, rgba(114, 152, 214, 0.34) 42%, transparent 78%),
+    linear-gradient(150deg, #040710 0%, #0b162c 55%, #04060d 100%);
+}
+
+.skybox-thumb-nebula {
+  background:
+    radial-gradient(ellipse 80% 56% at 36% 48%, rgba(86, 138, 240, 0.52) 0%, transparent 65%),
+    radial-gradient(ellipse 72% 48% at 68% 58%, rgba(154, 118, 218, 0.42) 0%, transparent 66%),
+    linear-gradient(155deg, #040611 0%, #0a1026 55%, #050712 100%);
+}
+
+.skybox-thumb-aurora {
+  background:
+    radial-gradient(ellipse 85% 50% at 45% 50%, rgba(56, 204, 198, 0.52) 0%, transparent 64%),
+    radial-gradient(ellipse 64% 46% at 72% 42%, rgba(218, 186, 128, 0.34) 0%, transparent 66%),
+    linear-gradient(150deg, #040914 0%, #081b2a 55%, #040710 100%);
+}
+
+.skybox-thumb-starfield {
+  background:
+    radial-gradient(1.2px 1.2px at 22% 34%, rgba(255, 255, 255, 0.92), transparent),
+    radial-gradient(1.4px 1.4px at 56% 62%, rgba(226, 205, 165, 0.88), transparent),
+    radial-gradient(1px 1px at 78% 28%, rgba(186, 218, 255, 0.85), transparent),
+    radial-gradient(1px 1px at 38% 72%, rgba(255, 255, 255, 0.7), transparent),
+    radial-gradient(circle at 50% 50%, #0c172b 0%, #040710 100%);
+}
+
+.skybox-name {
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
 .custom-color-label {
   font-size: 12px;
   color: var(--text-secondary);

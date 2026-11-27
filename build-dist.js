@@ -70,6 +70,10 @@ function main() {
     fs.cpSync(path.join(rootDir, 'assets', 'bgm'),
       path.join(distDir, 'assets', 'bgm'), { recursive: true });
   }
+  if (fs.existsSync(path.join(rootDir, 'assets', 'skyboxes'))) {
+    fs.cpSync(path.join(rootDir, 'assets', 'skyboxes'),
+      path.join(distDir, 'assets', 'skyboxes'), { recursive: true });
+  }
 
   const workerSrcDir = path.join(rootDir, 'js', 'workers');
   if (fs.existsSync(workerSrcDir)) {

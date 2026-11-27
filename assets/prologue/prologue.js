@@ -36,6 +36,8 @@
     '启程时刻'
   ];
 
+  const FINAL_COORD_TEXT = '46.5422° N · 7.9821° E · 山谷灯火';
+
   function buildDom() {
     if (built) return;
     built = true;
@@ -98,78 +100,117 @@
         </div>
       </section>
 
-      <!-- Slide 2: Nebra Sky Disc -->
-      <section class="sp-slide" id="sp-s2" data-slide="1">
-        <img class="sp-bg-photo" src="assets/prologue/scene-1-origin.jpg?v=1" alt="" />
-        <div class="sp-scrim-story" aria-hidden="true"></div>
-        <div class="sp-story-inner">
-          <div class="sp-kicker sp-reveal" style="--sp-delay: 0ms;">c. 1600 BCE · Nebra Sky Disc</div>
-          <h2 class="sp-story-quote sp-reveal" style="--sp-delay: 70ms;">
+      <!-- Slide 2: Nebra Sky Disc (Right-Aligned Negative Space + Clip-Wipe) -->
+      <section class="sp-slide sp-anim-wipe" id="sp-s2" data-slide="1">
+        <img class="sp-bg-photo" src="assets/prologue/scene-2-nebra.jpg?v=1" alt="" style="object-position: left center;" />
+        <div class="sp-scrim-right" aria-hidden="true"></div>
+        <div class="sp-story-inner sp-align-right">
+          <div class="sp-nebra-arc-wrap sp-reveal" style="--sp-delay: 0ms;" aria-hidden="true">
+            <svg class="sp-nebra-arc" viewBox="0 0 180 42" fill="none">
+              <defs>
+                <linearGradient id="spGoldGrad" x1="8" y1="34" x2="172" y2="34" gradientUnits="userSpaceOnUse">
+                  <stop offset="0" stop-color="#f6dfaf"/>
+                  <stop offset="0.55" stop-color="#e0c38e"/>
+                  <stop offset="1" stop-color="#7eaaff"/>
+                </linearGradient>
+              </defs>
+              <path class="sp-draw-path" pathLength="100" d="M8 34C48 10 132 10 172 34" stroke="url(#spGoldGrad)" stroke-width="1.35" stroke-linecap="round"/>
+              <path class="sp-draw-path" pathLength="100" d="M36 34C64 19 116 19 144 34" stroke="rgba(224,195,142,0.45)" stroke-width="0.9" stroke-dasharray="3 4"/>
+              <circle class="sp-arc-node" cx="90" cy="15.5" r="2.6" fill="#f6dfaf"/>
+              <circle class="sp-arc-node" cx="8" cy="34" r="1.8" fill="#e0c38e"/>
+              <circle class="sp-arc-node" cx="172" cy="34" r="1.8" fill="#7eaaff"/>
+            </svg>
+          </div>
+          <div class="sp-kicker sp-reveal" style="--sp-delay: 40ms;">c. 1600 BCE · Nebra Sky Disc</div>
+          <h2 class="sp-story-quote sp-reveal" style="--sp-delay: 110ms;">
             <span class="sp-phrase">三千六百年前，人类第一次</span><br />
             <span class="sp-phrase sp-accent-grad">把星空与季节刻上青铜。</span>
           </h2>
           <div class="sp-story-rule" aria-hidden="true"></div>
-          <p class="sp-story-sub sp-reveal" style="--sp-delay: 150ms;">
+          <p class="sp-story-sub sp-reveal" style="--sp-delay: 190ms;">
             <span class="sp-phrase">只为读懂风向、物候，</span><span class="sp-phrase">与出发的准确时刻</span>
           </p>
         </div>
       </section>
 
-      <!-- Slide 3: Eratosthenes -->
-      <section class="sp-slide" id="sp-s3" data-slide="2">
+      <!-- Slide 3: Eratosthenes (Left-Aligned Negative Space + 7.2 deg Geometry) -->
+      <section class="sp-slide sp-anim-geo" id="sp-s3" data-slide="2">
         <img class="sp-bg-photo" src="assets/prologue/scene-2-astrolabe.jpg?v=1" alt="" style="object-position: right center;" />
-        <div class="sp-scrim-story" aria-hidden="true"></div>
-        <div class="sp-story-inner">
-          <div class="sp-kicker sp-reveal" style="--sp-delay: 0ms;">c. 240 BCE · Eratosthenes</div>
-          <h2 class="sp-story-quote sp-reveal" style="--sp-delay: 70ms;">
+        <div class="sp-scrim-left" aria-hidden="true"></div>
+        <div class="sp-story-inner sp-align-left">
+          <div class="sp-geo-wrap sp-reveal" style="--sp-delay: 0ms;" aria-hidden="true">
+            <svg class="sp-geo-diagram" viewBox="0 0 220 76" fill="none">
+              <path class="sp-geo-arc" pathLength="100" d="M18 68A125 125 0 0 1 168 38" stroke="rgba(245,245,247,0.42)" stroke-width="1.2"/>
+              <line class="sp-geo-ray" pathLength="100" x1="18" y1="12" x2="196" y2="12" stroke="rgba(224,195,142,0.55)" stroke-width="0.9" stroke-dasharray="4 3"/>
+              <line class="sp-geo-ray" pathLength="100" x1="18" y1="31" x2="152" y2="31" stroke="#e0c38e" stroke-width="1.2"/>
+              <line class="sp-geo-wedge" pathLength="100" x1="108" y1="41" x2="114" y2="16" stroke="#f6dfaf" stroke-width="1.35"/>
+              <line class="sp-geo-wedge" pathLength="100" x1="114" y1="16" x2="126" y2="31" stroke="#7eaaff" stroke-width="1.15"/>
+              <path class="sp-geo-fill" d="M108 41L114 16L126 31Z" fill="rgba(224,195,142,0.22)"/>
+              <circle cx="108" cy="41" r="2.2" fill="#f6dfaf"/>
+              <circle cx="152" cy="31" r="2" fill="#e0c38e"/>
+            </svg>
+            <span class="sp-geo-badge">7.2° · 1/50 OF SPHERE</span>
+          </div>
+          <div><div class="sp-kicker sp-reveal" style="--sp-delay: 50ms;">c. 240 BCE · Eratosthenes</div></div>
+          <h2 class="sp-story-quote sp-reveal" style="--sp-delay: 110ms;">
             <span class="sp-phrase">两千年前，仅凭正午 7.2° 的树影，</span><br />
             <span class="sp-phrase sp-accent-grad">便算出整颗星球的周长。</span>
           </h2>
           <div class="sp-story-rule" aria-hidden="true"></div>
-          <p class="sp-story-sub sp-reveal" style="--sp-delay: 150ms;">
+          <p class="sp-story-sub sp-reveal" style="--sp-delay: 190ms;">
             <span class="sp-phrase">人类第一次确信：脚下并非无尽平面，</span><span class="sp-phrase">而是一颗完整的球</span>
           </p>
         </div>
       </section>
 
-      <!-- Slide 4: The Overview Effect -->
-      <section class="sp-slide" id="sp-s4" data-slide="3">
-        <img class="sp-bg-photo" src="assets/prologue/scene-3-earth.jpg?v=1" alt="" />
-        <div class="sp-scrim-story" aria-hidden="true"></div>
-        <div class="sp-story-inner">
+      <!-- Slide 4: The Overview Effect (Left Orbital Space + Wide-Lens Dolly Zoom) -->
+      <section class="sp-slide sp-anim-orbital" id="sp-s4" data-slide="3">
+        <img class="sp-bg-photo" src="assets/prologue/scene-3-earth.jpg?v=1" alt="" style="object-position: right center;" />
+        <div class="sp-scrim-orbital" aria-hidden="true"></div>
+        <div class="sp-story-inner sp-align-left">
           <div class="sp-kicker sp-reveal" style="--sp-delay: 0ms;">1987 · Frank White · The Overview Effect</div>
-          <h2 class="sp-story-quote sp-reveal" style="--sp-delay: 70ms;">
+          <h2 class="sp-story-quote sp-reveal" style="--sp-delay: 90ms;">
             <span class="sp-phrase">直到飞离大气层回望，</span><br />
             <span class="sp-phrase sp-accent-grad">地图上的国界才第一次消失。</span>
           </h2>
           <div class="sp-story-rule" aria-hidden="true"></div>
-          <p class="sp-story-sub sp-reveal" style="--sp-delay: 150ms;">
+          <p class="sp-story-sub sp-reveal" style="--sp-delay: 180ms;">
             <span class="sp-phrase">宇航哲学称之为「总观效应」——</span><span class="sp-phrase">万物共享同一道晨昏线</span>
           </p>
         </div>
       </section>
 
-      <!-- Slide 5: Space & Place -->
-      <section class="sp-slide" id="sp-s5" data-slide="4">
-        <img class="sp-bg-photo" src="assets/prologue/scene-3-earth.jpg?v=1" alt="" style="object-position: 62% 38%;" />
-        <div class="sp-scrim-story" aria-hidden="true"></div>
-        <div class="sp-story-inner">
-          <div class="sp-kicker sp-reveal" style="--sp-delay: 0ms;">1977 · Yi-Fu Tuan · Space &amp; Place</div>
-          <h2 class="sp-story-quote sp-reveal" style="--sp-delay: 70ms;">
+      <!-- Slide 5: Space & Place (Upper Night Sky + Coordinate-Lock Reticle) -->
+      <section class="sp-slide sp-anim-coord" id="sp-s5" data-slide="4">
+        <img class="sp-bg-photo" src="assets/prologue/scene-5-place.jpg?v=1" alt="" style="object-position: center bottom;" />
+        <div class="sp-scrim-top" aria-hidden="true"></div>
+        <div class="sp-story-inner sp-align-top">
+          <div class="sp-coord-lock sp-reveal" id="sp-coord-lock" style="--sp-delay: 0ms;" aria-hidden="true">
+            <span class="sp-reticle">
+              <svg width="24" height="24" viewBox="0 0 26 26" fill="none">
+                <circle cx="13" cy="13" r="10.5" stroke="currentColor" stroke-width="1" stroke-dasharray="6 4"/>
+                <circle cx="13" cy="13" r="4.5" stroke="currentColor" stroke-width="1"/>
+                <path d="M13 0.5V5M13 21V25.5M0.5 13H5M21 13H25.5" stroke="currentColor" stroke-width="1"/>
+              </svg>
+            </span>
+            <span class="sp-coord-readout" id="sp-coord-readout">00.0000° N · 00.0000° E</span>
+          </div>
+          <div><div class="sp-kicker sp-reveal" style="--sp-delay: 40ms;">1977 · Yi-Fu Tuan · Space &amp; Place</div></div>
+          <h2 class="sp-story-quote sp-reveal" style="--sp-delay: 100ms;">
             <span class="sp-phrase">当你真正认识一处坐标，</span><br />
             <span class="sp-phrase sp-accent-grad">冷冰冰的“空间”，才成了“地方”。</span>
           </h2>
           <div class="sp-story-rule" aria-hidden="true"></div>
-          <p class="sp-story-sub sp-reveal" style="--sp-delay: 150ms;">
+          <p class="sp-story-sub sp-reveal" style="--sp-delay: 170ms;">
             <span class="sp-phrase">这正是我们造这颗 3D 地球仪的起点</span>
           </p>
         </div>
       </section>
 
-      <!-- Slide 6: Humboldt + Living Planetary Atlas Metrics -->
-      <section class="sp-slide" id="sp-s6" data-slide="5">
-        <img class="sp-bg-photo" src="assets/prologue/scene-3-earth.jpg?v=1" alt="" style="object-position: 75% center;" />
-        <div class="sp-scrim-earth" aria-hidden="true"></div>
+      <!-- Slide 6: Humboldt + Living Planetary Atlas Metrics (Delta Negative Space + Cascade) -->
+      <section class="sp-slide sp-anim-cascade" id="sp-s6" data-slide="5">
+        <img class="sp-bg-photo" src="assets/prologue/scene-6-humboldt.jpg?v=1" alt="" style="object-position: right center;" />
+        <div class="sp-scrim-humboldt" aria-hidden="true"></div>
         <div class="sp-earth-inner">
           <div class="sp-earth-copy">
             <div class="sp-kicker sp-reveal" style="--sp-delay: 0ms;">1845 · Alexander von Humboldt · Kosmos</div>
@@ -200,8 +241,8 @@
         </div>
       </section>
 
-      <!-- Slide 7: Precision Instrument -->
-      <section class="sp-slide" id="sp-s7" data-slide="6">
+      <!-- Slide 7: Precision Instrument (Dark Observatory Console + One-Shot Border Scan) -->
+      <section class="sp-slide sp-anim-console" id="sp-s7" data-slide="6">
         <div class="sp-inst-inner">
           <div class="sp-inst-head">
             <div class="sp-kicker sp-reveal" style="--sp-delay: 0ms;">Precision Instrument</div>
@@ -240,8 +281,8 @@
         </div>
       </section>
 
-      <!-- Slide 8: Departure Finale -->
-      <section class="sp-slide" id="sp-s8" data-slide="7">
+      <!-- Slide 8: Departure Finale (Dawn Horizon Lift + Subtle Settlement) -->
+      <section class="sp-slide sp-anim-dawn" id="sp-s8" data-slide="7">
         <img class="sp-bg-photo" src="assets/prologue/scene-4-dawn.jpg?v=1" alt="" style="object-position: center bottom;" />
         <div class="sp-scrim-dawn" aria-hidden="true"></div>
         <div class="sp-finale-inner">
@@ -272,6 +313,8 @@
       enterBtn: root.querySelector('#sp-enter-btn'),
       slides: Array.from(root.querySelectorAll('.sp-slide')),
       dots: Array.from(root.querySelectorAll('.sp-dot-btn')),
+      coordLock: root.querySelector('#sp-coord-lock'),
+      coordReadout: root.querySelector('#sp-coord-readout'),
       instCanvas: root.querySelector('#sp-inst-canvas'),
       iCtx: root.querySelector('#sp-inst-canvas').getContext('2d'),
       tabs: Array.from(root.querySelectorAll('.sp-tab')),
@@ -333,7 +376,9 @@
     const slide = refs.slides[idx];
     if (slide) {
       slide.classList.add('is-active');
-      if (idx === 5) {
+      if (idx === 4) {
+        animateCoordLock();
+      } else if (idx === 5) {
         refs.counters.forEach((el) => animateCount(el));
       }
     }
@@ -369,6 +414,40 @@
     });
   }
 
+  function animateCoordLock() {
+    const lockEl = refs.coordLock;
+    const readoutEl = refs.coordReadout;
+    if (!lockEl || !readoutEl) return;
+    if (readoutEl.dataset.locked === '1') return;
+    readoutEl.dataset.locked = '1';
+
+    if (reduced.matches) {
+      readoutEl.textContent = FINAL_COORD_TEXT;
+      lockEl.classList.add('is-locked');
+      return;
+    }
+
+    const dur = 750;
+    const start = performance.now();
+    const step = (now) => {
+      if (!isOpen) return;
+      const t = clamp01((now - start) / dur);
+      if (t >= 1) {
+        readoutEl.textContent = FINAL_COORD_TEXT;
+        lockEl.classList.add('is-locked');
+        return;
+      }
+      const eased = 1 - Math.pow(1 - t, 2.5);
+      const jitterLat = t < 0.78 ? ((Math.sin(now * 0.041) * 0.8 + 0.2) * (1 - t) * 4) : 0;
+      const jitterLon = t < 0.86 ? ((Math.cos(now * 0.053) * 0.8 + 0.2) * (1 - t) * 3) : 0;
+      const lat = Math.max(0, 46.5422 * eased + jitterLat).toFixed(4);
+      const lon = Math.max(0, 7.9821 * eased + jitterLon).toFixed(4);
+      readoutEl.textContent = `${lat}° N · ${lon}° E`;
+      requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
+
   function animateCount(el) {
     if (el.dataset.counted === '1') return;
     el.dataset.counted = '1';
@@ -402,10 +481,16 @@
       el.dataset.counted = '0';
       el.textContent = reduced.matches ? Number(el.dataset.count || 0).toLocaleString('en-US') : '0';
     });
+    if (refs.coordLock && refs.coordReadout) {
+      refs.coordLock.classList.toggle('is-locked', reduced.matches);
+      refs.coordReadout.dataset.locked = '0';
+      refs.coordReadout.textContent = reduced.matches ? FINAL_COORD_TEXT : '00.0000° N · 00.0000° E';
+    }
 
     if (reduced.matches || typeof IntersectionObserver === 'undefined') {
       refs.slides.forEach((s) => s.classList.add('is-active'));
       refs.counters.forEach((el) => animateCount(el));
+      animateCoordLock();
       instNearViewport = true;
       return;
     }
@@ -466,7 +551,8 @@
   }
 
   function renderInstrument(t) {
-    instBlend += (activeInst - instBlend) * (reduced.matches ? 1 : 0.12);
+    instBlend += (activeInst - instBlend) * (reduced.matches ? 1 : 0.28);
+    if (Math.abs(activeInst - instBlend) < 0.004) instBlend = activeInst;
     const { w, h } = resizeInst();
     const ctx = refs.iCtx;
     ctx.clearRect(0, 0, w, h);
@@ -484,9 +570,9 @@
     ctx.lineTo(w, h * 0.44);
     ctx.stroke();
 
-    const w0 = Math.max(0, 1 - Math.abs(instBlend - 0));
-    const w1 = Math.max(0, 1 - Math.abs(instBlend - 1));
-    const w2 = Math.max(0, 1 - Math.abs(instBlend - 2));
+    const w0 = Math.max(0, 1 - Math.abs(instBlend - 0) * 2.1);
+    const w1 = Math.max(0, 1 - Math.abs(instBlend - 1) * 2.1);
+    const w2 = Math.max(0, 1 - Math.abs(instBlend - 2) * 2.1);
 
     if (w0 > 0.01) {
       ctx.save();
@@ -754,7 +840,6 @@
         }, 120);
         return;
       }
-      // Fallback if video couldn't start
       isOpen = true;
       isClosing = true;
     }

@@ -95,6 +95,10 @@ function verifyCsrf(request) {
   const m = request.method;
   if (m === 'GET' || m === 'HEAD' || m === 'OPTIONS') return true;
   const url = new URL(request.url);
+  const secFetchSite = String(request.headers.get('Sec-Fetch-Site') || '').toLowerCase();
+  if (secFetchSite && secFetchSite !== 'same-origin' && secFetchSite !== 'none') {
+    return false;
+  }
   const origin = request.headers.get('Origin');
   if (origin) {
     try {
@@ -116,11 +120,11 @@ function verifyCsrf(request) {
   return true;
 }
 
-function checkAuthRateLimit(ip, recordFailure) {
+function checkAuthRateLimit(key, recordFailure) {
   const now = Date.now();
-  const entry = authFailures.get(ip);
+  const entry = authFailures.get(key);
   if (!entry || now - entry.start > LOGIN_WINDOW_MS) {
-    if (recordFailure) authFailures.set(ip, { start: now, count: 1 });
+    if (recordFailure) authFailures.set(key, { start: now, count: 1 });
     return true;
   }
   if (entry.count >= LOGIN_MAX_ATTEMPTS) return false;
@@ -128,8 +132,8 @@ function checkAuthRateLimit(ip, recordFailure) {
   return true;
 }
 
-function clearAuthFailures(ip) {
-  authFailures.delete(ip);
+function clearAuthFailures(key) {
+  authFailures.delete(key);
 }
 
 function normalizeEmail(email) {
@@ -317,12 +321,13 @@ async function handleAuthRequest(request, env) {
 
   // POST /api/auth/login
   if (p === '/api/auth/login' && request.method === 'POST') {
-    if (!checkAuthRateLimit(ip, false)) {
-      return authJson({ ok: false, error: 'Too many failed login attempts. Please wait 15 minutes.' }, 429);
-    }
     const body = await request.json().catch(() => null);
     const email = normalizeEmail(body && body.email);
     const password = String((body && body.password) || '');
+    const rlKey = `${ip}|${email || '*'}`;
+    if (!checkAuthRateLimit(rlKey, false) || !checkAuthRateLimit(`ip:${ip}`, false)) {
+      return authJson({ ok: false, error: 'Too many failed login attempts. Please wait 15 minutes.' }, 429);
+    }
     if (!email || !password) {
       return authJson({ ok: false, error: 'Invalid email or password' }, 400);
     }
@@ -332,17 +337,20 @@ async function handleAuthRequest(request, env) {
       .first();
 
     if (!row || !row.password_hash || !row.password_salt) {
-      checkAuthRateLimit(ip, true);
+      checkAuthRateLimit(rlKey, true);
+      checkAuthRateLimit(`ip:${ip}`, true);
       return authJson({ ok: false, error: 'Invalid email or password' }, 401);
     }
 
     const candidateHash = await hashPassword(password, row.password_salt);
     if (!constantTimeEqual(candidateHash, row.password_hash)) {
-      checkAuthRateLimit(ip, true);
+      checkAuthRateLimit(rlKey, true);
+      checkAuthRateLimit(`ip:${ip}`, true);
       return authJson({ ok: false, error: 'Invalid email or password' }, 401);
     }
 
-    clearAuthFailures(ip);
+    // Only clear the specific (ip, email) throttle; never clear ip-wide brute-force counters for other targets
+    clearAuthFailures(rlKey);
     const { rawToken } = await createUserSession(env, row.id, request);
     return authJson(
       {
@@ -392,7 +400,7 @@ async function handleAuthRequest(request, env) {
 
   // POST /api/auth/request-reset
   if (p === '/api/auth/request-reset' && request.method === 'POST') {
-    if (!checkAuthRateLimit(ip, false)) {
+    if (!checkAuthRateLimit(`rst:${ip}`, true)) {
       return authJson({ ok: false, error: 'Rate limit exceeded' }, 429);
     }
     const body = await request.json().catch(() => null);
@@ -437,12 +445,16 @@ async function handleAuthRequest(request, env) {
     if (!ver || Number(ver.expires_at) < Date.now()) {
       return authJson({ ok: false, error: 'Invalid or expired reset token' }, 400);
     }
+    const targetUser = await env.DB.prepare('SELECT id FROM users WHERE email = ?').bind(ver.identifier).first();
     const salt = randomBytesHex(16);
     const pwdHash = await hashPassword(newPass, salt);
     await env.DB.prepare('UPDATE users SET password_hash = ?, password_salt = ?, updated_at = ? WHERE email = ?')
       .bind(pwdHash, salt, Date.now(), ver.identifier)
       .run();
     await env.DB.prepare('DELETE FROM verifications WHERE id = ?').bind(ver.id).run();
+    if (targetUser && targetUser.id) {
+      await env.DB.prepare('DELETE FROM sessions WHERE user_id = ?').bind(targetUser.id).run();
+    }
     return authJson({ ok: true });
   }
 
@@ -459,11 +471,13 @@ async function handleAuthRequest(request, env) {
     gUrl.searchParams.set('response_type', 'code');
     gUrl.searchParams.set('scope', 'openid email profile');
     gUrl.searchParams.set('state', state);
+    const isHttps = String(request.url || '').startsWith('https://');
+    const stateCookie = `kairos_oauth_state=${state}; Path=/api/auth/google; HttpOnly; SameSite=Lax; Max-Age=600${isHttps ? '; Secure' : ''}`;
     return new Response(null, {
       status: 302,
       headers: {
         Location: gUrl.toString(),
-        'Set-Cookie': `kairos_oauth_state=${state}; Path=/api/auth/google; HttpOnly; SameSite=Lax; Max-Age=600`
+        'Set-Cookie': stateCookie
       }
     });
   }
@@ -497,12 +511,12 @@ async function handleAuthRequest(request, env) {
       headers: { Authorization: `Bearer ${tok.access_token}` }
     });
     const gUser = await uiRes.json().catch(() => null);
-    if (!uiRes.ok || !gUser || !gUser.email) {
-      return authJson({ ok: false, error: 'Google userinfo fetch failed' }, 502);
+    if (!uiRes.ok || !gUser || !gUser.email || gUser.verified_email !== true) {
+      return authJson({ ok: false, error: 'Google account email must be verified' }, 403);
     }
     const email = normalizeEmail(gUser.email);
     const now = Date.now();
-    let existing = await env.DB.prepare('SELECT id FROM users WHERE email = ?').bind(email).first();
+    let existing = await env.DB.prepare('SELECT id, email_verified FROM users WHERE email = ?').bind(email).first();
     let userId = existing ? existing.id : 'usr_' + randomBytesHex(12);
     if (!existing) {
       await env.DB.prepare(
@@ -515,6 +529,12 @@ async function handleAuthRequest(request, env) {
       )
         .bind(userId, 'zh-CN', 'CNY', '{}', '{}', 'private', now)
         .run();
+    } else if (!existing.email_verified) {
+      // Prevent pre-account takeover: clear unverified password & prior sessions before linking verified Google identity
+      await env.DB.prepare('UPDATE users SET email_verified = 1, password_hash = ?, password_salt = ?, updated_at = ? WHERE id = ?')
+        .bind('', '', now, userId)
+        .run();
+      await env.DB.prepare('DELETE FROM sessions WHERE user_id = ?').bind(userId).run();
     }
     await env.DB.prepare(
       'INSERT OR IGNORE INTO accounts (id, user_id, provider, provider_account_id, created_at) VALUES (?, ?, ?, ?, ?)'
@@ -523,13 +543,12 @@ async function handleAuthRequest(request, env) {
       .run();
 
     const { rawToken } = await createUserSession(env, userId, request);
-    return new Response(null, {
-      status: 302,
-      headers: {
-        Location: '/?auth=ok',
-        'Set-Cookie': buildSessionCookie(rawToken, request.url, Math.floor(SESSION_TTL_MS / 1000))
-      }
-    });
+    const isHttps = String(request.url || '').startsWith('https://');
+    const hdrs = new Headers();
+    hdrs.set('Location', '/?auth=ok');
+    hdrs.append('Set-Cookie', buildSessionCookie(rawToken, request.url, Math.floor(SESSION_TTL_MS / 1000)));
+    hdrs.append('Set-Cookie', `kairos_oauth_state=; Path=/api/auth/google; HttpOnly; SameSite=Lax; Max-Age=0${isHttps ? '; Secure' : ''}`);
+    return new Response(null, { status: 302, headers: hdrs });
   }
 
   // Protected /api/account/* endpoints
@@ -564,8 +583,9 @@ async function handleAuthRequest(request, env) {
     const displayName = body.displayName !== undefined ? String(body.displayName).trim().slice(0, 60) : user.displayName;
     const bio = body.bio !== undefined ? String(body.bio).trim().slice(0, 280) : user.bio;
     const avatarUrl = body.avatarUrl !== undefined ? String(body.avatarUrl).slice(0, 2000) : user.avatarUrl;
-    if (avatarUrl && !avatarUrl.startsWith('https://') && !avatarUrl.startsWith('data:image/')) {
-      return authJson({ ok: false, error: 'Invalid avatar URL' }, 400);
+    const safeRasterDataUri = /^data:image\/(?:png|jpeg|jpg|webp|gif);base64,/i.test(avatarUrl);
+    if (avatarUrl && !avatarUrl.startsWith('https://') && !safeRasterDataUri) {
+      return authJson({ ok: false, error: 'Invalid avatar URL (HTTPS or PNG/JPEG/WebP/GIF data URI required)' }, 400);
     }
 
     await env.DB.prepare('UPDATE users SET display_name = ?, bio = ?, avatar_url = ?, updated_at = ? WHERE id = ?')
@@ -577,20 +597,23 @@ async function handleAuthRequest(request, env) {
     const defCur = String(pObj.defaultCurrency || 'CNY').slice(0, 8);
     const vis = pObj.profileVisibility === 'public' ? 'public' : 'private';
     const slug = pObj.publicSlug ? String(pObj.publicSlug).replace(/[^a-z0-9-_]/gi, '').slice(0, 40) : null;
-    await env.DB.prepare(
-      'INSERT INTO user_preferences (user_id, default_lang, default_currency, travel_prefs_json, photo_prefs_json, profile_visibility, public_slug, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(user_id) DO UPDATE SET default_lang=excluded.default_lang, default_currency=excluded.default_currency, travel_prefs_json=excluded.travel_prefs_json, photo_prefs_json=excluded.photo_prefs_json, profile_visibility=excluded.profile_visibility, public_slug=excluded.public_slug, updated_at=excluded.updated_at'
-    )
-      .bind(
-        user.id,
-        defLang,
-        defCur,
-        JSON.stringify(pObj.travelPrefs || {}),
-        JSON.stringify(pObj.photoPrefs || {}),
-        vis,
-        slug,
-        now
+    const tpStr = JSON.stringify(pObj.travelPrefs || {});
+    const ppStr = JSON.stringify(pObj.photoPrefs || {});
+    if (tpStr.length > 32768 || ppStr.length > 32768) {
+      return authJson({ ok: false, error: 'Preferences payload exceeds 32 KB limit' }, 413);
+    }
+    try {
+      await env.DB.prepare(
+        'INSERT INTO user_preferences (user_id, default_lang, default_currency, travel_prefs_json, photo_prefs_json, profile_visibility, public_slug, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(user_id) DO UPDATE SET default_lang=excluded.default_lang, default_currency=excluded.default_currency, travel_prefs_json=excluded.travel_prefs_json, photo_prefs_json=excluded.photo_prefs_json, profile_visibility=excluded.profile_visibility, public_slug=excluded.public_slug, updated_at=excluded.updated_at'
       )
-      .run();
+        .bind(user.id, defLang, defCur, tpStr, ppStr, vis, slug, now)
+        .run();
+    } catch (e) {
+      if (String(e && e.message).includes('UNIQUE')) {
+        return authJson({ ok: false, error: 'Public profile slug already taken' }, 409);
+      }
+      throw e;
+    }
 
     return authJson({ ok: true, updatedAt: now });
   }
@@ -620,7 +643,7 @@ async function handleAuthRequest(request, env) {
         // NEVER overwrite another user's trip ID!
         const safeId = existingTrip && existingTrip.owner_id !== user.id ? `${tid}_${user.id.slice(4, 10)}` : tid;
         await env.DB.prepare(
-          'INSERT INTO trips (id, owner_id, title, access_mode, data_json, version, updated_at, created_at) VALUES (?, ?, ?, ?, ?, 1, ?, ?) ON CONFLICT(id) DO UPDATE SET title=excluded.title, data_json=excluded.data_json, updated_at=MAX(trips.updated_at, excluded.updated_at)'
+          'INSERT INTO trips (id, owner_id, title, access_mode, data_json, version, updated_at, created_at) VALUES (?, ?, ?, ?, ?, 1, ?, ?) ON CONFLICT(id) DO UPDATE SET title=CASE WHEN excluded.updated_at >= trips.updated_at THEN excluded.title ELSE trips.title END, data_json=CASE WHEN excluded.updated_at >= trips.updated_at THEN excluded.data_json ELSE trips.data_json END, updated_at=MAX(trips.updated_at, excluded.updated_at)'
         )
           .bind(safeId, user.id, String(tr.name || 'Imported Trip').slice(0, 120), 'private', JSON.stringify(tr), Number(tr.updatedAt) || now, now)
           .run();
@@ -657,6 +680,19 @@ async function handleAuthRequest(request, env) {
 
   if (p === '/api/account' && request.method === 'DELETE') {
     await env.DB.prepare('DELETE FROM sessions WHERE user_id = ?').bind(user.id).run();
+    await env.DB.prepare('DELETE FROM verifications WHERE identifier = ?').bind(user.email).run();
+    await env.DB.prepare('DELETE FROM accounts WHERE user_id = ?').bind(user.id).run();
+    await env.DB.prepare('DELETE FROM user_preferences WHERE user_id = ?').bind(user.id).run();
+    await env.DB.prepare('DELETE FROM favorites WHERE user_id = ?').bind(user.id).run();
+    await env.DB.prepare('DELETE FROM wishlists WHERE user_id = ?').bind(user.id).run();
+    await env.DB.prepare('DELETE FROM travel_records WHERE user_id = ?').bind(user.id).run();
+    await env.DB.prepare('DELETE FROM poll_votes WHERE user_id = ?').bind(user.id).run();
+    await env.DB.prepare('DELETE FROM comments WHERE user_id = ?').bind(user.id).run();
+    await env.DB.prepare('DELETE FROM expenses WHERE user_id = ? OR payer_id = ?').bind(user.id, user.id).run();
+    await env.DB.prepare('DELETE FROM shared_links WHERE owner_id = ?').bind(user.id).run();
+    await env.DB.prepare('DELETE FROM trip_versions WHERE author_id = ?').bind(user.id).run();
+    await env.DB.prepare('DELETE FROM trip_members WHERE user_id = ?').bind(user.id).run();
+    await env.DB.prepare('DELETE FROM trips WHERE owner_id = ?').bind(user.id).run();
     await env.DB.prepare('DELETE FROM users WHERE id = ?').bind(user.id).run();
     return authJson({ ok: true, deleted: true }, 200, {
       'Set-Cookie': buildSessionCookie('', request.url, 0)
@@ -666,4 +702,4 @@ async function handleAuthRequest(request, env) {
   return authJson({ ok: false, error: 'Account route not found' }, 404);
 }
 
-export { handleAuthRequest, getSessionUser, hashPassword, sha256Hex, randomBytesHex, authJson };
+export { handleAuthRequest, getSessionUser, hashPassword, sha256Hex, randomBytesHex, authJson, verifyCsrf };

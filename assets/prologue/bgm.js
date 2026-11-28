@@ -4,7 +4,7 @@
   const AUDIO_SRC = 'assets/prologue/the-blue-horizon.mp3?v=1';
   const audio = new Audio(AUDIO_SRC);
   audio.loop = true;
-  audio.preload = 'auto';
+  audio.preload = 'none';
   audio.volume = 0;
 
   let userMuted = false;

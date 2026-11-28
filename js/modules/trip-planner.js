@@ -63,12 +63,16 @@
     东京: ['jp-kanto-tokyo'],
     kyoto: ['jp-kansai-kyoto', '京都'],
     京都: ['jp-kansai-kyoto'],
-    paris: ['fr-paris', '巴黎'],
-    london: ['uk-london', '伦敦'],
-    'new york': ['us-east-nyc', '纽约'],
-    nyc: ['us-east-nyc', '纽约'],
-    zurich: ['ch-zurich-lucerne', '苏黎世'],
-    reykjavik: ['is-reykjavik-golden-circle', '雷克雅未克'],
+    paris: ['fr-paris-nw-paris', '巴黎'],
+    london: ['uk-south-london', '伦敦'],
+    'new york': ['us-ne-metro-new-york', '纽约'],
+    nyc: ['us-ne-metro-new-york', '纽约'],
+    zurich: ['ch-lakes-lucerne-rigi-pilatus-stoos', '卢塞恩'],
+    lucerne: ['ch-lakes-lucerne-rigi-pilatus-stoos', '卢塞恩'],
+    amman: ['me-levant-arabia-petra', '佩特拉'],
+    honolulu: ['us-hi-west-oahu', '欧胡岛'],
+    oahu: ['us-hi-west-oahu', '欧胡岛'],
+    reykjavik: ['is-sw-reykjavik-blue-lagoon', '雷克雅未克'],
     kathmandu: ['np-bt-kathmandu-nagarkot', '加德满都']
   };
 
@@ -178,19 +182,50 @@
       if (score > 0) scored.push({ dest: d, score });
     }
     scored.sort((a, b) => b.score - a.score || (b.dest.priority || 0) - (a.dest.priority || 0));
+    if (!scored.length && typeof global.Fuse === 'function' && qNorm.length >= 2) {
+      const indexed = list.filter(Boolean).map((d) => ({
+        dest: d,
+        shortName: String(d.shortName || ''),
+        name: String(d.name || ''),
+        enShort: tx(String(d.shortName || '')),
+        enName: tx(String(d.name || '')),
+        country: String(d.country || ''),
+        enCountry: tx(String(d.country || '')),
+        id: String(d.id || '')
+      }));
+      const fuse = new global.Fuse(indexed, {
+        keys: ['shortName', 'enShort', 'name', 'enName', 'country', 'enCountry', 'id'],
+        threshold: 0.36,
+        ignoreLocation: true
+      });
+      return fuse.search(raw).slice(0, 12).map((r) => r.item.dest);
+    }
     return scored.map((s) => s.dest);
   }
 
   function resetDraftForNewTrip(defaults) {
-    plannerDraft = Object.assign({}, plannerDraft, {
+    const defOrigin = (defaults && defaults.origin) || '上海';
+    plannerDraft = {
       mode: 'new',
       selectedDestId: (defaults && defaults.destId) || '',
       extraDestIds: [],
       destQuery: (defaults && defaults.destQuery) || '',
-      origin: (defaults && defaults.origin) || plannerDraft.origin || '上海',
+      origin: defOrigin,
+      originCoords: (defaults && defaults.originCoords) || resolveOriginCoords(defOrigin),
+      startDate: (defaults && defaults.startDate) || new Date(Date.now() + 14 * 86400000).toISOString().slice(0, 10),
       days: Number(defaults && defaults.days) || 4,
-      budgetRmb: Number(defaults && defaults.budgetRmb) || 12000
-    });
+      travelers: Number(defaults && defaults.travelers) || 2,
+      budgetRmb: Number(defaults && defaults.budgetRmb) || 12000,
+      currency: (defaults && defaults.currency) || 'CNY',
+      dailyStartTime: (defaults && defaults.dailyStartTime) || '08:30',
+      month: Number(defaults && defaults.month) || (new Date().getMonth() + 1),
+      intercityMode: (defaults && defaults.intercityMode) || 'flight',
+      transferMode: (defaults && defaults.transferMode) || 'airport_express',
+      transportMode: (defaults && defaults.transportMode) || 'driving',
+      pace: (defaults && defaults.pace) || 'balanced',
+      interest: (defaults && defaults.interest) || 'all',
+      hotelName: ''
+    };
     return plannerDraft;
   }
 
@@ -202,10 +237,31 @@
     return 6371 * 2 * Math.asin(Math.min(1, Math.sqrt(s)));
   }
 
-  function nearestNeighborSort(spots) {
-    if (!spots.length) return [];
-    const remaining = spots.slice();
-    const ordered = [remaining.shift()];
+  function nearestNeighborSort(spots, startCoords) {
+    if (!Array.isArray(spots) || !spots.length) return [];
+    const withCoords = [];
+    const withoutCoords = [];
+    spots.forEach((s) => {
+      if (s && Array.isArray(s.coords) && s.coords.length >= 2) withCoords.push(s);
+      else if (s) withoutCoords.push(s);
+    });
+    if (!withCoords.length) return withoutCoords;
+    const remaining = withCoords.slice();
+    const ordered = [];
+    if (Array.isArray(startCoords) && startCoords.length >= 2) {
+      let bestStart = 0;
+      let bestDist = Infinity;
+      for (let i = 0; i < remaining.length; i++) {
+        const d = haversineKm(startCoords, remaining[i].coords);
+        if (d < bestDist) {
+          bestDist = d;
+          bestStart = i;
+        }
+      }
+      ordered.push(remaining.splice(bestStart, 1)[0]);
+    } else {
+      ordered.push(remaining.shift());
+    }
     while (remaining.length) {
       const last = ordered[ordered.length - 1];
       let bestIdx = 0;
@@ -219,7 +275,7 @@
       }
       ordered.push(remaining.splice(bestIdx, 1)[0]);
     }
-    return ordered;
+    return ordered.concat(withoutCoords);
   }
 
   function twoOptOptimize(spots) {
@@ -264,6 +320,7 @@
 
   /**
    * Re-optimize day stops while strictly preserving user-locked stop indices (`stop.locked === true`).
+   * Preserves morning -> daytime -> sunset light buckets while optimizing spatial route within each bucket.
    */
   function reoptimizeUnlockedDays(trip) {
     if (!trip || !Array.isArray(trip.days)) return trip;
@@ -276,7 +333,17 @@
         if (st && st.locked) lockedSlots.push({ idx, stop: st });
         else unlocked.push(st);
       });
-      const opt = orderDayStopsByLight(twoOptOptimize(nearestNeighborSort(unlocked)));
+      const buckets = [[], [], []];
+      unlocked.forEach((st) => buckets[Math.max(0, Math.min(2, lightSlotScore(st) - 1))].push(st));
+      let opt = [];
+      let prevCoords = null;
+      buckets.forEach((bk) => {
+        if (!bk.length) return;
+        const ordered = bk.length >= 2 ? twoOptOptimize(nearestNeighborSort(bk, prevCoords)) : bk;
+        opt = opt.concat(ordered);
+        const tail = ordered[ordered.length - 1];
+        if (tail && Array.isArray(tail.coords)) prevCoords = tail.coords;
+      });
       const rebuilt = new Array(stops.length);
       lockedSlots.forEach((l) => { rebuilt[l.idx] = l.stop; });
       let u = 0;
@@ -305,7 +372,9 @@
       if (totalDwell > 660) {
         warnings.push({ day: dy.day, type: 'time_overload', message: L(`Day ${dy.day} 景点停留累计 ${Math.round(totalDwell / 60)} 小时，建议精简或拆天`, `Day ${dy.day} exceeds 11h dwell time`) });
       }
-      if (totalKm > 240 && trip.mode !== 'flight') {
+      if (trip.mode === 'walking' && totalKm > 18) {
+        warnings.push({ day: dy.day, type: 'distance_overload', message: L(`Day ${dy.day} 步行直线跨度 ${Math.round(totalKm)} km，超过常规步行负荷，建议改为骑行/公交或驾车`, `Day ${dy.day} walking span ${Math.round(totalKm)} km exceeds practical daily walk`) });
+      } else if (totalKm > 240 && trip.mode !== 'flight' && trip.intercityMode !== 'flight') {
         warnings.push({ day: dy.day, type: 'distance_overload', message: L(`Day ${dy.day} 直线跨度 ${Math.round(totalKm)} km，请注意每日车程负载`, `Day ${dy.day} spans ${Math.round(totalKm)} km`) });
       }
     });
@@ -412,28 +481,54 @@
       routeSummary: null
     }));
 
+    const nowMs = Date.now();
     pool.forEach((item, i) => {
       const targetDay = Math.min(days - 1, Math.floor((i * days) / Math.max(1, pool.length)));
       dayBuckets[targetDay].stops.push({
-        id: `st_${Date.now().toString(36)}_${i}`,
+        id: `st_${nowMs.toString(36)}_${i}`,
         destId: item.dest.id,
         name: item.sp.name,
         category: item.sp.category || '',
         coords: item.sp.coords,
         bestTime: item.sp.bestTime || '',
         dwellMin: 90,
-        locked: false
+        locked: false,
+        order: dayBuckets[targetDay].stops.length,
+        updatedAt: nowMs
       });
     });
 
     dayBuckets.forEach((dy) => {
-      dy.stops = orderDayStopsByLight(dy.stops);
+      const buckets = [[], [], []];
+      dy.stops.forEach((st) => buckets[Math.max(0, Math.min(2, lightSlotScore(st) - 1))].push(st));
+      let opt = [];
+      let prevCoords = null;
+      buckets.forEach((bk) => {
+        if (!bk.length) return;
+        const ordered = bk.length >= 2 ? twoOptOptimize(nearestNeighborSort(bk, prevCoords)) : bk;
+        opt = opt.concat(ordered);
+        const tail = ordered[ordered.length - 1];
+        if (tail && Array.isArray(tail.coords)) prevCoords = tail.coords;
+      });
+      dy.stops = opt.map((st, idx) => Object.assign({}, st, { order: idx }));
     });
 
     const dName = dests.map((d) => d.shortName || d.name).join(' · ') || L('全球', 'Global');
     const intercityComparison = global.TransportService && primaryDest
       ? global.TransportService.compareIntercityModes({ originLabel: origin, originCoords, dest: primaryDest })
       : null;
+    const intercityTransfers = [];
+    if (global.TransportService && dests.length > 1) {
+      for (let i = 0; i < dests.length - 1; i++) {
+        if (dests[i] && dests[i + 1]) {
+          intercityTransfers.push(global.TransportService.compareIntercityModes({
+            originLabel: dests[i].shortName || dests[i].name,
+            originCoords: dests[i].coords,
+            dest: dests[i + 1]
+          }));
+        }
+      }
+    }
 
     return {
       id: `trip_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`,
@@ -458,6 +553,7 @@
       hotelName: opts.hotelName || '',
       hotelCoords: null,
       intercityComparison,
+      intercityTransfers,
       days: dayBuckets,
       budgetItems: buildBudgetSeed(primaryDest, days, budgetRmb),
       prep: buildPrepChecklist(dests),
@@ -541,7 +637,11 @@
     rows.push([]);
     rows.push(['BudgetCategory', 'Detail', 'EstimatedRMB', 'ActualRMB']);
     (trip.budgetItems || []).forEach((b) => rows.push([b.category, b.detail, b.cost, b.actualCost || 0]));
-    return '\uFEFF' + rows.map((r) => r.map((v) => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\r\n');
+    return '\uFEFF' + rows.map((r) => r.map((v) => {
+      let s = String(v ?? '');
+      if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`;
+      return `"${s.replace(/"/g, '""')}"`;
+    }).join(',')).join('\r\n');
   }
 
   function drawTripOnGlobe(trip) {
@@ -555,11 +655,13 @@
     // Draw schematic intercity arc if origin & primary destination exist
     const firstStop = trip.days && trip.days[0] && trip.days[0].stops && trip.days[0].stops[0];
     if (trip.originCoords && firstStop && Array.isArray(firstStop.coords) && global.TransportService) {
-      const arc = global.TransportService.buildGreatCircleCoordinates(trip.originCoords, firstStop.coords, 28);
+      const arcGeom = typeof global.TransportService.buildGreatCircleGeometry === 'function'
+        ? global.TransportService.buildGreatCircleGeometry(trip.originCoords, firstStop.coords, 28)
+        : { type: 'LineString', coordinates: global.TransportService.buildGreatCircleCoordinates(trip.originCoords, firstStop.coords, 28) };
       lineFeatures.push({
         type: 'Feature',
         properties: { color: '#E8A33D', routed: 0, intercity: 1 },
-        geometry: { type: 'LineString', coordinates: arc }
+        geometry: arcGeom
       });
     }
 

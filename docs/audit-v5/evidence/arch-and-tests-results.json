@@ -1,0 +1,1257 @@
+{
+  "auditMetadata": {
+    "workstream": "Workstream A (Phase 1: Architecture Audit & Phase 9: Test Coverage Audit)",
+    "repoRoot": "c:\\Users\\Liam\\Desktop\\旅游计划\\globe-app",
+    "headCommit": "cfec5a3",
+    "headTag": "v5.0.0",
+    "auditedAt": "2026-11-28T04:27:26.047Z"
+  },
+  "gitAndDeployment": {
+    "v45ToV50DiffStatSummary": {
+      "filesChanged": 117,
+      "insertions": 11309,
+      "deletions": 802
+    },
+    "pagesBranchDrift": {
+      "pagesHeadCommit": "84f28148f1163aec73bcdb6a45102ae2df55fedd",
+      "pagesCommitDate": "2026-11-27 20:44:09 +0800",
+      "pagesCommitMessage": "chore(pages): sync static dist (2026-11-27 12:44:09)",
+      "findings": [
+        "Local/cn `pages` branch still holds V4.5.0 (\"World Travel Globe · 全球旅行地理图鉴\", SW cache wtg-shell-mwyz1yax / wtg-data-v4), NOT V5.0.0 (KAIROS).",
+        "Meanwhile .github/workflows/deploy-pages.yml builds ./dist directly from `main` via actions/deploy-pages@v4 (artifact upload), leaving scripts/sync-pages-branch.js and the orphan `pages` branch stale."
+      ]
+    },
+    "ciWorkflows": [
+      ".github/workflows/ci-quality.yml (runs audit, build, test, playwright-core E2E on main push/PR)",
+      ".github/workflows/data-governance.yml (weekly cron Mon 03:00 UTC)",
+      ".github/workflows/deploy-pages.yml (GitHub Pages deploy from main)"
+    ]
+  },
+  "codebaseMetrics": {
+    "fileCountAnalyzed": 63,
+    "totalLocJsWorkerScripts": 30036,
+    "totalBytesJsWorkerScripts": 1332883,
+    "totalSilentCatches": 162,
+    "distBundleMetrics": {
+      "distFileCount": 2382,
+      "appBundleMinJs": {
+        "rawKB": 899,
+        "gzipKB": 239.4
+      },
+      "appBundleMinCss": {
+        "rawKB": 225.2,
+        "gzipKB": 35.7
+      },
+      "vendorLibsBundleMinJs": {
+        "rawKB": 351.2,
+        "gzipKB": 129.3
+      },
+      "atlasIndexMinJs": {
+        "rawKB": 1265.6,
+        "gzipKB": 451.2
+      },
+      "introBundleMinJs": {
+        "rawKB": 79.1,
+        "gzipKB": 21
+      }
+    },
+    "largestFilesByLoc": [
+      {
+        "file": "js/app.js",
+        "loc": 3899,
+        "bytes": 145823,
+        "innerFunctionCount": 255,
+        "maxInnerFunction": {
+          "name": "bindEvents",
+          "startLine": 2419,
+          "endLine": 3153,
+          "length": 735,
+          "maxNesting": 8
+        },
+        "maxBraceDepth": 9,
+        "silentCatchCount": 18,
+        "fetchCount": 1,
+        "hasAbortController": false
+      },
+      {
+        "file": "js/modules/trip-planner.js",
+        "loc": 1495,
+        "bytes": 82484,
+        "innerFunctionCount": 76,
+        "maxInnerFunction": {
+          "name": "tripToCsv",
+          "startLine": 532,
+          "endLine": 1186,
+          "length": 655,
+          "maxNesting": 6
+        },
+        "maxBraceDepth": 7,
+        "silentCatchCount": 9,
+        "fetchCount": 0,
+        "hasAbortController": false
+      },
+      {
+        "file": "assets/prologue/prologue.js",
+        "loc": 1324,
+        "bytes": 58779,
+        "innerFunctionCount": 62,
+        "maxInnerFunction": {
+          "name": "buildDom",
+          "startLine": 222,
+          "endLine": 548,
+          "length": 327,
+          "maxNesting": 4
+        },
+        "maxBraceDepth": 6,
+        "silentCatchCount": 3,
+        "fetchCount": 0,
+        "hasAbortController": false
+      },
+      {
+        "file": "js/modules/photo-simulator.js",
+        "loc": 1291,
+        "bytes": 70229,
+        "innerFunctionCount": 60,
+        "maxInnerFunction": {
+          "name": "mount",
+          "startLine": 741,
+          "endLine": 1264,
+          "length": 524,
+          "maxNesting": 7
+        },
+        "maxBraceDepth": 8,
+        "silentCatchCount": 3,
+        "fetchCount": 0,
+        "hasAbortController": false
+      },
+      {
+        "file": "js/i18n.js",
+        "loc": 1180,
+        "bytes": 58654,
+        "innerFunctionCount": 24,
+        "maxInnerFunction": {
+          "name": "hydrateStaticDom",
+          "startLine": 1139,
+          "endLine": 1161,
+          "length": 23,
+          "maxNesting": 2
+        },
+        "maxBraceDepth": 5,
+        "silentCatchCount": 4,
+        "fetchCount": 2,
+        "hasAbortController": false
+      },
+      {
+        "file": "js/modules/travel-archive.js",
+        "loc": 934,
+        "bytes": 47265,
+        "innerFunctionCount": 65,
+        "maxInnerFunction": {
+          "name": "renderWorkspace",
+          "startLine": 302,
+          "endLine": 841,
+          "length": 540,
+          "maxNesting": 9
+        },
+        "maxBraceDepth": 10,
+        "silentCatchCount": 4,
+        "fetchCount": 4,
+        "hasAbortController": false
+      },
+      {
+        "file": "js/detail-panel.js",
+        "loc": 809,
+        "bytes": 33530,
+        "innerFunctionCount": 65,
+        "maxInnerFunction": {
+          "name": "renderBody",
+          "startLine": 318,
+          "endLine": 470,
+          "length": 153,
+          "maxNesting": 6
+        },
+        "maxBraceDepth": 8,
+        "silentCatchCount": 1,
+        "fetchCount": 0,
+        "hasAbortController": false
+      },
+      {
+        "file": "js/modules/terrain-3d.js",
+        "loc": 809,
+        "bytes": 29805,
+        "innerFunctionCount": 32,
+        "maxInnerFunction": {
+          "name": "toggleAurora",
+          "startLine": 703,
+          "endLine": 782,
+          "length": 80,
+          "maxNesting": 5
+        },
+        "maxBraceDepth": 7,
+        "silentCatchCount": 7,
+        "fetchCount": 2,
+        "hasAbortController": false
+      },
+      {
+        "file": "js/modules/geo-intelligence.js",
+        "loc": 784,
+        "bytes": 33147,
+        "innerFunctionCount": 27,
+        "maxInnerFunction": {
+          "name": "searchAndExplain",
+          "startLine": 355,
+          "endLine": 559,
+          "length": 205,
+          "maxNesting": 6
+        },
+        "maxBraceDepth": 7,
+        "silentCatchCount": 1,
+        "fetchCount": 0,
+        "hasAbortController": false
+      },
+      {
+        "file": "js/modules/phenology-engine.js",
+        "loc": 697,
+        "bytes": 33407,
+        "innerFunctionCount": 33,
+        "maxInnerFunction": {
+          "name": "evaluatePhenology",
+          "startLine": 266,
+          "endLine": 509,
+          "length": 244,
+          "maxNesting": 5
+        },
+        "maxBraceDepth": 7,
+        "silentCatchCount": 2,
+        "fetchCount": 1,
+        "hasAbortController": false
+      },
+      {
+        "file": "js/modules/ambient-radio.js",
+        "loc": 671,
+        "bytes": 23011,
+        "innerFunctionCount": 45,
+        "maxInnerFunction": {
+          "name": "buildPopoverDom",
+          "startLine": 432,
+          "endLine": 516,
+          "length": 85,
+          "maxNesting": 3
+        },
+        "maxBraceDepth": 5,
+        "silentCatchCount": 10,
+        "fetchCount": 0,
+        "hasAbortController": false
+      },
+      {
+        "file": "worker/auth.js",
+        "loc": 670,
+        "bytes": 29419,
+        "innerFunctionCount": 16,
+        "maxInnerFunction": {
+          "name": "handleAuthRequest",
+          "startLine": 215,
+          "endLine": 667,
+          "length": 453,
+          "maxNesting": 5
+        },
+        "maxBraceDepth": 5,
+        "silentCatchCount": 11,
+        "fetchCount": 3,
+        "hasAbortController": true
+      },
+      {
+        "file": "js/modules/streetview.js",
+        "loc": 663,
+        "bytes": 29152,
+        "innerFunctionCount": 41,
+        "maxInnerFunction": {
+          "name": "open",
+          "startLine": 396,
+          "endLine": 649,
+          "length": 254,
+          "maxNesting": 6
+        },
+        "maxBraceDepth": 7,
+        "silentCatchCount": 5,
+        "fetchCount": 3,
+        "hasAbortController": false
+      },
+      {
+        "file": "worker/index.js",
+        "loc": 610,
+        "bytes": 27386,
+        "innerFunctionCount": 6,
+        "maxInnerFunction": {
+          "name": "handleApi",
+          "startLine": 65,
+          "endLine": 570,
+          "length": 506,
+          "maxNesting": 6
+        },
+        "maxBraceDepth": 6,
+        "silentCatchCount": 8,
+        "fetchCount": 12,
+        "hasAbortController": true
+      },
+      {
+        "file": "js/services/storage-db.js",
+        "loc": 605,
+        "bytes": 19350,
+        "innerFunctionCount": 39,
+        "maxInnerFunction": {
+          "name": "setTravelStatus",
+          "startLine": 217,
+          "endLine": 255,
+          "length": 39,
+          "maxNesting": 3
+        },
+        "maxBraceDepth": 8,
+        "silentCatchCount": 3,
+        "fetchCount": 0,
+        "hasAbortController": false
+      }
+    ],
+    "cssMetrics": [
+      {
+        "file": "css/styles.css",
+        "loc": 3208,
+        "bytes": 67637,
+        "importantCount": 23
+      },
+      {
+        "file": "css/upgrades.css",
+        "loc": 2482,
+        "bytes": 59588,
+        "importantCount": 14
+      },
+      {
+        "file": "assets/prologue/prologue.css",
+        "loc": 1176,
+        "bytes": 31332,
+        "importantCount": 12
+      },
+      {
+        "file": "assets/cosmic-intro/player.css",
+        "loc": 126,
+        "bytes": 5054,
+        "importantCount": 4
+      },
+      {
+        "file": "assets/brand/brand-tokens.css",
+        "loc": 99,
+        "bytes": 2161,
+        "importantCount": 4
+      }
+    ]
+  },
+  "architectureFindings": {
+    "godObjectsAndComplexity": [
+      {
+        "severity": "HIGH",
+        "file": "js/app.js",
+        "evidence": "3,899 LOC (145,823 bytes), 255 inner functions; `bindEvents` is 735 lines (L2419-3153, nesting 8); `starfield` IIFE is 446 lines (L260-705, nesting 6); `buildStyle` is 254 lines (L825-1078). Single monolithic coordinator tightly coupled to 25+ globals and 100+ DOM IDs."
+      },
+      {
+        "severity": "HIGH",
+        "file": "js/modules/trip-planner.js",
+        "evidence": "1,495 LOC (82,484 bytes), 76 inner functions; `renderWorkspace` / `tripToCsv` complex block ~655 lines. Combines routing, multi-city planning, budget FX, prep checklist, drag-drop DOM rendering, CSV/URL serialization, and lazy loaders in one file."
+      },
+      {
+        "severity": "MEDIUM",
+        "file": "js/modules/photo-simulator.js",
+        "evidence": "1,291 LOC (70,229 bytes); `mount()` is 524 lines (nesting 7), mixing SunCalc/Astronomy math, POI scoring, DEM horizon raytracing callbacks, Weather fetch, and large inline HTML templates."
+      },
+      {
+        "severity": "MEDIUM",
+        "file": "worker/index.js & worker/auth.js",
+        "evidence": "`handleApi` in worker/index.js is 506 lines (L65-570); `handleAuthRequest` in worker/auth.js is 453 lines (L215-667). Long sequential `if (p === ...)` route chains without router abstraction."
+      }
+    ],
+    "overlappingAndDuplicateModules": [
+      {
+        "pair": [
+          "js/gallery.js (174 LOC)",
+          "js/modules/media-gallery.js (445 LOC)"
+        ],
+        "relationship": "Complementary (not strict duplicate), but misleading naming: `gallery.js` (`AestheticGallery`) renders the 722-destination catalog grid view and delegates thumbnail fetching to `media-gallery.js` (`MediaGallery`), which handles Wikimedia Commons photos, EXIF season tabs, Wikidata badge, and lightbox."
+      },
+      {
+        "pair": [
+          "js/modules/poster-share.js (515 LOC)",
+          "js/lazy/share-center.js (234 LOC)"
+        ],
+        "relationship": "Overlapping & broken integration: `ShareCenter` calls `PosterShare.renderPosterCanvas` passing `bullets: [...]` (js/lazy/share-center.js:200), which `PosterShare.renderPosterCanvas` completely ignores (js/modules/poster-share.js:234,262 only reads `metrics`, `bars`, `lines`). Also `PosterShare.openPosterModal` still embeds a secondary button to open `ShareCenter`, splitting share UX across two modals."
+      },
+      {
+        "pair": [
+          "vendor/fuse.min.js (26.4 KB)",
+          "vendor/minisearch.min.js (19.3 KB)"
+        ],
+        "relationship": "Both search libraries are eagerly bundled in `vendor/libs.bundle.min.js` (and `index.html`:663,667) AND `fuse.min.js` is additionally copied standalone for `atlas-worker.js`. `command-palette.js` uses both `GeoIntelligence` (MiniSearch) and `Fuse` fallback."
+      },
+      {
+        "pair": [
+          "vendor/suncalc.min.js (17.4 KB)",
+          "vendor/astronomy.browser.min.js (116.7 KB)"
+        ],
+        "relationship": "Both astronomical libraries are eagerly bundled in `vendor/libs.bundle.min.js`: `SunCalc` handles solar/lunar positions & golden hour (`photo-simulator.js`, `aesthetic-index.js`, `phenology-engine.js`, `earth-timemachine.js`), while `Astronomy Engine` is used for Galactic Center (Sgr A*), `-18°` astronomical twilight, and `solar-terminator.js`."
+      },
+      {
+        "pair": [
+          "assets/prologue/bgm.js (297 LOC)",
+          "js/modules/ambient-radio.js (671 LOC)"
+        ],
+        "relationship": "Overlapping audio engines: `bgm.js` eagerly constructs `new Audio(\"assets/prologue/the-blue-horizon.mp3?v=1\")` with `preload=\"auto\"` at top level (L4-7) even when intro is skipped; `ambient-radio.js` lists the same file as Track 00 (`the-blue-horizon`) with `preload=\"none\"` and manually stops `CosmicBGM` when played."
+      },
+      {
+        "pair": [
+          "js/modules/earth-timemachine.js:114 (buildNightTerminatorPolygon)",
+          "js/modules/solar-terminator.js (SolarTerminator)"
+        ],
+        "relationship": "Duplicate terminator implementation: `earth-timemachine.js` still retains a legacy approximate solar declination polygon generator (L114-138) using `tan(declRad)` and `nightPole` clamping, despite `solar-terminator.js` having been rewritten in V4.5 with true subsolar spherical cap geometry + antimeridian clipping."
+      }
+    ],
+    "deadOrBrokenWiring": [
+      {
+        "severity": "CRITICAL",
+        "area": "CollabSpace UI vs Backend D1 & BroadcastChannel",
+        "location": "js/lazy/collab-space.js:35-40, 66-259",
+        "finding": "When signed in (`useCloud === true`), CollabSpace displays \"Connected to D1 RBAC Server Sync\" (L85-88), yet NEVER sends any HTTP request to `/api/collab/*`! Every mutation (invites, revoke, roles, polls, votes, comments, expenses) writes only to localStorage (`wtg_collab_spaces_v1`). Furthermore, L37 posts to `BroadcastChannel(\"kairos_collab\")`, but zero files in the codebase listen (`onmessage` / `addEventListener`) to `kairos_collab`, making cross-tab sync completely one-way/dead."
+      },
+      {
+        "severity": "HIGH",
+        "area": "Deep-Link Parameter Restoration",
+        "location": "js/app.js:2396-2416 vs js/lazy/share-center.js:51-65, 130",
+        "finding": "`ShareCenter.buildDeepLink` advertises \"Deep Link (Restores spot, azimuth, date & locale)\" and emits `?focus=&spot=&cam=&date=&layers=&lang=`. `readInitialUrlState()` in `js/app.js` parses `camBearing`, `dateStr`, and `layers` into `initialParams`, but NONE of `initialParams.camBearing`, `initialParams.dateStr`, or `initialParams.layers` are ever consumed anywhere in `js/app.js`."
+      },
+      {
+        "severity": "HIGH",
+        "area": "ShareCenter QR Size, Type Selector & Poster Bullets",
+        "location": "js/lazy/share-center.js:99-100, 116, 186, 200",
+        "finding": "(1) Calls `QRCodeService.renderSvg(shareUrl, 136)` passing a number, whereas `QRCodeService.renderSvg(text, opts)` (`js/services/qr-code.js:210`) expects `opts.size`, causing silent fallback to 180px. (2) `#sc-type-sel` has no `change` event listener, so switching the 12 share types in the UI does not update the link, title, or QR. (3) Passes `bullets` to `PosterShare.renderPosterCanvas`, which only renders `metrics`/`bars`/`lines`."
+      },
+      {
+        "severity": "MEDIUM",
+        "area": "Service Worker Cache Partition & Fallback Bugs",
+        "location": "sw.js:5, 53-72, 112-122 vs build-dist.js:281-290",
+        "finding": "(1) `build-dist.js` places `./vendor/libs.bundle.min.js?v=${buildVer}` and `./vendor/maplibre-gl.js` into `CORE_ASSETS` (`CACHE_NAME`), yet `sw.js` fetch handler intercepts `/vendor/` FIRST (L60) using `DATA_CACHE = \"kairos-data-v5\"` (unversioned). Thus precached vendor bundles in `CACHE_NAME` are bypassed on first fetch, duplicated in `DATA_CACHE`, and old versioned `libs.bundle.min.js?v=*` are never evicted on `activate`. (2) `sw.js:121` returns `hit || (await netPromise)` where `netPromise` resolves to `null` on offline error — resolving `respondWith(null)` causes a browser SW TypeError instead of a valid Response. (3) `manifest.webmanifest`, `assets/skyboxes/*`, and `data/enrichment/atlas-enrichment.json` are not precached or matched in `DATA_CACHE`."
+      },
+      {
+        "severity": "MEDIUM",
+        "area": "Duplicate Brand Source PNGs & Unused Preview Image",
+        "location": "assets/brand/source/* & assets/brand/social/preview-primary.png",
+        "finding": "`assets/brand/source/` stores 18 PNGs (~20 MB total): the 9 `ChatGPT 图像 2026年11月28日 *.png` files are byte-for-byte identical duplicates of the 9 `kairos-*.png` files. Also `assets/brand/social/preview-primary.png` is copied into `dist/` but not referenced in HTML/JS or `BRAND_GUIDELINES.md`."
+      },
+      {
+        "severity": "LOW",
+        "area": "Unreferenced Global & HTML IDs / Escape Key Gaps",
+        "location": "js/app.js:707, 3081; index.html:70, 431, 437",
+        "finding": "(1) `window.AppSkybox` (`js/app.js:707`) has 0 external consumers. (2) HTML IDs `#loader-text` (L70), `#layer-meta-inspector` (L431), and `#layer-meta-legend` (L437) are never referenced in JS or CSS. (3) Global `Escape` handler (`js/app.js:3081`) does not close `#music-popover`, `#account-modal`, `#share-center-modal`, `#help-center-modal`, `#dest-compare-modal`, `#trip-export-modal`, or `#poster-share-modal`."
+      }
+    ],
+    "asyncRacesAndSilentFallbacks": {
+      "totalSilentCatches": 162,
+      "topFilesBySilentCatches": [
+        {
+          "file": "js/app.js",
+          "count": 18,
+          "examples": [
+            {
+              "line": 59,
+              "snippet": "catch (e) { // ignore }"
+            },
+            {
+              "line": 69,
+              "snippet": "catch (e) { // ignore }"
+            },
+            {
+              "line": 287,
+              "snippet": "catch (e) { // ignore }"
+            },
+            {
+              "line": 670,
+              "snippet": "catch (e) { // ignore }"
+            }
+          ]
+        },
+        {
+          "file": "worker/auth.js",
+          "count": 11,
+          "examples": [
+            {
+              "line": 103,
+              "snippet": "catch (e) { return false; }"
+            },
+            {
+              "line": 112,
+              "snippet": "catch (e) { return false; }"
+            },
+            {
+              "line": 258,
+              "snippet": ".catch(() => null)"
+            },
+            {
+              "line": 323,
+              "snippet": ".catch(() => null)"
+            }
+          ]
+        },
+        {
+          "file": "js/modules/ambient-radio.js",
+          "count": 10,
+          "examples": [
+            {
+              "line": 198,
+              "snippet": "catch {}"
+            },
+            {
+              "line": 210,
+              "snippet": "catch {}"
+            },
+            {
+              "line": 235,
+              "snippet": "catch {}"
+            },
+            {
+              "line": 267,
+              "snippet": "catch {}"
+            }
+          ]
+        },
+        {
+          "file": "js/modules/trip-planner.js",
+          "count": 9,
+          "examples": [
+            {
+              "line": 715,
+              "snippet": "catch (e) {}"
+            },
+            {
+              "line": 1472,
+              "snippet": "catch (e) {}"
+            },
+            {
+              "line": 742,
+              "snippet": ".catch(() => {})"
+            },
+            {
+              "line": 743,
+              "snippet": ".catch(() => {})"
+            }
+          ]
+        },
+        {
+          "file": "assets/prologue/bgm.js",
+          "count": 9,
+          "examples": [
+            {
+              "line": 20,
+              "snippet": "catch {}"
+            },
+            {
+              "line": 39,
+              "snippet": "catch {}"
+            },
+            {
+              "line": 128,
+              "snippet": "catch {}"
+            },
+            {
+              "line": 134,
+              "snippet": "catch {}"
+            }
+          ]
+        },
+        {
+          "file": "worker/index.js",
+          "count": 8,
+          "examples": [
+            {
+              "line": 327,
+              "snippet": "catch (e) { /* try next base */ }"
+            },
+            {
+              "line": 392,
+              "snippet": "catch (e) { /* backup is best-effort */ }"
+            },
+            {
+              "line": 280,
+              "snippet": ".catch(() => null)"
+            },
+            {
+              "line": 324,
+              "snippet": ".catch(() => null)"
+            }
+          ]
+        },
+        {
+          "file": "js/modules/terrain-3d.js",
+          "count": 7,
+          "examples": [
+            {
+              "line": 445,
+              "snippet": "catch (e) { // ignore }"
+            },
+            {
+              "line": 462,
+              "snippet": "catch (e) { return null; }"
+            },
+            {
+              "line": 284,
+              "snippet": ".catch(() => null)"
+            },
+            {
+              "line": 304,
+              "snippet": ".catch(() => null)"
+            }
+          ]
+        },
+        {
+          "file": "js/services/media-wikidata.js",
+          "count": 7,
+          "examples": [
+            {
+              "line": 289,
+              "snippet": "catch (e) { // fall through to text search }"
+            },
+            {
+              "line": 318,
+              "snippet": "catch (e) { // fallback to Wikipedia pageimages }"
+            },
+            {
+              "line": 347,
+              "snippet": "catch (e) { // graceful empty }"
+            },
+            {
+              "line": 416,
+              "snippet": "catch (e) { // continue }"
+            }
+          ]
+        },
+        {
+          "file": "worker/collab.js",
+          "count": 6,
+          "examples": [
+            {
+              "line": 40,
+              "snippet": ".catch(() => null)"
+            },
+            {
+              "line": 126,
+              "snippet": ".catch(() => null)"
+            },
+            {
+              "line": 194,
+              "snippet": ".catch(() => null)"
+            },
+            {
+              "line": 207,
+              "snippet": ".catch(() => null)"
+            }
+          ]
+        },
+        {
+          "file": "js/modules/epic-earth.js",
+          "count": 5,
+          "examples": [
+            {
+              "line": 56,
+              "snippet": ".catch(() => null)"
+            },
+            {
+              "line": 88,
+              "snippet": ".catch(() => [])"
+            },
+            {
+              "line": 93,
+              "snippet": ".catch(() => [])"
+            },
+            {
+              "line": 166,
+              "snippet": ".catch(() => [])"
+            }
+          ]
+        }
+      ],
+      "asyncRacePatterns": [
+        {
+          "file": "js/modules/epic-earth.js:225-230",
+          "issue": "Rapid date changes in `#epic-date-input` fire uncancelled `fetchEpicFrames(selectedDateStr)` calls; no AbortController or request sequence guard prevents an older slower request from overwriting `framesCache` and `renderModal`."
+        },
+        {
+          "file": "js/modules/earth-timemachine.js:370-377",
+          "issue": "`toggleDock()` awaits `syncLatestGibsDate()` without a re-entrancy lock; rapid double-clicks can toggle `isOpen` out of sync with `applyLayersToMap()`."
+        },
+        {
+          "file": "js/services/media-wikidata.js, weather-service.js, routing-service.js, auth-service.js, streetview.js",
+          "issue": "`ApiClient.fetchJson` supports external `AbortSignal`, but none of the domain services or UI panels pass an `AbortController` signal to cancel stale in-flight requests when switching destinations or closing modals."
+        }
+      ]
+    },
+    "docVsCodeDiscrepancies": [
+      {
+        "doc": "docs/V5_ACCEPTANCE_REPORT.md & README.md & docs/CHANGELOG.md",
+        "claim": "Multi-user real-time collaboration & D1 RBAC sync (`CollabSpace` + `worker/collab.js`)",
+        "reality": "Backend `worker/collab.js` implements D1 RBAC routes, but frontend `js/lazy/collab-space.js` never calls `/api/collab/*` (only checks `useCloud` for a status badge) and its `BroadcastChannel(\"kairos_collab\")` has no receiver anywhere."
+      },
+      {
+        "doc": "js/modules/earth-timemachine.js:297 & README.md",
+        "claim": "NASA GIBS \"split-screen compare wipe\" (分屏对比卷帘) & full trilingual support",
+        "reality": "GIBS compare mode (`earth-timemachine.js:157-158`) only blends raster opacity (`1 - mix` vs `mix`), not a spatial split-screen slider, and the entire TimeMachine dock UI (L237-300) is hardcoded in Simplified Chinese (missing EN/zh-TW localization)."
+      },
+      {
+        "doc": "js/lazy/share-center.js:130 & docs/CHANGELOG.md",
+        "claim": "Deep link restores spot, azimuth, date & locale; 6 poster ratios with local QR",
+        "reality": "`js/app.js` ignores `cam`, `date`, and `layers` URL parameters; `ShareCenter` passes numeric `136` instead of `{size: 136}` to `QRCodeService.renderSvg`, lacks a change handler on `#sc-type-sel`, and passes ignored `bullets` to `PosterShare.renderPosterCanvas`."
+      },
+      {
+        "doc": "README.md & e2e/globe.spec.mjs:511",
+        "claim": "Scenario 15 tests \"Multi-Context Collab BroadcastChannel Convergence\"",
+        "reality": "`e2e/globe.spec.mjs:511-526` opens `ctxB` to `/?instant=1` and immediately closes it without performing any BroadcastChannel or collab action; it only checks `#topbar` button aria-labels on `page`."
+      },
+      {
+        "doc": "docs/BRAND_GUIDELINES.md:31",
+        "claim": "`assets/brand/source/` contains 9 archived PNGs",
+        "reality": "Contains 18 PNGs (~20 MB): 9 `ChatGPT 图像 *.png` + 9 byte-identical `kairos-*.png` copies."
+      },
+      {
+        "doc": "git `pages` branch vs `main`",
+        "claim": "GitHub Pages mirror (`README.md:16`)",
+        "reality": "Local/cn `pages` branch (`84f2814`, 2026-11-27) still hosts V4.5.0 (`World Travel Globe`), whereas `.github/workflows/deploy-pages.yml` deploys `dist/` directly from `main`."
+      }
+    ]
+  },
+  "testCoverageAudit": {
+    "unitTestRunnerResult": {
+      "command": "node --test tests/*.test.js",
+      "filesCount": 22,
+      "totalTestsExecuted": 66,
+      "passed": 66,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 560
+    },
+    "unitTestsAudit": [
+      {
+        "file": "tests/ambient-radio.test.js",
+        "testsCount": 2,
+        "assertions": 19,
+        "claims": "Catalog completeness, lazy audio loading, prefs persistence, mode cycling, CosmicBGM mutual exclusion",
+        "classification": [
+          "mock-only",
+          "filesystem-check",
+          "state-logic"
+        ],
+        "actualAssertions": [
+          "Verifies 16 tracks exist in assets/ and dist/assets/ with size > 100KB",
+          "Uses MockAudio + mock localStorage + mock CosmicBGM to verify state transitions and pref serialization"
+        ],
+        "gaps": [
+          "Does not test real HTMLAudioElement playback, seek slider, category filtering UI, or error/waiting DOM states"
+        ]
+      },
+      {
+        "file": "tests/astronomy-index.test.js",
+        "testsCount": 3,
+        "assertions": 12,
+        "claims": "SunCalc solar noon/golden hour, PhotoSimulator light angle classification, AestheticIndex 7-dim scoring",
+        "classification": [
+          "algorithm-unit",
+          "real-vendor-lib"
+        ],
+        "actualAssertions": [
+          "Runs real SunCalc for Tokyo June solstice (noon azimuth ~180 deg, alt >70 deg)",
+          "Tests classifyLightAngle for backlit/frontlit/sidelit/night",
+          "Tests computeDestinationIndex with and without synthetic climateMonthly array"
+        ],
+        "gaps": [
+          "Single location (Tokyo) for SunCalc; AestheticIndex uses synthetic mock dest and synthetic climate array"
+        ]
+      },
+      {
+        "file": "tests/build-and-worker.test.js",
+        "testsCount": 2,
+        "assertions": 26,
+        "claims": "dist/ bundle outputs & Worker /api/health, CORS, validation, D1/R2 501",
+        "classification": [
+          "build-artifact-check",
+          "mock-env-worker"
+        ],
+        "actualAssertions": [
+          "Checks dist/ files exist, sw.js lacks __BUILD_VER__, dist/index.html has 4-8 local bundle refs",
+          "Invokes worker/index.js fetch with mock ASSETS binding for /api/health, OPTIONS, bad /api/img, bad /api/tile, bad /api/wikipedia, unconfigured /api/profile & /api/photos"
+        ],
+        "gaps": [
+          "Does not test sw.js fetch routing or cache eviction bugs",
+          "Does not test Worker upstream proxies (/api/weather, /api/route, /api/fx, /api/aurora) with live or edge error payloads"
+        ]
+      },
+      {
+        "file": "tests/data-integrity.test.js",
+        "testsCount": 2,
+        "assertions": 18,
+        "claims": "722 cities, 5414 spots, 137 countries, valid coords, audit-report.json schema",
+        "classification": [
+          "data-validation"
+        ],
+        "actualAssertions": [
+          "Loads all 56 data scripts from index.html in vm and verifies uniqueness of IDs, valid lng/lat bounds, 12 months per city, 5414 spots, 137 countries",
+          "Validates data/audit-report.json summary fields"
+        ],
+        "gaps": [
+          "Does not validate spot categories, i18n completeness across all 722 destinations, or external reference URL validity"
+        ]
+      },
+      {
+        "file": "tests/intro-session.test.js",
+        "testsCount": 1,
+        "assertions": 10,
+        "claims": "IntroSession 3 plays per 6-hour rolling window and auto-reset",
+        "classification": [
+          "mock-only",
+          "state-logic"
+        ],
+        "actualAssertions": [
+          "Loads assets/prologue/bgm.js in vm with MockAudio & mock localStorage and tests shouldAutoRun, recordPlay, markTourSeen, and 6h reset"
+        ],
+        "gaps": [
+          "Does not test CosmicBGM fade/ramp timers, browser autoplay block fallback, or StoryPrologue DOM transitions"
+        ]
+      },
+      {
+        "file": "tests/planner-archive.test.js",
+        "testsCount": 3,
+        "assertions": 15,
+        "claims": "RoutingService cross-sea guard, TripPlanner generation/CSV/URL round-trip, TravelArchive share/stats",
+        "classification": [
+          "algorithm-unit",
+          "round-trip"
+        ],
+        "actualAssertions": [
+          "Verifies Tokyo->Paris >2500km returns routed:false, crossSea:true, durationMin:null",
+          "Generates 2-day plan on 3-spot mock dest, checks CSV string & serialize/deserialize URL round-trip",
+          "Encodes/decodes footprint share URL & computes visited stats on 3 mock items"
+        ],
+        "gaps": [
+          "Does not test OSRM/ORS fetch paths, IndexedDB persistence, or TravelArchive photo upload/EXIF stripping"
+        ]
+      },
+      {
+        "file": "tests/v4-1-polish.test.js",
+        "testsCount": 3,
+        "assertions": 20,
+        "claims": "CSS layout invariants, MediaWikidata scenery filter, StreetView WebGL cleanup & Viewfinder3D RAF throttling",
+        "classification": [
+          "static-string-regex",
+          "algorithm-unit"
+        ],
+        "actualAssertions": [
+          "Regex-parses css/styles.css, css/upgrades.css, js/app.js, index.html for top>=68px, z-index>30, overflow-y, DOM nesting order",
+          "String-checks streetview.js for removeEventListener & WEBGL_lose_context and viewfinder-3d.js for requestAnimationFrame",
+          "Runs scoreTravelPhoto & rankAndFilterTravelPhotos on 3 synthetic candidates"
+        ],
+        "gaps": [
+          "2 of 3 tests are static source regex/substring checks, not runtime DOM/WebGL execution"
+        ]
+      },
+      {
+        "file": "tests/v4-2-reliability.test.js",
+        "testsCount": 6,
+        "assertions": 35,
+        "claims": "CRDT tombstones & secret stripping, PhotoSimulator local time across 6 cities, Viewfinder optical crop, GeoIntelligence constraints, MediaWikidata flags & ERA5 labeling, CI/docs/i18n",
+        "classification": [
+          "algorithm-unit",
+          "static-string-regex",
+          "mock-only"
+        ],
+        "actualAssertions": [
+          "Tests CRDT tombstone deletion vs stale update vs re-creation & sanitizeProfileForSync",
+          "Runs SunCalc-backed PhotoSimulator.computeSimulation across 6 coordinates checking solar noon peak window",
+          "Tests computeLensFov & computeViewfinderProjection math for 200mm/14mm/portrait/square",
+          "Tests GeoIntelligence negative constraint & budget ceiling on 3 mock destinations",
+          "Checks scoreTravelPhoto rejects Flag of Arizona and PhenologyEngine snow outputs era5-reanalysis",
+          "Checks workflow YAML & DATA_SOURCES.md strings and 7 English i18n keys"
+        ],
+        "gaps": [
+          "PhotoSimulator test allows wide 10.5h–14.0h solar peak window",
+          "GeoIntelligence tested on 3-item mock list rather than full 722-city corpus"
+        ]
+      },
+      {
+        "file": "tests/v4-3-living-earth.test.js",
+        "testsCount": 4,
+        "assertions": 38,
+        "claims": "SolarTerminator declination, dist/ SEO pages/OG cards/sitemap, WeatherService.classifyAirQuality/PosterShare embed/Terrain3D Mapterhorn API, Worker flags",
+        "classification": [
+          "algorithm-unit",
+          "build-artifact-check",
+          "static-string-regex",
+          "mock-env-worker"
+        ],
+        "actualAssertions": [
+          "Verifies subsolar latitude on equinox/solstice & closed terminator rings",
+          "Verifies dist/p/jp-kanto-tokyo/index.html, dist/og/cover.png PNG header, 722 sitemap URLs",
+          "Tests classifyAirQuality thresholds, buildEmbedIframeCode string, and Terrain3D MAPTERHORN_URL",
+          "Checks /api/health flags and string presence of embed-mode in app.js & upgrades.css"
+        ],
+        "gaps": [
+          "Does not test PosterShare canvas rendering/toBlob or Terrain3D fallback from Mapterhorn to AWS Terrarium"
+        ]
+      },
+      {
+        "file": "tests/v4-4-i18n-complete.test.js",
+        "testsCount": 4,
+        "assertions": 28,
+        "claims": "index.html boot lang hydration, StoryPrologue EN copy, science modules EN localization, MediaWikidata SE Asia dish filter",
+        "classification": [
+          "mock-dom",
+          "static-string-regex",
+          "algorithm-unit"
+        ],
+        "actualAssertions": [
+          "Static check on index.html boot script + mock document hydration test for AppI18n.setLang(\"en\")",
+          "Runs prologue.js in vm with mock document and checks all StoryPrologue.getLocaleCopy(\"en\") fields lack CJK",
+          "Checks PhotoSimulator, PhenologyEngine, AestheticIndex, WeatherService outputs lack CJK in EN",
+          "Checks rankAndFilterTravelPhotos filters 2 Thai curry dishes on 3-item mock list"
+        ],
+        "gaps": [
+          "Does not verify full 722-city translated chunks (data/i18n/*) or lazy modules (js/lazy/*) or earth-timemachine.js for CJK leakage in EN mode"
+        ]
+      },
+      {
+        "file": "tests/v4-5-api-and-og.test.js",
+        "testsCount": 3,
+        "assertions": 19,
+        "claims": "ApiClient 11-service health, Retry-After backoff & AbortSignal, Worker CSP & /api/epic mediumUrl, 1200x630 PNG OG cards",
+        "classification": [
+          "mock-fetch",
+          "build-artifact-check",
+          "static-string-regex"
+        ],
+        "actualAssertions": [
+          "Mocks global.fetch for 429 Retry-After:0 retry and aborted AbortController rejection",
+          "Tests Worker frame-ancestors * CSP header on mock HTML ASSETS response and regex-checks worker/index.js for jpg mediumUrl and AbortSignal.timeout",
+          "Reads PNG IHDR dimensions (1200x630) for 3 sample cities in dist/og/"
+        ],
+        "gaps": [
+          "Only checks 3 of 722 OG PNGs; Retry-After test uses 0s header so timer backoff delay is not exercised"
+        ]
+      },
+      {
+        "file": "tests/v4-5-crdt-properties.test.js",
+        "testsCount": 2,
+        "assertions": 10,
+        "claims": "240 randomized CRDT property trials (commutativity, associativity, idempotency) & 6-permutation 3-device convergence",
+        "classification": [
+          "property-based"
+        ],
+        "actualAssertions": [
+          "Runs deterministic PRNG (mulberry32) across 240 trials verifying commutativity, associativity, idempotency, absorption, and secret stripping on mergeUserProfiles",
+          "Verifies all 6 merge permutations of 3 devices converge identically for delete-vs-stale-vs-recreate"
+        ],
+        "gaps": [
+          "Covers mergeUserProfiles only; does not apply 240-trial property testing to mergeTripDocuments (added in V5)"
+        ]
+      },
+      {
+        "file": "tests/v4-5-scientific-accuracy.test.js",
+        "testsCount": 2,
+        "assertions": 22,
+        "claims": "IANA TimezoneService DST/half-hour/45-min offsets across 8 cities, SolarTerminator cross-validated against SunCalc",
+        "classification": [
+          "algorithm-unit",
+          "real-vendor-lib",
+          "cross-validation"
+        ],
+        "actualAssertions": [
+          "Tests TimezoneService Jan/Jul offsets for 8 cities (including Kathmandu +5:45, Adelaide +10:30/+9:30, ocean NaN fallback)",
+          "Cross-validates all 181 terminator line points on 4 solstice/equinox dates against SunCalc.getPosition (<1.0 deg error) and checks ring closure/bounds"
+        ],
+        "gaps": [
+          "Strong scientific test; does not test Terrain3D DEM horizon raytracing on real Terrarium tiles or Daylight Saving boundary minutes"
+        ]
+      },
+      {
+        "file": "tests/v4-phase1.test.js",
+        "testsCount": 5,
+        "assertions": 33,
+        "claims": "Astronomy Engine Galactic Center, computeLensFov, Terrain3D Terrarium decode & synthetic mountain horizon, BrightStars Polaris alignment, StreetView Panoramax parser & Worker routes",
+        "classification": [
+          "algorithm-unit",
+          "real-vendor-lib",
+          "mock-env-worker"
+        ],
+        "actualAssertions": [
+          "Runs real Astronomy Engine for Tokyo summer solstice GC horizon/astro twilight",
+          "Checks rectilinear FOV formula for 24mm/50mm FF and 35mm APS-C",
+          "Tests decodeTerrariumElevation & synthetic ridge horizon delaying sunrise >=30m",
+          "Checks BrightStars Polaris unit vector y > 0.999",
+          "Parses sample STAC feature and tests Worker 400 validation for bad bbox/zoom"
+        ],
+        "gaps": [
+          "Does not test BrightStars projection accuracy for non-polar stars across GMST hours"
+        ]
+      },
+      {
+        "file": "tests/v4-phase2-3.test.js",
+        "testsCount": 4,
+        "assertions": 33,
+        "claims": "GeoIntelligence NL parser, atlas-enrichment 722 coverage & PhenologyEngine, TripPlanner 2-opt/light ordering, ProfileCRDT merge",
+        "classification": [
+          "algorithm-unit",
+          "data-validation"
+        ],
+        "actualAssertions": [
+          "Tests parseNaturalQuery & searchAndExplain on 2 mock destinations",
+          "Verifies atlas-enrichment.json has 722 entries; compares aurora Reykjavik vs Singapore & Tekapo Milky Way",
+          "Verifies 2-opt shortens crossed 4-point square and orderDayStopsByLight orders Sunrise->Museum->Sunset",
+          "Basic ProfileCRDT commutativity/idempotency check"
+        ],
+        "gaps": [
+          "Small synthetic inputs"
+        ]
+      },
+      {
+        "file": "tests/v5-batch1-brand-and-planner-fix.test.js",
+        "testsCount": 2,
+        "assertions": 16,
+        "claims": "KAIROS brand SVG/PNG/ICO assets pure vectors, TripPlanner Beijing vs Tokyo resolution & no silent fallback",
+        "classification": [
+          "filesystem-check",
+          "algorithm-unit"
+        ],
+        "actualAssertions": [
+          "Checks 10 SVGs exist, contain <path>, lack data:image/ & <script>, and 10 PNG/ICO binaries exist (>200B)",
+          "Tests resolveDestinationMatches(\"北京\"), (\"Beijing\"), (\"Tokyo\"), unknown (\"AtlantisNowhereXYZ\" -> []), and independent Tokyo vs Beijing generateTripPlan"
+        ],
+        "gaps": [
+          "Does not test TripPlanner UI state bug (\"enter Beijing, switch tab, generate\") inside the DOM workspace, only the pure resolver/generator functions"
+        ]
+      },
+      {
+        "file": "tests/v5-batch2-auth-security.test.js",
+        "testsCount": 2,
+        "assertions": 15,
+        "claims": "Migration 0003 schema & Worker Auth PBKDF2, HttpOnly cookies, CSRF, user isolation, export & delete cascade",
+        "classification": [
+          "static-string-regex",
+          "mock-db-worker"
+        ],
+        "actualAssertions": [
+          "Checks migration 0003 SQL contains CREATE TABLE IF NOT EXISTS for 17 tables",
+          "Runs worker/index.js against custom regex-matched in-memory MockD1: tests 401 unauth, register 201 + cookie flags, CSRF 403, OAuth 501, migrate-local cross-user trip ID collision isolation, wrong password 401, DELETE /api/account cascade"
+        ],
+        "gaps": [
+          "MockD1 uses simplified regex SQL matching, not real SQLite/D1 foreign-key cascades or constraints",
+          "Does NOT test: rate limit lockout after 10 failures, /api/auth/logout, email verification flow, password reset flow, PUT /api/account/profile validation, or frontend AuthService/AccountCenter"
+        ]
+      },
+      {
+        "file": "tests/v5-batch3-multimodal-planner.test.js",
+        "testsCount": 3,
+        "assertions": 16,
+        "claims": "Global transport hubs 722 coverage, TransportService 3-tier comparison & transit fallback, TripPlanner 2.0 locked stops & conflicts",
+        "classification": [
+          "data-validation",
+          "algorithm-unit"
+        ],
+        "actualAssertions": [
+          "Checks hubs.json count === 722 and Beijing PEK/PKX & 12306 link",
+          "Tests compareIntercityModes flight geometry & computeLocalLeg(\"transit\") fallback",
+          "Tests multi-city generateTripPlan, reoptimizeUnlockedDays keeping index 1 locked stop, and detectTripConflicts budget_over"
+        ],
+        "gaps": [
+          "Does not test FX live fetch or fallback calculation, time_overload/distance_overload conflicts, or UI rendering of transport/budget/prep tabs"
+        ]
+      },
+      {
+        "file": "tests/v5-batch4-collab-and-split.test.js",
+        "testsCount": 2,
+        "assertions": 11,
+        "claims": "Worker Collab RBAC/viewer block/invite revocation/version restore, ExpenseSplitter min-transfer, QRCode SVG, CRDT trip merge",
+        "classification": [
+          "mock-db-worker",
+          "algorithm-unit"
+        ],
+        "actualAssertions": [
+          "Uses custom MockD1 to test create trip, non-member 403, viewer invite join, viewer read 200 & write 403, invite revocation 403",
+          "Tests ExpenseSplitter 3-person split (360 total, 2 transfers), QRCodeService.renderSvg starts with <svg, CRDT mergeTripDocuments tombstone convergence"
+        ],
+        "gaps": [
+          "Despite test title mentioning \"version restore\", version history GET & POST /versions/:v/restore are NEVER tested!",
+          "Does NOT test comments, polls, poll voting, shared expenses API, member role PATCH/DELETE, or expired invite links",
+          "Does NOT test QRCodeService scannability/Reed-Solomon decoding or CollabSpace UI (which does not actually call /api/collab/*)"
+        ]
+      },
+      {
+        "file": "tests/v5-batch5-science-and-search.test.js",
+        "testsCount": 4,
+        "assertions": 33,
+        "claims": "Enrichment Schema 5.0 & Phenology validation, PhenologyEngine Tier A/B/C & Aurora separation, PhotoSimulator POI 8 scenes & >14d guard & Alpenglow, GeoIntelligence 10-dim vector",
+        "classification": [
+          "data-validation",
+          "algorithm-unit"
+        ],
+        "actualAssertions": [
+          "Checks phenology-validation.json schema & holdout MAE bounds (<6d blossom, <8d autumn)",
+          "Tests Kyoto blossom Tier C, Tromso aurora space-weather, Tromso ice_glacier",
+          "Tests 8 SCENE_PRESETS, POI weatherIncluded true (+2d) vs false (+30d ignoring 99% cloud), computePeakAlpenglowEstimate leadMinutes > 0",
+          "Tests 10-dim vector bounds [0,1], findSimilarDestinations filtered, and parseNaturalQuery(\"高铁方便...慢游5天...不要海滩\")"
+        ],
+        "gaps": [
+          "Does not test DestCompare UI or full 722-city vector similarity edge cases"
+        ]
+      },
+      {
+        "file": "tests/v5-batch6-media-and-archive.test.js",
+        "testsCount": 4,
+        "assertions": 20,
+        "claims": "MediaWikidata rice terrace/wild duck allowlist vs dish reject, EXIF season with hemisphere flip, Worker /api/epic?date=, TravelArchive private default & journals",
+        "classification": [
+          "algorithm-unit",
+          "mock-fetch",
+          "static-string-regex"
+        ],
+        "actualAssertions": [
+          "Tests scoreTravelPhoto on 4 synthetic titles/descriptions",
+          "Tests extractPhotoSeason for NH April, SH April, and undated",
+          "Mocks global.fetch to test /api/epic?date=2025-01-01 fallbackToLatest:true",
+          "Tests TravelArchive.getPrivacySettings default false, saveJournalEntry/getJournals/deleteJournalEntry in memory fallback, plus static check for id=\"layer-meta-inspector\" in index.html"
+        ],
+        "gaps": [
+          "Does not test TravelArchive Canvas EXIF GPS stripping, EarthTimeMachine split-compare slider, or layer-meta-inspector JS interactivity"
+        ]
+      },
+      {
+        "file": "tests/v5-batch7-share-manual-export.test.js",
+        "testsCount": 3,
+        "assertions": 27,
+        "claims": "ExportService 8 formats, ShareCenter 12 types / 6 ratios / deep links / web intents, 30-chapter trilingual manuals",
+        "classification": [
+          "algorithm-unit",
+          "data-validation"
+        ],
+        "actualAssertions": [
+          "Tests ExportService toJSON, toCSV, toICS, toGPX, toKML, toGeoJSON, toPrintableHtml on 1 sample trip (7 string generators; 8th format PNG is in PosterShare)",
+          "Checks ShareCenter.SHARE_TYPES.length===12, POSTER_RATIOS===6, buildDeepLink query params, buildSocialIntents===5",
+          "Validates manual-zh-CN.json, manual-zh-TW.json, manual-en.json all have 30 chapters with required fields"
+        ],
+        "gaps": [
+          "Does NOT test ExportService.exportTrip download/print paths or openTripExportModal",
+          "Does NOT test ShareCenter.render() (which has bugs: passes 136 instead of {size:136} to QRCodeService, omits change listener on #sc-type-sel, passes unused bullets prop to PosterShare.renderPosterCanvas)",
+          "Does NOT test HelpCenter UI or offline pack saving (saveOfflineTravelPack)"
+        ]
+      }
+    ],
+    "e2eAudit": {
+      "file": "e2e/globe.spec.mjs",
+      "loc": 541,
+      "scenariosCount": 15,
+      "networkModel": "All external APIs stubbed via page.route (Open-Meteo, Wikimedia/Wikipedia/Wikidata/Panoramax return empty/stub, external tiles/images return 1x1 TINY_PNG); local server mocks /api/health (d1:false, r2:false), /api/epic, /api/img, /api/tile/*, /api/route.",
+      "viewportsTested": [
+        "360x800",
+        "390x844",
+        "430x932",
+        "768x1024",
+        "1024x768",
+        "1440x900",
+        "1920x1080",
+        "2560x1440"
+      ],
+      "scenarios": [
+        {
+          "id": "1",
+          "name": "Prologue load & EN switch",
+          "depth": "real-ui-interaction",
+          "notes": "Clicks #sp-lang-switch EN, checks #sp-s1-line1 text, clicks #sp-skip"
+        },
+        {
+          "id": "2",
+          "name": "Main globe initial load & timing",
+          "depth": "dom-and-perf-metrics",
+          "notes": "Captures domContentLoadedMs, loadMs, resourceCount"
+        },
+        {
+          "id": "3",
+          "name": "Kathmandu IANA +5:45 badge",
+          "depth": "real-ui-interaction",
+          "notes": "Clicks photo tab, checks #sim-tz-badge includes Asia/Kathmandu & +5:45"
+        },
+        {
+          "id": "4",
+          "name": "Trilingual UI switch",
+          "depth": "eval-api-call",
+          "notes": "Calls window.switchAppLanguage via page.evaluate (not clicking UI button) and checks document.title"
+        },
+        {
+          "id": "5",
+          "name": "3D Viewfinder 400mm crop & Esc",
+          "depth": "real-ui-interaction",
+          "notes": "Opens viewfinder, dispatches input=400 on slider, verifies .vf-mode-chip.tele, presses Escape"
+        },
+        {
+          "id": "6",
+          "name": "NASA EPIC modal",
+          "depth": "mocked-api-ui",
+          "notes": "Uses mocked /api/epic and /api/img, checks stageHeight >= 300px and play btn existence"
+        },
+        {
+          "id": "7",
+          "name": "Diagnostics modal tier switch",
+          "depth": "real-ui-interaction",
+          "notes": "Switches #diag-perf-select to eco & back to auto, verifies html[data-perf-tier]"
+        },
+        {
+          "id": "8",
+          "name": "Embed mode security & shortcut lock",
+          "depth": "real-ui-interaction",
+          "notes": "Verifies #topbar/#detail-drawer hidden, Ctrl+K blocked"
+        },
+        {
+          "id": "9",
+          "name": "Static SEO page & 1200x630 PNG OG card",
+          "depth": "real-artifact-check",
+          "notes": "Loads /p/jp-kanto-tokyo/ and checks img.hero-img naturalWidth===1200, naturalHeight===630"
+        },
+        {
+          "id": "10",
+          "name": "8-viewport responsive & touch height",
+          "depth": "emulated-viewport-layout",
+          "notes": "Checks overflowPx <= 2 and minTouchHeight >= 40 on mobile viewports; captures screenshots"
+        },
+        {
+          "id": "11",
+          "name": "Label canvas stacking & drawer scroll",
+          "depth": "real-ui-interaction",
+          "notes": "Verifies #map #globe-label-canvas z-index 1, sticky #drawer-tabs-bar, mobile half->full expand on scroll"
+        },
+        {
+          "id": "12-13",
+          "name": "Beijing vs Tokyo planner, transport tab & Export Modal",
+          "depth": "ui-interaction-plus-count",
+          "notes": "Verifies Beijing trip after Tokyo, checks transport tab text, clicks #tp-exp-more and asserts .exp-fmt-btn count === 7 (does NOT click export buttons or offline pack)"
+        },
+        {
+          "id": "14",
+          "name": "Photo POI >14d guard, ShareCenter QR, 30-ch HelpCenter",
+          "depth": "ui-interaction-plus-count",
+          "notes": "Checks >14d text, checks ShareCenter contains >=1 <svg> (does NOT test QR decoding, type selector, or poster rendering), checks HelpCenter has 30 chapters & GPX filter"
+        },
+        {
+          "id": "15",
+          "name": "Multi-context collab load & a11y sanity",
+          "depth": "SHALLOW-SMOKE-ONLY",
+          "notes": "Opens a second browserContext pageB to /?instant=1 and IMMEDIATELY closes ctxB WITHOUT performing ANY BroadcastChannel message, trip edit, or convergence check! Only evaluates topbar button labels on pageA."
+        }
+      ]
+    },
+    "summaryOfCoverageGaps": [
+      "Zero real-D1 / real-SQLite execution in tests (Worker Auth & Collab tests run against custom regex MockD1 objects).",
+      "Zero client-to-server integration tests for `AuthService`, `AccountCenter`, `CollabSpace`, `StorageDB` (real IndexedDB), or `sw.js` offline caching.",
+      "Worker Auth tests omit rate-limit lockout, logout, email verification, password reset, and profile update endpoints.",
+      "Worker Collab tests omit version restore, comments, polls/voting, shared expenses API, member role changes, and expired invites.",
+      "Zero E2E tests actually click Export formats, run offline pack caching, test `ShareCenter` QR/type changes, test `DestCompare` modal, test `TravelArchive` journal/EXIF upload, or test `BroadcastChannel` multi-tab convergence (Scenario 15 closes ctxB immediately)."
+    ]
+  }
+}

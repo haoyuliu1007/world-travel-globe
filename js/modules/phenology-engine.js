@@ -230,18 +230,23 @@
     let explanation = result.explanation;
     let peakWindowText = result.peakWindowText;
     let confidence = result.confidence;
-    let uncertaintyDays = result.category === 'aurora' ? 1 : (result.dataSource === 'astronomy' ? 0 : 12);
+    let uncertaintyDays = result.category === 'aurora' ? 1 : (result.dataSource === 'astronomy' ? 0 : 21);
+    let uncertaintyNote = result.dataSource === 'astronomy'
+      ? L('天文星历确定性计算', 'Deterministic ephemeris')
+      : L('档案月度经验窗口 (±3 周常态波动，非逐日预报)', 'Archive monthly window (±3 wk variance, not a daily forecast)');
 
     if (cal) {
       uncertaintyDays = cal.uncertaintyDays || 4;
+      uncertaintyNote = L(`校准气候常态 ±${uncertaintyDays} 天（受当年气象影响仍会有年际波动）`, `Climatological normal ±${uncertaintyDays}d (interannual weather still shifts actual dates)`);
       confidence = 'high';
       if (cal.predictedMonth === result.month) {
         finalSuit = Math.max(finalSuit, 86);
       }
-      peakWindowText = `${L('校准峰值', 'Calibrated Peak')} ~${cal.predictedDayLabel} (±${uncertaintyDays}d) · ${peakWindowText}`;
-      explanation = `${explanation} ${L(`样本外验证 MAE ${cal.holdoutMaeDays} 天 (${cal.source})`, `Holdout MAE ${cal.holdoutMaeDays}d (${cal.source})`)}`;
+      peakWindowText = `${L('气候常态峰值', 'Climatological Peak')} ~${cal.predictedDayLabel} (±${uncertaintyDays}d) · ${peakWindowText}`;
+      explanation = `${explanation} ${L(`样本外历史常态 MAE ${cal.holdoutMaeDays} 天 (${cal.source})`, `Historical normal MAE ${cal.holdoutMaeDays}d (${cal.source})`)}`;
     } else if (tier === 'B' && result.dataSource !== 'astronomy') {
-      uncertaintyDays = 8;
+      uncertaintyDays = 14;
+      uncertaintyNote = L('气候-高程推演窗口 (±2 周常态参考，非校准实测)', 'Climate-elevation window (±2 wk reference, uncalibrated)');
     }
 
     return Object.assign({}, result, {
@@ -253,6 +258,7 @@
       tierLabel: getTierLabel(tier),
       modelFamily: result.category === 'aurora' ? 'space-weather' : (result.dataSource === 'astronomy' ? 'astronomy' : 'botanical-phenology'),
       uncertaintyDays,
+      uncertaintyNote,
       experimental: tier !== 'C' && result.dataSource !== 'astronomy',
       calibratedPeak: cal || null,
       provenance: resolveProvenance(dest, enr)
@@ -376,19 +382,29 @@
           }
         }
       }
+      const noAstroDark = Astro && darkHours === 0;
+      const computedMwSuit = noAstroDark
+        ? 5
+        : (gcPeakAlt !== null
+          ? Math.max(5, Math.min(100, Math.round((gcPeakAlt <= 0 ? 10 : Math.min(100, Math.round(30 + gcPeakAlt * 1.15))) * 0.6 + Math.min(100, darkHours * 14) * 0.25 + archiveScore * 3)))
+          : Math.min(100, Math.round(archiveScore * 16 + (lands.includes('milkyway') ? 18 : 0))));
       const baseRet = {
         category: 'milkyway',
         month: m,
-        suitability: gcPeakAlt !== null ? Math.max(5, Math.min(100, Math.round((gcPeakAlt <= 0 ? 10 : Math.min(100, Math.round(30 + gcPeakAlt * 1.15))) * 0.6 + Math.min(100, darkHours * 14) * 0.25 + archiveScore * 3))) : Math.min(100, Math.round(archiveScore * 16 + (lands.includes('milkyway') ? 18 : 0))),
-        peakWindowText: gcPeakAlt !== null
-          ? (lat >= 0 ? L('3月–10月无月光深夜', 'Mar – Oct (Moonless Late Night)') : L('2月–10月（南半球天顶银心）', 'Feb – Oct (Southern Zenith Core)'))
-          : formatPeakMonths(dest, enr),
-        dataSource: gcPeakAlt !== null ? 'astronomy' : 'archive-statistical',
-        confidence: gcPeakAlt !== null ? 'high' : 'indicative',
-        explanation: gcPeakAlt !== null
-          ? L(`${m} 月暗夜约 ${darkHours}h · 银心最高仰角 ${gcPeakAlt.toFixed(1)}°。`, `${fmtMonth(m)} dark sky ~${darkHours}h · Galactic Core peak ${gcPeakAlt.toFixed(1)}°.`)
-          : L(`结合实地暗夜记录与 ${m} 月晴空条件评估。`, `Assessed from field dark-sky notes & ${fmtMonth(m)} clear-sky odds.`),
-        limitations: gcPeakAlt !== null
+        suitability: computedMwSuit,
+        peakWindowText: noAstroDark
+          ? L('本月极昼/白夜，建议改选 9月–次年3月', 'White Night / Polar Day — try Sep–Mar')
+          : (gcPeakAlt !== null
+            ? (lat >= 0 ? L('3月–10月无月光深夜', 'Mar – Oct (Moonless Late Night)') : L('2月–10月（南半球天顶银心）', 'Feb – Oct (Southern Zenith Core)'))
+            : formatPeakMonths(dest, enr)),
+        dataSource: gcPeakAlt !== null || noAstroDark ? 'astronomy' : 'archive-statistical',
+        confidence: gcPeakAlt !== null || noAstroDark ? 'high' : 'indicative',
+        explanation: noAstroDark
+          ? L(`${m} 月无天文暗夜窗口（白夜/极昼，银河不可见）。`, `${fmtMonth(m)} has 0h astronomical dark sky (white night; Milky Way invisible).`)
+          : (gcPeakAlt !== null
+            ? L(`${m} 月暗夜约 ${darkHours}h · 银心最高仰角 ${gcPeakAlt.toFixed(1)}°。`, `${fmtMonth(m)} dark sky ~${darkHours}h · Galactic Core peak ${gcPeakAlt.toFixed(1)}°.`)
+            : L(`结合实地暗夜记录与 ${m} 月晴空条件评估。`, `Assessed from field dark-sky notes & ${fmtMonth(m)} clear-sky odds.`)),
+        limitations: gcPeakAlt !== null || noAstroDark
           ? L('银心位置由 Astronomy Engine 精确星历计算；实际拍摄需避开满月及厚云层。', 'Galactic Core ephemeris via Astronomy Engine; avoid full moon & overcast skies.')
           : L('未加载星历引擎时的经验参考。', 'Statistical reference while ephemeris engine is unavailable.')
       };
@@ -439,22 +455,25 @@
 
     if (category === 'autumn') {
       const hasAut = lands.includes('autumn');
+      const isTropicalLowland = Math.abs(lat) < 23.44 && elevM < 1200;
       const isTargetSeason = lat >= 0 ? (m >= 9 && m <= 11) : (m >= 3 && m <= 5);
       const tempFit = tempC !== null
         ? Math.max(15, Math.min(100, Math.round(100 - Math.abs(tempC - 10) * 4.5)))
         : (isTargetSeason ? 82 : 34);
-      const sc = Math.round(tempFit * 0.45 + archiveScore * 8 + (hasAut ? 18 : 0) + (isTargetSeason ? 10 : -12));
+      const rawSc = Math.round(tempFit * 0.45 + archiveScore * 8 + (hasAut ? 18 : 0) + (isTargetSeason ? 10 : -12));
+      const sc = isTropicalLowland && !hasAut ? Math.min(28, rawSc) : rawSc;
       return decoratePhenologyResult({
         category: 'autumn',
         month: m,
         suitability: Math.max(5, Math.min(100, sc)),
-        peakWindowText: hasAut ? formatPeakMonths(dest, enr) : (lat >= 0 ? L('9月下旬–11月中旬', 'Late Sep – Mid Nov') : L('4月–5月', 'Apr – May')),
+        peakWindowText: isTropicalLowland && !hasAut
+          ? L('热带低纬常绿区，无显著秋叶期', 'Tropical evergreen zone — no temperate foliage season')
+          : (hasAut ? formatPeakMonths(dest, enr) : (lat >= 0 ? L('9月下旬–11月中旬', 'Late Sep – Mid Nov') : L('4月–5月', 'Apr – May'))),
         dataSource: clim ? 'era5-reanalysis' : 'archive-statistical',
         confidence: hasAut ? 'medium' : 'indicative',
-        explanation: L(
-          `${hasAut ? '包含典型秋色/落叶林景观' : '综合气候推演'} · ${m} 月适温匹配度 ${tempFit}/100。`,
-          `${hasAut ? 'Verified autumn foliage habitat' : 'Thermal envelope estimate'} · ${fmtMonth(m)} temp fit ${tempFit}/100.`
-        ),
+        explanation: isTropicalLowland && !hasAut
+          ? L(`低纬热带低海拔 (${Math.abs(lat).toFixed(1)}°) 常绿林为主，不适用温带降温落叶模型。`, `Tropical lowland (${Math.abs(lat).toFixed(1)}°): evergreen vegetation; temperate leaf-fall chill index not applicable.`)
+          : L(`${hasAut ? '包含典型秋色/落叶林景观' : '综合气候推演'} · ${m} 月适温匹配度 ${tempFit}/100。`, `${hasAut ? 'Verified autumn foliage habitat' : 'Thermal envelope estimate'} · ${fmtMonth(m)} temp fit ${tempFit}/100.`),
         limitations: L(
           '红叶转色受当年初霜与降水影响，实际峰值通常存在 ±1–2 周年际波动。',
           'Foliage turn varies ±1–2 weeks by first frost & rainfall each year.'
@@ -464,22 +483,25 @@
 
     if (category === 'blossom') {
       const hasBlossom = lands.includes('blossom');
+      const isTropicalLowland = Math.abs(lat) < 23.44 && elevM < 1200;
       const isSpring = lat >= 0 ? (m >= 3 && m <= 6) : (m >= 9 && m <= 12);
       const tempFit = tempC !== null
         ? Math.max(15, Math.min(100, Math.round(100 - Math.abs(tempC - 16) * 4.2)))
         : (isSpring ? 80 : 32);
-      const sc = Math.round(tempFit * 0.45 + archiveScore * 8 + (hasBlossom ? 18 : 0) + (isSpring ? 10 : -12));
+      const rawSc = Math.round(tempFit * 0.45 + archiveScore * 8 + (hasBlossom ? 18 : 0) + (isSpring ? 10 : -12));
+      const sc = isTropicalLowland && !hasBlossom ? Math.min(45, rawSc) : rawSc;
       return decoratePhenologyResult({
         category: 'blossom',
         month: m,
         suitability: Math.max(5, Math.min(100, sc)),
-        peakWindowText: hasBlossom ? formatPeakMonths(dest, enr) : (lat >= 0 ? L('3月–5月（随纬度海拔北移）', 'Mar – May (shifts with latitude/elev)') : L('9月–11月', 'Sep – Nov')),
+        peakWindowText: isTropicalLowland && !hasBlossom
+          ? L('热带花期主要受干湿季调控', 'Tropical blooms governed by wet/dry seasons')
+          : (hasBlossom ? formatPeakMonths(dest, enr) : (lat >= 0 ? L('3月–5月（随纬度海拔北移）', 'Mar – May (shifts with latitude/elev)') : L('9月–11月', 'Sep – Nov'))),
         dataSource: clim ? 'era5-reanalysis' : 'archive-statistical',
         confidence: hasBlossom ? 'medium' : 'indicative',
-        explanation: L(
-          `${hasBlossom ? '拥有春花/花海打卡记录' : '按春温梯次推演'} · ${m} 月花期适温 ${tempFit}/100。`,
-          `${hasBlossom ? 'Recorded spring bloom destination' : 'Thermal bloom model'} · ${fmtMonth(m)} fit ${tempFit}/100.`
-        ),
+        explanation: isTropicalLowland && !hasBlossom
+          ? L(`热带低海拔区域主要受干湿季影响，温带春花积温模型仅供参考。`, `Tropical lowland area: wet/dry season drives blooms rather than temperate GDD.`)
+          : L(`${hasBlossom ? '拥有春花/花海打卡记录' : '按春温梯次推演'} · ${m} 月花期适温 ${tempFit}/100。`, `${hasBlossom ? 'Recorded spring bloom destination' : 'Thermal bloom model'} · ${fmtMonth(m)} fit ${tempFit}/100.`),
         limitations: L(
           '花期对春季积温极敏感，请结合出发前 14 天当地实况预报。',
           'Blooms are sensitive to growing degree-days; verify 14-day forecast before departure.'

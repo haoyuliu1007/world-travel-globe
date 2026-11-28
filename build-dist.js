@@ -158,7 +158,8 @@ async function main() {
     'vendor/dexie.min.js',
     'vendor/astronomy.browser.min.js',
     'vendor/minisearch.min.js',
-    'vendor/tz-lookup.min.js'
+    'vendor/tz-lookup.min.js',
+    'vendor/qrcode-generator.min.js'
   ].map((rel) => fs.readFileSync(path.join(rootDir, rel), 'utf8').trim());
   const vendorBundle = vendorLibParts.join('\n;\n') + '\n';
   fs.writeFileSync(path.join(distDir, 'vendor', 'libs.bundle.min.js'), vendorBundle, 'utf8');
@@ -261,7 +262,7 @@ async function main() {
   const buildVer = Date.now().toString(36);
   const cssBlockRe = /(?:\s*<link rel="stylesheet" href="(?:vendor\/maplibre-gl\.css|assets\/brand\/brand-tokens\.css|css\/[^"?]+|assets\/prologue\/prologue\.css)(?:\?v=\d+)?"\s*\/>\s*)+/;
   const introBlockRe = /(?:\s*<script src="assets\/(?:prologue\/(?:bgm|prologue)|cosmic-intro\/player)\.js(?:\?v=\d+)?"><\/script>\s*)+/;
-  const vendorBlockRe = /(?:\s*<script src="vendor\/(?:suncalc|fuse|supercluster|dexie|astronomy\.browser|minisearch|tz-lookup)\.min\.js"><\/script>\s*)+/;
+  const vendorBlockRe = /(?:\s*<script src="vendor\/(?:suncalc|fuse|supercluster|dexie|astronomy\.browser|minisearch|tz-lookup|qrcode-generator)\.min\.js"><\/script>\s*)+/;
   const dataBlockRe = /(?:\s*<script src="data\/[^"?]+(?:\?v=\d+)?"><\/script>\s*)+/;
   const appBlockRe = /(?:\s*<script src="js\/[^"?]+(?:\?v=\d+)?"><\/script>\s*)+/;
   if (!cssBlockRe.test(indexHtml) || !vendorBlockRe.test(indexHtml) || !dataBlockRe.test(indexHtml) || !appBlockRe.test(indexHtml)) {
@@ -281,6 +282,7 @@ async function main() {
   const swCoreAssets = [
     './',
     './index.html',
+    './manifest.webmanifest',
     `./css/app.bundle.min.css?v=${buildVer}`,
     `./assets/prologue/intro.bundle.min.js?v=${buildVer}`,
     './vendor/maplibre-gl.js',

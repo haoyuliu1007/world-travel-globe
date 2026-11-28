@@ -8,8 +8,21 @@
   'use strict';
 
   const ACTIVE_USER_KEY = 'wtg_active_user_id';
+  const LAST_OWNER_KEY = 'wtg_last_local_owner_id';
   let currentUser = null;
   let lastCaps = null;
+
+  async function isolateLocalUserOnSwitch(nextUserId) {
+    if (!nextUserId || !global.localStorage) return;
+    try {
+      const prevOwner = global.localStorage.getItem(LAST_OWNER_KEY);
+      if (prevOwner && prevOwner !== nextUserId && global.StorageDB && typeof global.StorageDB.wipeAllUserData === 'function') {
+        await global.StorageDB.wipeAllUserData(true);
+      }
+      global.localStorage.setItem(LAST_OWNER_KEY, nextUserId);
+      global.localStorage.setItem(ACTIVE_USER_KEY, nextUserId);
+    } catch (e) {}
+  }
 
   async function refreshSession() {
     const Api = global.ApiClient;
@@ -24,9 +37,7 @@
       const data = await res.json().catch(() => null);
       if (res.ok && data && data.authenticated && data.user) {
         currentUser = data.user;
-        try {
-          if (global.localStorage) global.localStorage.setItem(ACTIVE_USER_KEY, currentUser.id);
-        } catch (e) {}
+        await isolateLocalUserOnSwitch(currentUser.id);
         return { available: true, authenticated: true, user: currentUser, caps };
       }
       currentUser = null;
@@ -50,13 +61,19 @@
 
   async function register(email, password, displayName) {
     const res = await apiPost('/api/auth/register', { email, password, displayName });
-    if (res.ok && res.user) currentUser = res.user;
+    if (res.ok && res.user) {
+      currentUser = res.user;
+      await isolateLocalUserOnSwitch(currentUser.id);
+    }
     return res;
   }
 
   async function login(email, password) {
     const res = await apiPost('/api/auth/login', { email, password });
-    if (res.ok && res.user) currentUser = res.user;
+    if (res.ok && res.user) {
+      currentUser = res.user;
+      await isolateLocalUserOnSwitch(currentUser.id);
+    }
     return res;
   }
 
@@ -64,9 +81,13 @@
     await apiPost('/api/auth/logout', {});
     currentUser = null;
     try {
-      if (global.localStorage) global.localStorage.removeItem(ACTIVE_USER_KEY);
+      if (global.localStorage) {
+        global.localStorage.removeItem(ACTIVE_USER_KEY);
+        global.localStorage.removeItem(LAST_OWNER_KEY);
+      }
     } catch (e) {}
-    if (opts && opts.wipeAccountLocal && global.StorageDB) {
+    const shouldWipe = !opts || opts.wipeAccountLocal !== false;
+    if (shouldWipe && global.StorageDB) {
       await global.StorageDB.wipeAllUserData(true);
     }
     return { ok: true };
@@ -93,8 +114,14 @@
     if (res.ok) {
       currentUser = null;
       try {
-        if (global.localStorage) global.localStorage.removeItem(ACTIVE_USER_KEY);
+        if (global.localStorage) {
+          global.localStorage.removeItem(ACTIVE_USER_KEY);
+          global.localStorage.removeItem(LAST_OWNER_KEY);
+        }
       } catch (e) {}
+      if (global.StorageDB && typeof global.StorageDB.wipeAllUserData === 'function') {
+        await global.StorageDB.wipeAllUserData(false);
+      }
     }
     return res;
   }

@@ -1,8 +1,8 @@
 {
   "name": "world-travel-globe",
-  "version": "5.0.0",
+  "version": "5.1.0",
   "private": true,
-  "description": "KAIROS. — World Travel Atlas V5.0 (Cloudflare Workers, D1 Auth/Collab, Multimodal Planner, Tier A/B/C Phenology, Photo Opportunity Index & 30-Chapter Trilingual Manual).",
+  "description": "KAIROS. — World Travel Atlas V5.1 (Hardened Workers/Auth/Collab, Real OurAirports/Landmass Routing, Astronomical Ephemeris & Mobile/A11y Polish).",
   "scripts": {
     "build": "node build-dist.js",
     "audit": "node scripts/audit-data.js",
@@ -13,7 +13,11 @@
   "license": "MIT",
   "devDependencies": {
     "@resvg/resvg-js": "^2.6.2",
+    "axe-core": "^4.14.1",
+    "fast-check": "^4.11.0",
+    "jsqr": "^1.4.0",
     "playwright-core": "^1.65.1",
+    "qrcode-generator": "^2.0.4",
     "tz-lookup": "^6.1.25"
   }
 }

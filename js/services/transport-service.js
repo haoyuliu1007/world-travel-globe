@@ -101,6 +101,100 @@
     return links;
   }
 
+  function splitAntimeridianGeometry(pts) {
+    if (!Array.isArray(pts) || pts.length < 2) {
+      return { type: 'LineString', coordinates: pts || [] };
+    }
+    const segments = [[]];
+    for (let i = 0; i < pts.length; i++) {
+      const cur = pts[i];
+      if (i > 0) {
+        const prev = pts[i - 1];
+        const dLon = cur[0] - prev[0];
+        if (Math.abs(dLon) > 180) {
+          const unwrappedCur = dLon > 0 ? cur[0] - 360 : cur[0] + 360;
+          const border = dLon > 0 ? -180 : 180;
+          const denom = unwrappedCur - prev[0];
+          const t = Math.abs(denom) > 1e-9 ? (border - prev[0]) / denom : 0.5;
+          const crossLat = Number((prev[1] + t * (cur[1] - prev[1])).toFixed(4));
+          segments[segments.length - 1].push([border, crossLat]);
+          segments.push([[border === 180 ? -180 : 180, crossLat]]);
+        }
+      }
+      segments[segments.length - 1].push(cur);
+    }
+    if (segments.length === 1) {
+      return { type: 'LineString', coordinates: segments[0] };
+    }
+    return { type: 'MultiLineString', coordinates: segments.filter((s) => s.length >= 2) };
+  }
+
+  function buildGreatCircleGeometry(fromCoords, toCoords, steps) {
+    return splitAntimeridianGeometry(buildGreatCircleCoordinates(fromCoords, toCoords, steps));
+  }
+
+  function inferLandmassByCoordsAndLabel(coords, label) {
+    const lbl = String(label || '').toLowerCase();
+    if (/tokyo|kyoto|osaka|sapporo|nagoya|fukuoka|sendai|hiroshima|kobe|yokohama|东京|京都|大阪|札幌|名古屋|福冈/.test(lbl)) return 'japan_main';
+    if (/naha|okinawa|那霸|冲绳/.test(lbl)) return 'japan_okinawa';
+    if (/taipei|kaohsiung|taichung|tainan|hualien|台北|高雄|台中|台南|花莲/.test(lbl)) return 'taiwan';
+    if (/haikou|sanya|海口|三亚|海南/.test(lbl)) return 'hainan';
+    if (/seoul|busan|incheon|首尔|釜山|仁川/.test(lbl)) return 'korea_peninsula';
+    if (/jeju|济州/.test(lbl)) return 'korea_jeju';
+    if (/london|edinburgh|manchester|glasgow|伦敦|爱丁堡|曼彻斯特/.test(lbl)) return 'uk_gb';
+    if (/dublin|都柏林|爱尔兰/.test(lbl)) return 'ireland';
+    if (/reykjavik|雷克雅未克|冰岛/.test(lbl)) return 'iceland';
+    if (/honolulu|oahu|檀香山|火奴鲁鲁|欧胡岛/.test(lbl)) return 'hawaii_oahu';
+    if (/maui|茂宜岛/.test(lbl)) return 'hawaii_maui';
+    if (/new york|los angeles|san francisco|chicago|seattle|vancouver|toronto|纽约|洛杉矶|旧金山|温哥华|多伦多/.test(lbl)) return 'north_america';
+    if (/sydney|melbourne|brisbane|perth|悉尼|墨尔本/.test(lbl)) return 'australia';
+    if (/auckland|queenstown|christchurch|奥克兰|皇后镇/.test(lbl)) return 'nz_south';
+    if (/antarctica|南极/.test(lbl)) return 'antarctica';
+    if (!Array.isArray(coords) || coords.length < 2) return null;
+    const lng = Number(coords[0]);
+    const lat = Number(coords[1]);
+    if (!Number.isFinite(lng) || !Number.isFinite(lat)) return null;
+    if (lat <= -60) return 'antarctica';
+    if (lng >= -158.4 && lng <= -157.6 && lat >= 21.2 && lat <= 21.75) return 'hawaii_oahu';
+    if (lng >= -156.7 && lng <= -155.9 && lat >= 20.5 && lat <= 21.05) return 'hawaii_maui';
+    if (lng >= -156.1 && lng <= -154.7 && lat >= 18.8 && lat <= 20.3) return 'hawaii_bigisland';
+    if (lng >= -160.0 && lng <= -159.2 && lat >= 21.8 && lat <= 22.3) return 'hawaii_kauai';
+    if (lng >= 122.5 && lng <= 130.0 && lat >= 24.0 && lat <= 28.0) return 'japan_okinawa';
+    if (lng >= 129.5 && lng <= 146.0 && lat >= 30.8 && lat <= 45.6) return 'japan_main';
+    if (lng >= 119.5 && lng <= 122.2 && lat >= 21.8 && lat <= 25.4) return 'taiwan';
+    if (lng >= 108.5 && lng <= 111.2 && lat >= 18.1 && lat <= 20.2) return 'hainan';
+    if (lng >= 126.0 && lng <= 127.1 && lat >= 33.1 && lat <= 33.6) return 'korea_jeju';
+    if (lng >= 125.5 && lng <= 129.7 && lat >= 34.0 && lat <= 38.6) return 'korea_peninsula';
+    if (lng >= -6.5 && lng <= 1.9 && lat >= 49.9 && lat <= 58.8) return 'uk_gb';
+    if (lng >= -10.6 && lng <= -5.4 && lat >= 51.3 && lat <= 55.5) return 'ireland';
+    if (lng >= -24.6 && lng <= -13.4 && lat >= 63.3 && lat <= 66.6) return 'iceland';
+    if (lng >= -168.0 && lng <= -52.0 && lat >= 14.0 && lat <= 72.0) return 'north_america';
+    if (lng >= -82.0 && lng <= -34.0 && lat >= -56.0 && lat <= 13.0) return 'south_america';
+    if (lng >= 112.0 && lng <= 154.0 && lat >= -39.5 && lat <= -10.5) return 'australia';
+    if (lng >= 166.0 && lng <= 179.0 && lat >= -47.5 && lat <= -34.0) return 'nz_south';
+    if (lng >= -18.0 && lng <= 52.0 && lat >= -35.0 && lat <= 37.5 && !(lng > 33.0 && lat > 30.0)) return 'africa';
+    return 'eurasia_mainland';
+  }
+
+  function areLandmassesConnected(origMass, destMass, distanceKm) {
+    if (!origMass || !destMass) return { rail: true, road: true, crossSea: false };
+    if (origMass === 'antarctica' || destMass === 'antarctica') {
+      return { rail: false, road: false, crossSea: origMass !== destMass };
+    }
+    if (origMass === destMass) {
+      return { rail: true, road: true, crossSea: false };
+    }
+    const pair = [origMass, destMass].sort().join('|');
+    if (pair === 'eurasia_mainland|uk_gb' && distanceKm <= 950) {
+      // Eurostar / LeShuttle Channel Tunnel serves cross-Channel passenger rail
+      return { rail: true, road: false, crossSea: true };
+    }
+    if (pair === 'africa|africa_sinai' && distanceKm <= 1200) {
+      return { rail: false, road: true, crossSea: false };
+    }
+    return { rail: false, road: false, crossSea: true };
+  }
+
   /**
    * Tier A Intercity comparison across Flight, High-Speed Rail, Regular Rail, Coach, Driving & Ferry.
    * All timings/budgets are explicitly marked estimated; no flight/train numbers or live fares are fabricated.
@@ -115,19 +209,29 @@
 
     const hub = dest ? getHubsForDest(dest.id) : null;
     const links = getBookingLinks(opts && opts.originLabel, dest);
-    const railAvailable = Boolean(hub && hub.railHub && hub.railHub.available && distanceKm <= 2400);
-    const roadFeasible = distanceKm <= 2200 && !(hub && hub.ferryLikely && distanceKm > 250);
+    const origMass = (opts && opts.originLandmass) || inferLandmassByCoordsAndLabel(originCoords, opts && opts.originLabel);
+    const destMass = (hub && hub.landmass) || inferLandmassByCoordsAndLabel(destCoords, dest && (dest.shortName || dest.name));
+    const isAntarctic = origMass === 'antarctica' || destMass === 'antarctica';
+    const conn = areLandmassesConnected(origMass, destMass, distanceKm);
+
+    const railHubOk = hub && hub.railHub ? Boolean(hub.railHub.available) : Boolean(conn.rail);
+    const railAvailable = !isAntarctic && conn.rail && railHubOk && distanceKm <= 2400;
+    const roadFeasible = !isAntarctic && conn.road && distanceKm <= 2200;
+    const flightFeasible = !isAntarctic && distanceKm >= 120;
+    const ferryFeasible = isAntarctic || (Boolean((hub && hub.ferryLikely) || conn.crossSea) && distanceKm <= 1800);
 
     const modes = [
       {
         id: 'flight',
         tier: 'A',
-        feasible: distanceKm >= 120,
+        feasible: flightFeasible,
         distanceKm,
         durationMin: Math.round(distanceKm / 780 * 60) + 135, // cruise + airport buffer
         estCostRmbRange: [Math.max(450, Math.round(distanceKm * 0.55)), Math.max(950, Math.round(distanceKm * 1.15))],
         routeKind: 'schematic_great_circle',
-        providerLabel: 'Great-Circle Geodesic Reference (Not actual airway)',
+        providerLabel: isAntarctic
+          ? 'No Scheduled Commercial Flights (Expedition charter / port staging via Ushuaia/Punta Arenas)'
+          : 'Great-Circle Geodesic Reference (Not actual airway)',
         officialUrl: links.flight,
         officialLabel: 'Google Flights'
       },
@@ -139,7 +243,7 @@
         durationMin: Math.round((distanceKm * 1.18) / 260 * 60) + 35,
         estCostRmbRange: [Math.max(80, Math.round(distanceKm * 0.42)), Math.max(160, Math.round(distanceKm * 0.72))],
         routeKind: 'corridor_estimate',
-        providerLabel: 'Regional HSR Corridor Estimate (Verify live schedule)',
+        providerLabel: conn.rail ? 'Regional HSR Corridor Estimate (Verify live schedule)' : 'Not Overland-Connected (Cross-Sea / Disconnected Rail Grid)',
         officialUrl: links.rail,
         officialLabel: 'Official Rail'
       },
@@ -151,7 +255,7 @@
         durationMin: Math.round((distanceKm * 1.22) / 110 * 60) + 30,
         estCostRmbRange: [Math.max(45, Math.round(distanceKm * 0.18)), Math.max(110, Math.round(distanceKm * 0.36))],
         routeKind: 'corridor_estimate',
-        providerLabel: 'Conventional Rail Estimate',
+        providerLabel: conn.rail ? 'Conventional Rail Estimate' : 'Not Overland-Connected (Cross-Sea / Disconnected Rail Grid)',
         officialUrl: links.rail,
         officialLabel: 'Official Rail'
       },
@@ -163,7 +267,7 @@
         durationMin: Math.round((distanceKm * 1.25) / 72 * 60) + 20,
         estCostRmbRange: [Math.max(35, Math.round(distanceKm * 0.25)), Math.max(80, Math.round(distanceKm * 0.45))],
         routeKind: 'road_estimate',
-        providerLabel: 'Long-Distance Coach Estimate',
+        providerLabel: conn.road ? 'Long-Distance Coach Estimate' : 'No Continuous Highway (Cross-Sea)',
         officialUrl: links.transit,
         officialLabel: 'Transit Map'
       },
@@ -182,24 +286,29 @@
       {
         id: 'ferry',
         tier: 'A',
-        feasible: Boolean(hub && hub.ferryLikely) || distanceKm <= 450,
+        feasible: ferryFeasible,
         distanceKm,
-        durationMin: Math.round(distanceKm / 38 * 60) + 45,
-        estCostRmbRange: [Math.max(60, Math.round(distanceKm * 0.55)), Math.max(180, Math.round(distanceKm * 1.1))],
+        durationMin: isAntarctic ? 2880 : (Math.round(distanceKm / 38 * 60) + 45),
+        estCostRmbRange: isAntarctic ? [38000, 95000] : [Math.max(60, Math.round(distanceKm * 0.55)), Math.max(180, Math.round(distanceKm * 1.1))],
         routeKind: 'maritime_reference',
-        providerLabel: 'Ferry / Maritime Crossing Reference',
+        providerLabel: isAntarctic
+          ? 'Polar Expedition Vessel / Zodiac Cruise (IAATO seasonal via Ushuaia/Punta Arenas)'
+          : 'Ferry / Maritime Crossing Reference',
         officialUrl: links.transit,
-        officialLabel: 'Port Transit'
+        officialLabel: isAntarctic ? 'Expedition Info' : 'Port Transit'
       }
     ];
 
     return {
       originLabel: (opts && opts.originLabel) || '',
+      originLandmass: origMass,
       destId: dest ? dest.id : '',
+      destLandmass: destMass,
+      crossSea: conn.crossSea,
       hub,
       modes,
       geometry: originCoords && destCoords
-        ? { type: 'LineString', coordinates: buildGreatCircleCoordinates(originCoords, destCoords, 28) }
+        ? buildGreatCircleGeometry(originCoords, destCoords, 28)
         : null
     };
   }
@@ -222,10 +331,13 @@
       if (localMode === 'mixed' && straightKm <= 2.2 && global.RoutingService) {
         return global.RoutingService.routeSegment(fromCoords, toCoords, 'walking');
       }
+      const origMass = inferLandmassByCoordsAndLabel(fromCoords);
+      const destMass = inferLandmassByCoordsAndLabel(toCoords);
+      const conn = areLandmassesConnected(origMass, destMass, straightKm);
       const roadKm = Number((straightKm * 1.26).toFixed(2));
       return {
         routed: false,
-        crossSea: straightKm > 2500,
+        crossSea: Boolean(conn.crossSea) || straightKm > 2500,
         provider: 'Transit Estimate (Check local metro/bus GTFS)',
         distanceKm: roadKm,
         durationMin: Math.max(10, Math.round((roadKm / 26) * 60) + 8),
@@ -283,6 +395,9 @@
     loadHubs,
     getHubsForDest,
     buildGreatCircleCoordinates,
+    buildGreatCircleGeometry,
+    splitAntimeridianGeometry,
+    areLandmassesConnected,
     getBookingLinks,
     compareIntercityModes,
     getArrivalTransfers,

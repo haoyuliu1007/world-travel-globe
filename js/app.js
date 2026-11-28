@@ -2286,6 +2286,9 @@
     if (galView) galView.classList.toggle('is-hidden', state.mode !== 'gallery');
     if (planView) planView.classList.toggle('is-hidden', state.mode !== 'planner');
     if (archView) archView.classList.toggle('is-hidden', state.mode !== 'archive');
+    if (typeof document !== 'undefined' && document.body) {
+      document.body.classList.toggle('is-workspace-mode', state.mode !== 'map');
+    }
 
     if (state.mode !== 'map') stopSpin();
     if (state.mode === 'gallery' && global.AestheticGallery) {
@@ -3102,6 +3105,24 @@
           global.DiagnosticsModule.close();
           return;
         }
+        const lazyClosers = [
+          ['account-modal', global.AccountCenter],
+          ['share-center-modal', global.ShareCenter],
+          ['trip-export-modal', global.ExportService],
+          ['help-center-modal', global.HelpCenter],
+          ['dest-compare-modal', global.DestCompare],
+          ['epic-earth-modal', global.EpicEarthModule],
+          ['poster-share-modal', global.PosterShareModule]
+        ];
+        for (let i = 0; i < lazyClosers.length; i++) {
+          const mEl = document.getElementById(lazyClosers[i][0]);
+          const mod = lazyClosers[i][1];
+          if (mEl && !mEl.classList.contains('is-hidden')) {
+            if (mod && typeof mod.close === 'function') mod.close();
+            else mEl.classList.add('is-hidden');
+            return;
+          }
+        }
         if (global.CommandPalette && global.CommandPalette.isOpen()) {
           global.CommandPalette.close();
           return;
@@ -3715,6 +3736,34 @@
       if (initialParams.autoSpin) {
         startSpin();
       }
+      if (Array.isArray(initialParams.layers) && initialParams.layers.length) {
+        initialParams.layers.forEach((lid) => {
+          if (lid === 'terrain' && global.Terrain3DModule && !initialParams.autoTerrain) {
+            global.Terrain3DModule.toggleTerrain(map, true);
+          } else if (lid === 'daynight' && global.SolarTerminator && !initialParams.autoDayNight) {
+            global.SolarTerminator.toggle(map, true);
+          } else if (lid === 'aurora' && global.Terrain3DModule) {
+            global.Terrain3DModule.toggleAurora(map, true);
+          } else if (lid === 'nightlights' && global.Terrain3DModule) {
+            global.Terrain3DModule.toggleNightLights(map, true);
+          } else if (lid === 'contours' && global.Terrain3DModule) {
+            global.Terrain3DModule.toggleContours(map, true);
+          } else if (lid === 'buildings' && global.Terrain3DModule) {
+            global.Terrain3DModule.toggleBuildings(map, true);
+          } else if ((lid === 'weather' || lid === 'clouds') && global.WeatherService) {
+            const wxBtn = document.getElementById('toggle-weather-layer-btn');
+            if (wxBtn) wxBtn.click();
+          } else if (lid === 'timemachine' && global.EarthTimeMachine) {
+            global.EarthTimeMachine.open();
+          }
+        });
+      }
+      if (initialParams.dateStr && /^\d{4}-\d{2}-\d{2}$/.test(initialParams.dateStr) && global.PhotoSimulator && typeof global.PhotoSimulator.setDate === 'function') {
+        global.PhotoSimulator.setDate(initialParams.dateStr);
+      }
+      if (initialParams.camBearing !== null && typeof map.setBearing === 'function') {
+        try { map.setBearing(initialParams.camBearing); } catch (e) { /* ignore */ }
+      }
 
       if (initialParams.embed) {
         document.body.classList.add('embed-mode');
@@ -3785,7 +3834,7 @@
               center: focusDest.coords,
               zoom: focusDest.zoom || 9.0,
               pitch: 42,
-              bearing: 0,
+              bearing: initialParams.camBearing !== null ? initialParams.camBearing : 0,
               duration: 1350
             });
             map.once('moveend', () => {
@@ -3884,7 +3933,7 @@
               const toast = document.getElementById('subspot-toast');
               const txt = document.getElementById('subspot-toast-text');
               if (toast && txt) {
-                txt.textContent = 'KAIROS V5.0 updated — reload anytime for latest build';
+                txt.textContent = 'KAIROS V5.1 updated — reload anytime for latest build';
                 toast.classList.remove('is-hidden');
               }
             }

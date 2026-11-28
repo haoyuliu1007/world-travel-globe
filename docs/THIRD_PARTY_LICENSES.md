@@ -28,7 +28,11 @@
 | **OpenRouteService** | Directions API v2（可选） | OpenRouteService Terms | 免费额度 2,000 req/day，配置 Key 后作为增强路由选项 |
 | **Mapillary** | Graph API v4 & MapillaryJS（可选） | CC BY-SA 4.0 / MIT | 配置免费 Client Token 后提供街景与 360° 全景联动 |
 | **Esri / CartoDB 底图瓦片** | 原有内置底图 | 各底图服务条款 | 保持原有底图源与归属标注 |
-| **OurAirports** | Airport/Runway Dataset | Public Domain | 构建期筛选生成 `data/transport/hubs.json`（722 城最近门户机场 IATA 与距离） |
+| **OurAirports** | Airport/Runway Dataset (4,029 commercial airports) | Public Domain | 构建期筛选生成 `data/transport/hubs.json`（722 城最近门户机场 IATA、坐标与距市中心公里数） |
+| **qrcode-generator** | `qrcode-generator@^2.0.4` (`vendor/qrcode-generator.min.js`) | MIT | 前端离线生成标准 Version 1–40 QR 码矩阵与纯本地 SVG 卡片 |
+| **jsQR** | `jsqr@^1.4.0`（开发依赖） | Apache-2.0 | 自动化单测对前端生成 QR 码进行端到端图像解码还原验证 |
+| **fast-check** | `fast-check@^4.11.0`（开发依赖） | MIT | CRDT 结合律/交换律/幂等性与 AA 分账守恒属性随机测试（500 轮） |
+| **axe-core** | `axe-core@^4.14.1`（开发依赖） | MPL-2.0 | Playwright 浏览器实测明暗双主题对比度与 ARIA 无障碍自动化扫描 |
 | **Frankfurter API (ECB)** | Latest Reference Rates (`api.frankfurter.app`) | MIT / ECB Public Reference | `/api/fx` 多币种行程预算实时参考汇率 |
 | **Playwright Core** | `playwright-core@^1.65.1`（开发依赖） | Apache-2.0 | E2E 多视口仿真与多上下文协同自动化回归测试 |
 | **OpenCV (`cv2` build-time)** | 构建期脚本依赖 | Apache-2.0 | 一次性从品牌原始 PNG 设计稿提取并优化母版矢量轮廓与 Bezier 曲线（不进入运行时产物） |

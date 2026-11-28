@@ -479,7 +479,19 @@
   async function restoreLatestBackupSnapshot() {
     const rec = await getSetting('preSyncBackup', null);
     if (!rec || !rec.payload) return false;
-    await importAllUserData(rec.payload, 'crdt');
+    const now = Date.now();
+    const curClock = Number(await getSetting('crdtLogicalClock', 0)) || 0;
+    const nextClock = Math.max(curClock, Number(rec.payload.logicalClock || 0)) + 1;
+    const bumped = Object.assign({}, rec.payload, {
+      logicalClock: nextClock,
+      travelStatus: (rec.payload.travelStatus || []).map((s) => Object.assign({}, s, { updatedAt: now, clock: nextClock })),
+      customLists: (rec.payload.customLists || []).map((l) => Object.assign({}, l, { updatedAt: now, clock: nextClock })),
+      trips: (rec.payload.trips || []).map((t) => Object.assign({}, t, { updatedAt: now, clock: nextClock })),
+      expenses: (rec.payload.expenses || []).map((e) => Object.assign({}, e, { updatedAt: now, clock: nextClock })),
+      userPhotos: (rec.payload.userPhotos || []).map((p) => Object.assign({}, p, { updatedAt: now, clock: nextClock }))
+    });
+    await importAllUserData(bumped, 'crdt');
+    await setSetting('crdtLogicalClock', nextClock);
     return true;
   }
 
@@ -526,6 +538,9 @@
     MEMORY_FALLBACK.userPhotos.clear();
     MEMORY_FALLBACK.expenses.clear();
     MEMORY_FALLBACK.trips.clear();
+    for (const k of LOCAL_ONLY_KEYS) {
+      MEMORY_FALLBACK.settings.delete(k);
+    }
     if (db) {
       await Promise.all([
         db.travelStatus.clear(),
@@ -533,9 +548,17 @@
         db.userPhotos.clear(),
         db.expenses.clear(),
         db.trips.clear(),
-        keepCache ? Promise.resolve() : db.apiCache.clear()
+        db.settings.where('key').anyOf([...LOCAL_ONLY_KEYS]).delete().catch(() => {}),
+        keepCache ? Promise.resolve() : db.apiCache.clear(),
+        keepCache || !db.wikidataCache ? Promise.resolve() : db.wikidataCache.clear()
       ]);
     }
+    try {
+      if (global.localStorage) {
+        global.localStorage.removeItem('wtg_collab_spaces_v1');
+        global.localStorage.removeItem('wtg_favorites_v1');
+      }
+    } catch (e) {}
   }
 
   async function getStorageStats() {

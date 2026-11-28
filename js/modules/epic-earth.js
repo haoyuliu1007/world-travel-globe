@@ -50,16 +50,20 @@
 
   let selectedDateStr = '';
   let lastMeta = { requestedDate: null, actualDate: null, fallbackToLatest: false };
+  let activeFetchCtrl = null;
 
   async function fetchEpicFrames(dateStr) {
+    if (activeFetchCtrl) activeFetchCtrl.abort();
+    activeFetchCtrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    const signal = activeFetchCtrl ? activeFetchCtrl.signal : undefined;
     const Api = global.ApiClient;
     const caps = Api ? await Api.detectWorkerCapabilities().catch(() => null) : null;
     const reqDate = /^\d{4}-\d{2}-\d{2}$/.test(String(dateStr || '').trim()) ? String(dateStr).trim() : '';
     if (caps && caps.available && caps.features && caps.features.epic) {
       const apiPath = reqDate ? `/api/epic?date=${encodeURIComponent(reqDate)}` : '/api/epic';
       const json = Api
-        ? await Api.fetchJson(apiPath, { cacheKey: `nasa:epic:v5:${reqDate || 'latest'}`, ttlMs: ONE_HOUR_MS, source: 'NASA DSCOVR EPIC', serviceId: 'nasa-epic', timeoutMs: 9000 })
-        : await (await fetch(apiPath)).json();
+        ? await Api.fetchJson(apiPath, { cacheKey: `nasa:epic:v5:${reqDate || 'latest'}`, ttlMs: ONE_HOUR_MS, source: 'NASA DSCOVR EPIC', serviceId: 'nasa-epic', timeoutMs: 9000, signal })
+        : await (await fetch(apiPath, { signal })).json();
       lastMeta = {
         requestedDate: json && json.requestedDate ? json.requestedDate : reqDate || null,
         actualDate: json && json.actualDate ? json.actualDate : null,
@@ -156,8 +160,18 @@
             <button id="epic-close-btn" class="icon-btn" type="button" aria-label="${esc(L('关闭', 'Close'))}">${icon('x', 15)}</button>
           </div>
           <p style="font-size:12.5px;color:var(--text-secondary);">${esc(L('暂未获取到 NASA EPIC L1 拉格朗日点影像，请稍后重试。', 'Unable to fetch NASA EPIC L1 imagery right now. Please try again later.'))}</p>
+          <div style="margin-top:10px;display:flex;gap:8px;justify-content:flex-end;">
+            <button id="epic-retry-btn" class="secondary-btn" type="button">${esc(L('重试加载', 'Retry'))}</button>
+          </div>
         </div>
       `;
+      const retryBtn = modal.querySelector('#epic-retry-btn');
+      if (retryBtn) {
+        retryBtn.addEventListener('click', async () => {
+          framesCache = await fetchEpicFrames(selectedDateStr).catch(() => []);
+          renderModal(framesCache);
+        });
+      }
       const dateInp = modal.querySelector('#epic-date-input');
     if (dateInp) {
       dateInp.addEventListener('change', async (e) => {

@@ -157,8 +157,12 @@
       ? global.PhotoSimulator.classifyLightAngle(sim.sunPos.azimuth, bearing, sim.sunPos.altitude)
       : null;
 
+    const enrMap = global.PhenologyEngine && typeof global.PhenologyEngine.getEnrichmentMap === 'function' ? global.PhenologyEngine.getEnrichmentMap() : null;
+    const enrElev = enrMap && state.dest && enrMap[state.dest.id] && Number.isFinite(enrMap[state.dest.id].elevationM)
+      ? `${enrMap[state.dest.id].elevationM}m`
+      : null;
     const elevM = map && global.Terrain3DModule ? global.Terrain3DModule.queryElevation(map, state.coords[0], state.coords[1]) : null;
-    const elevLabel = elevM !== null ? `${elevM}m` : ((state.spot && state.spot.elevation) || state.dest.elevation || '--');
+    const elevLabel = elevM !== null ? `${elevM}m` : ((state.spot && state.spot.elevation) || enrElev || state.dest.elevation || '--');
     const timeText = `${String(Math.floor(state.minutes / 60)).padStart(2, '0')}:${String(state.minutes % 60).padStart(2, '0')}`;
     const tzBadge = (sim && (sim.timezoneDisplay || sim.utcOffsetLabel)) || 'Local';
     const title = state.spot

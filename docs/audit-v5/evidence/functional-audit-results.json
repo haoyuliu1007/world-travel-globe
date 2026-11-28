@@ -1,0 +1,1131 @@
+{
+  "generatedAt": "2026-11-28T04:59:15.376Z",
+  "browsers": {
+    "chrome": {
+      "path": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "available": true
+    },
+    "edge": {
+      "path": "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
+      "available": true
+    },
+    "firefox": {
+      "path": "C:\\Program Files\\Mozilla Firefox\\firefox.exe",
+      "available": false,
+      "note": "Not installed"
+    },
+    "msPlaywright": {
+      "dir": "C:\\Users\\Liam\\AppData\\Local\\ms-playwright",
+      "exists": true,
+      "entries": [
+        ".links",
+        "ffmpeg-1013",
+        "winldd-1007"
+      ],
+      "chromiumAvailable": false,
+      "firefoxAvailable": false,
+      "webkitAvailable": false
+    }
+  },
+  "ghPages": {
+    "url": "https://haoyuliu1007.github.io/world-travel-globe/",
+    "consoleErrors": [],
+    "pageErrors": [],
+    "failedRequests": [],
+    "httpErrors": [],
+    "probe": {
+      "title": "KAIROS. · World Travel Atlas | 全球智能旅行平台 V5.0",
+      "lang": "zh-CN",
+      "totalDests": 722,
+      "totalSpots": 5414,
+      "hasAccountBtn": true,
+      "hasHelpBtn": true,
+      "hasAuthService": true,
+      "hasHelpCenter": true,
+      "hasShareCenter": true,
+      "hasGeoIntelligence": true,
+      "hasPhenologyEngine": true,
+      "hasViewfinder3D": true,
+      "manualOk": true,
+      "swSnippet": "/* World Travel Globe Offline-First Service Worker */\nconst CACHE_NAME = 'wtg-shell-mwzcd7lq';\nconst DATA_CACHE = 'kairos-data-v5';\n\nconst CORE_ASSETS = [\"./\",\"./index.html\",\"./css/app.bundle.min.css?v=mwzcd7lq\",\"./assets/prologue/intro.bundle.min.js?v=mwzcd7lq\",\"./vendor/maplibre-gl.js\",\"./vendor/l",
+      "hasV5LazyScripts": false,
+      "sampleScripts": [
+        "assets/prologue/intro.bundle.min.js?v=mwzcd7lq",
+        "vendor/maplibre-gl.js",
+        "vendor/libs.bundle.min.js?v=mwzcd7lq",
+        "data/atlas-index.min.js?v=mwzcd7lq",
+        "js/app.bundle.min.js?v=mwzcd7lq"
+      ],
+      "styles": [
+        "css/app.bundle.min.css?v=mwzcd7lq",
+        "assets/cosmic-intro/player.css?v=9"
+      ]
+    },
+    "isV5": true,
+    "detectedVersion": "V5.0.0"
+  },
+  "production": {
+    "telemetry": {
+      "url": "https://world-travel-globe.globe-app.workers.dev/",
+      "consoleErrors": [
+        "Failed to load resource: net::ERR_FAILED",
+        "Failed to load resource: net::ERR_FAILED",
+        "Failed to load resource: net::ERR_FAILED",
+        "Failed to load resource: net::ERR_FAILED",
+        "Failed to load resource: net::ERR_FAILED",
+        "Failed to load resource: net::ERR_FAILED",
+        "Failed to load resource: net::ERR_FAILED",
+        "Failed to load resource: net::ERR_FAILED",
+        "Failed to load resource: net::ERR_FAILED",
+        "Failed to load resource: net::ERR_FAILED",
+        "Failed to load resource: net::ERR_FAILED",
+        "Failed to load resource: net::ERR_FAILED",
+        "Failed to load resource: net::ERR_FAILED",
+        "Failed to load resource: net::ERR_FAILED",
+        "Failed to load resource: net::ERR_FAILED",
+        "Failed to load resource: net::ERR_FAILED"
+      ],
+      "pageErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://world-travel-globe.globe-app.workers.dev/api/route",
+          "method": "POST",
+          "error": "net::ERR_FAILED"
+        },
+        {
+          "url": "https://world-travel-globe.globe-app.workers.dev/api/route",
+          "method": "POST",
+          "error": "net::ERR_FAILED"
+        },
+        {
+          "url": "https://world-travel-globe.globe-app.workers.dev/api/route",
+          "method": "POST",
+          "error": "net::ERR_FAILED"
+        },
+        {
+          "url": "https://world-travel-globe.globe-app.workers.dev/api/route",
+          "method": "POST",
+          "error": "net::ERR_FAILED"
+        },
+        {
+          "url": "https://world-travel-globe.globe-app.workers.dev/api/route",
+          "method": "POST",
+          "error": "net::ERR_FAILED"
+        },
+        {
+          "url": "https://world-travel-globe.globe-app.workers.dev/api/route",
+          "method": "POST",
+          "error": "net::ERR_FAILED"
+        },
+        {
+          "url": "https://world-travel-globe.globe-app.workers.dev/api/route",
+          "method": "POST",
+          "error": "net::ERR_FAILED"
+        },
+        {
+          "url": "https://world-travel-globe.globe-app.workers.dev/api/route",
+          "method": "POST",
+          "error": "net::ERR_FAILED"
+        },
+        {
+          "url": "https://world-travel-globe.globe-app.workers.dev/api/route",
+          "method": "POST",
+          "error": "net::ERR_FAILED"
+        },
+        {
+          "url": "https://world-travel-globe.globe-app.workers.dev/api/route",
+          "method": "POST",
+          "error": "net::ERR_FAILED"
+        },
+        {
+          "url": "https://world-travel-globe.globe-app.workers.dev/api/route",
+          "method": "POST",
+          "error": "net::ERR_FAILED"
+        },
+        {
+          "url": "https://world-travel-globe.globe-app.workers.dev/api/route",
+          "method": "POST",
+          "error": "net::ERR_FAILED"
+        },
+        {
+          "url": "https://world-travel-globe.globe-app.workers.dev/api/route",
+          "method": "POST",
+          "error": "net::ERR_FAILED"
+        },
+        {
+          "url": "https://world-travel-globe.globe-app.workers.dev/api/route",
+          "method": "POST",
+          "error": "net::ERR_FAILED"
+        },
+        {
+          "url": "https://world-travel-globe.globe-app.workers.dev/api/route",
+          "method": "POST",
+          "error": "net::ERR_FAILED"
+        },
+        {
+          "url": "https://world-travel-globe.globe-app.workers.dev/api/route",
+          "method": "POST",
+          "error": "net::ERR_FAILED"
+        }
+      ],
+      "httpErrors": [],
+      "blockedMutations": [
+        {
+          "url": "https://world-travel-globe.globe-app.workers.dev/api/route",
+          "method": "POST"
+        },
+        {
+          "url": "https://world-travel-globe.globe-app.workers.dev/api/route",
+          "method": "POST"
+        },
+        {
+          "url": "https://world-travel-globe.globe-app.workers.dev/api/route",
+          "method": "POST"
+        },
+        {
+          "url": "https://world-travel-globe.globe-app.workers.dev/api/route",
+          "method": "POST"
+        },
+        {
+          "url": "https://world-travel-globe.globe-app.workers.dev/api/route",
+          "method": "POST"
+        },
+        {
+          "url": "https://world-travel-globe.globe-app.workers.dev/api/route",
+          "method": "POST"
+        },
+        {
+          "url": "https://world-travel-globe.globe-app.workers.dev/api/route",
+          "method": "POST"
+        },
+        {
+          "url": "https://world-travel-globe.globe-app.workers.dev/api/route",
+          "method": "POST"
+        },
+        {
+          "url": "https://world-travel-globe.globe-app.workers.dev/api/route",
+          "method": "POST"
+        },
+        {
+          "url": "https://world-travel-globe.globe-app.workers.dev/api/route",
+          "method": "POST"
+        },
+        {
+          "url": "https://world-travel-globe.globe-app.workers.dev/api/route",
+          "method": "POST"
+        },
+        {
+          "url": "https://world-travel-globe.globe-app.workers.dev/api/route",
+          "method": "POST"
+        },
+        {
+          "url": "https://world-travel-globe.globe-app.workers.dev/api/route",
+          "method": "POST"
+        },
+        {
+          "url": "https://world-travel-globe.globe-app.workers.dev/api/route",
+          "method": "POST"
+        },
+        {
+          "url": "https://world-travel-globe.globe-app.workers.dev/api/route",
+          "method": "POST"
+        },
+        {
+          "url": "https://world-travel-globe.globe-app.workers.dev/api/route",
+          "method": "POST"
+        }
+      ],
+      "apiCallsSeen": [
+        {
+          "url": "/api/health",
+          "method": "GET"
+        },
+        {
+          "url": "/api/health",
+          "method": "GET"
+        },
+        {
+          "url": "/api/wikipedia?lang=zh&action=query&format=json&origin=*&generator=search&gsrsearch=%E5%8C%97%E4%BA%AC+%E4%B8%AD%E5%9B%BD&gsrlimit=3&prop=pageimages%7Ccoordinates%7Cpageprops&pithumbsize=960&piprop=thumbnail%7Cname",
+          "method": "GET"
+        },
+        {
+          "url": "/api/commons?format=json&origin=*&action=query&generator=geosearch&ggsprimary=all&ggsnamespace=6&ggscoord=39.9163%7C116.3972&ggsradius=5000&ggslimit=18&prop=imageinfo&iiprop=url%7Cextmetadata%7Csize%7Cmime&iiurlwidth=960",
+          "method": "GET"
+        },
+        {
+          "url": "/api/commons?format=json&origin=*&action=query&generator=geosearch&ggsprimary=all&ggsnamespace=6&ggscoord=39.9261%7C116.3967&ggsradius=2000&ggslimit=9&prop=imageinfo&iiprop=url%7Cextmetadata%7Csize%7Cmime&iiurlwidth=960",
+          "method": "GET"
+        },
+        {
+          "url": "/api/wikidata?format=json&origin=*&action=wbgetentities&ids=Q4881184&props=labels%7Cdescriptions%7Cclaims%7Csitelinks&languages=zh%7Czh-hans%7Cen",
+          "method": "GET"
+        },
+        {
+          "url": "/api/wikidata?format=json&origin=*&action=wbgetentities&ids=Q4830453&props=labels&languages=zh%7Czh-hans%7Cen",
+          "method": "GET"
+        },
+        {
+          "url": "/api/epic",
+          "method": "GET"
+        },
+        {
+          "url": "/api/img?url=https%3A%2F%2Fepic.gsfc.nasa.gov%2Farchive%2Fnatural%2F2026%2F11%2F25%2Fjpg%2Fepic_1b_20261125001751.jpg",
+          "method": "GET"
+        },
+        {
+          "url": "/api/img?url=https%3A%2F%2Fepic.gsfc.nasa.gov%2Farchive%2Fnatural%2F2026%2F11%2F25%2Fjpg%2Fepic_1b_20261125020553.jpg",
+          "method": "GET"
+        },
+        {
+          "url": "/api/wikipedia?lang=zh&action=query&format=json&origin=*&generator=search&gsrsearch=%E9%A6%99%E6%A0%BC%E9%87%8C%E6%8B%89+%E4%B8%AD%E5%9B%BD&gsrlimit=3&prop=pageimages%7Ccoordinates%7Cpageprops&pithumbsize=960&piprop=thumbnail%7Cname",
+          "method": "GET"
+        },
+        {
+          "url": "/api/commons?format=json&origin=*&action=query&generator=geosearch&ggsprimary=all&ggsnamespace=6&ggscoord=27.826%7C99.708&ggsradius=5000&ggslimit=18&prop=imageinfo&iiprop=url%7Cextmetadata%7Csize%7Cmime&iiurlwidth=960",
+          "method": "GET"
+        },
+        {
+          "url": "/api/commons?format=json&origin=*&action=query&generator=geosearch&ggsprimary=all&ggsnamespace=6&ggscoord=28.455%7C98.898&ggsradius=2000&ggslimit=9&prop=imageinfo&iiprop=url%7Cextmetadata%7Csize%7Cmime&iiurlwidth=960",
+          "method": "GET"
+        },
+        {
+          "url": "/api/wikidata?format=json&origin=*&action=wbgetentities&ids=Q933866&props=labels%7Cdescriptions%7Cclaims%7Csitelinks&languages=zh%7Czh-hans%7Cen",
+          "method": "GET"
+        },
+        {
+          "url": "/api/commons?format=json&origin=*&action=query&generator=search&gsrsearch=%E9%A6%99%E6%A0%BC%E9%87%8C%E6%8B%89+%E4%B8%AD%E5%9B%BD+filetype%3Abitmap&gsrnamespace=6&gsrlimit=16&prop=imageinfo&iiprop=url%7Cextmetadata%7Csize%7Cmime&iiurlwidth=960",
+          "method": "GET"
+        },
+        {
+          "url": "/api/wikidata?format=json&origin=*&action=wbgetentities&ids=Q1070990%7CQ1289426&props=labels&languages=zh%7Czh-hans%7Cen",
+          "method": "GET"
+        },
+        {
+          "url": "/api/wikipedia?lang=zh&action=query&format=json&origin=*&generator=search&gsrsearch=%E9%A6%99%E6%A0%BC%E9%87%8C%E6%8B%89&gsrlimit=3&prop=pageimages%7Ccoordinates%7Cpageprops&pithumbsize=960&piprop=thumbnail%7Cname",
+          "method": "GET"
+        },
+        {
+          "url": "/api/weather?endpoint=https%3A%2F%2Fapi.open-meteo.com%2Fv1%2Fforecast&latitude=28.455&longitude=98.898&current=temperature_2m%2Crelative_humidity_2m%2Capparent_temperature%2Cprecipitation%2Crain%2Csnowfall%2Cweather_code%2Ccloud_cover%2Cwind_speed_10m&daily=weather_code%2Ctemperature_2m_max%2Ctemperature_2m_min%2Cprecipitation_sum%2Cprecipitation_probability_max%2Csunshine_duration%2Csnowfall_sum&hourly=temperature_2m%2Ccloud_cover%2Cprecipitation_probability%2Cvisibility&timezone=auto&forecast_days=7",
+          "method": "GET"
+        },
+        {
+          "url": "/api/weather?endpoint=https%3A%2F%2Fapi.open-meteo.com%2Fv1%2Fforecast&latitude=27.826&longitude=99.708&current=temperature_2m%2Crelative_humidity_2m%2Capparent_temperature%2Cprecipitation%2Crain%2Csnowfall%2Cweather_code%2Ccloud_cover%2Cwind_speed_10m&daily=weather_code%2Ctemperature_2m_max%2Ctemperature_2m_min%2Cprecipitation_sum%2Cprecipitation_probability_max%2Csunshine_duration%2Csnowfall_sum&hourly=temperature_2m%2Ccloud_cover%2Cprecipitation_probability%2Cvisibility&timezone=auto&forecast_days=7",
+          "method": "GET"
+        },
+        {
+          "url": "/api/weather?endpoint=https%3A%2F%2Fair-quality-api.open-meteo.com%2Fv1%2Fair-quality&latitude=27.83&longitude=99.71&current=us_aqi%2Ceuropean_aqi%2Cpm2_5%2Cpm10%2Cuv_index%2Calder_pollen%2Cbirch_pollen%2Cgrass_pollen%2Cragweed_pollen&timezone=auto",
+          "method": "GET"
+        },
+        {
+          "url": "/api/weather?endpoint=https%3A%2F%2Farchive-api.open-meteo.com%2Fv1%2Farchive&latitude=27.83&longitude=99.71&start_date=2020-01-01&end_date=2024-12-31&daily=temperature_2m_max%2Ctemperature_2m_min%2Ctemperature_2m_mean%2Cprecipitation_sum%2Csnowfall_sum%2Csunshine_duration&timezone=UTC",
+          "method": "GET"
+        },
+        {
+          "url": "/api/fx?from=CNY",
+          "method": "GET"
+        },
+        {
+          "url": "/api/fx?from=CNY",
+          "method": "GET"
+        },
+        {
+          "url": "/api/auth/me",
+          "method": "GET"
+        },
+        {
+          "url": "/api/health",
+          "method": "GET"
+        },
+        {
+          "url": "/api/wikipedia?lang=zh&action=query&format=json&origin=*&generator=search&gsrsearch=%E4%B8%9C%E4%BA%AC+%E6%97%A5%E6%9C%AC&gsrlimit=3&prop=pageimages%7Ccoordinates%7Cpageprops&pithumbsize=960&piprop=thumbnail%7Cname",
+          "method": "GET"
+        },
+        {
+          "url": "/api/commons?format=json&origin=*&action=query&generator=geosearch&ggsprimary=all&ggsnamespace=6&ggscoord=35.6895%7C139.6917&ggsradius=5000&ggslimit=18&prop=imageinfo&iiprop=url%7Cextmetadata%7Csize%7Cmime&iiurlwidth=960",
+          "method": "GET"
+        },
+        {
+          "url": "/api/commons?format=json&origin=*&action=query&generator=geosearch&ggsprimary=all&ggsnamespace=6&ggscoord=35.6605%7C139.7511&ggsradius=2000&ggslimit=9&prop=imageinfo&iiprop=url%7Cextmetadata%7Csize%7Cmime&iiurlwidth=960",
+          "method": "GET"
+        },
+        {
+          "url": "/api/wikidata?format=json&origin=*&action=wbgetentities&ids=Q7473516&props=labels%7Cdescriptions%7Cclaims%7Csitelinks&languages=zh%7Czh-hans%7Cen",
+          "method": "GET"
+        },
+        {
+          "url": "/api/wikidata?format=json&origin=*&action=wbgetentities&ids=Q129319205%7CQ515&props=labels&languages=zh%7Czh-hans%7Cen",
+          "method": "GET"
+        },
+        {
+          "url": "/api/commons?format=json&origin=*&action=query&generator=geosearch&ggsprimary=all&ggsnamespace=6&ggscoord=35.6604%7C139.7292&ggsradius=2000&ggslimit=9&prop=imageinfo&iiprop=url%7Cextmetadata%7Csize%7Cmime&iiurlwidth=960",
+          "method": "GET"
+        }
+      ],
+      "health": {
+        "ok": true,
+        "runtime": "cloudflare-worker",
+        "version": "5.0.0",
+        "features": {
+          "weather": true,
+          "commons": true,
+          "wikidata": true,
+          "wikipedia": true,
+          "img": true,
+          "tile": true,
+          "route": true,
+          "streetview": true,
+          "terrain": true,
+          "mapterhorn": true,
+          "aurora": true,
+          "panoramax": true,
+          "epic": true,
+          "airQuality": true,
+          "pois": true,
+          "poisEnhanced": false,
+          "d1": true,
+          "r2": false,
+          "auth": true,
+          "oauthGoogle": false,
+          "emailDelivery": false,
+          "collab": true,
+          "fx": true
+        }
+      }
+    },
+    "items": {
+      "01_prologue_brand": {
+        "status": "完整实现且已验证",
+        "evidence": {
+          "prologueCheck": {
+            "introState": "prologue",
+            "prologueBootClass": false,
+            "prologueVisible": true,
+            "prologueHtmlLen": 16972,
+            "cosmicHidden": true,
+            "cosmicPoster": "assets/cosmic-intro/poster.jpg?v=7",
+            "brandBtnPresent": true,
+            "brandWordmarks": 4
+          },
+          "hasReplayBtn": true,
+          "replayState": {
+            "prologueOpenOnReplay": true,
+            "introState": "prologue"
+          }
+        }
+      },
+      "02_3d_globe": {
+        "status": "完整实现且已验证",
+        "evidence": {
+          "globeBefore": {
+            "proj": {
+              "type": "globe"
+            },
+            "center": {
+              "lng": 72,
+              "lat": 22
+            },
+            "zoom": 1.65,
+            "pitch": 14,
+            "bearing": 0,
+            "hasLabelCanvas": true
+          },
+          "spinMoved": true,
+          "zoomInVal": 1.9999999999999998,
+          "afterDrag": {
+            "center": {
+              "lng": 52.381824970413504,
+              "lat": 10.849918618138561
+            },
+            "zoom": 1.7330491882947607
+          },
+          "pitchAfter": 45
+        }
+      },
+      "03_search_spots": {
+        "status": "完整实现且已验证",
+        "evidence": {
+          "searchResults": {
+            "北京": {
+              "count": 1,
+              "topTexts": [
+                "北京 · 紫禁城与未来建筑 中国 · 北京市 · 北京大兴国际机场 · 凤凰展翅C型柱穹顶 7 机位"
+              ]
+            },
+            "Tokyo": {
+              "count": 4,
+              "topTexts": [
+                "东京 · 普利兹克建筑走廊与双塔霓虹天际线 日本 · 东京都 · 六本木新城 · Tokyo City View与森美术馆 9 机位",
+                "横滨 · 海港折板建筑与未来港镜面天际线 日本 · 神奈川县 7 机位",
+                "道东知床与阿寒 · 鄂霍次克流冰、仙鹤霜林与秘境火山湖 日本 · 北海道 7 机位"
+              ]
+            },
+            "Paris": {
+              "count": 10,
+              "topTexts": [
+                "巴黎 · 塞纳河建筑史诗与光影之都 法国 · 法兰西岛大区 · 巴黎 · 巴黎圣母院 Notre-Dame de Paris · 哥特式双塔与玫瑰窗 8 机位",
+                "圣米歇尔山 · 海潮孤岛与哥特天空修道院 法国 · 诺曼底大区 · 芒什省 8 机位",
+                "诺曼底象鼻山与卢瓦尔河谷 · 白垩海崖与文艺复兴王室城堡 法国 · 诺曼底大区 · 滨海塞纳省 / 中央-卢瓦尔河谷大区 8 机位"
+              ]
+            },
+            "Beiijng": {
+              "count": 0,
+              "topTexts": []
+            }
+          },
+          "drawerAfterBeijing": {
+            "drawerOpen": true,
+            "title": "北京 · 紫禁城与未来建筑",
+            "spotCount": 7
+          },
+          "subspotToastText": "北京 · 7 个精准机位"
+        }
+      },
+      "04_basemap_layers": {
+        "status": "完整实现且已验证",
+        "evidence": {
+          "natgeo": {
+            "active": true,
+            "styleName": "loaded"
+          },
+          "physical": {
+            "active": true,
+            "styleName": "loaded"
+          },
+          "dark": {
+            "active": true,
+            "styleName": "loaded"
+          },
+          "satellite": {
+            "active": true,
+            "styleName": "loaded"
+          }
+        }
+      },
+      "05_terrain_buildings": {
+        "status": "部分实现",
+        "evidence": {
+          "terrainState": {
+            "btnActive": true,
+            "exagVisible": true,
+            "hasTerrain": true
+          },
+          "buildingsState": {
+            "btnActive": false,
+            "hasBuildingsLayer": false
+          }
+        }
+      },
+      "06_gibs_epic": {
+        "status": "部分实现",
+        "evidence": {
+          "scienceLayers": {
+            "nightLightsActive": false,
+            "auroraActive": false,
+            "dayNightActive": true,
+            "auroraPillVisible": false,
+            "daynightPillVisible": true,
+            "matchingLayers": [
+              "layer-v4-daynight-fill",
+              "layer-v4-terminator-glow",
+              "layer-v4-terminator-core"
+            ]
+          },
+          "epicModalState": {
+            "open": true,
+            "text": "NASA DSCOVR EPIC · 真实整盘地球 日地拉格朗日 L1 点实拍 (距地 1,400,409 km · NASA Public Domain) 拍摄时间: 2026-11-25 00:13:03 UTC 星下点: -18.9°, 164.9° 查看高清原图 (2048px PNG) ↗ 上一帧 自动轮播 1 / 8 下一帧",
+            "imgSrc": "https://world-travel-globe.globe-app.workers.dev/api/img?url=https%3A%2F%2Fepic.gsfc.nasa.gov%2Farchive%2Fnatural%2F2026%2F11%2F25%2Fjpg%2Fepic_1b_20261125001751.jpg"
+          },
+          "scienceLayersFollowup": {
+            "nightLightsActive": false,
+            "auroraActive": false,
+            "auroraPillVisible": false,
+            "matchingLayers": []
+          }
+        }
+      },
+      "07_earth_timemachine": {
+        "status": "完整实现且已验证",
+        "evidence": {
+          "tmState": {
+            "open": true,
+            "textZh": "地球时光机 · NASA GIBS 遥感 启用图层 VIIRS 每日真彩卫星影像 (375m / 日) MODIS Terra 历史真彩影像 (250m / 日 (2000年至今)) 全球积雪覆盖指数 (NDSI) (500m / 日) 全球植被绿度变化 (NDVI 8日合成) (250m / 8日) 白昼云顶温度 / 云层分布 (1km / 日) NASA Suomi-NPP VIIRS 真彩光学反射影像，展示全球云系与地表真实色彩。",
+            "layerOptions": [
+              "VIIRS_SNPP_CorrectedReflectance_TrueColor",
+              "MODIS_Terra_CorrectedReflectance_TrueColor",
+              "MODIS_Terra_NDSI_Snow_Cover",
+              "MODIS_Terra_NDVI_8Day",
+              "MODIS_Terra_Cloud_Top_Temp_Day"
+            ],
+            "hasCompareChk": true,
+            "tmMapLayers": [
+              "layer-gibs-a"
+            ]
+          },
+          "tmCompareLayers": [
+            "layer-gibs-a"
+          ]
+        }
+      },
+      "08_detail_drawer_tabs": {
+        "status": "完整实现且已验证",
+        "evidence": {
+          "spots": {
+            "title": "香格里拉与梅里雪山 · 卡瓦格博神圣雪峰",
+            "len": 1977,
+            "snippet": "真实实景画廊 (6) Wikimedia Commons · 点击全屏 全部 (6) 春 (1) 夏 (1) 秋 (0) 冬 (0) 未标日期 (4) Wikimedia License · Wikimedia / Wikipedia Wikimedia License · Wikimedia / Wikipedia CC BY-SA 3.0 · ustgary 01 德钦飞来寺观景台 · 直面梅里雪山卡瓦格博 自然美景 28.4550°N, 98.8980°E · 3400m 飞往机位 瑞丽江的河水 · CC B"
+          },
+          "photo": {
+            "title": "香格里拉与梅里雪山 · 卡瓦格博神圣雪峰",
+            "len": 1635,
+            "snippet": "专业摄影机位光影模拟器 Asia/Shanghai · UTC+8 · SunCalc 城市中心 · 香格里拉 机位 1 · 德钦飞来寺观景台 · 直面梅里雪山卡瓦格博 机位 2 · 雾浓顶十三白塔迎宾台 机位 3 · 雨崩村 · 冰湖、神瀑与梅里怀抱的徒步圣地 机位 4 · 噶丹·松赞林寺 · 小布达拉宫拉姆央措晨雾 机位 5 · 普达措国家公园属都湖 & 纳帕海草原环湖公路 3D 取景器 12:53 此刻 蓝调晨 日出 黄金晨 黄金昏 日落 蓝调昏 全画幅 35mm APS-C (1.5×) M4/3 (2.0"
+          },
+          "months": {
+            "title": "香格里拉与梅里雪山 · 卡瓦格博神圣雪峰",
+            "len": 1256,
+            "snippet": "1月 ★★★★★ -8°C ~ 8°C 2月 ★★★★★ -5°C ~ 10°C 3月 ★★★★☆ -1°C ~ 12°C 4月 ★★★★☆ 3°C ~ 15°C 5月 ★★★★★ 7°C ~ 18°C 6月 ★★★★☆ 10°C ~ 20°C 7月 ★★★☆☆ 12°C ~ 21°C 8月 ★★★☆☆ 11°C ~ 20°C 9月 ★★★★★ 8°C ~ 19°C 10月 ★★★★★ 3°C ~ 16°C 11月 ★★★★★ -3°C ~ 12°C 12月 ★★★★★ -7°C ~ 9°C 1月实景档案（北半球）"
+          },
+          "weather": {
+            "title": "香格里拉与梅里雪山 · 卡瓦格博神圣雪峰",
+            "len": 1304,
+            "snippet": "实况天气 · 晴朗 Open-Meteo 实况与 7 日预报 气温 9.3°C 湿度 / 云量 23% / 0% 风速 4.4 km/h 降水 0 mm 🌫️ US AQI 33 (通透优) PM2.5 1 μg/m³ ☀️ UV 5.5 (中等强) 🌸 低花粉 11-28 晴朗 -3°/10° 💧0% 11-29 晴朗 -4°/11° 💧0% 11-30 晴朗 -4°/12° 💧0% 12-01 晴朗 -4°/10° 💧0% 12-02 大部晴朗 -4°/12° 💧0% 12-03 晴朗 -3°/1"
+          },
+          "budget": {
+            "title": "香格里拉与梅里雪山 · 卡瓦格博神圣雪峰",
+            "len": 799,
+            "snippet": "顶奢尊享档 2人5天4晚“松赞/既下山”顶奢巡礼估算 ¥ 38,000 约 5,278 USD [抵离与高端SUV] 航班抵香格里拉或动车（丽香铁路2023全线直通香格里拉站仅1小时）+ 专属奢华SUV及随行藏族专家向导 ¥ 11,000 [中国顶级人文酒店天花板] 松赞林卡林卡奢华山居/既下山·梅里（屋顶观景直对卡瓦格博）/ 丽世酒店4晚 ¥ 22,000 [风味私享体验] 松赞私宴藏餐黑松露烤羊排、雨崩专业向导陪护/越野包接与全套弥散氧居礼遇 ¥ 5,000 合计约 38,000 RMB（约 5,320 USD"
+          },
+          "itinerary": {
+            "title": "香格里拉与梅里雪山 · 卡瓦格博神圣雪峰",
+            "len": 653,
+            "snippet": "Day 1 乘动车登高原 · 独克宗转经筒与松赞林寺黄昏 丽江动车 1.5 小时安稳抵达香格里拉适配 3200m 海拔（不激烈奔跑洗澡），傍晚步上独克宗龟山公园合力转动世界最大吉尼斯大金转经筒看全古城蓝调灯光，吃一顿滚烫尼西黑陶土鸡牦牛锅。 Day 2 拉姆央措晨雾朝拜 & 穿行金沙江赴飞来寺 07:30 逛松赞林寺倒影晨雾，上午自驾经纳帕海依拉草原环湖路（秋看狼毒花）、金沙江月亮湾大拐弯，翻过白马雪山迎晚霞进驻飞来寺正对卡瓦格博露台等候神迹。 Day 3 卡瓦格博日照金山 · 雾浓顶白塔 & 进发雨崩村 黎明守候"
+          }
+        }
+      },
+      "09_phenology": {
+        "status": "完整实现且已验证",
+        "evidence": {
+          "mountText": "KAIROS V5 物候与天文窗口 · 1 月适宜度 71/100 实地统计物候 · Tier B · 气候高程增强 综合物候 春季花海/樱花 金秋红叶/落叶松 雪景/冰川/雾凇 极光/极夜窗口 银河/暗夜星空 推荐窗口：1月、2月、3月、4月、5月、6月、9月、10月、11月、12月 · 波动区间 ±8d 包含典型秋色/落叶林景观 · 1 月适温匹配度 55/100。 数据来源：KAIROS Curated Travel Atlas Archive · 红叶转色受当年初霜与降水影响，实际峰值通常存在 ±1–2 周年际波动。 ⚖ 同类型对比 (2-4城) 地理知识图谱 · 相似或顺路秘境 稻城亚丁 邻近 93km · 同属秋色 贡嘎",
+          "hasTierBadge": true,
+          "globalMonthsCount": 13
+        }
+      },
+      "10_weather_aqi_echarts": {
+        "status": "完整实现且已验证",
+        "evidence": {
+          "liveWeatherText": "实况天气 · 晴朗 Open-Meteo 实况与 7 日预报 气温 9.3°C 湿度 / 云量 23% / 0% 风速 4.4 km/h 降水 0 mm 🌫️ US AQI 33 (通透优) PM2.5 1 μg/m³ ☀️ UV 5.5 (中等强) 🌸 低花粉 11-28 晴朗 -3°/10° 💧0% 11-29 晴朗 -4°/11° 💧0% 11-30 晴朗 -4°/12° 💧0% 12-01 晴朗 -4°/10° 💧0% 12-02 大部晴朗 -4°/12° 💧0% 12-03 晴朗 -3°/11° 💧0% 12-04 晴朗 -3°/10° 💧0% 5 年历史月度气候统计 (2020–2024) 温湿降水 晴",
+          "hasAqi": true,
+          "echartsCount": 2
+        }
+      },
+      "11_photo_simulator": {
+        "status": "完整实现且已验证",
+        "evidence": {
+          "azimuthLabel": "120°",
+          "timeLabel": "06:30",
+          "poiScore": "64/100",
+          "hasGoldenHour": true,
+          "hasTwilight": true
+        }
+      },
+      "12_alpenglow": {
+        "status": "完整实现且已验证",
+        "evidence": {
+          "dest": "香格里拉与梅里雪山 · 卡瓦格博神圣雪峰",
+          "hasAlpenglow": true,
+          "hasAlpenglowDisclaimer": true
+        }
+      },
+      "13_astronomy_milkyway_moon_aurora": {
+        "status": "完整实现且已验证",
+        "evidence": {
+          "hasMilkyWay": true,
+          "hasMoon": true,
+          "hasAurora": true,
+          "snippet": "专业摄影机位光影模拟器 Asia/Shanghai · UTC+8 · SunCalc 城市中心 · 香格里拉 机位 1 · 德钦飞来寺观景台 · 直面梅里雪山卡瓦格博 机位 2 · 雾浓顶十三白塔迎宾台 机位 3 · 雨崩村 · 冰湖、神瀑与梅里怀抱的徒步圣地 机位 4 · 噶丹·松赞林寺 · 小布达拉宫拉姆央措晨雾 机位 5 · 普达措国家公园属都湖 & 纳帕海草原环湖公路 3D 取景器 06:30 此刻 蓝调晨 日出 黄金晨 黄金昏 日落 蓝调昏 全画幅 35mm APS-C (1.5×) M4/3 (2.0×) 中画幅 44×33 自定义 视角 73.7°×53.1° · 等效 24mm 14mm 24mm 35mm 50mm 85mm 135mm 200mm 400mm N 0° "
+        }
+      },
+      "14_viewfinder_3d": {
+        "status": "完整实现且已验证",
+        "evidence": {
+          "vfCheck": {
+            "open": true,
+            "metaTL": "400mm · 全画幅 35mm · 横构图 (3:2)",
+            "metaTR": "FOV 5.2° × 3.4° · 等效 400mm",
+            "pitchBadge": "↕60°",
+            "cropChip": "光学裁切 · 真实视角 19% (WebGL 下限 18°)"
+          },
+          "vfClosedOnEsc": true
+        }
+      },
+      "15_streetview_gallery": {
+        "status": "完整实现且已验证",
+        "evidence": {
+          "healthStreetviewMapillaryToken": true,
+          "healthPanoramax": true,
+          "mediaGalleryCheck": {
+            "heroLen": 3097,
+            "imgsCount": 3,
+            "imgsLoaded": 1,
+            "sampleImgs": [
+              {
+                "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/cf/%E6%9D%BE%E8%B5%9E%E6%9E%97%E5%AF%BA_-_%E5%85%A8%E6%99%AF_-_202",
+                "complete": true,
+                "naturalWidth": 960
+              },
+              {
+                "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/dc/Zhongdian-sumtseling-gompa-c12.jpg/960px-Zhongdian-sumtseling-g",
+                "complete": false,
+                "naturalWidth": 0
+              },
+              {
+                "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3b/Mountain_and_the_Village_-_panoramio.jpg/960px-Mountain_and_the",
+                "complete": false,
+                "naturalWidth": 0
+              }
+            ],
+            "spotButtons": [
+              "全部 (6)",
+              "春 (1)",
+              "夏 (1)",
+              "秋 (0)",
+              "冬 (0)",
+              "未标日期 (4)",
+              "Wikimedia License · Wikimedia / Wikipedia",
+              "Wikimedia License · Wikimedia / Wikipedia",
+              "CC BY-SA 3.0 · ustgary",
+              "01\n                  \n                    德钦飞来寺观景台 · 直面梅里雪山卡瓦格博\n                    自然美景",
+              "飞往机位",
+              "光影模拟"
+            ]
+          },
+          "svTriggered": null,
+          "svModalCheck": {
+            "open": true,
+            "text": "360° 全景与街景探索 · 东京 · 芝公园四号地 · 东京塔林荫轴线 正在检索 Panoramax 免密钥 360° 全景与 Mapillary 街景… 正在检查开放全景资源… 35.66050, 139.75110 Panoramax ↗ Mapillary ↗ KartaView ↗ Google Street View ↗",
+            "hasIframeOrImg": false
+          }
+        }
+      },
+      "16_dest_compare": {
+        "status": "部分实现",
+        "evidence": {
+          "compareBtnClicked": "⚖ 同类型对比 (2-4城)",
+          "dcCheck": {
+            "open": false,
+            "optionCount": 0,
+            "firstOption": null
+          },
+          "dcAfter": {
+            "cols": 0,
+            "rows": 0
+          }
+        }
+      },
+      "17_smart_recommendation": {
+        "status": "完整实现且已验证",
+        "evidence": {
+          "chips": [
+            "秋季",
+            "秋色"
+          ],
+          "reasonsCount": 56,
+          "sampleReasons": [
+            "匹配景观：秋色",
+            "当季物候巅峰 5★",
+            "匹配景观：秋色",
+            "当季物候巅峰 5★"
+          ],
+          "itemsCount": 28
+        }
+      },
+      "18_trip_planner": {
+        "status": "完整实现且已验证",
+        "evidence": {
+          "beijingTripState": {
+            "tripCount": 2,
+            "activeTripName": "北京 4日深度行程",
+            "stopCount": 7,
+            "firstStop": "1. 故宫博物院 & 景山万春亭与角楼\n                          清晨08:30冲中轴线；16"
+          },
+          "tokyoTripState": {
+            "tripCount": 3,
+            "activeTripName": "东京 4日深度行程",
+            "stopCount": 9,
+            "firstStop": "1. 芝公园四号地 · 东京塔林荫轴线\n                          07:00–09:00清晨柔",
+            "containsBeijingStop": false
+          },
+          "afterAddStopCount": 10,
+          "lockedCount": 2,
+          "afterMoveFirst": "\n                        \n                          1. 国立新美术",
+          "afterDelStopCount": 9
+        }
+      },
+      "19_transport_mode": {
+        "status": "完整实现且已验证",
+        "evidence": {
+          "hasOurAirports": true,
+          "hasTierA": true,
+          "hasTierB": true,
+          "crossSeaRailNote": true,
+          "snippet": "返回地球 KAIROS · 智能旅行规划系统 ? KAIROS · SMART TRIP PLANNER 2.0 · MULTIMODAL & COLLABORATIVE 智能旅行规划系统 基于 722 座目的地与 5,414 个摄影机位，支持真实路网路线、拖拽排程、账单编辑、3D 地球仪联动与多格式导出。 + 新建行程 复制模板 海报分享 在地球上预览路线 返回地球 新建 / 自动生成行程 编辑已存行程 已保存行程 东京 4日深度行程 北京 4日深度行程 东京 3日深度行程 出发地 目标目的地（支持搜索） 串联第二目的地（可选多城连游） 出发日期 同行人数 天数 总预算 (RMB) 城际主交通 (A层) ✈ 飞机 🚄 高铁 🚆 普通铁路 🚌 长途汽车 🚗 自驾 ⛴ 渡轮 当地日常交通 (C层) 🚗 自驾 🚶 步行 🚲 骑行 🚇 地铁/公交 🔀 混合交通 出行月份 1月 2月 3月 4月 5月 6月 7月 8月 9月 10月 11月 12月 兴趣偏好 全能摄影精华 自然风光优先 人文建筑优先 上海 → 东京 (jp-kanto-tokyo) · 4天 · flight"
+        }
+      },
+      "20_budget_fx": {
+        "status": "完整实现且已验证",
+        "evidence": {
+          "budgetBefore": "返回地球 KAIROS · 智能旅行规划系统 ? KAIROS · SMART TRIP PLANNER 2.0 · MULTIMODAL & COLLABORATIVE 智能旅行规划系统 基于 722 座目的地与 5,414 个摄影机位，支持真实路网路线、拖拽排程、账单编辑、3D 地球仪联动与多格式导出。 + 新建行程 复制模板 海报分享 在地球上预览路线 返回地球 新建 / 自动生成行程 编辑已存行程 已保存行程 东京 4日深度行程",
+          "budgetAfterJpy": {
+            "selectedCurrency": "JPY",
+            "hasYenSymbol": true,
+            "fxLine": "汇率来源：Frankfurter (ECB Reference) (2026-11-27)，仅供参考，非实际银行结算汇率"
+          }
+        }
+      },
+      "21_collab_ui": {
+        "status": "部分实现",
+        "note": "Frontend CollabSpace stores spaces in localStorage + BroadcastChannel; zero /api/collab/* network requests observed from CollabSpace UI.",
+        "evidence": {
+          "collabCheck": {
+            "mounted": true,
+            "totalText": "总计 ¥1,200",
+            "hasTransferCalc": true,
+            "hasCustomSplitUi": false,
+            "hasQrSvg": true,
+            "badgeText": "Local CRDT Sync"
+          },
+          "collabCallsBefore": 0,
+          "collabCallsAfter": 0
+        }
+      },
+      "22_aa_expense_splitter": {
+        "status": "部分实现",
+        "note": "Equal split UI works and computes ¥600 settlement; custom split is supported in ExpenseSplitter.computeSettlements() engine but not exposed in CollabSpace UI.",
+        "evidence": {
+          "mounted": true,
+          "totalText": "总计 ¥1,200",
+          "hasTransferCalc": true,
+          "hasCustomSplitUi": false,
+          "hasQrSvg": true,
+          "badgeText": "Local CRDT Sync"
+        }
+      },
+      "26_share_center": {
+        "status": "完整实现且已验证",
+        "evidence": {
+          "scBefore": {
+            "open": true,
+            "typesCount": 12,
+            "ratiosCount": 6,
+            "urlBefore": "https://world-travel-globe.globe-app.workers.dev/?trip=eyJuIjoi5Lic5LqsIDTml6Xmt7HluqbooYznqIsiLCJvIjoi5LiK5rW3IiwiZCI6ImpwLWthbnRvLXRva3lvIiwiZG4iOiLkuJzkuqwiLCJtIjoxMSwibWQiOiJkcml2aW5nIiwiaW0iOiJmbGlnaHQiLCJiIjoxMjAwMCwiZGF5cyI6W3sidCI6IuS4nOS6rOWhlOaZqOWFieS4juWFreacrOacqOiTneiwgyIsInMiOlt7Im4iOiLlm73nq4vmlrDnvo7mnK_ppoYgwrcg6buR5bed57qq56ug5rOi5rWq546755KD5bmV5aKZIiwiYyI6WzEzOS43MjY0LDM1LjY2NTNdLCJkIjoianAta2FudG8tdG9reW8iLCJsIjowfSx7Im4iOiLoip3lhazlm63lm5vlj7flnLAgwrcg5Lic5Lqs5aGU5p6X6I2r6L2057q_IiwiYyI6WzEzOS43NTExLDM1LjY2MDVdLCJkIjoianAta2FudG8tdG9reW8iLCJsIjoxfSx7Im4iOiLooajlj4LpgZNIaWxscyDCtyDlronol6Tlv6Dpm4TkuI7lpKfluIjlu7rnrZHooZciLCJjIjpbMTM5LjcwODgsMzUuNjY3XSwiZCI6ImpwLWthbnRvLXRva3lvIiwibCI6MH0seyJuIjoi5rWL6K-V6Ieq5a6a5LmJ5py65L2NIFRlc3RTcG90IiwiYyI6WzEzOS43NTExLDM1LjY2MDVdLCJkIjoianAta2FudG8tdG9reW8iLCJsIjoxfV19LHsidCI6IuihqOWPgumBk-aZruWIqeWFueWFi-W7uuetkea3seW6pua8q-a4uCIsInMiOlt7Im4iOiLpnZLlsbFQcmFkYeaXl-iIsOW6lyDCtyDotavlsJTkvZDmoLzkuI7lvrfmooXpmoboj7HlvaLnjrvnkoPlu7rnrZEiLCJjIjpbMTM5LjcxNDIsMzUuNjYzOF0sImQiOiJqcC1rYW50by10b2t5byIsImwiOjB9LHsibiI6IuWFreacrOacqOaWsOWfjiDCtyBUb2t5byBDaXR5IFZpZXfkuI7mo67nvo7mnK_ppoYiLCJjIjpbMTM5LjcyOTIsMzUuNjYwNF0sImQiOiJqcC1rYW50by10b2t5byIsImwiOjB9XX0seyJ0Ijoi5rWF6I2J5rGf5oi36IKM55CG5LiO5pm056m65aGUIiwicyI6W3sibiI6IuWPsOWcuua1t-a7qOWFrOWbrSDCtyDlvanombnmoaXkuI7kuJzkuqzmub7lpKnpmYXnur8iLCJjIjpbMTM5Ljc3NTcsMzUuNjI5Nl0sImQiOiJqcC1rYW50by10b2t5byIsImwiOjB9LHsibiI6IuS4nOS6rOaZtOepuuWhlCDCtyAzNTDnsbPlpKnmnJvnlLLmnb8iLCJjIjpbMTM5LjgxMDcsMzUuNzEwMV0sImQiOiJqcC1rYW50by10b2t5byIsImwiOjB9XX0seyJ0Ijoi546w5Luj5Li75LmJ5LiW55WM6YGX5Lqn5LiO5Lic5Lqs5rm-6JC95pelIiwicyI6W3sibiI6IuWbveeri-ilv-a0i-e-juacr-mmhiDCtyDli5LCt-afr-W4g-ilv-iAtuS4lueVjOmBl-S6pyIsImMiOlsxMzkuNzc1OSwzNS43MTU0XSwiZCI6ImpwLWthbnRvLXRva3lvIiwibCI6MH1dfV0sImJpIjpbWyLln47pmYXkuqTpgJoiLCLmnLrnpaggLyDpq5jpk4EgLyDot6jln47mjqXpqbPkvLDnrpciLDMzNjAsMF0sWyLlvZPlnLDkuqTpgJoiLCLmnLrlnLrlv6vnur8gLyDlnLDpk4EgLyDnp5_ovabkvLDnrpciLDEwODAsMF0sWyLkvY_lrr_kvZPpqowiLCI0IOaZmumFkuW6lyAvIOawkeWuv-S8sOeulyIsMzM2MCwwXSxbIumkkOmlrue-jumjnyIsIuW9k-WcsOmkkOmlruS4juWSluWVoeS8sOeulyIsMTY4MCwwXSxbIuaZr-eCuemXqOelqCIsIumihOe6pumXqOelqOS4juWQkeWvvOa0u-WKqOS8sOeulyIsOTYwLDBdLFsi562-6K-B5L-d6ZmpIiwi562-6K-B6LS55LiO5peF6KGM6Zmp5Lyw566XIiw0ODAsMF0sWyLmkYTlvbHnm7jlhbMiLCLlmajmnZDnp5_otYEgLyDmnLrkvY3lhaXlnLrotLnkvLDnrpciLDM2MCwwXSxbIui0reeJqeS8tOaJi-ekvCIsIue6quW_teWTgeS4juaXpeW4uOadgui0ueS8sOeulyIsMzYwLDBdLFsi5bqU5oCl5aSH55So6YeRIiwi5py65Yqo6aKE55WZIiwzNjAsMF1dfQ",
+            "hasQrSvg": true
+          },
+          "scAfterTypeChange": {
+            "selectedType": "annual_report",
+            "urlAfter": "https://world-travel-globe.globe-app.workers.dev/?trip=eyJuIjoi5Lic5LqsIDTml6Xmt7HluqbooYznqIsiLCJvIjoi5LiK5rW3IiwiZCI6ImpwLWthbnRvLXRva3lvIiwiZG4iOiLkuJzkuqwiLCJtIjoxMSwibWQiOiJkcml2aW5nIiwiaW0iOiJmbGlnaHQiLCJiIjoxMjAwMCwiZGF5cyI6W3sidCI6IuS4nOS6rOWhlOaZqOWFieS4juWFreacrOacqOiTneiwgyIsInMiOlt7Im4iOiLlm73nq4vmlrDnvo7mnK_ppoYgwrcg6buR5bed57qq56ug5rOi5rWq546755KD5bmV5aKZIiwiYyI6WzEzOS43MjY0LDM1LjY2NTNdLCJkIjoianAta2FudG8tdG9reW8iLCJsIjowfSx7Im4iOiLoip3lhazlm63lm5vlj7flnLAgwrcg5Lic5Lqs5aGU5p6X6I2r6L2057q_IiwiYyI6WzEzOS43NTExLDM1LjY2MDVdLCJkIjoianAta2FudG8tdG9reW8iLCJsIjoxfSx7Im4iOiLooajlj4LpgZNIaWxscyDCtyDlronol6Tlv6Dpm4TkuI7lpKfluIjlu7rnrZHooZciLCJjIjpbMTM5LjcwODgsMzUuNjY3XSwiZCI6ImpwLWthbnRvLXRva3lvIiwibCI6MH0seyJuIjoi5rWL6K-V6Ieq5a6a5LmJ5py65L2NIFRlc3RTcG90IiwiYyI6WzEzOS43NTExLDM1LjY2MDVdLCJkIjoianAta2FudG8tdG9reW8iLCJsIjoxfV19LHsidCI6IuihqOWPgumBk-aZruWIqeWFueWFi-W7uuetkea3seW6pua8q-a4uCIsInMiOlt7Im4iOiLpnZLlsbFQcmFkYeaXl-iIsOW6lyDCtyDotavlsJTkvZDmoLzkuI7lvrfmooXpmoboj7HlvaLnjrvnkoPlu7rnrZEiLCJjIjpbMTM5LjcxNDIsMzUuNjYzOF0sImQiOiJqcC1rYW50by10b2t5byIsImwiOjB9LHsibiI6IuWFreacrOacqOaWsOWfjiDCtyBUb2t5byBDaXR5IFZpZXfkuI7mo67nvo7mnK_ppoYiLCJjIjpbMTM5LjcyOTIsMzUuNjYwNF0sImQiOiJqcC1rYW50by10b2t5byIsImwiOjB9XX0seyJ0Ijoi5rWF6I2J5rGf5oi36IKM55CG5LiO5pm056m65aGUIiwicyI6W3sibiI6IuWPsOWcuua1t-a7qOWFrOWbrSDCtyDlvanombnmoaXkuI7kuJzkuqzmub7lpKnpmYXnur8iLCJjIjpbMTM5Ljc3NTcsMzUuNjI5Nl0sImQiOiJqcC1rYW50by10b2t5byIsImwiOjB9LHsibiI6IuS4nOS6rOaZtOepuuWhlCDCtyAzNTDnsbPlpKnmnJvnlLLmnb8iLCJjIjpbMTM5LjgxMDcsMzUuNzEwMV0sImQiOiJqcC1rYW50by10b2t5byIsImwiOjB9XX0seyJ0Ijoi546w5Luj5Li75LmJ5LiW55WM6YGX5Lqn5LiO5Lic5Lqs5rm-6JC95pelIiwicyI6W3sibiI6IuWbveeri-ilv-a0i-e-juacr-mmhiDCtyDli5LCt-afr-W4g-ilv-iAtuS4lueVjOmBl-S6pyIsImMiOlsxMzkuNzc1OSwzNS43MTU0XSwiZCI6ImpwLWthbnRvLXRva3lvIiwibCI6MH1dfV0sImJpIjpbWyLln47pmYXkuqTpgJoiLCLmnLrnpaggLyDpq5jpk4EgLyDot6jln47mjqXpqbPkvLDnrpciLDMzNjAsMF0sWyLlvZPlnLDkuqTpgJoiLCLmnLrlnLrlv6vnur8gLyDlnLDpk4EgLyDnp5_ovabkvLDnrpciLDEwODAsMF0sWyLkvY_lrr_kvZPpqowiLCI0IOaZmumFkuW6lyAvIOawkeWuv-S8sOeulyIsMzM2MCwwXSxbIumkkOmlrue-jumjnyIsIuW9k-WcsOmkkOmlruS4juWSluWVoeS8sOeulyIsMTY4MCwwXSxbIuaZr-eCuemXqOelqCIsIumihOe6pumXqOelqOS4juWQkeWvvOa0u-WKqOS8sOeulyIsOTYwLDBdLFsi562-6K-B5L-d6ZmpIiwi562-6K-B6LS55LiO5peF6KGM6Zmp5Lyw566XIiw0ODAsMF0sWyLmkYTlvbHnm7jlhbMiLCLlmajmnZDnp5_otYEgLyDmnLrkvY3lhaXlnLrotLnkvLDnrpciLDM2MCwwXSxbIui0reeJqeS8tOaJi-ekvCIsIue6quW_teWTgeS4juaXpeW4uOadgui0ueS8sOeulyIsMzYwLDBdLFsi5bqU5oCl5aSH55So6YeRIiwi5py65Yqo6aKE55WZIiwzNjAsMF1dfQ"
+          }
+        }
+      },
+      "27_export_center": {
+        "status": "部分实现",
+        "note": "7 formats verified (JSON, CSV, ICS, GPX, KML, GeoJSON, Print/HTML); Markdown (.md) is NOT implemented in ExportService.",
+        "evidence": {
+          "exportFormatsUi": {
+            "modalOpen": true,
+            "formats": [
+              {
+                "fmt": "ics",
+                "label": "Calendar (.ics) 导入 Apple / Google / Outlook 日历 (RFC 5545)"
+              },
+              {
+                "fmt": "gpx",
+                "label": "GPS Route (.gpx) 户外手持/手表/两步路 GPX 1.1 轨迹点"
+              },
+              {
+                "fmt": "kml",
+                "label": "Google Earth (.kml) Google Earth / 奥维互动 KML 2.2 图层"
+              },
+              {
+                "fmt": "geojson",
+                "label": "GIS (.geojson) 开放标准 GeoJSON FeatureCollection"
+              },
+              {
+                "fmt": "pdf",
+                "label": "Print / PDF 干净打印排版，浏览器一键另存 PDF 路书"
+              },
+              {
+                "fmt": "csv",
+                "label": "Spreadsheet (.csv) Excel 兼容 UTF-8 BOM 明细表"
+              },
+              {
+                "fmt": "json",
+                "label": "Archive (.json) 完整无损行程 JSON 数据包"
+              }
+            ],
+            "hasMarkdown": false
+          },
+          "downloadedPayloads": {
+            "json": {
+              "filename": "东京-4日深度行程.json",
+              "bytes": 103310,
+              "preview": "{\n  \"exportedAt\": \"2026-11-28T04:56:53.428Z\",\n  \"format\": \"KAIROS-Trip-v5\",\n  \"id\": \"trip_mwzxu8ft_m3zk\",\n  \"name\": \"东京 4日深度行程\",\n  \"origin\":"
+            },
+            "csv": {
+              "filename": "东京-4日深度行程.csv",
+              "bytes": 1039,
+              "preview": "﻿Day,Date,Order,Stop,Category,StartTime,DurationMin,Lng,Lat,Locked,Note\r\n1,2026-12-12,1,国立新美术馆 · 黑川纪章波浪玻璃幕墙,现代建筑,08:00,90,139.7264,35.6653,N"
+            },
+            "ics": {
+              "filename": "东京-4日深度行程.ics",
+              "bytes": 3110,
+              "preview": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//KAIROS World Travel Atlas//Trip Planner V5.0//EN\r\nCALSCALE:GREGORIAN\r\nX-WR-CALNAME:东京 4日深度行程\r\nBEGIN:"
+            },
+            "gpx": {
+              "filename": "东京-4日深度行程.gpx",
+              "bytes": 2670,
+              "preview": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<gpx version=\"1.1\" creator=\"KAIROS World Travel Atlas V5.0\" xmlns=\"http://www.topografix.com/GPX/1/1\""
+            },
+            "kml": {
+              "filename": "东京-4日深度行程.kml",
+              "bytes": 2459,
+              "preview": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<kml xmlns=\"http://www.opengis.net/kml/2.2\">\n  <Document>\n    <name>东京 4日深度行程</name>\n    <Placemark>\n"
+            },
+            "geojson": {
+              "filename": "东京-4日深度行程.geojson",
+              "bytes": 4412,
+              "preview": "{\n  \"type\": \"FeatureCollection\",\n  \"features\": [\n    {\n      \"type\": \"Feature\",\n      \"properties\": {\n        \"day\": 1,\n        \"order\": 1,\n"
+            }
+          },
+          "printHtmlLen": 589
+        }
+      },
+      "23_account_ui": {
+        "status": "完整实现且已验证",
+        "evidence": {
+          "accCheck": {
+            "open": true,
+            "hasLoginTab": true,
+            "hasRegTab": true,
+            "text": "KAIROS · 账号登录与注册 ✕ D1 Auth Ready 邮件服务未配置 Google OAuth Unconfigured 登录 注册新账号 电子邮箱 密码（至少 8 位） 登录账号"
+          },
+          "prodHealthAuth": {
+            "weather": true,
+            "commons": true,
+            "wikidata": true,
+            "wikipedia": true,
+            "img": true,
+            "tile": true,
+            "route": true,
+            "streetview": true,
+            "terrain": true,
+            "mapterhorn": true,
+            "aurora": true,
+            "panoramax": true,
+            "epic": true,
+            "airQuality": true,
+            "pois": true,
+            "poisEnhanced": false,
+            "d1": true,
+            "r2": false,
+            "auth": true,
+            "oauthGoogle": false,
+            "emailDelivery": false,
+            "collab": true,
+            "fx": true
+          }
+        }
+      },
+      "24_travel_archive": {
+        "status": "完整实现且已验证",
+        "evidence": {
+          "archiveBeforeReload": {
+            "hasJournalEntry": true,
+            "privacyActive": true,
+            "hasCloudSyncBtns": true
+          },
+          "archiveAfterReload": {
+            "beijingStatusAfterReload": "visited",
+            "hasJournalEntryAfterReload": true,
+            "privacyActiveAfterReload": true
+          }
+        }
+      },
+      "25_storage_cloud_sync": {
+        "status": "完整实现且已验证",
+        "evidence": {
+          "persistedAcrossReload": true,
+          "hasCloudSyncBtns": true
+        }
+      },
+      "28_trilingual_i18n": {
+        "status": "已实现但存在缺陷",
+        "note": "Topbar, Detail Drawer, and Help Manual switch cleanly across zh-CN/zh-TW/en, but #timemachine-dock renders hardcoded Simplified Chinese strings in EN mode.",
+        "evidence": {
+          "zh-TW": {
+            "htmlLang": "zh-TW",
+            "modeMapText": "地球",
+            "modePlannerText": "規劃",
+            "drawerI18n": {
+              "title": "東京 · 普利茲克建筑走廊與雙塔霓虹天際線",
+              "tabs": [
+                "機位 9",
+                "光影",
+                "物候",
+                "氣候",
+                "預算",
+                "動線"
+              ]
+            },
+            "tmText": "",
+            "tmHasUntranslatedSimplifiedInEn": false,
+            "helpSample": {
+              "chapterCount": 0
+            }
+          },
+          "en": {
+            "htmlLang": "en",
+            "modeMapText": "Globe",
+            "modePlannerText": "Planner",
+            "drawerI18n": {
+              "title": "Tokyo · Pritzker Architecture Corridor and Twin-Tower Neon Skyline",
+              "tabs": [
+                "Spots 9",
+                "Sun & Light",
+                "Seasons",
+                "Weather",
+                "Budget",
+                "Route"
+              ]
+            },
+            "tmText": "地球时光机 · NASA GIBS 遥感 启用图层 VIIRS 每日真彩卫星影像 (375m / 日) MODIS Terra 历史真彩影像 (250m / 日 (2000年至今)) 全球积雪覆盖指数 (NDSI) (500m / 日) 全球植被绿度变化 (NDVI 8日合成) (250m / 8日) 白昼云顶温度 / 云层分布 (1km / 日) NASA Suomi-NPP VIIRS 真彩光学反射影像，展示全球云系与地表真实色彩。",
+            "tmHasUntranslatedSimplifiedInEn": true,
+            "helpSample": {
+              "heading": "📖 KAIROS User Manual & Help (30 Chapters)",
+              "chapterTitle": "5-Minute KAIROS Quick Start",
+              "chapterCount": 30
+            }
+          },
+          "zh-CN": {
+            "htmlLang": "zh-CN",
+            "modeMapText": "地球",
+            "modePlannerText": "规划",
+            "drawerI18n": {
+              "title": "东京 · 普利兹克建筑走廊与双塔霓虹天际线",
+              "tabs": [
+                "机位 9",
+                "光影",
+                "物候",
+                "气候",
+                "预算",
+                "动线"
+              ]
+            },
+            "tmText": "地球时光机 · NASA GIBS 遥感 启用图层 VIIRS 每日真彩卫星影像 (375m / 日) MODIS Terra 历史真彩影像 (250m / 日 (2000年至今)) 全球积雪覆盖指数 (NDSI) (500m / 日) 全球植被绿度变化 (NDVI 8日合成) ",
+            "tmHasUntranslatedSimplifiedInEn": false,
+            "helpSample": {
+              "heading": "📖 KAIROS 用户手册与帮助中心 (30 章)",
+              "chapterTitle": "5 分钟上手 KAIROS 世界旅行图谱",
+              "chapterCount": 30
+            }
+          }
+        }
+      },
+      "29_help_center": {
+        "status": "已实现但存在缺陷",
+        "note": "30 chapters and search filter work, but pressing Escape does NOT close #help-center-modal (requires clicking ×).",
+        "evidence": {
+          "hcBeforeFilter": 30,
+          "hcAfterFilter": 1,
+          "hcClosedOnEsc": false
+        }
+      },
+      "30_pwa_sw_prod": {
+        "status": "完整实现且已验证",
+        "evidence": {
+          "manifestHref": "manifest.webmanifest",
+          "manifestOk": true,
+          "swCount": 1,
+          "swState": "activated",
+          "cacheKeys": [
+            "wtg-shell-mwzc5qsk",
+            "kairos-data-v5"
+          ]
+        }
+      }
+    }
+  },
+  "localWorker": {
+    "baseUrl": "http://127.0.0.1:59010",
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "Failed to load resource: net::ERR_INTERNET_DISCONNECTED",
+      "Failed to load resource: the server responded with a status of 503 ()",
+      "Failed to load resource: net::ERR_INTERNET_DISCONNECTED",
+      "Failed to load resource: net::ERR_INTERNET_DISCONNECTED"
+    ],
+    "pageErrors": [],
+    "failedRequests": [
+      {
+        "url": "http://127.0.0.1:59010/assets/cosmic-intro/cosmic-slow-tour.mp4?v=6",
+        "method": "GET",
+        "error": "net::ERR_INTERNET_DISCONNECTED"
+      },
+      {
+        "url": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/2/1/3",
+        "method": "GET",
+        "error": "net::ERR_INTERNET_DISCONNECTED"
+      },
+      {
+        "url": "https://webst01.is.autonavi.com/appmaptile?style=6&x=3&y=1&z=2",
+        "method": "GET",
+        "error": "net::ERR_INTERNET_DISCONNECTED"
+      }
+    ],
+    "httpErrors": [
+      {
+        "url": "http://127.0.0.1:59010/api/collab/trips",
+        "status": 400
+      },
+      {
+        "url": "http://127.0.0.1:59010/api/health",
+        "status": 503
+      }
+    ],
+    "authE2E": {
+      "registeredUser": "audit_v5@example.com",
+      "dbUserCount": 1,
+      "dbSessionCount": 1,
+      "loggedOutAuthenticated": false,
+      "loggedInAgainEmail": "audit_v5@example.com"
+    },
+    "collabE2E": {
+      "uiBadgeWhileLoggedIn": "D1 Cloud RBAC",
+      "uiCollabNetworkCallsCount": 0,
+      "directWorkerCollabApi": {
+        "createStatus": 201,
+        "created": {
+          "ok": true,
+          "tripId": "trip_audit_1",
+          "role": "owner",
+          "version": 1
+        },
+        "getStatus": 200,
+        "fetchedTitle": null
+      }
+    },
+    "offlineE2E": {
+      "swBeforeOffline": {
+        "active": true,
+        "scope": "http://127.0.0.1:59010/",
+        "cacheKeys": [
+          "wtg-shell-mwzc5qsk",
+          "kairos-data-v5"
+        ]
+      },
+      "offlineCheck": {
+        "title": "KAIROS. · World Travel Atlas | 全球智能旅行平台 V5.0",
+        "hasRootUi": true,
+        "atlasCount": 722
+      }
+    }
+  }
+}

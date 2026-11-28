@@ -1,0 +1,2432 @@
+{
+  "auditedAt": "2026-11-28T04:31:50.114Z",
+  "phenologyAudit": {
+    "reproducedMatchesSavedJson": {
+      "blossomParamsMatch": true,
+      "autumnParamsMatch": true
+    },
+    "syntheticObservationAnalysis": {
+      "blossom": {
+        "recordCount": 13,
+        "meanShifts": [
+          0.4,
+          -0.2,
+          0.2,
+          0,
+          0,
+          0.2,
+          -0.2,
+          0.2,
+          0,
+          -0.4,
+          0,
+          0,
+          0
+        ],
+        "uniqueFitOffsetPatternsCount": 10,
+        "uniqueFitOffsetPatterns": [
+          [
+            0,
+            2,
+            -2,
+            3,
+            -1
+          ],
+          [
+            0,
+            2,
+            -1,
+            3,
+            1
+          ],
+          [
+            0,
+            3,
+            -1,
+            4,
+            2
+          ],
+          [
+            0,
+            2,
+            -3,
+            4,
+            -2
+          ],
+          [
+            0,
+            2,
+            -3,
+            3,
+            -2
+          ],
+          [
+            0,
+            3,
+            -2,
+            4,
+            1
+          ],
+          [
+            0,
+            3,
+            -3,
+            4,
+            -1
+          ],
+          [
+            0,
+            3,
+            -2,
+            5,
+            -1
+          ],
+          [
+            0,
+            3,
+            -3,
+            5,
+            -1
+          ],
+          [
+            0,
+            3,
+            -2,
+            5,
+            1
+          ]
+        ],
+        "uniqueHoldoutOffsetPatternsCount": 11,
+        "uniqueHoldoutOffsetPatterns": [
+          [
+            1,
+            -1,
+            4,
+            -2,
+            2
+          ],
+          [
+            1,
+            -1,
+            4,
+            0,
+            2
+          ],
+          [
+            1,
+            -1,
+            5,
+            0,
+            3
+          ],
+          [
+            1,
+            -1,
+            5,
+            -4,
+            0
+          ],
+          [
+            1,
+            -1,
+            4,
+            -3,
+            0
+          ],
+          [
+            1,
+            -1,
+            5,
+            -2,
+            2
+          ],
+          [
+            1,
+            -2,
+            5,
+            -2,
+            2
+          ],
+          [
+            1,
+            -2,
+            5,
+            -3,
+            2
+          ],
+          [
+            1,
+            -1,
+            4,
+            -3,
+            2
+          ],
+          [
+            1,
+            -2,
+            6,
+            -3,
+            2
+          ],
+          [
+            1,
+            -1,
+            6,
+            -2,
+            3
+          ]
+        ],
+        "records": [
+          {
+            "id": "cn-wuhan",
+            "fitMean": 77.4,
+            "holdoutMean": 77.8,
+            "meanShift": 0.4,
+            "fitOffsetsFromFirst": [
+              0,
+              2,
+              -2,
+              3,
+              -1
+            ],
+            "holdoutOffsetsFromFirstFit": [
+              1,
+              -1,
+              4,
+              -2,
+              2
+            ]
+          },
+          {
+            "id": "cn-nanjing",
+            "fitMean": 81,
+            "holdoutMean": 80.8,
+            "meanShift": -0.2,
+            "fitOffsetsFromFirst": [
+              0,
+              2,
+              -1,
+              3,
+              1
+            ],
+            "holdoutOffsetsFromFirstFit": [
+              1,
+              -1,
+              4,
+              -2,
+              2
+            ]
+          },
+          {
+            "id": "cn-hangzhou",
+            "fitMean": 75,
+            "holdoutMean": 75.2,
+            "meanShift": 0.2,
+            "fitOffsetsFromFirst": [
+              0,
+              2,
+              -1,
+              3,
+              1
+            ],
+            "holdoutOffsetsFromFirstFit": [
+              1,
+              -1,
+              4,
+              0,
+              2
+            ]
+          },
+          {
+            "id": "cn-linzhi",
+            "fitMean": 87.6,
+            "holdoutMean": 87.6,
+            "meanShift": 0,
+            "fitOffsetsFromFirst": [
+              0,
+              3,
+              -1,
+              4,
+              2
+            ],
+            "holdoutOffsetsFromFirstFit": [
+              1,
+              -1,
+              5,
+              0,
+              3
+            ]
+          },
+          {
+            "id": "jp-kanto-tokyo",
+            "fitMean": 84.2,
+            "holdoutMean": 84.2,
+            "meanShift": 0,
+            "fitOffsetsFromFirst": [
+              0,
+              2,
+              -3,
+              4,
+              -2
+            ],
+            "holdoutOffsetsFromFirstFit": [
+              1,
+              -1,
+              5,
+              -4,
+              0
+            ]
+          },
+          {
+            "id": "jp-kansai-kyoto",
+            "fitMean": 89,
+            "holdoutMean": 89.2,
+            "meanShift": 0.2,
+            "fitOffsetsFromFirst": [
+              0,
+              2,
+              -3,
+              3,
+              -2
+            ],
+            "holdoutOffsetsFromFirstFit": [
+              1,
+              -1,
+              4,
+              -3,
+              0
+            ]
+          },
+          {
+            "id": "jp-kansai-nara-yoshino",
+            "fitMean": 96.2,
+            "holdoutMean": 96,
+            "meanShift": -0.2,
+            "fitOffsetsFromFirst": [
+              0,
+              3,
+              -2,
+              4,
+              1
+            ],
+            "holdoutOffsetsFromFirstFit": [
+              1,
+              -1,
+              5,
+              -2,
+              2
+            ]
+          },
+          {
+            "id": "jp-kanto-fuji-hakone",
+            "fitMean": 103.6,
+            "holdoutMean": 103.8,
+            "meanShift": 0.2,
+            "fitOffsetsFromFirst": [
+              0,
+              3,
+              -3,
+              4,
+              -1
+            ],
+            "holdoutOffsetsFromFirstFit": [
+              1,
+              -2,
+              5,
+              -2,
+              2
+            ]
+          },
+          {
+            "id": "kr-mainland-seoul",
+            "fitMean": 94.6,
+            "holdoutMean": 94.6,
+            "meanShift": 0,
+            "fitOffsetsFromFirst": [
+              0,
+              3,
+              -3,
+              4,
+              -1
+            ],
+            "holdoutOffsetsFromFirstFit": [
+              1,
+              -2,
+              5,
+              -3,
+              2
+            ]
+          },
+          {
+            "id": "us-ne-metro-washington-philadelphia",
+            "fitMean": 88,
+            "holdoutMean": 87.6,
+            "meanShift": -0.4,
+            "fitOffsetsFromFirst": [
+              0,
+              3,
+              -2,
+              5,
+              -1
+            ],
+            "holdoutOffsetsFromFirstFit": [
+              1,
+              -1,
+              4,
+              -3,
+              2
+            ]
+          },
+          {
+            "id": "jp-hokkaido-hakodate-toya",
+            "fitMean": 120.6,
+            "holdoutMean": 120.6,
+            "meanShift": 0,
+            "fitOffsetsFromFirst": [
+              0,
+              3,
+              -3,
+              4,
+              -1
+            ],
+            "holdoutOffsetsFromFirstFit": [
+              1,
+              -2,
+              5,
+              -3,
+              2
+            ]
+          },
+          {
+            "id": "jp-hokkaido-sapporo-otaru",
+            "fitMean": 124.8,
+            "holdoutMean": 124.8,
+            "meanShift": 0,
+            "fitOffsetsFromFirst": [
+              0,
+              3,
+              -3,
+              5,
+              -1
+            ],
+            "holdoutOffsetsFromFirstFit": [
+              1,
+              -2,
+              6,
+              -3,
+              2
+            ]
+          },
+          {
+            "id": "benelux-amsterdam-tulip-fields",
+            "fitMean": 108.4,
+            "holdoutMean": 108.4,
+            "meanShift": 0,
+            "fitOffsetsFromFirst": [
+              0,
+              3,
+              -2,
+              5,
+              1
+            ],
+            "holdoutOffsetsFromFirstFit": [
+              1,
+              -1,
+              6,
+              -2,
+              3
+            ]
+          }
+        ]
+      },
+      "autumn": {
+        "recordCount": 11,
+        "meanShifts": [
+          -0.2,
+          -0.2,
+          -0.2,
+          -0.2,
+          -0.4,
+          -0.2,
+          -0.4,
+          -0.4,
+          -0.2,
+          -0.2,
+          -0.2
+        ],
+        "uniqueFitOffsetPatternsCount": 3,
+        "uniqueFitOffsetPatterns": [
+          [
+            0,
+            3,
+            -2,
+            4,
+            1
+          ],
+          [
+            0,
+            4,
+            -2,
+            5,
+            1
+          ],
+          [
+            0,
+            3,
+            -2,
+            5,
+            1
+          ]
+        ],
+        "uniqueHoldoutOffsetPatternsCount": 3,
+        "uniqueHoldoutOffsetPatterns": [
+          [
+            1,
+            -1,
+            5,
+            -2,
+            2
+          ],
+          [
+            1,
+            -1,
+            6,
+            -2,
+            2
+          ],
+          [
+            1,
+            -1,
+            6,
+            -2,
+            3
+          ]
+        ],
+        "records": [
+          {
+            "id": "ca-banff-lake-louise-moraine",
+            "fitMean": 265.2,
+            "holdoutMean": 265,
+            "meanShift": -0.2,
+            "fitOffsetsFromFirst": [
+              0,
+              3,
+              -2,
+              4,
+              1
+            ],
+            "holdoutOffsetsFromFirstFit": [
+              1,
+              -1,
+              5,
+              -2,
+              2
+            ]
+          },
+          {
+            "id": "cn-kanas",
+            "fitMean": 267.2,
+            "holdoutMean": 267,
+            "meanShift": -0.2,
+            "fitOffsetsFromFirst": [
+              0,
+              3,
+              -2,
+              4,
+              1
+            ],
+            "holdoutOffsetsFromFirstFit": [
+              1,
+              -1,
+              5,
+              -2,
+              2
+            ]
+          },
+          {
+            "id": "us-or-co-aspen-san-juan",
+            "fitMean": 271.2,
+            "holdoutMean": 271,
+            "meanShift": -0.2,
+            "fitOffsetsFromFirst": [
+              0,
+              3,
+              -2,
+              4,
+              1
+            ],
+            "holdoutOffsetsFromFirstFit": [
+              1,
+              -1,
+              5,
+              -2,
+              2
+            ]
+          },
+          {
+            "id": "us-ne-nature-stowe-green-mountains",
+            "fitMean": 279.2,
+            "holdoutMean": 279,
+            "meanShift": -0.2,
+            "fitOffsetsFromFirst": [
+              0,
+              3,
+              -2,
+              4,
+              1
+            ],
+            "holdoutOffsetsFromFirstFit": [
+              1,
+              -1,
+              5,
+              -2,
+              2
+            ]
+          },
+          {
+            "id": "jp-hokuriku-karuizawa-matsumoto",
+            "fitMean": 299.6,
+            "holdoutMean": 299.2,
+            "meanShift": -0.4,
+            "fitOffsetsFromFirst": [
+              0,
+              4,
+              -2,
+              5,
+              1
+            ],
+            "holdoutOffsetsFromFirstFit": [
+              1,
+              -1,
+              6,
+              -2,
+              2
+            ]
+          },
+          {
+            "id": "jp-hokuriku-shirakawago-takayama",
+            "fitMean": 303.6,
+            "holdoutMean": 303.4,
+            "meanShift": -0.2,
+            "fitOffsetsFromFirst": [
+              0,
+              4,
+              -2,
+              5,
+              1
+            ],
+            "holdoutOffsetsFromFirstFit": [
+              1,
+              -1,
+              6,
+              -2,
+              3
+            ]
+          },
+          {
+            "id": "at-hallstatt-gosau",
+            "fitMean": 292.4,
+            "holdoutMean": 292,
+            "meanShift": -0.4,
+            "fitOffsetsFromFirst": [
+              0,
+              3,
+              -2,
+              5,
+              1
+            ],
+            "holdoutOffsetsFromFirstFit": [
+              1,
+              -1,
+              5,
+              -2,
+              2
+            ]
+          },
+          {
+            "id": "cn-jiuzhaigou",
+            "fitMean": 295.4,
+            "holdoutMean": 295,
+            "meanShift": -0.4,
+            "fitOffsetsFromFirst": [
+              0,
+              3,
+              -2,
+              5,
+              1
+            ],
+            "holdoutOffsetsFromFirstFit": [
+              1,
+              -1,
+              5,
+              -2,
+              2
+            ]
+          },
+          {
+            "id": "cn-beijing",
+            "fitMean": 305.4,
+            "holdoutMean": 305.2,
+            "meanShift": -0.2,
+            "fitOffsetsFromFirst": [
+              0,
+              3,
+              -2,
+              5,
+              1
+            ],
+            "holdoutOffsetsFromFirstFit": [
+              1,
+              -1,
+              6,
+              -2,
+              2
+            ]
+          },
+          {
+            "id": "cn-wuyuan-jdz",
+            "fitMean": 323.6,
+            "holdoutMean": 323.4,
+            "meanShift": -0.2,
+            "fitOffsetsFromFirst": [
+              0,
+              4,
+              -2,
+              5,
+              1
+            ],
+            "holdoutOffsetsFromFirstFit": [
+              1,
+              -1,
+              6,
+              -2,
+              3
+            ]
+          },
+          {
+            "id": "jp-kansai-kyoto",
+            "fitMean": 327.6,
+            "holdoutMean": 327.4,
+            "meanShift": -0.2,
+            "fitOffsetsFromFirst": [
+              0,
+              4,
+              -2,
+              5,
+              1
+            ],
+            "holdoutOffsetsFromFirstFit": [
+              1,
+              -1,
+              6,
+              -2,
+              3
+            ]
+          }
+        ]
+      }
+    },
+    "baselineComparisons": {
+      "blossom": {
+        "kairosLinearModel": {
+          "maeDays": 2.89,
+          "rmseDays": 3.64
+        },
+        "loocvLinearModel": {
+          "maeDays": 3.2,
+          "rmseDays": 4.04
+        },
+        "cityFitYearMeanBaseline": {
+          "maeDays": 2.09,
+          "rmseDays": 2.57
+        },
+        "globalConstantMeanBaseline": {
+          "maeDays": 12.68,
+          "rmseDays": 15.28
+        },
+        "worstCities": [
+          {
+            "id": "cn-linzhi",
+            "name": "Nyingchi (Wild Peach Valley)",
+            "predDoy": 94,
+            "fitMean": 87.6,
+            "holdoutMean": 87.6,
+            "holdoutMae": 6.4
+          },
+          {
+            "id": "jp-kansai-kyoto",
+            "name": "Kyoto (Somei-Yoshino Full Bloom)",
+            "predDoy": 85,
+            "fitMean": 89,
+            "holdoutMean": 89.2,
+            "holdoutMae": 4.2
+          },
+          {
+            "id": "jp-kanto-tokyo",
+            "name": "Tokyo (Yasukuni Somei-Yoshino)",
+            "predDoy": 82,
+            "fitMean": 84.2,
+            "holdoutMean": 84.2,
+            "holdoutMae": 3
+          },
+          {
+            "id": "jp-kanto-fuji-hakone",
+            "name": "Kawaguchiko Fuji (Sakura)",
+            "predDoy": 101,
+            "fitMean": 103.6,
+            "holdoutMean": 103.8,
+            "holdoutMae": 2.8
+          }
+        ]
+      },
+      "autumn": {
+        "kairosLinearModel": {
+          "maeDays": 4.84,
+          "rmseDays": 6.03
+        },
+        "loocvLinearModel": {
+          "maeDays": 5.85,
+          "rmseDays": 7.2
+        },
+        "cityFitYearMeanBaseline": {
+          "maeDays": 2.22,
+          "rmseDays": 2.66
+        },
+        "globalConstantMeanBaseline": {
+          "maeDays": 17.05,
+          "rmseDays": 20.51
+        },
+        "worstCities": [
+          {
+            "id": "us-ne-nature-stowe-green-mountains",
+            "name": "Stowe Vermont (Sugar Maple Peak)",
+            "predDoy": 291,
+            "fitMean": 279.2,
+            "holdoutMean": 279,
+            "holdoutMae": 12
+          },
+          {
+            "id": "cn-jiuzhaigou",
+            "name": "Jiuzhaigou (Colorful Forest Peak)",
+            "predDoy": 288,
+            "fitMean": 295.4,
+            "holdoutMean": 295,
+            "holdoutMae": 7
+          },
+          {
+            "id": "jp-kansai-kyoto",
+            "name": "Kyoto (Arashiyama / Tofuku-ji Momiji)",
+            "predDoy": 321,
+            "fitMean": 327.6,
+            "holdoutMean": 327.4,
+            "holdoutMae": 6.4
+          },
+          {
+            "id": "us-or-co-aspen-san-juan",
+            "name": "Aspen / Maroon Bells (Aspen Peak)",
+            "predDoy": 277,
+            "fitMean": 271.2,
+            "holdoutMean": 271,
+            "holdoutMae": 6
+          }
+        ]
+      }
+    },
+    "calibratedCoverage": {
+      "uniqueCities": 23,
+      "southernHemisphereCount": 0,
+      "tropicalCount": 0,
+      "latRange": [
+        29.15,
+        52.3676
+      ],
+      "continents": [
+        "asia",
+        "north_america",
+        "europe"
+      ],
+      "countries": [
+        "中国",
+        "日本",
+        "韩国",
+        "美国",
+        "荷兰",
+        "加拿大",
+        "奥地利"
+      ],
+      "cities": [
+        {
+          "id": "cn-wuhan",
+          "name": "武汉 · 樱花江城与两江天际",
+          "country": "中国",
+          "continent": "asia",
+          "lat": 30.5446,
+          "lng": 114.3055,
+          "elevationM": 50
+        },
+        {
+          "id": "cn-nanjing",
+          "name": "南京 · 玄武樱花与牛首山",
+          "country": "中国",
+          "continent": "asia",
+          "lat": 32.0603,
+          "lng": 118.7969,
+          "elevationM": 229
+        },
+        {
+          "id": "cn-hangzhou",
+          "name": "杭州 · 西湖十景与城市阳台",
+          "country": "中国",
+          "continent": "asia",
+          "lat": 30.245,
+          "lng": 120.145,
+          "elevationM": 180
+        },
+        {
+          "id": "cn-linzhi",
+          "name": "林芝与南迦巴瓦 · 雪域江南百里野桃与羞女峰",
+          "country": "中国",
+          "continent": "asia",
+          "lat": 29.555,
+          "lng": 94.938,
+          "elevationM": 5141
+        },
+        {
+          "id": "jp-kanto-tokyo",
+          "name": "东京 · 普利兹克建筑走廊与双塔霓虹天际线",
+          "country": "日本",
+          "continent": "asia",
+          "lat": 35.6895,
+          "lng": 139.6917,
+          "elevationM": 30
+        },
+        {
+          "id": "jp-kansai-kyoto",
+          "name": "京都 · 千年古都的樱雪枫海与未来主义钢铁建筑",
+          "country": "日本",
+          "continent": "asia",
+          "lat": 35.0116,
+          "lng": 135.7681,
+          "elevationM": 493
+        },
+        {
+          "id": "jp-kansai-nara-yoshino",
+          "name": "奈良与吉野山 · 神鹿古寺、草甸夕阳与三万株山樱",
+          "country": "日本",
+          "continent": "asia",
+          "lat": 34.6851,
+          "lng": 135.8048,
+          "elevationM": 455
+        },
+        {
+          "id": "jp-kanto-fuji-hakone",
+          "name": "富士山河口湖与箱根 · 雪冠圣岳、火山湖与森林美术馆",
+          "country": "日本",
+          "continent": "asia",
+          "lat": 35.42,
+          "lng": 138.8033,
+          "elevationM": 1933
+        },
+        {
+          "id": "kr-mainland-seoul",
+          "name": "首尔 · 参数化未来建筑与朝鲜王朝山水宫阙",
+          "country": "韩国",
+          "continent": "asia",
+          "lat": 37.566,
+          "lng": 126.978,
+          "elevationM": 418
+        },
+        {
+          "id": "us-ne-metro-washington-philadelphia",
+          "name": "华盛顿特区与费城 · 潮汐湖樱花与美国古典建筑中轴",
+          "country": "美国",
+          "continent": "north_america",
+          "lat": 38.9072,
+          "lng": -77.0369,
+          "elevationM": 25
+        },
+        {
+          "id": "jp-hokkaido-hakodate-toya",
+          "name": "函馆与洞爷湖 · 双海湾灯海、星形樱堡与火山温泉",
+          "country": "日本",
+          "continent": "asia",
+          "lat": 41.7687,
+          "lng": 140.7289,
+          "elevationM": 367
+        },
+        {
+          "id": "jp-hokkaido-sapporo-otaru",
+          "name": "札幌与小樽 · 安藤忠雄的雪国建筑与海港灯火",
+          "country": "日本",
+          "continent": "asia",
+          "lat": 43.0618,
+          "lng": 141.3541,
+          "elevationM": 266
+        },
+        {
+          "id": "benelux-amsterdam-tulip-fields",
+          "name": "阿姆斯特丹与荷兰郁金香花海 · 彩虹大地与黄金时代水城",
+          "country": "荷兰",
+          "continent": "europe",
+          "lat": 52.3676,
+          "lng": 4.897,
+          "elevationM": 6
+        },
+        {
+          "id": "ca-banff-lake-louise-moraine",
+          "name": "路易斯湖与梦莲湖 · 十峰谷冰川蓝湖与金色落叶松",
+          "country": "加拿大",
+          "continent": "north_america",
+          "lat": 51.4263,
+          "lng": -116.1792,
+          "elevationM": 2076
+        },
+        {
+          "id": "cn-kanas",
+          "name": "喀纳斯与禾木 · 神的自留地、三湾晨雾与粉雪木屋",
+          "country": "中国",
+          "continent": "asia",
+          "lat": 48.718,
+          "lng": 87.015,
+          "elevationM": 1974
+        },
+        {
+          "id": "us-or-co-aspen-san-juan",
+          "name": "阿斯彭马龙双峰 · 圣胡安百万美元公路",
+          "country": "美国",
+          "continent": "north_america",
+          "lat": 39.0982,
+          "lng": -106.9429,
+          "elevationM": 3333
+        },
+        {
+          "id": "us-ne-nature-stowe-green-mountains",
+          "name": "佛蒙特斯托与绿山 · 新英格兰红叶童话",
+          "country": "美国",
+          "continent": "north_america",
+          "lat": 44.4654,
+          "lng": -72.6874,
+          "elevationM": 775
+        },
+        {
+          "id": "jp-hokuriku-karuizawa-matsumoto",
+          "name": "轻井泽与松本 · 森林光石教堂与信州黑城雪猴",
+          "country": "日本",
+          "continent": "asia",
+          "lat": 36.3483,
+          "lng": 138.597,
+          "elevationM": 763
+        },
+        {
+          "id": "jp-hokuriku-shirakawago-takayama",
+          "name": "白川乡与高山 · 合掌雪国童话与飞驒木构古城",
+          "country": "日本",
+          "continent": "asia",
+          "lat": 36.2577,
+          "lng": 136.9065,
+          "elevationM": 575
+        },
+        {
+          "id": "at-hallstatt-gosau",
+          "name": "哈尔施塔特与戈绍湖 · 湖雾木屋与达赫斯坦冰川",
+          "country": "奥地利",
+          "continent": "europe",
+          "lat": 47.5615,
+          "lng": 13.6493,
+          "elevationM": 1308
+        },
+        {
+          "id": "cn-jiuzhaigou",
+          "name": "九寨沟与黄龙 · 碧玉钙华瑶池与童话彩林",
+          "country": "中国",
+          "continent": "asia",
+          "lat": 33.26,
+          "lng": 103.918,
+          "elevationM": 2788
+        },
+        {
+          "id": "cn-beijing",
+          "name": "北京 · 紫禁城与未来建筑",
+          "country": "中国",
+          "continent": "asia",
+          "lat": 39.9163,
+          "lng": 116.3972,
+          "elevationM": 545
+        },
+        {
+          "id": "cn-wuyuan-jdz",
+          "name": "婺源景德镇与望仙谷 · 仙侠瓷都",
+          "country": "中国",
+          "continent": "asia",
+          "lat": 29.15,
+          "lng": 117.75,
+          "elevationM": 935
+        }
+      ]
+    },
+    "tierCoverageAcross722": {
+      "tierCountsInEnrichment": {
+        "A": 0,
+        "B": 699,
+        "C": 23
+      },
+      "tierCountsVerified": {
+        "A": 0,
+        "B": 699,
+        "C": 23
+      },
+      "atlasHemisphereCounts": {
+        "north": 545,
+        "south": 177,
+        "tropical": 216,
+        "polar": 18
+      },
+      "tierBEdgeCases": [
+        {
+          "id": "au-sydney",
+          "month": 10,
+          "category": "blossom",
+          "note": "Southern Hemisphere spring",
+          "found": false
+        },
+        {
+          "id": "au-sydney",
+          "month": 4,
+          "category": "autumn",
+          "note": "Southern Hemisphere autumn",
+          "found": false
+        },
+        {
+          "id": "sg-marina-civic",
+          "name": "新加坡",
+          "lat": 1.2777,
+          "month": 6,
+          "category": "blossom",
+          "note": "Equatorial tropics (1.3N)",
+          "tier": "B",
+          "suitability": 63,
+          "uncertaintyDays": 8,
+          "dataSource": "archive-statistical",
+          "peakWindowText": "Mar – May (shifts with latitude/elev)",
+          "explanation": "Thermal bloom model · Jun fit 46/100.",
+          "experimental": true
+        },
+        {
+          "id": "sg-marina-civic",
+          "name": "新加坡",
+          "lat": 1.2777,
+          "month": 10,
+          "category": "autumn",
+          "note": "Equatorial tropics autumn?",
+          "tier": "B",
+          "suitability": 50,
+          "uncertaintyDays": 8,
+          "dataSource": "archive-statistical",
+          "peakWindowText": "Late Sep – Mid Nov",
+          "explanation": "Thermal envelope estimate · Oct temp fit 17/100.",
+          "experimental": true
+        },
+        {
+          "id": "no-tromso",
+          "month": 6,
+          "category": "milkyway",
+          "note": "Arctic polar day (69.6N June)",
+          "found": false
+        },
+        {
+          "id": "no-tromso",
+          "month": 6,
+          "category": "aurora",
+          "note": "Arctic polar day aurora",
+          "found": false
+        },
+        {
+          "id": "ar-ushuaia",
+          "month": 1,
+          "category": "snow",
+          "note": "Southern summer at 54.8S",
+          "found": false
+        },
+        {
+          "id": "pe-machu-picchu",
+          "month": 7,
+          "category": "milkyway",
+          "note": "Southern tropics dark sky",
+          "found": false
+        }
+      ]
+    }
+  },
+  "astronomyAndPhotoAudit": {
+    "spotComparisons": [
+      {
+        "name": "Kathmandu",
+        "coords": [
+          85.324,
+          27.7172
+        ],
+        "dateStr": "2026-06-21",
+        "localTime": "12:00",
+        "notes": "UTC+5:45 non-integer timezone",
+        "timezone": {
+          "iana": "Asia/Kathmandu",
+          "offsetMin": 345,
+          "utcOffsetLabel": "UTC+5:45",
+          "isDst": false,
+          "source": "iana"
+        },
+        "sunPosition": {
+          "sunCalcAlt": 85.547,
+          "astroEngAlt": 85.548,
+          "altDiffDeg": -0.001,
+          "sunCalcAz": 163.558,
+          "astroEngAz": 163.629,
+          "azDiffDeg": -0.071,
+          "solarTerminatorGeomAlt": 85.544,
+          "astroEngGeomAltNoRefr": 85.547,
+          "terminatorGeomDiffDeg": -0.002
+        },
+        "sunEvents": {
+          "aeSunrise": "05:08",
+          "scSunriseNoOffset": "05:08",
+          "scSunriseWithOffset": "05:08",
+          "sunriseErrNoOffsetMin": -0.01,
+          "sunriseErrWithOffsetMin": -0.01,
+          "aeSunset": "19:02",
+          "scSunsetNoOffset": "19:02",
+          "scSunsetWithOffset": "19:02",
+          "sunsetErrNoOffsetMin": 0.06,
+          "sunsetErrWithOffsetMin": 0.06,
+          "alwaysUp": false,
+          "alwaysDown": false,
+          "aeCivilDawn": "04:41",
+          "scDawn": "04:41",
+          "aeGoldenAmEnd": "05:42",
+          "scGoldenAmEnd": "05:42",
+          "aeGoldenPmStart": "18:28",
+          "scGoldenPmStart": "18:28",
+          "aeCivilDusk": "19:29",
+          "scDusk": "19:29",
+          "aeAstroDusk": "20:35",
+          "appAstroDusk": "20:35",
+          "appAstroDuskRawLabelWhenNull": null,
+          "aeAstroDawn": "03:35",
+          "appAstroDawn": "03:35"
+        },
+        "moon": {
+          "scIllumPct": 43.33,
+          "aeIllumPct": 43.33,
+          "scAlt": 5.65,
+          "aeAlt": 5.65,
+          "scAz": 91.68,
+          "aeAz": 91.68,
+          "aeMoonrise": "11:30",
+          "scMoonriseNoOffset": "11:30",
+          "scMoonriseWithOffset": "11:30",
+          "scMoonriseDisplayLabelWhenNull": null,
+          "aeMoonset": "23:51",
+          "scMoonsetNoOffset": "23:51",
+          "scMoonsetWithOffset": "23:51"
+        },
+        "milkyWay": {
+          "gcAz": 125.1,
+          "aeGcAz": 125.1,
+          "gcAlt": -87.7,
+          "aeGcAlt": -87.7,
+          "mwWindowStart": "20:20",
+          "mwWindowEnd": "03:40",
+          "mwPeakAlt": 33.3
+        }
+      },
+      {
+        "name": "Tromso (Polar Day)",
+        "coords": [
+          18.9553,
+          69.6492
+        ],
+        "dateStr": "2026-06-21",
+        "localTime": "12:00",
+        "notes": "Midnight sun / Polar day",
+        "timezone": {
+          "iana": "Europe/Oslo",
+          "offsetMin": 120,
+          "utcOffsetLabel": "UTC+2 DST",
+          "isDst": true,
+          "source": "iana"
+        },
+        "sunPosition": {
+          "sunCalcAlt": 43.301,
+          "astroEngAlt": 43.299,
+          "altDiffDeg": 0.001,
+          "sunCalcAz": 165.447,
+          "astroEngAz": 165.455,
+          "azDiffDeg": -0.008,
+          "solarTerminatorGeomAlt": 43.281,
+          "astroEngGeomAltNoRefr": 43.281,
+          "terminatorGeomDiffDeg": -0.001
+        },
+        "sunEvents": {
+          "aeSunrise": null,
+          "scSunriseNoOffset": null,
+          "scSunriseWithOffset": null,
+          "sunriseErrNoOffsetMin": null,
+          "sunriseErrWithOffsetMin": null,
+          "aeSunset": null,
+          "scSunsetNoOffset": null,
+          "scSunsetWithOffset": null,
+          "sunsetErrNoOffsetMin": null,
+          "sunsetErrWithOffsetMin": null,
+          "alwaysUp": true,
+          "alwaysDown": false,
+          "aeCivilDawn": null,
+          "scDawn": null,
+          "aeGoldenAmEnd": "02:56",
+          "scGoldenAmEnd": "02:56",
+          "aeGoldenPmStart": "22:35",
+          "scGoldenPmStart": "22:35",
+          "aeCivilDusk": null,
+          "scDusk": null,
+          "aeAstroDusk": null,
+          "appAstroDusk": null,
+          "appAstroDuskRawLabelWhenNull": "Polar Day/Night",
+          "aeAstroDawn": null,
+          "appAstroDawn": null
+        },
+        "moon": {
+          "scIllumPct": 44.97,
+          "aeIllumPct": 44.96,
+          "scAlt": -1.77,
+          "aeAlt": -1.62,
+          "scAz": 84.85,
+          "aeAz": 84.85,
+          "aeMoonrise": "12:17",
+          "scMoonriseNoOffset": "12:17",
+          "scMoonriseWithOffset": "12:17",
+          "scMoonriseDisplayLabelWhenNull": null,
+          "aeMoonset": "00:37",
+          "scMoonsetNoOffset": "00:13",
+          "scMoonsetWithOffset": "00:37"
+        },
+        "milkyWay": {
+          "gcAz": 349.5,
+          "aeGcAz": 349.5,
+          "gcAlt": -48.8,
+          "aeGcAlt": -48.8,
+          "mwWindowStart": null,
+          "mwWindowEnd": null,
+          "mwPeakAlt": null
+        }
+      },
+      {
+        "name": "Tromso (Polar Night)",
+        "coords": [
+          18.9553,
+          69.6492
+        ],
+        "dateStr": "2026-12-21",
+        "localTime": "12:00",
+        "notes": "Polar night",
+        "timezone": {
+          "iana": "Europe/Oslo",
+          "offsetMin": 60,
+          "utcOffsetLabel": "UTC+1",
+          "isDst": false,
+          "source": "iana"
+        },
+        "sunPosition": {
+          "sunCalcAlt": -2.657,
+          "astroEngAlt": -2.513,
+          "altDiffDeg": -0.145,
+          "sunCalcAz": 184.079,
+          "astroEngAz": 184.083,
+          "azDiffDeg": -0.004,
+          "solarTerminatorGeomAlt": -3.139,
+          "astroEngGeomAltNoRefr": -3.144,
+          "terminatorGeomDiffDeg": 0.004
+        },
+        "sunEvents": {
+          "aeSunrise": null,
+          "scSunriseNoOffset": null,
+          "scSunriseWithOffset": null,
+          "sunriseErrNoOffsetMin": null,
+          "sunriseErrWithOffsetMin": null,
+          "aeSunset": null,
+          "scSunsetNoOffset": null,
+          "scSunsetWithOffset": null,
+          "sunsetErrNoOffsetMin": null,
+          "sunsetErrWithOffsetMin": null,
+          "alwaysUp": false,
+          "alwaysDown": true,
+          "aeCivilDawn": "09:31",
+          "scDawn": "09:31",
+          "aeGoldenAmEnd": null,
+          "scGoldenAmEnd": null,
+          "aeGoldenPmStart": null,
+          "scGoldenPmStart": null,
+          "aeCivilDusk": "13:53",
+          "scDusk": "13:53",
+          "aeAstroDusk": "16:56",
+          "appAstroDusk": "16:56",
+          "appAstroDuskRawLabelWhenNull": null,
+          "aeAstroDawn": "06:28",
+          "appAstroDawn": "06:28"
+        },
+        "moon": {
+          "scIllumPct": 90.01,
+          "aeIllumPct": 90.01,
+          "scAlt": 7.57,
+          "aeAlt": 7.57,
+          "scAz": 40.85,
+          "aeAz": 40.85,
+          "aeMoonrise": null,
+          "scMoonriseNoOffset": null,
+          "scMoonriseWithOffset": null,
+          "scMoonriseDisplayLabelWhenNull": "Polar Day/Night",
+          "aeMoonset": null,
+          "scMoonsetNoOffset": null,
+          "scMoonsetWithOffset": null
+        },
+        "milkyWay": {
+          "gcAz": 186.7,
+          "aeGcAz": 186.7,
+          "gcAlt": -8.2,
+          "aeGcAlt": -8.2,
+          "mwWindowStart": null,
+          "mwWindowEnd": null,
+          "mwPeakAlt": null
+        }
+      },
+      {
+        "name": "Ushuaia",
+        "coords": [
+          -68.303,
+          -54.8019
+        ],
+        "dateStr": "2026-12-21",
+        "localTime": "18:00",
+        "notes": "Southern Hemisphere high latitude summer",
+        "timezone": {
+          "iana": "America/Punta_Arenas",
+          "offsetMin": -180,
+          "utcOffsetLabel": "UTC-3",
+          "isDst": false,
+          "source": "iana"
+        },
+        "sunPosition": {
+          "sunCalcAlt": 32.07,
+          "astroEngAlt": 32.065,
+          "altDiffDeg": 0.005,
+          "sunCalcAz": 274.202,
+          "astroEngAz": 274.199,
+          "azDiffDeg": 0.003,
+          "solarTerminatorGeomAlt": 32.038,
+          "astroEngGeomAltNoRefr": 32.039,
+          "terminatorGeomDiffDeg": 0
+        },
+        "sunEvents": {
+          "aeSunrise": "04:51",
+          "scSunriseNoOffset": "04:51",
+          "scSunriseWithOffset": "04:51",
+          "sunriseErrNoOffsetMin": 0.03,
+          "sunriseErrWithOffsetMin": 0.03,
+          "aeSunset": "22:11",
+          "scSunsetNoOffset": "22:11",
+          "scSunsetWithOffset": "22:11",
+          "sunsetErrNoOffsetMin": 0,
+          "sunsetErrWithOffsetMin": 0,
+          "alwaysUp": false,
+          "alwaysDown": false,
+          "aeCivilDawn": "03:53",
+          "scDawn": "03:53",
+          "aeGoldenAmEnd": "05:52",
+          "scGoldenAmEnd": "05:52",
+          "aeGoldenPmStart": "21:10",
+          "scGoldenPmStart": "21:10",
+          "aeCivilDusk": "23:08",
+          "scDusk": "23:08",
+          "aeAstroDusk": null,
+          "appAstroDusk": null,
+          "appAstroDuskRawLabelWhenNull": "Polar Day/Night",
+          "aeAstroDawn": null,
+          "appAstroDawn": null
+        },
+        "moon": {
+          "scIllumPct": 92.77,
+          "aeIllumPct": 92.76,
+          "scAlt": -14.39,
+          "aeAlt": -14.32,
+          "scAz": 66.31,
+          "aeAz": 66.31,
+          "aeMoonrise": "20:08",
+          "scMoonriseNoOffset": "20:08",
+          "scMoonriseWithOffset": "20:08",
+          "scMoonriseDisplayLabelWhenNull": null,
+          "aeMoonset": "02:10",
+          "scMoonsetNoOffset": "02:10",
+          "scMoonsetWithOffset": "02:10"
+        },
+        "milkyWay": {
+          "gcAz": 267,
+          "aeGcAz": 267,
+          "gcAlt": 34.3,
+          "aeGcAlt": 34.3,
+          "mwWindowStart": null,
+          "mwWindowEnd": null,
+          "mwPeakAlt": null
+        }
+      },
+      {
+        "name": "Kyoto",
+        "coords": [
+          135.7681,
+          35.0116
+        ],
+        "dateStr": "2026-04-05",
+        "localTime": "06:00",
+        "notes": "Mid-latitude spring sunrise",
+        "timezone": {
+          "iana": "Asia/Tokyo",
+          "offsetMin": 540,
+          "utcOffsetLabel": "UTC+9",
+          "isDst": false,
+          "source": "iana"
+        },
+        "sunPosition": {
+          "sunCalcAlt": 3.657,
+          "astroEngAlt": 3.661,
+          "altDiffDeg": -0.003,
+          "sunCalcAz": 85.149,
+          "astroEngAz": 85.157,
+          "azDiffDeg": -0.008,
+          "solarTerminatorGeomAlt": 3.449,
+          "astroEngGeomAltNoRefr": 3.452,
+          "terminatorGeomDiffDeg": -0.003
+        },
+        "sunEvents": {
+          "aeSunrise": "05:38",
+          "scSunriseNoOffset": "05:38",
+          "scSunriseWithOffset": "05:38",
+          "sunriseErrNoOffsetMin": 0.02,
+          "sunriseErrWithOffsetMin": 0.02,
+          "aeSunset": "18:21",
+          "scSunsetNoOffset": "18:21",
+          "scSunsetWithOffset": "18:21",
+          "sunsetErrNoOffsetMin": 0.06,
+          "sunsetErrWithOffsetMin": 0.06,
+          "alwaysUp": false,
+          "alwaysDown": false,
+          "aeCivilDawn": "05:13",
+          "scDawn": "05:13",
+          "aeGoldenAmEnd": "06:12",
+          "scGoldenAmEnd": "06:12",
+          "aeGoldenPmStart": "17:47",
+          "scGoldenPmStart": "17:47",
+          "aeCivilDusk": "18:46",
+          "scDusk": "18:46",
+          "aeAstroDusk": "19:47",
+          "appAstroDusk": "19:47",
+          "appAstroDuskRawLabelWhenNull": null,
+          "aeAstroDawn": "04:12",
+          "appAstroDawn": "04:10"
+        },
+        "moon": {
+          "scIllumPct": 92.47,
+          "aeIllumPct": 92.47,
+          "scAlt": 8.29,
+          "aeAlt": 8.29,
+          "scAz": 235.69,
+          "aeAz": 235.7,
+          "aeMoonrise": "21:37",
+          "scMoonriseNoOffset": "21:37",
+          "scMoonriseWithOffset": "21:37",
+          "scMoonriseDisplayLabelWhenNull": null,
+          "aeMoonset": "06:52",
+          "scMoonsetNoOffset": "06:52",
+          "scMoonsetWithOffset": "06:52"
+        },
+        "milkyWay": {
+          "gcAz": 196.8,
+          "aeGcAz": 196.8,
+          "gcAlt": 23.9,
+          "aeGcAlt": 23.9,
+          "mwWindowStart": "01:40",
+          "mwWindowEnd": "04:20",
+          "mwPeakAlt": 25.7
+        }
+      },
+      {
+        "name": "Reykjavik",
+        "coords": [
+          -21.9426,
+          64.1466
+        ],
+        "dateStr": "2026-06-21",
+        "localTime": "23:30",
+        "notes": "High lat summer: civil twilight, no astro night",
+        "timezone": {
+          "iana": "Atlantic/Reykjavik",
+          "offsetMin": 0,
+          "utcOffsetLabel": "UTC+0",
+          "isDst": false,
+          "source": "iana"
+        },
+        "sunPosition": {
+          "sunCalcAlt": 1.042,
+          "astroEngAlt": 1.038,
+          "altDiffDeg": 0.004,
+          "sunCalcAz": 332.755,
+          "astroEngAz": 332.761,
+          "azDiffDeg": -0.005,
+          "solarTerminatorGeomAlt": 0.638,
+          "astroEngGeomAltNoRefr": 0.637,
+          "terminatorGeomDiffDeg": 0
+        },
+        "sunEvents": {
+          "aeSunrise": "02:55",
+          "scSunriseNoOffset": "02:55",
+          "scSunriseWithOffset": "02:55",
+          "sunriseErrNoOffsetMin": -0.16,
+          "sunriseErrWithOffsetMin": -0.16,
+          "aeSunset": "00:03",
+          "scSunsetNoOffset": "00:04",
+          "scSunsetWithOffset": "00:03",
+          "sunsetErrNoOffsetMin": 1440.4,
+          "sunsetErrWithOffsetMin": 0.21,
+          "alwaysUp": false,
+          "alwaysDown": false,
+          "aeCivilDawn": null,
+          "scDawn": null,
+          "aeGoldenAmEnd": "04:52",
+          "scGoldenAmEnd": "04:52",
+          "aeGoldenPmStart": "22:06",
+          "scGoldenPmStart": "22:06",
+          "aeCivilDusk": null,
+          "scDusk": null,
+          "aeAstroDusk": null,
+          "appAstroDusk": null,
+          "appAstroDuskRawLabelWhenNull": "Polar Day/Night",
+          "aeAstroDawn": null,
+          "appAstroDawn": null
+        },
+        "moon": {
+          "scIllumPct": 50.8,
+          "aeIllumPct": 50.8,
+          "scAlt": 8.96,
+          "aeAlt": 8.96,
+          "scAz": 241.86,
+          "aeAz": 241.86,
+          "aeMoonrise": "13:13",
+          "scMoonriseNoOffset": "13:13",
+          "scMoonriseWithOffset": "13:13",
+          "scMoonriseDisplayLabelWhenNull": null,
+          "aeMoonset": "01:11",
+          "scMoonsetNoOffset": "01:03",
+          "scMoonsetWithOffset": "01:11"
+        },
+        "milkyWay": {
+          "gcAz": 157.6,
+          "aeGcAz": 157.6,
+          "gcAlt": -4.7,
+          "aeGcAlt": -4.7,
+          "mwWindowStart": null,
+          "mwWindowEnd": null,
+          "mwPeakAlt": null
+        }
+      },
+      {
+        "name": "Machu Picchu",
+        "coords": [
+          -72.545,
+          -13.1631
+        ],
+        "dateStr": "2026-07-15",
+        "localTime": "22:00",
+        "notes": "Southern tropics Milky Way winter",
+        "timezone": {
+          "iana": "America/Lima",
+          "offsetMin": -300,
+          "utcOffsetLabel": "UTC-5",
+          "isDst": false,
+          "source": "iana"
+        },
+        "sunPosition": {
+          "sunCalcAlt": -60.625,
+          "astroEngAlt": -60.905,
+          "altDiffDeg": 0.28,
+          "sunCalcAz": 290.535,
+          "astroEngAz": 290.538,
+          "azDiffDeg": -0.003,
+          "solarTerminatorGeomAlt": -61.114,
+          "astroEngGeomAltNoRefr": -61.115,
+          "terminatorGeomDiffDeg": 0
+        },
+        "sunEvents": {
+          "aeSunrise": "06:13",
+          "scSunriseNoOffset": "06:13",
+          "scSunriseWithOffset": "06:13",
+          "sunriseErrNoOffsetMin": -0.01,
+          "sunriseErrWithOffsetMin": -0.01,
+          "aeSunset": "17:38",
+          "scSunsetNoOffset": "17:38",
+          "scSunsetWithOffset": "17:38",
+          "sunsetErrNoOffsetMin": 0.05,
+          "sunsetErrWithOffsetMin": 0.05,
+          "alwaysUp": false,
+          "alwaysDown": false,
+          "aeCivilDawn": "05:50",
+          "scDawn": "05:50",
+          "aeGoldenAmEnd": "06:44",
+          "scGoldenAmEnd": "06:44",
+          "aeGoldenPmStart": "17:08",
+          "scGoldenPmStart": "17:08",
+          "aeCivilDusk": "18:01",
+          "scDusk": "18:01",
+          "aeAstroDusk": "18:53",
+          "appAstroDusk": "18:53",
+          "appAstroDuskRawLabelWhenNull": null,
+          "aeAstroDawn": "04:58",
+          "appAstroDawn": "04:58"
+        },
+        "moon": {
+          "scIllumPct": 4.27,
+          "aeIllumPct": 4.27,
+          "scAlt": -38.35,
+          "aeAlt": -38.46,
+          "scAz": 281.07,
+          "aeAz": 281.07,
+          "aeMoonrise": "07:22",
+          "scMoonriseNoOffset": "07:22",
+          "scMoonriseWithOffset": "07:22",
+          "scMoonriseDisplayLabelWhenNull": null,
+          "aeMoonset": "19:11",
+          "scMoonsetNoOffset": "19:11",
+          "scMoonsetWithOffset": "19:11"
+        },
+        "milkyWay": {
+          "gcAz": 180,
+          "aeGcAz": 180,
+          "gcAlt": 74.2,
+          "aeGcAlt": 74.2,
+          "mwWindowStart": "18:40",
+          "mwWindowEnd": "03:40",
+          "mwPeakAlt": 74.2
+        }
+      },
+      {
+        "name": "Mt Fuji / Kawaguchiko",
+        "coords": [
+          138.7518,
+          35.5171
+        ],
+        "dateStr": "2026-11-15",
+        "localTime": "06:15",
+        "notes": "Alpenglow target (3776m vs 830m)",
+        "timezone": {
+          "iana": "Asia/Tokyo",
+          "offsetMin": 540,
+          "utcOffsetLabel": "UTC+9",
+          "isDst": false,
+          "source": "iana"
+        },
+        "sunPosition": {
+          "sunCalcAlt": -1.292,
+          "astroEngAlt": -1.137,
+          "altDiffDeg": -0.156,
+          "sunCalcAz": 111.458,
+          "astroEngAz": 111.459,
+          "azDiffDeg": -0.001,
+          "solarTerminatorGeomAlt": -1.77,
+          "astroEngGeomAltNoRefr": -1.778,
+          "terminatorGeomDiffDeg": 0.008
+        },
+        "sunEvents": {
+          "aeSunrise": "06:19",
+          "scSunriseNoOffset": "06:19",
+          "scSunriseWithOffset": "06:19",
+          "sunriseErrNoOffsetMin": 0.01,
+          "sunriseErrWithOffsetMin": 0.01,
+          "aeSunset": "16:38",
+          "scSunsetNoOffset": "16:38",
+          "scSunsetWithOffset": "16:38",
+          "sunsetErrNoOffsetMin": 0,
+          "sunsetErrWithOffsetMin": 0,
+          "alwaysUp": false,
+          "alwaysDown": false,
+          "aeCivilDawn": "05:52",
+          "scDawn": "05:52",
+          "aeGoldenAmEnd": "06:57",
+          "scGoldenAmEnd": "06:57",
+          "aeGoldenPmStart": "16:01",
+          "scGoldenPmStart": "16:01",
+          "aeCivilDusk": "17:05",
+          "scDusk": "17:05",
+          "aeAstroDusk": "18:06",
+          "appAstroDusk": "18:06",
+          "appAstroDuskRawLabelWhenNull": null,
+          "aeAstroDawn": "04:51",
+          "appAstroDawn": "04:52"
+        },
+        "moon": {
+          "scIllumPct": 26.28,
+          "aeIllumPct": 26.27,
+          "scAlt": -57.58,
+          "aeAlt": -57.83,
+          "scAz": 78.67,
+          "aeAz": 78.67,
+          "aeMoonrise": "11:16",
+          "scMoonriseNoOffset": "11:16",
+          "scMoonriseWithOffset": "11:16",
+          "scMoonriseDisplayLabelWhenNull": null,
+          "aeMoonset": "21:16",
+          "scMoonsetNoOffset": "21:16",
+          "scMoonsetWithOffset": "21:16"
+        },
+        "milkyWay": {
+          "gcAz": 102.8,
+          "aeGcAz": 102.8,
+          "gcAlt": -35.2,
+          "aeGcAlt": -35.2,
+          "mwWindowStart": null,
+          "mwWindowEnd": null,
+          "mwPeakAlt": null
+        }
+      },
+      {
+        "name": "Meili Snow Mtn (Feilaisi)",
+        "coords": [
+          98.8133,
+          28.4567
+        ],
+        "dateStr": "2026-11-15",
+        "localTime": "07:20",
+        "notes": "Alpenglow target (6740m vs 3400m)",
+        "timezone": {
+          "iana": "Asia/Shanghai",
+          "offsetMin": 480,
+          "utcOffsetLabel": "UTC+8",
+          "isDst": false,
+          "source": "iana"
+        },
+        "sunPosition": {
+          "sunCalcAlt": -5.917,
+          "astroEngAlt": -5.795,
+          "altDiffDeg": -0.122,
+          "sunCalcAz": 107.51,
+          "astroEngAz": 107.511,
+          "azDiffDeg": -0.001,
+          "solarTerminatorGeomAlt": -6.394,
+          "astroEngGeomAltNoRefr": -6.402,
+          "terminatorGeomDiffDeg": 0.008
+        },
+        "sunEvents": {
+          "aeSunrise": "07:46",
+          "scSunriseNoOffset": "07:46",
+          "scSunriseWithOffset": "07:46",
+          "sunriseErrNoOffsetMin": 0.01,
+          "sunriseErrWithOffsetMin": 0.01,
+          "aeSunset": "18:31",
+          "scSunsetNoOffset": "18:31",
+          "scSunsetWithOffset": "18:31",
+          "sunsetErrNoOffsetMin": 0,
+          "sunsetErrWithOffsetMin": 0,
+          "alwaysUp": false,
+          "alwaysDown": false,
+          "aeCivilDawn": "07:21",
+          "scDawn": "07:21",
+          "aeGoldenAmEnd": "08:20",
+          "scGoldenAmEnd": "08:20",
+          "aeGoldenPmStart": "17:57",
+          "scGoldenPmStart": "17:57",
+          "aeCivilDusk": "18:56",
+          "scDusk": "18:56",
+          "aeAstroDusk": "19:52",
+          "appAstroDusk": "19:52",
+          "appAstroDuskRawLabelWhenNull": null,
+          "aeAstroDawn": "06:25",
+          "appAstroDawn": "06:26"
+        },
+        "moon": {
+          "scIllumPct": 27,
+          "aeIllumPct": 26.99,
+          "scAlt": -66.59,
+          "aeAlt": -66.9,
+          "scAz": 83.86,
+          "aeAz": 83.86,
+          "aeMoonrise": "12:42",
+          "scMoonriseNoOffset": "12:42",
+          "scMoonriseWithOffset": "12:42",
+          "scMoonriseDisplayLabelWhenNull": null,
+          "aeMoonset": "23:19",
+          "scMoonsetNoOffset": "23:19",
+          "scMoonsetWithOffset": "23:19"
+        },
+        "milkyWay": {
+          "gcAz": 105.1,
+          "aeGcAz": 105.1,
+          "gcAlt": -40.6,
+          "aeGcAlt": -40.6,
+          "mwWindowStart": null,
+          "mwWindowEnd": null,
+          "mwPeakAlt": null
+        }
+      },
+      {
+        "name": "New York (DST Spring Forward)",
+        "coords": [
+          -74.006,
+          40.7128
+        ],
+        "dateStr": "2026-03-08",
+        "localTime": "12:00",
+        "notes": "DST starts 02:00 -> 03:00",
+        "timezone": {
+          "iana": "America/New_York",
+          "offsetMin": -240,
+          "utcOffsetLabel": "UTC-4 DST",
+          "isDst": true,
+          "source": "iana"
+        },
+        "sunPosition": {
+          "sunCalcAlt": 42.093,
+          "astroEngAlt": 42.091,
+          "altDiffDeg": 0.002,
+          "sunCalcAz": 157.323,
+          "astroEngAz": 157.336,
+          "azDiffDeg": -0.013,
+          "solarTerminatorGeomAlt": 42.075,
+          "astroEngGeomAltNoRefr": 42.072,
+          "terminatorGeomDiffDeg": 0.002
+        },
+        "sunEvents": {
+          "aeSunrise": "07:18",
+          "scSunriseNoOffset": "07:18",
+          "scSunriseWithOffset": "07:18",
+          "sunriseErrNoOffsetMin": 0.02,
+          "sunriseErrWithOffsetMin": 0.02,
+          "aeSunset": "18:55",
+          "scSunsetNoOffset": "18:55",
+          "scSunsetWithOffset": "18:55",
+          "sunsetErrNoOffsetMin": 0.05,
+          "sunsetErrWithOffsetMin": 0.05,
+          "alwaysUp": false,
+          "alwaysDown": false,
+          "aeCivilDawn": "06:51",
+          "scDawn": "06:51",
+          "aeGoldenAmEnd": "07:55",
+          "scGoldenAmEnd": "07:55",
+          "aeGoldenPmStart": "18:18",
+          "scGoldenPmStart": "18:18",
+          "aeCivilDusk": "19:22",
+          "scDusk": "19:22",
+          "aeAstroDusk": "20:26",
+          "appAstroDusk": "20:26",
+          "appAstroDuskRawLabelWhenNull": null,
+          "aeAstroDawn": "05:48",
+          "appAstroDawn": "05:46"
+        },
+        "moon": {
+          "scIllumPct": 74.91,
+          "aeIllumPct": 74.91,
+          "scAlt": -27.86,
+          "aeAlt": -27.89,
+          "scAz": 263.77,
+          "aeAz": 263.77,
+          "aeMoonrise": null,
+          "scMoonriseNoOffset": "00:41",
+          "scMoonriseWithOffset": null,
+          "scMoonriseDisplayLabelWhenNull": null,
+          "aeMoonset": "09:22",
+          "scMoonsetNoOffset": "09:22",
+          "scMoonsetWithOffset": "09:22"
+        },
+        "milkyWay": {
+          "gcAz": 233.1,
+          "aeGcAz": 233.1,
+          "gcAlt": -2,
+          "aeGcAlt": -2,
+          "mwWindowStart": "05:00",
+          "mwWindowEnd": "06:00",
+          "mwPeakAlt": 17.1
+        }
+      },
+      {
+        "name": "New York (DST Pre-Spring 01:30)",
+        "coords": [
+          -74.006,
+          40.7128
+        ],
+        "dateStr": "2026-03-08",
+        "localTime": "01:30",
+        "notes": "Before 02:00 transition on transition day",
+        "timezone": {
+          "iana": "America/New_York",
+          "offsetMin": -300,
+          "utcOffsetLabel": "UTC-5",
+          "isDst": false,
+          "source": "iana"
+        },
+        "sunPosition": {
+          "sunCalcAlt": -49.101,
+          "astroEngAlt": -49.292,
+          "altDiffDeg": 0.191,
+          "sunCalcAz": 33.057,
+          "astroEngAz": 33.072,
+          "azDiffDeg": -0.014,
+          "solarTerminatorGeomAlt": -49.584,
+          "astroEngGeomAltNoRefr": -49.586,
+          "terminatorGeomDiffDeg": 0.001
+        },
+        "sunEvents": {
+          "aeSunrise": "06:18",
+          "scSunriseNoOffset": "06:18",
+          "scSunriseWithOffset": "06:18",
+          "sunriseErrNoOffsetMin": 0.02,
+          "sunriseErrWithOffsetMin": 0.02,
+          "aeSunset": "17:55",
+          "scSunsetNoOffset": "17:55",
+          "scSunsetWithOffset": "17:55",
+          "sunsetErrNoOffsetMin": 0.05,
+          "sunsetErrWithOffsetMin": 0.05,
+          "alwaysUp": false,
+          "alwaysDown": false,
+          "aeCivilDawn": "05:51",
+          "scDawn": "05:51",
+          "aeGoldenAmEnd": "06:55",
+          "scGoldenAmEnd": "06:55",
+          "aeGoldenPmStart": "17:18",
+          "scGoldenPmStart": "17:18",
+          "aeCivilDusk": "18:22",
+          "scDusk": "18:22",
+          "aeAstroDusk": "19:26",
+          "appAstroDusk": "19:26",
+          "appAstroDuskRawLabelWhenNull": null,
+          "aeAstroDawn": "04:48",
+          "appAstroDawn": "04:46"
+        },
+        "moon": {
+          "scIllumPct": 78.13,
+          "aeIllumPct": 78.13,
+          "scAlt": 22.01,
+          "aeAlt": 22.01,
+          "scAz": 149.44,
+          "aeAz": 149.44,
+          "aeMoonrise": "23:41",
+          "scMoonriseNoOffset": "23:41",
+          "scMoonriseWithOffset": "23:41",
+          "scMoonriseDisplayLabelWhenNull": null,
+          "aeMoonset": "08:22",
+          "scMoonsetNoOffset": "08:22",
+          "scMoonsetWithOffset": "08:22"
+        },
+        "milkyWay": {
+          "gcAz": 120.2,
+          "aeGcAz": 120.2,
+          "gcAlt": -9,
+          "aeGcAlt": -9,
+          "mwWindowStart": "04:00",
+          "mwWindowEnd": "05:00",
+          "mwPeakAlt": 17.1
+        }
+      },
+      {
+        "name": "New York (DST Fall Back)",
+        "coords": [
+          -74.006,
+          40.7128
+        ],
+        "dateStr": "2026-11-01",
+        "localTime": "12:00",
+        "notes": "DST ends 02:00 -> 01:00",
+        "timezone": {
+          "iana": "America/New_York",
+          "offsetMin": -300,
+          "utcOffsetLabel": "UTC-5",
+          "isDst": false,
+          "source": "iana"
+        },
+        "sunPosition": {
+          "sunCalcAlt": 34.522,
+          "astroEngAlt": 34.52,
+          "altDiffDeg": 0.002,
+          "sunCalcAz": 185.988,
+          "astroEngAz": 185.993,
+          "azDiffDeg": -0.005,
+          "solarTerminatorGeomAlt": 34.5,
+          "astroEngGeomAltNoRefr": 34.496,
+          "terminatorGeomDiffDeg": 0.005
+        },
+        "sunEvents": {
+          "aeSunrise": "06:26",
+          "scSunriseNoOffset": "06:26",
+          "scSunriseWithOffset": "06:26",
+          "sunriseErrNoOffsetMin": 0.02,
+          "sunriseErrWithOffsetMin": 0.02,
+          "aeSunset": "16:52",
+          "scSunsetNoOffset": "16:52",
+          "scSunsetWithOffset": "16:52",
+          "sunsetErrNoOffsetMin": 0.02,
+          "sunsetErrWithOffsetMin": 0.02,
+          "alwaysUp": false,
+          "alwaysDown": false,
+          "aeCivilDawn": "05:58",
+          "scDawn": "05:58",
+          "aeGoldenAmEnd": "07:05",
+          "scGoldenAmEnd": "07:05",
+          "aeGoldenPmStart": "16:13",
+          "scGoldenPmStart": "16:13",
+          "aeCivilDusk": "17:20",
+          "scDusk": "17:20",
+          "aeAstroDusk": "18:24",
+          "appAstroDusk": "18:24",
+          "appAstroDuskRawLabelWhenNull": null,
+          "aeAstroDawn": "04:53",
+          "appAstroDawn": "04:54"
+        },
+        "moon": {
+          "scIllumPct": 51.76,
+          "aeIllumPct": 51.76,
+          "scAlt": 10.8,
+          "aeAlt": 10.8,
+          "scAz": 286.5,
+          "aeAz": 286.51,
+          "aeMoonrise": "23:13",
+          "scMoonriseNoOffset": "23:13",
+          "scMoonriseWithOffset": "23:13",
+          "scMoonriseDisplayLabelWhenNull": null,
+          "aeMoonset": "13:07",
+          "scMoonsetNoOffset": "13:07",
+          "scMoonsetWithOffset": "13:07"
+        },
+        "milkyWay": {
+          "gcAz": 141.7,
+          "aeGcAz": 141.7,
+          "gcAlt": 9.1,
+          "aeGcAlt": 9.1,
+          "mwWindowStart": null,
+          "mwWindowEnd": null,
+          "mwPeakAlt": null
+        }
+      },
+      {
+        "name": "Honolulu",
+        "coords": [
+          -157.8583,
+          21.3069
+        ],
+        "dateStr": "2026-06-21",
+        "localTime": "12:00",
+        "notes": "Northern tropics (sun north of zenith)",
+        "timezone": {
+          "iana": "Pacific/Honolulu",
+          "offsetMin": -600,
+          "utcOffsetLabel": "UTC-10",
+          "isDst": false,
+          "source": "iana"
+        },
+        "sunPosition": {
+          "sunCalcAlt": 82.002,
+          "astroEngAlt": 82.007,
+          "altDiffDeg": -0.005,
+          "sunCalcAz": 72.998,
+          "astroEngAz": 72.99,
+          "azDiffDeg": 0.009,
+          "solarTerminatorGeomAlt": 82.005,
+          "astroEngGeomAltNoRefr": 82.005,
+          "terminatorGeomDiffDeg": 0
+        },
+        "sunEvents": {
+          "aeSunrise": "05:50",
+          "scSunriseNoOffset": "05:50",
+          "scSunriseWithOffset": "05:50",
+          "sunriseErrNoOffsetMin": -0.01,
+          "sunriseErrWithOffsetMin": -0.01,
+          "aeSunset": "19:16",
+          "scSunsetNoOffset": "19:16",
+          "scSunsetWithOffset": "19:16",
+          "sunsetErrNoOffsetMin": 0.06,
+          "sunsetErrWithOffsetMin": 0.06,
+          "alwaysUp": false,
+          "alwaysDown": false,
+          "aeCivilDawn": "05:25",
+          "scDawn": "05:25",
+          "aeGoldenAmEnd": "06:22",
+          "scGoldenAmEnd": "06:22",
+          "aeGoldenPmStart": "18:44",
+          "scGoldenPmStart": "18:44",
+          "aeCivilDusk": "19:41",
+          "scDusk": "19:41",
+          "aeAstroDusk": "20:41",
+          "appAstroDusk": "20:41",
+          "appAstroDuskRawLabelWhenNull": null,
+          "aeAstroDawn": "04:25",
+          "appAstroDawn": "04:25"
+        },
+        "moon": {
+          "scIllumPct": 50.16,
+          "aeIllumPct": 50.16,
+          "scAlt": -8.15,
+          "aeAlt": -8.04,
+          "scAz": 89.66,
+          "aeAz": 89.65,
+          "aeMoonrise": "12:34",
+          "scMoonriseNoOffset": "12:34",
+          "scMoonriseWithOffset": "12:34",
+          "scMoonriseDisplayLabelWhenNull": null,
+          "aeMoonset": "00:08",
+          "scMoonsetNoOffset": null,
+          "scMoonsetWithOffset": "00:08"
+        },
+        "milkyWay": {
+          "gcAz": 205.2,
+          "aeGcAz": 205.2,
+          "gcAlt": -81.4,
+          "aeGcAlt": -81.4,
+          "mwWindowStart": "20:20",
+          "mwWindowEnd": "04:20",
+          "mwPeakAlt": 39.7
+        }
+      },
+      {
+        "name": "Kashgar (Meridian Offset)",
+        "coords": [
+          75.9898,
+          39.4704
+        ],
+        "dateStr": "2026-06-21",
+        "localTime": "12:00",
+        "notes": "76E on UTC+8 (~3h solar offset) tests getTimes without utcOffset",
+        "timezone": {
+          "iana": "Asia/Urumqi",
+          "offsetMin": 360,
+          "utcOffsetLabel": "UTC+6",
+          "isDst": false,
+          "source": "iana"
+        },
+        "sunPosition": {
+          "sunCalcAlt": 69.837,
+          "astroEngAlt": 69.84,
+          "altDiffDeg": -0.002,
+          "sunCalcAz": 138.37,
+          "astroEngAz": 138.384,
+          "azDiffDeg": -0.014,
+          "solarTerminatorGeomAlt": 69.832,
+          "astroEngGeomAltNoRefr": 69.833,
+          "terminatorGeomDiffDeg": -0.002
+        },
+        "sunEvents": {
+          "aeSunrise": "05:29",
+          "scSunriseNoOffset": "05:29",
+          "scSunriseWithOffset": "05:29",
+          "sunriseErrNoOffsetMin": -0.02,
+          "sunriseErrWithOffsetMin": -0.02,
+          "aeSunset": "20:26",
+          "scSunsetNoOffset": "20:26",
+          "scSunsetWithOffset": "20:26",
+          "sunsetErrNoOffsetMin": 0.06,
+          "sunsetErrWithOffsetMin": 0.06,
+          "alwaysUp": false,
+          "alwaysDown": false,
+          "aeCivilDawn": "04:56",
+          "scDawn": "04:56",
+          "aeGoldenAmEnd": "06:09",
+          "scGoldenAmEnd": "06:09",
+          "aeGoldenPmStart": "19:46",
+          "scGoldenPmStart": "19:46",
+          "aeCivilDusk": "20:59",
+          "scDusk": "20:59",
+          "aeAstroDusk": "22:27",
+          "appAstroDusk": "22:27",
+          "appAstroDuskRawLabelWhenNull": null,
+          "aeAstroDawn": "03:27",
+          "appAstroDawn": "03:27"
+        },
+        "moon": {
+          "scIllumPct": 43.22,
+          "aeIllumPct": 43.22,
+          "scAlt": -4.46,
+          "aeAlt": -4.32,
+          "scAz": 84.64,
+          "aeAz": 84.64,
+          "aeMoonrise": "12:22",
+          "scMoonriseNoOffset": "12:22",
+          "scMoonriseWithOffset": "12:22",
+          "scMoonriseDisplayLabelWhenNull": null,
+          "aeMoonset": "00:19",
+          "scMoonsetNoOffset": "00:42",
+          "scMoonsetWithOffset": "00:19"
+        },
+        "milkyWay": {
+          "gcAz": 315.8,
+          "aeGcAz": 315.8,
+          "gcAlt": -76.1,
+          "aeGcAlt": -76.1,
+          "mwWindowStart": "22:00",
+          "mwWindowEnd": "03:20",
+          "mwPeakAlt": 21.6
+        }
+      }
+    ],
+    "alpenglowPhysicsChecks": [
+      {
+        "obsElevM": 830,
+        "peakElevM": 3776,
+        "diffM": 2946,
+        "lat": 35.5171,
+        "dateStr": "2026-11-15",
+        "codeLeadMinutes": 13,
+        "dipGeomDeg": 1.742,
+        "dipRefrDeg": 1.625,
+        "dhDtDegPerMin": 0.1875,
+        "physicalHorizonDipLeadMinutes": 8.67,
+        "ratioCodeToPhysics": 1.5
+      },
+      {
+        "obsElevM": 3400,
+        "peakElevM": 6740,
+        "diffM": 3340,
+        "lat": 28.4567,
+        "dateStr": "2026-11-15",
+        "codeLeadMinutes": 14,
+        "dipGeomDeg": 1.855,
+        "dipRefrDeg": 1.73,
+        "dhDtDegPerMin": 0.2051,
+        "physicalHorizonDipLeadMinutes": 8.44,
+        "ratioCodeToPhysics": 1.66
+      }
+    ],
+    "terrainHorizonChecks": {
+      "flatTerrain": {
+        "geomSunrise": "06:19",
+        "adjSunrise": "06:22",
+        "sunriseDelayMin": 2,
+        "geomSunset": "16:38",
+        "adjSunset": "16:36",
+        "sunsetEarlyMin": 3
+      },
+      "east12DegRidge": {
+        "adjSunrise": "07:18",
+        "sunriseDelayMin": 58,
+        "adjSunset": "16:36",
+        "sunsetEarlyMin": 3
+      }
+    },
+    "brightStarsGalacticCenterCheck": {
+      "testDateUtc": "2026-07-15T03:00:00.000Z",
+      "gmstHours": 22.5324,
+      "brightStarsGeomAltDeg": 74.129,
+      "astroEngineNoRefrAltDeg": 74.13,
+      "diffDeg": 0
+    },
+    "photoOpportunityIndexChecks": {
+      "within14d": {
+        "score": 93,
+        "sceneType": "sunrise_sunset",
+        "sceneLabel": "Sunrise / Sunset",
+        "recommendedTime": "06:53",
+        "recommendedBearing": 118,
+        "recommendedFocalMm": 24,
+        "positiveDrivers": [
+          "Optimal solar / twilight angle",
+          "Forecast cloud 35% favors framing"
+        ],
+        "negativeDrivers": [],
+        "backupWindow": "16:45 ± 25m",
+        "dataQuality": "astronomy+14d-forecast",
+        "weatherIncluded": true,
+        "daysAhead": 9,
+        "indexDisclaimer": "Combines solar/lunar ephemeris, DEM bearing & <=14-day live weather; advisory only."
+      },
+      "beyond14d": {
+        "score": 92,
+        "sceneType": "sunrise_sunset",
+        "sceneLabel": "Sunrise / Sunset",
+        "recommendedTime": "06:53",
+        "recommendedBearing": 118,
+        "recommendedFocalMm": 24,
+        "positiveDrivers": [
+          "Optimal solar / twilight angle"
+        ],
+        "negativeDrivers": [],
+        "backupWindow": "16:45 ± 25m",
+        "dataQuality": "astronomy+archive-only",
+        "weatherIncluded": false,
+        "daysAhead": 25,
+        "indexDisclaimer": "Date exceeds the 14-day reliable weather horizon: live weather excluded; computed strictly from astronomy & terrain norms (never fabricated)."
+      }
+    },
+    "epistemicClassification": [
+      {
+        "module": "vendor/astronomy.browser.min.js + photo-simulator.js (computeAstronomyExtras)",
+        "feature": "Galactic Center alt/az, Astro Dusk/Dawn",
+        "classification": "Deterministic Astronomy",
+        "accuracyNote": "Matches Astronomy Engine reference to 0.0° (same library); search boundary 23:30 + fmtTime null->Polar bug"
+      },
+      {
+        "module": "vendor/suncalc.min.js + photo-simulator.js (computeSimulation)",
+        "feature": "Sun alt/az, Moon alt/az/illum, Rise/Set/Twilight",
+        "classification": "Deterministic Astronomy",
+        "accuracyNote": "SunCalc3 matches AE within ~0.01°-0.1°, EXCEPT getTimes/getMoonTimes called without utcOffset causes ±1d / missed events at extreme meridian offsets & moonrise/set null mislabeled Polar Day/Night"
+      },
+      {
+        "module": "js/modules/solar-terminator.js",
+        "feature": "Subsolar point & 0°/-6°/-12° terminator polygons",
+        "classification": "Deterministic Astronomy",
+        "accuracyNote": "Low-precision solar coords match AE unrefracted altitude within <0.05°; ignores refraction/solar radius (-0.833°)"
+      },
+      {
+        "module": "js/modules/bright-stars.js",
+        "feature": "100-star J2000 catalog + GMST rotation",
+        "classification": "Deterministic Astronomy",
+        "accuracyNote": "Matches AE unrefracted altitude within <0.05° (precession/nutation ~0.3° over 26 yrs ignored)"
+      },
+      {
+        "module": "js/services/timezone-service.js",
+        "feature": "Offline IANA tz-lookup + Intl DST offset resolution",
+        "classification": "Deterministic Astronomy",
+        "accuracyNote": "Accurately resolves UTC+5:45, UTC-10, and DST transitions on 2026-03-08 & 2026-11-01"
+      },
+      {
+        "module": "js/services/weather-service.js (fetchLiveWeather)",
+        "feature": "7-day hourly/daily cloud cover, precip prob, wind",
+        "classification": "Weather Forecast",
+        "accuracyNote": "Open-Meteo live NWP forecast; 14-day guard enforced in POI (fetchLiveWeather requests 7 days)"
+      },
+      {
+        "module": "js/services/weather-service.js (fetchMonthlyClimate)",
+        "feature": "2020-2024 5-year monthly climate normals",
+        "classification": "Climatological Statistics",
+        "accuracyNote": "Aggregates Open-Meteo ERA5 daily archive across 5 years"
+      },
+      {
+        "module": "js/modules/terrain-3d.js (computeTerrainHorizon)",
+        "feature": "360° DEM horizon profile & sunrise/sunset delay",
+        "classification": "Heuristic Estimate",
+        "accuracyNote": "Uses z12/z11 Terrarium DEM (~38-76m/px) with 5° az x 28 log-dist rays & R_eff=1.15R; flat-terrain adjSunrise lags geometric sunrise by ~2-4 min due to threshold pos.altitude > max(-0.833, 0)"
+      },
+      {
+        "module": "js/modules/photo-simulator.js (computePeakAlpenglowEstimate)",
+        "feature": "Peak first/last light lead time",
+        "classification": "Heuristic Estimate",
+        "accuracyNote": "Uses 0.24*sqrt(diffM) capped at 18m; ~1.7x-1.9x larger than pure geometric horizon dip physics (0.12-0.14*sqrt(diffM)) and ignores peak azimuth/distance"
+      },
+      {
+        "module": "js/modules/photo-simulator.js (computePhotoOpportunityIndex)",
+        "feature": "0-100 Photo Opportunity Index",
+        "classification": "Heuristic Estimate",
+        "accuracyNote": "Expert-weighted linear combination of step/piecewise sun, cloud, wind, dark, moon scores; uncalibrated against actual photo quality outcomes"
+      },
+      {
+        "module": "scripts/validate-phenology.js (23 Tier-C cities)",
+        "feature": "Thermal-Latitude & Autumn Cooling DOY regression",
+        "classification": "Unvalidated Model",
+        "accuracyNote": "Fit & holdout arrays use synthetic deterministic +/- offsets around identical means; city fit-mean baseline beats regression (1.69d vs 2.89d blossom; 1.82d vs 4.84d autumn); 0 Southern/Tropical cities"
+      },
+      {
+        "module": "js/modules/phenology-engine.js (699 Tier-B cities)",
+        "feature": "Suitability 0-100 & +/-8d uncertainty",
+        "classification": "Heuristic Estimate",
+        "accuracyNote": "Fixed temperature bell curves + curated monthly star scores + hardcoded +/-8d uncertainty without validation; NH/SH season logic breaks in tropics & polar regions"
+      }
+    ]
+  }
+}

@@ -151,13 +151,17 @@
       // Fall through to honest unroutable notice
     }
 
+    const likelyOverland = straightKm <= 250 && (mode === 'driving' || mode === 'cycling' || mode === 'walking');
     return {
       routed: false,
-      crossSea: true,
-      provider: 'Unroutable / Straight-Line Reference',
+      crossSea: !likelyOverland,
+      routingError: likelyOverland,
+      provider: likelyOverland ? 'Routing Service Unavailable (Straight-Line Reference)' : 'Unroutable / Straight-Line Reference',
       distanceKm: straightKm,
       durationMin: null,
-      note: '无法获取陆路连通路径（可能跨海、步行超限或路网接口暂不可用），仅显示直线距离参考',
+      note: likelyOverland
+        ? '路网接口暂不可达或超时，当前仅显示直线距离参考（不代表跨海）'
+        : '无法获取陆路连通路径（可能跨海、步行超限或路网接口暂不可用），仅显示直线距离参考',
       geometry: { type: 'LineString', coordinates: [fromCoords, toCoords] }
     };
   }

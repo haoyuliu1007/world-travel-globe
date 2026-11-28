@@ -1,5 +1,5 @@
-/* KAIROS V5.0 (World Travel Globe) — Cloudflare Workers Edge API Proxy, Auth, Collab & D1/R2 Adapter */
-import { handleAuthRequest } from './auth.js';
+/* KAIROS V5.1 (World Travel Globe) — Cloudflare Workers Edge API Proxy, Auth, Collab & D1/R2 Adapter */
+import { handleAuthRequest, getSessionUser, verifyCsrf } from './auth.js';
 import { handleCollabRequest } from './collab.js';
 
 const RATE_WINDOW_MS = 60_000;
@@ -17,14 +17,26 @@ function corsHeaders(extra) {
   );
 }
 
-function jsonResponse(obj, status, cacheControl) {
+function jsonResponse(obj, status, cacheControl, omitWildcardCors) {
+  const base = {
+    'Content-Type': 'application/json; charset=utf-8',
+    'Cache-Control': cacheControl || 'no-store',
+    'X-Content-Type-Options': 'nosniff',
+    'Content-Security-Policy': "frame-ancestors 'none'"
+  };
   return new Response(JSON.stringify(obj), {
     status: status || 200,
-    headers: corsHeaders({
-      'Content-Type': 'application/json; charset=utf-8',
-      'Cache-Control': cacheControl || 'no-store'
-    })
+    headers: omitWildcardCors ? base : corsHeaders(base)
   });
+}
+
+function detectImageMime(buf) {
+  const b = new Uint8Array(buf);
+  if (b.length >= 3 && b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff) return 'image/jpeg';
+  if (b.length >= 8 && b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47) return 'image/png';
+  if (b.length >= 12 && b[0] === 0x52 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x46 && b[8] === 0x57 && b[9] === 0x45 && b[10] === 0x42 && b[11] === 0x50) return 'image/webp';
+  if (b.length >= 6 && b[0] === 0x47 && b[1] === 0x49 && b[2] === 0x46) return 'image/gif';
+  return null;
 }
 
 function checkRateLimit(request) {
@@ -48,11 +60,16 @@ async function cachedUpstreamJson(cacheKeyUrl, upstreamUrl, ttlSeconds, init) {
   }
   const fetchInit = Object.assign({ signal: AbortSignal.timeout(12000) }, init || {});
   const res = await fetch(upstreamUrl, fetchInit);
+  const ct = res.headers.get('content-type') || 'application/json; charset=utf-8';
+  if (!ct.toLowerCase().includes('json')) {
+    return jsonResponse({ ok: false, error: 'Upstream did not return JSON' }, 502);
+  }
   const body = await res.text();
   const out = new Response(body, {
     status: res.status,
     headers: corsHeaders({
-      'Content-Type': res.headers.get('content-type') || 'application/json; charset=utf-8',
+      'Content-Type': 'application/json; charset=utf-8',
+      'X-Content-Type-Options': 'nosniff',
       'Cache-Control': `public, max-age=${ttlSeconds || 300}`
     })
   });
@@ -84,7 +101,7 @@ async function handleApi(request, env) {
     return jsonResponse({
       ok: true,
       runtime: 'cloudflare-worker',
-      version: '5.0.0',
+      version: '5.1.0',
       features: {
         weather: true,
         commons: true,
@@ -129,16 +146,20 @@ async function handleApi(request, env) {
   }
 
   if (p === '/api/commons') {
-    const upstream = `https://commons.wikimedia.org/w/api.php?${url.searchParams.toString()}`;
+    const qs = new URLSearchParams(url.searchParams);
+    qs.set('format', 'json');
+    const upstream = `https://commons.wikimedia.org/w/api.php?${qs.toString()}`;
     return cachedUpstreamJson(request.url, upstream, 86400, {
-      headers: { 'User-Agent': 'WorldTravelGlobe/3.0 (https://world-travel-globe.globe-app.workers.dev)' }
+      headers: { 'User-Agent': 'WorldTravelGlobe/5.1 (https://world-travel-globe.globe-app.workers.dev)' }
     });
   }
 
   if (p === '/api/wikidata') {
-    const upstream = `https://www.wikidata.org/w/api.php?${url.searchParams.toString()}`;
+    const qs = new URLSearchParams(url.searchParams);
+    qs.set('format', 'json');
+    const upstream = `https://www.wikidata.org/w/api.php?${qs.toString()}`;
     return cachedUpstreamJson(request.url, upstream, 86400, {
-      headers: { 'User-Agent': 'WorldTravelGlobe/3.0 (https://world-travel-globe.globe-app.workers.dev)' }
+      headers: { 'User-Agent': 'WorldTravelGlobe/5.1 (https://world-travel-globe.globe-app.workers.dev)' }
     });
   }
 
@@ -149,9 +170,10 @@ async function handleApi(request, env) {
     }
     const qs = new URLSearchParams(url.searchParams);
     qs.delete('lang');
+    qs.set('format', 'json');
     const upstream = `https://${lang}.wikipedia.org/w/api.php?${qs.toString()}`;
     return cachedUpstreamJson(request.url, upstream, 86400, {
-      headers: { 'User-Agent': 'WorldTravelGlobe/3.0 (https://world-travel-globe.globe-app.workers.dev)' }
+      headers: { 'User-Agent': 'WorldTravelGlobe/5.1 (https://world-travel-globe.globe-app.workers.dev)' }
     });
   }
 
@@ -175,19 +197,28 @@ async function handleApi(request, env) {
     const res = await fetch(parsed.toString(), {
       signal: AbortSignal.timeout(12000),
       headers: {
-        'User-Agent': 'WorldTravelGlobe/4.5 (https://world-travel-globe.globe-app.workers.dev)',
-        Accept: 'image/*'
+        'User-Agent': 'WorldTravelGlobe/5.1 (https://world-travel-globe.globe-app.workers.dev)',
+        Accept: 'image/jpeg,image/png,image/webp,image/gif,*/*;q=0.5'
       }
     });
-    const ct = res.headers.get('content-type') || '';
-    if (!ct.startsWith('image/')) {
-      return jsonResponse({ ok: false, error: 'Upstream did not return an image' }, res.ok ? 400 : res.status);
+    const ct = (res.headers.get('content-type') || '').toLowerCase();
+    if (!ct.startsWith('image/') || ct.includes('svg')) {
+      return jsonResponse({ ok: false, error: ct.includes('svg') ? 'SVG images are not allowed on image proxy' : 'Upstream did not return a raster image' }, ct.includes('svg') ? 415 : (res.ok ? 400 : res.status));
+    }
+    const cl = Number(res.headers.get('content-length') || 0);
+    if (cl > 15 * 1024 * 1024) {
+      return jsonResponse({ ok: false, error: 'Upstream image exceeds 15 MB cap' }, 413);
     }
     const body = await res.arrayBuffer();
+    if (body.byteLength > 15 * 1024 * 1024) {
+      return jsonResponse({ ok: false, error: 'Upstream image exceeds 15 MB cap' }, 413);
+    }
     const out = new Response(body, {
       status: res.status,
       headers: corsHeaders({
-        'Content-Type': ct,
+        'Content-Type': ct.split(';')[0].trim(),
+        'X-Content-Type-Options': 'nosniff',
+        'Content-Security-Policy': "sandbox; default-src 'none'; img-src 'self' data:",
         'Cache-Control': 'public, max-age=604800, immutable'
       })
     });
@@ -233,12 +264,16 @@ async function handleApi(request, env) {
         Accept: 'image/*'
       }
     });
-    const ct = res.headers.get('content-type') || 'image/jpeg';
+    const ct = (res.headers.get('content-type') || '').toLowerCase();
+    if (!ct.startsWith('image/') || ct.includes('svg')) {
+      return jsonResponse({ ok: false, error: 'Upstream tile did not return an image' }, res.ok ? 502 : res.status);
+    }
     const body = await res.arrayBuffer();
     const out = new Response(body, {
       status: res.status,
       headers: corsHeaders({
-        'Content-Type': ct,
+        'Content-Type': ct.split(';')[0].trim(),
+        'X-Content-Type-Options': 'nosniff',
         'Cache-Control': 'public, max-age=604800'
       })
     });
@@ -261,7 +296,8 @@ async function handleApi(request, env) {
     if (parts.length !== 4 || parts.some((n) => !Number.isFinite(n))) {
       return jsonResponse({ ok: false, error: 'Invalid bbox' }, 400);
     }
-    const limit = Math.min(12, Math.max(1, Number(url.searchParams.get('limit') || 8)));
+    const rawLimit = Number(url.searchParams.get('limit') || 8);
+    const limit = Number.isFinite(rawLimit) ? Math.min(20, Math.max(1, Math.round(rawLimit))) : 8;
     try {
       const upstream = 'https://graph.mapillary.com/images?access_token=' + mlyToken + '&fields=id,captured_at,compass_angle,is_pano,computed_geometry,thumb_1024_url&bbox=' + encodeURIComponent(bbox) + '&limit=' + limit;
       const res = await fetch(upstream);
@@ -280,6 +316,9 @@ async function handleApi(request, env) {
     const body = await request.json().catch(() => null);
     if (!body || !Array.isArray(body.coordinates) || body.coordinates.length < 2) {
       return jsonResponse({ ok: false, error: 'Missing coordinates' }, 400);
+    }
+    if (body.coordinates.length > 25) {
+      return jsonResponse({ ok: false, error: 'Maximum 25 waypoints allowed per route request' }, 400);
     }
     const mode = body.mode || 'driving';
     if (env && env.ORS_API_KEY) {
@@ -344,46 +383,46 @@ async function handleApi(request, env) {
   }
 
   if (p === '/api/profile') {
+    if (!verifyCsrf(request)) {
+      return jsonResponse({ ok: false, error: 'Cross-site request rejected' }, 403, undefined, true);
+    }
     if (!env || !env.DB) {
-      return jsonResponse({ ok: false, error: 'D1 database binding (DB) not configured' }, 501);
+      return jsonResponse({ ok: false, error: 'D1 database binding (DB) not configured' }, 501, undefined, true);
     }
     const syncKey = request.headers.get('X-Sync-Key') || '';
-    if (!syncKey || syncKey.length < 16) {
-      return jsonResponse({ ok: false, error: 'Valid X-Sync-Key header required' }, 401);
+    if (!syncKey || !/^[A-Za-z0-9_-]{16,128}$/.test(syncKey)) {
+      return jsonResponse({ ok: false, error: 'Valid X-Sync-Key header required' }, 401, undefined, true);
     }
     if (request.method === 'GET' && url.searchParams.get('backup') === 'latest') {
       try {
         const row = await env.DB.prepare('SELECT payload_json, updated_at, backed_up_at FROM profile_backups WHERE user_key = ? ORDER BY backed_up_at DESC LIMIT 1').bind(syncKey).first();
-        if (!row) return jsonResponse({ ok: false, error: 'No backup found' }, 404);
-        return jsonResponse({ ok: true, data: JSON.parse(row.payload_json), updatedAt: row.updated_at, backedUpAt: row.backed_up_at });
+        if (!row) return jsonResponse({ ok: false, error: 'No backup found' }, 404, undefined, true);
+        return jsonResponse({ ok: true, data: JSON.parse(row.payload_json), updatedAt: row.updated_at, backedUpAt: row.backed_up_at }, 200, 'no-store', true);
       } catch (e) {
-        return jsonResponse({ ok: false, error: 'Backups not available (migration 0002 not applied)' }, 501);
+        return jsonResponse({ ok: false, error: 'Backups not available (migration 0002 not applied)' }, 501, undefined, true);
       }
     }
     if (request.method === 'GET') {
       const row = await env.DB.prepare('SELECT payload_json, updated_at FROM user_profiles WHERE user_key = ?').bind(syncKey).first();
-      if (!row) return jsonResponse({ ok: false, error: 'Profile not found' }, 404);
-      return jsonResponse({ ok: true, data: JSON.parse(row.payload_json), updatedAt: row.updated_at });
+      if (!row) return jsonResponse({ ok: false, error: 'Profile not found' }, 404, undefined, true);
+      return jsonResponse({ ok: true, data: JSON.parse(row.payload_json), updatedAt: row.updated_at }, 200, 'no-store', true);
     }
     if (request.method === 'PUT') {
       const payload = await request.text();
       if (payload.length > 5_000_000) {
-        return jsonResponse({ ok: false, error: 'Payload too large (max 5 MB)' }, 413);
+        return jsonResponse({ ok: false, error: 'Payload too large (max 5 MB)' }, 413, undefined, true);
       }
       try { JSON.parse(payload); } catch (e) {
-        return jsonResponse({ ok: false, error: 'Payload is not valid JSON' }, 400);
+        return jsonResponse({ ok: false, error: 'Payload is not valid JSON' }, 400, undefined, true);
       }
       const now = Date.now();
       const existing = await env.DB.prepare('SELECT payload_json, updated_at FROM user_profiles WHERE user_key = ?').bind(syncKey).first();
-      // Optimistic-concurrency conflict check: client sends the server updatedAt it
-      // based its edits on. If the server moved since, refuse to silently overwrite.
-      const baseUpdatedAt = Number(request.headers.get('X-Base-Updated-At') || 0);
-      if (existing && baseUpdatedAt && Number(existing.updated_at) !== baseUpdatedAt) {
-        return jsonResponse({ ok: false, conflict: true, error: 'Server profile changed since last sync; pull and merge first', serverUpdatedAt: Number(existing.updated_at) }, 409);
+      const baseHdr = request.headers.get('X-Base-Updated-At');
+      const baseUpdatedAt = Number(baseHdr || 0);
+      if (existing && (baseHdr === null || Number(existing.updated_at) !== baseUpdatedAt)) {
+        return jsonResponse({ ok: false, conflict: true, error: 'Server profile changed since last sync; pull and merge first', serverUpdatedAt: Number(existing.updated_at) }, 409, undefined, true);
       }
       if (existing) {
-        // Keep the previous version as a backup (best-effort; table may not exist on
-        // databases that have not applied migration 0002 yet).
         try {
           await env.DB.prepare('INSERT INTO profile_backups (user_key, payload_json, updated_at, backed_up_at) VALUES (?, ?, ?, ?)')
             .bind(syncKey, existing.payload_json, Number(existing.updated_at), now).run();
@@ -396,31 +435,56 @@ async function handleApi(request, env) {
       )
         .bind(syncKey, payload, now)
         .run();
-      return jsonResponse({ ok: true, updatedAt: now });
+      return jsonResponse({ ok: true, updatedAt: now }, 200, 'no-store', true);
     }
     if (request.method === 'DELETE') {
       await env.DB.prepare('DELETE FROM user_profiles WHERE user_key = ?').bind(syncKey).run();
-      return jsonResponse({ ok: true });
+      try {
+        await env.DB.prepare('DELETE FROM profile_backups WHERE user_key = ?').bind(syncKey).run();
+      } catch (e) { /* table optional */ }
+      return jsonResponse({ ok: true }, 200, 'no-store', true);
     }
   }
 
   if (p === '/api/photos') {
-    if (!env || !env.PHOTOS_BUCKET) {
-      return jsonResponse({ ok: false, error: 'R2 bucket binding (PHOTOS_BUCKET) not configured' }, 501);
+    if (!verifyCsrf(request)) {
+      return jsonResponse({ ok: false, error: 'Cross-site request rejected' }, 403, undefined, true);
     }
-    const syncKey = request.headers.get('X-Sync-Key') || 'anon';
+    if (!env || !env.PHOTOS_BUCKET) {
+      return jsonResponse({ ok: false, error: 'R2 bucket binding (PHOTOS_BUCKET) not configured' }, 501, undefined, true);
+    }
+    const authUser = await getSessionUser(request, env);
+    const syncKey = String(request.headers.get('X-Sync-Key') || '').trim();
+    const validHexKey = /^[a-f0-9]{16,64}$/i.test(syncKey);
+    if (!authUser && !validHexKey) {
+      return jsonResponse({ ok: false, error: 'Authentication or valid hex X-Sync-Key required for photo upload' }, 401, undefined, true);
+    }
     if (request.method === 'POST') {
+      const cl = Number(request.headers.get('content-length') || 0);
+      if (cl > 10 * 1024 * 1024) {
+        return jsonResponse({ ok: false, error: 'Photo exceeds 10 MB upload cap' }, 413, undefined, true);
+      }
       const bytes = await request.arrayBuffer();
-      const objKey = `${syncKey.slice(0, 16)}/${Date.now().toString(36)}.jpg`;
-      await env.PHOTOS_BUCKET.put(objKey, bytes, { httpMetadata: { contentType: 'image/jpeg' } });
-      return jsonResponse({ ok: true, key: objKey }, 201);
+      if (!bytes.byteLength || bytes.byteLength > 10 * 1024 * 1024) {
+        return jsonResponse({ ok: false, error: 'Invalid photo byte size (max 10 MB)' }, bytes.byteLength ? 413 : 400, undefined, true);
+      }
+      const detectedMime = detectImageMime(bytes);
+      if (!detectedMime) {
+        return jsonResponse({ ok: false, error: 'Unsupported image binary format (JPEG/PNG/WebP/GIF only)' }, 415, undefined, true);
+      }
+      const extMap = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/gif': 'gif' };
+      const prefix = authUser ? authUser.id.replace(/[^A-Za-z0-9_-]/g, '') : syncKey.slice(0, 16).toLowerCase();
+      const objKey = `${prefix}/${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}.${extMap[detectedMime]}`;
+      await env.PHOTOS_BUCKET.put(objKey, bytes, { httpMetadata: { contentType: detectedMime } });
+      return jsonResponse({ ok: true, key: objKey, contentType: detectedMime }, 201, 'no-store', true);
     }
   }
 
   if (p === '/api/pois') {
     const lat = Number(url.searchParams.get('lat'));
     const lon = Number(url.searchParams.get('lon'));
-    const radius = Math.min(10000, Number(url.searchParams.get('radius') || 3000));
+    const rawRad = Number(url.searchParams.get('radius') || 3000);
+    const radius = Number.isFinite(rawRad) ? Math.min(10000, Math.max(100, Math.round(rawRad))) : 3000;
     if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
       return jsonResponse({ ok: false, error: 'Invalid lat/lon' }, 400);
     }
@@ -507,7 +571,7 @@ async function handleApi(request, env) {
     const reqDateRaw = (reqUrl.searchParams.get('date') || '').trim();
     const requestedDate = /^\d{4}-\d{2}-\d{2}$/.test(reqDateRaw) ? reqDateRaw : null;
     const cacheUrl = new URL(request.url);
-    cacheUrl.searchParams.set('_v', '5.0');
+    cacheUrl.searchParams.set('_v', '5.1');
     const cacheReq = new Request(cacheUrl.toString(), { method: 'GET' });
     if (cache) {
       const hit = await cache.match(cacheReq);
@@ -585,10 +649,13 @@ export default {
       if (ct.includes('text/html') || url.pathname === '/' || url.pathname.endsWith('/')) {
         const hdrs = new Headers(assetRes.headers);
         const modeParam = url.searchParams.get('mode');
+        const isEmbed = url.searchParams.has('embed');
         if (modeParam === 'account' || modeParam === 'archive') {
           hdrs.set('Content-Security-Policy', "frame-ancestors 'none'");
-        } else if (!hdrs.has('Content-Security-Policy')) {
+        } else if (isEmbed) {
           hdrs.set('Content-Security-Policy', 'frame-ancestors *');
+        } else if (!hdrs.has('Content-Security-Policy')) {
+          hdrs.set('Content-Security-Policy', "frame-ancestors 'self'");
         }
         if (!hdrs.has('X-Content-Type-Options')) {
           hdrs.set('X-Content-Type-Options', 'nosniff');

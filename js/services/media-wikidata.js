@@ -101,7 +101,7 @@
     return list;
   }
 
-  async function fetchWithDirectCircuit(url, cacheKey, ttlMs, source, useProxy) {
+  async function fetchWithDirectCircuit(url, cacheKey, ttlMs, source, useProxy, signal) {
     const Api = global.ApiClient;
     if (!useProxy && isDirectCircuitOpen()) {
       throw new Error('Wikimedia direct circuit open');
@@ -114,30 +114,31 @@
           ttlMs,
           source,
           timeoutMs: useProxy ? 9000 : 4200,
-          retries: useProxy ? 1 : 0
+          retries: useProxy ? 1 : 0,
+          signal
         });
       } else {
-        const res = await fetch(url);
+        const res = await fetch(url, { signal });
         data = await res.json();
       }
       if (!useProxy) recordDirectResult(true);
       return data;
     } catch (err) {
-      if (!useProxy) recordDirectResult(false);
+      if (!useProxy && !(err && err.name === 'AbortError')) recordDirectResult(false);
       throw err;
     }
   }
 
-  async function queryCommonsApi(params) {
+  async function queryCommonsApi(params, signal) {
     const Api = global.ApiClient;
     const caps = Api ? await Api.detectWorkerCapabilities() : { available: false };
     const useProxy = Boolean(caps && caps.available && caps.features && caps.features.commons);
     const qs = new URLSearchParams(Object.assign({ format: 'json', origin: '*' }, params)).toString();
     const url = useProxy ? `/api/commons?${qs}` : `https://commons.wikimedia.org/w/api.php?${qs}`;
-    return fetchWithDirectCircuit(url, `commons:${qs}`, SEVEN_DAYS_MS, 'Wikimedia Commons', useProxy);
+    return fetchWithDirectCircuit(url, `commons:${qs}`, SEVEN_DAYS_MS, 'Wikimedia Commons', useProxy, signal);
   }
 
-  async function queryWikipediaSummarySearch(query, lang) {
+  async function queryWikipediaSummarySearch(query, lang, signal) {
     const Api = global.ApiClient;
     const caps = Api ? await Api.detectWorkerCapabilities() : { available: false };
     const useProxy = Boolean(caps && caps.available && caps.features && caps.features.wikipedia);
@@ -156,7 +157,7 @@
     const url = useProxy
       ? `/api/wikipedia?lang=${hostLang}&${qs}`
       : `https://${hostLang}.wikipedia.org/w/api.php?${qs}`;
-    return fetchWithDirectCircuit(url, `wp:${hostLang}:${query}`, SEVEN_DAYS_MS, `Wikipedia (${hostLang})`, useProxy);
+    return fetchWithDirectCircuit(url, `wp:${hostLang}:${query}`, SEVEN_DAYS_MS, `Wikipedia (${hostLang})`, useProxy, signal);
   }
 
   const IRRELEVANT_PHOTO_RE =
@@ -270,6 +271,7 @@
     }
 
     let photos = [];
+    const reqSignal = o.signal;
     try {
       if (Number.isFinite(lat) && Number.isFinite(lng)) {
         const geoRes = await queryCommonsApi({
@@ -283,10 +285,11 @@
           prop: 'imageinfo',
           iiprop: 'url|extmetadata|size|mime',
           iiurlwidth: '960'
-        });
+        }, reqSignal);
         photos = parseCommonsPages(geoRes && geoRes.query && geoRes.query.pages, caps);
       }
     } catch (e) {
+      if (e && e.name === 'AbortError') return [];
       // fall through to text search
     }
 

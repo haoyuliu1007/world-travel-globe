@@ -41,6 +41,7 @@
   });
 
   let workerCapabilities = null;
+  let workerCapabilitiesExpiresAt = 0;
   let workerProbePromise = null;
 
   function inferServiceId(url, options) {
@@ -116,7 +117,7 @@
   }
 
   async function detectWorkerCapabilities() {
-    if (workerCapabilities) return workerCapabilities;
+    if (workerCapabilities && Date.now() < workerCapabilitiesExpiresAt) return workerCapabilities;
     if (workerProbePromise) return workerProbePromise;
 
     workerProbePromise = (async () => {
@@ -127,11 +128,12 @@
       };
       if (!global.location || global.location.protocol === 'file:') {
         workerCapabilities = fallback;
+        workerCapabilitiesExpiresAt = Infinity;
         return workerCapabilities;
       }
       try {
         const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
-        const timer = ctrl ? setTimeout(() => ctrl.abort(), 1800) : null;
+        const timer = ctrl ? setTimeout(() => ctrl.abort(), 5000) : null;
         const res = await fetch('/api/health', {
           signal: ctrl ? ctrl.signal : undefined,
           headers: { Accept: 'application/json' }
@@ -139,19 +141,25 @@
         if (timer) clearTimeout(timer);
         if (!res.ok) {
           workerCapabilities = fallback;
+          workerCapabilitiesExpiresAt = Date.now() + 30000;
           return workerCapabilities;
         }
         const ct = res.headers.get('content-type') || '';
         if (!ct.includes('application/json')) {
           workerCapabilities = fallback;
+          workerCapabilitiesExpiresAt = Date.now() + 30000;
           return workerCapabilities;
         }
         const json = await res.json();
         workerCapabilities = Object.assign({ available: true, mode: 'cloudflare-worker' }, json);
+        workerCapabilitiesExpiresAt = Date.now() + 600000;
         return workerCapabilities;
       } catch (e) {
         workerCapabilities = fallback;
+        workerCapabilitiesExpiresAt = Date.now() + 30000;
         return workerCapabilities;
+      } finally {
+        workerProbePromise = null;
       }
     })();
 

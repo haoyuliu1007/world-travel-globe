@@ -117,7 +117,7 @@
 
     // Extract negative clauses first (e.g. "不要海滩", "避开雪山", "no beach", "avoid coast")
     const excludeTags = [];
-    const negRe = /(?:不要|避开|别去|不想看|不含|别太|avoid|without|exclude|no\s+)([^，,;；。]+)/gi;
+    const negRe = /(?:不要|避开|别去|不想看|不含|别太|avoid|without|exclude|\bno\s+)([^，,;；。]+)/gi;
     let cleanedForPositive = q;
     let mNeg;
     while ((mNeg = negRe.exec(q)) !== null) {
@@ -139,7 +139,9 @@
         month = MONTH_CN_NUM[cnMonthMatch[1]];
       } else {
         for (let i = 0; i < MONTH_NAMES_EN.length; i++) {
-          if (new RegExp(`\\b${MONTH_NAMES_EN[i].slice(0, 3)}(?:[a-z]*)\\b`, 'i').test(cleanedForPositive)) {
+          const fullName = MONTH_NAMES_EN[i];
+          const abbr = fullName === 'september' ? 'sep|sept' : fullName.slice(0, 3);
+          if (new RegExp(`\\b(?:${fullName}|${abbr}\\.?)\\b`, 'i').test(cleanedForPositive)) {
             month = i + 1;
             break;
           }
@@ -155,14 +157,14 @@
 
     let maxBudgetRmb = null;
     const wanMatch = cleanedForPositive.match(/(\d+(?:\.\d+)?)\s*万(?:元|块|rmb)?/);
-    const rmbMatch = cleanedForPositive.match(/(?:预算|不超过|低于|以内|<=|under|budget)?\s*(\d{3,6})\s*(?:元|rmb|cny|块)?/);
+    const explicitBudgetMatch = cleanedForPositive.match(/(?:预算|不超过|低于|以内|<=|under|budget)\s*[:：]?\s*(\d{3,6})\b(?!\s*年)|(\d{3,6})\s*(?:元(?!阳)|rmb|cny|块)/i);
     const usdMatch = cleanedForPositive.match(/\$\s*(\d{2,5})|(\d{2,5})\s*(?:usd|美元)/i);
     if (usdMatch) {
       maxBudgetRmb = Math.round(Number(usdMatch[1] || usdMatch[2]) * 7.2);
     } else if (wanMatch) {
       maxBudgetRmb = Math.round(Number(wanMatch[1]) * 10000);
-    } else if (rmbMatch && /预算|元|块|rmb|cny|不超过|低于|以内|under|budget/i.test(cleanedForPositive)) {
-      maxBudgetRmb = Number(rmbMatch[1]);
+    } else if (explicitBudgetMatch) {
+      maxBudgetRmb = Number(explicitBudgetMatch[1] || explicitBudgetMatch[2]);
     }
 
     let days = null;
@@ -357,6 +359,9 @@
     const options = opts || {};
     const enrichmentById = options.enrichmentById || {};
     const intent = parseNaturalQuery(rawQuery);
+    if (!intent.raw) {
+      return { intent, results: [] };
+    }
     const ms = buildMiniSearch(list, enrichmentById);
 
     const msScores = new Map();
@@ -387,7 +392,7 @@
         }
       }
 
-      if (intent.hasIntent && intent.continent && dest.continent !== intent.continent && msScore < 5) {
+      if (intent.continent && dest.continent !== intent.continent) {
         continue;
       }
 
@@ -484,6 +489,80 @@
         } else if (wTags.includes('rain')) {
           total -= 10;
           caveats.push('该地以多雨/云雾著称');
+        }
+      }
+
+      // Thermal comfort (warm / cool) preference
+      if (intent.preferWarm || intent.preferCool) {
+        const clim = enr && Array.isArray(enr.monthlyClimateSummary) && targetMonth
+          ? enr.monthlyClimateSummary[targetMonth - 1]
+          : null;
+        const tempNums = clim && clim.temp ? String(clim.temp).match(/-?\d+(?:\.\d+)?/g) : null;
+        const meanTemp = tempNums && tempNums.length
+          ? tempNums.map(Number).reduce((a, b) => a + b, 0) / tempNums.length
+          : null;
+        const absLat = Array.isArray(dest.coords) ? Math.abs(Number(dest.coords[1]) || 0) : 35;
+        if (intent.preferWarm) {
+          if ((meanTemp !== null && meanTemp >= 18) || absLat < 26) {
+            total += 12;
+            reasons.push(meanTemp !== null ? `气温温暖 (${clim.temp})` : '低纬温暖气候带');
+          } else if (meanTemp !== null && meanTemp < 5) {
+            total -= 10;
+          }
+        }
+        if (intent.preferCool) {
+          const elevM = Number(dest.elevationM) || (enr && Number(enr.elevationM)) || 0;
+          if ((meanTemp !== null && meanTemp <= 22) || elevM >= 1400 || absLat >= 45) {
+            total += 12;
+            reasons.push(elevM >= 1400 ? `高原清凉避暑 (${elevM}m)` : '夏季相对凉爽');
+          } else if (meanTemp !== null && meanTemp >= 28) {
+            total -= 10;
+          }
+        }
+      }
+
+      // Transit convenience preference (uses hubsCache when available, excludes islands without rail)
+      if (intent.preferTransit) {
+        const hub = global.TransportService && typeof global.TransportService.getHubsForDest === 'function'
+          ? global.TransportService.getHubsForDest(dest.id)
+          : null;
+        const hasRail = hub && hub.railHub ? Boolean(hub.railHub.available) : /中国|日本|韩国|法国|德国|瑞士|意大利|西班牙/.test(String(dest.country || ''));
+        const nearAp = hub && hub.nearestAirports && hub.nearestAirports[0] ? hub.nearestAirports[0].distanceKm : 999;
+        if (hasRail) {
+          total += 12;
+          reasons.push('铁路/高铁枢纽可达');
+        } else if (nearAp <= 45) {
+          total += 6;
+          reasons.push(`机场接驳便捷 (${nearAp} km)`);
+        } else {
+          total -= 6;
+        }
+      }
+
+      // Photography scene preference
+      if (intent.photoScene) {
+        const sceneMatch = (
+          (intent.photoScene === 'mountain' && (destLands.includes('mountain') || destLands.includes('cloudsea') || destLands.includes('snow'))) ||
+          (intent.photoScene === 'milky_way' && (destLands.includes('milkyway') || destLands.includes('aurora'))) ||
+          (intent.photoScene === 'sunrise_sunset' && (destLands.includes('coast') || destLands.includes('mountain') || destLands.includes('lake'))) ||
+          (intent.photoScene === 'blossom' && destLands.includes('blossom')) ||
+          (intent.photoScene === 'city_night' && destLands.includes('architecture'))
+        );
+        if (sceneMatch) {
+          total += 14;
+          reasons.push('契合目标摄影题材');
+        }
+      }
+
+      // Travel pace preference vs suggested duration / spot density
+      if (intent.pace && dest.suggestedDays) {
+        const sug = Number(dest.suggestedDays) || 4;
+        if (intent.pace === 'relaxed' && sug <= 5 && Array.isArray(dest.spots) && dest.spots.length <= 12) {
+          total += 6;
+          reasons.push('适合慢节奏深度漫游');
+        } else if (intent.pace === 'packed' && Array.isArray(dest.spots) && dest.spots.length >= 6) {
+          total += 6;
+          reasons.push('高密度机位打卡友好');
         }
       }
 
@@ -660,8 +739,20 @@
     const blossom = lands.has('blossom') ? 1 : 0;
     const snowIce = (lands.has('snow') || lands.has('glacier')) ? 1 : 0;
     const darkSky = (lands.has('milkyway') || lands.has('aurora')) ? 1 : 0;
-    const isEastAsiaRail = /中国|日本|韩国|法国|德国|瑞士|意大利|西班牙|China|Japan|Korea|Europe/i.test(`${dest.country || ''} ${dest.continent || ''}`);
-    const transitScore = Number((isEastAsiaRail ? 0.85 : (urban ? 0.72 : 0.5)).toFixed(2));
+    const hub = global.TransportService && typeof global.TransportService.getHubsForDest === 'function'
+      ? global.TransportService.getHubsForDest(dest.id)
+      : null;
+    const isIslandNoRail = hub ? (hub.isIsland && !(hub.railHub && hub.railHub.available)) : /冰岛|马尔代夫|大溪地|南极|Iceland|Maldives|Tahiti|Antarctica/i.test(`${dest.country || ''} ${dest.name || ''}`);
+    const hasMainlandRail = hub && hub.railHub
+      ? Boolean(hub.railHub.available)
+      : (!isIslandNoRail && /中国|日本|韩国|法国|德国|瑞士|意大利|西班牙|英国|奥地利|荷兰|比利时|China|Japan|Korea/i.test(String(dest.country || '')));
+    const nearAirportKm = hub && hub.nearestAirports && hub.nearestAirports[0] ? Number(hub.nearestAirports[0].distanceKm) : 999;
+    let transitRaw = 0.48;
+    if (hasMainlandRail && urban) transitRaw = 0.92;
+    else if (hasMainlandRail) transitRaw = 0.82;
+    else if (isIslandNoRail && nearAirportKm > 80) transitRaw = 0.35;
+    else if (urban || nearAirportKm <= 40) transitRaw = 0.7;
+    const transitScore = Number(transitRaw.toFixed(2));
     return [
       Number(elev.toFixed(3)),
       coastal,

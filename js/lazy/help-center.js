@@ -160,7 +160,10 @@
 
   function close() {
     const modal = document.getElementById('help-center-modal');
-    if (modal) modal.classList.add('is-hidden');
+    if (modal) {
+      modal.classList.add('is-hidden');
+      modal.innerHTML = '';
+    }
   }
 
   return { open, openTopic, close };

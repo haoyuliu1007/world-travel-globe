@@ -97,7 +97,7 @@
     const title = (ctx && ctx.title) || (ctx && ctx.dest ? (ctx.dest.shortName || ctx.dest.name) : 'KAIROS. — World Travel Atlas');
     const caption = (ctx && ctx.caption) || `${title} · KAIROS. World Travel Atlas\n${shareUrl}`;
     const qrSvg = (global.QRCodeService && typeof global.QRCodeService.renderSvg === 'function')
-      ? global.QRCodeService.renderSvg(shareUrl, 136)
+      ? global.QRCodeService.renderSvg(shareUrl, { size: 136 })
       : (global.KairosQR && typeof global.KairosQR.toSvg === 'function' ? global.KairosQR.toSvg(shareUrl, 136) : '');
 
     const intents = buildSocialIntents(title, shareUrl);
@@ -183,6 +183,12 @@
       }
       if (statusEl) statusEl.textContent = L('当前环境不支持 Web Share API，请使用复制链接或下方 Intent。', 'Web Share API unavailable here; copy link or use web intent below.');
     });
+    modal.querySelector('#sc-type-sel').addEventListener('change', (e) => {
+      const nextType = e.target.value;
+      const spec = SHARE_TYPES.find((st) => st.id === nextType);
+      const nextTitle = spec ? `${L(spec.labelZh, spec.labelEn)} · ${title}` : title;
+      render(Object.assign({}, ctx, { type: nextType, title: nextTitle, ratio: modal.querySelector('#sc-ratio-sel').value }));
+    });
     modal.querySelector('#sc-ratio-sel').addEventListener('change', (e) => {
       render(Object.assign({}, ctx, { ratio: e.target.value, type: modal.querySelector('#sc-type-sel').value }));
     });
@@ -190,6 +196,10 @@
       const ratioSpec = POSTER_RATIOS[modal.querySelector('#sc-ratio-sel').value] || POSTER_RATIOS['3:4'];
       if (global.PosterShare && typeof global.PosterShare.renderPosterCanvas === 'function') {
         const dest = (ctx && ctx.dest) || (global.TRAVEL_ATLAS && global.TRAVEL_ATLAS.getAll()[0]);
+        const metrics = [
+          { label: 'SHARE MODE', value: shareType },
+          { label: 'FORMAT', value: ratioSpec.label }
+        ];
         const poster = await global.PosterShare.renderPosterCanvas({
           width: ratioSpec.w,
           height: ratioSpec.h,
@@ -197,10 +207,9 @@
           title,
           subtitle: shareUrl.slice(0, 72),
           coords: dest && dest.coords,
-          bullets: [
-            { label: 'SHARE MODE', value: shareType },
-            { label: 'FORMAT', value: ratioSpec.label }
-          ],
+          metrics,
+          lines: [caption.slice(0, 120)],
+          bullets: metrics,
           shareUrl,
           filename: `kairos-${shareType}-${ratioSpec.id.replace(':', 'x')}.png`,
           text: caption
@@ -219,7 +228,10 @@
 
   function close() {
     const modal = document.getElementById('share-center-modal');
-    if (modal) modal.classList.add('is-hidden');
+    if (modal) {
+      modal.classList.add('is-hidden');
+      modal.innerHTML = '';
+    }
   }
 
   return {

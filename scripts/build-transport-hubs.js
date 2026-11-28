@@ -1,10 +1,10 @@
 'use strict';
 
 /**
- * KAIROS V5.0 Offline Transport Hub Generator
- * Maps all 722 destinations to nearest real major airports (IATA/ICAO, coords, distance km)
- * and regional HSR / rail / ferry hubs with explicit open-data provenance.
- * Airport coordinates sourced from OurAirports (Public Domain: https://ourairports.com/data/).
+ * KAIROS V5.1 Offline Transport Hub Generator
+ * Maps all 722 destinations to nearest real scheduled commercial airports from OurAirports CSV
+ * (Public Domain: https://davidmegginson.github.io/ourairports-data/airports.csv),
+ * accurate landmass/island connectivity groups, verified rail/HSR hubs, and metro availability.
  */
 
 const fs = require('fs');
@@ -13,196 +13,220 @@ const vm = require('vm');
 
 const ROOT = path.resolve(__dirname, '..');
 const OUT_PATH = path.join(ROOT, 'data', 'transport', 'hubs.json');
+const OURAIRPORTS_CSV = path.join(ROOT, '.cache', 'ourairports-airports.csv');
 
-// Representative global major international & regional gateway airports (OurAirports Public Domain)
-const AIRPORTS = [
-  // East Asia / China / Japan / Korea
-  ['PEK', 'ZBAA', 'Beijing Capital Intl', [116.5846, 40.0801], 'CN', true],
-  ['PKX', 'ZBAD', 'Beijing Daxing Intl', [116.4106, 39.5092], 'CN', true],
-  ['PVG', 'ZSPD', 'Shanghai Pudong Intl', [121.8052, 31.1434], 'CN', true],
-  ['CAN', 'ZGGG', 'Guangzhou Baiyun Intl', [113.2988, 23.3924], 'CN', true],
-  ['SZX', 'ZGSZ', 'Shenzhen Baoan Intl', [113.8108, 22.6393], 'CN', true],
-  ['TFU', 'ZUTF', 'Chengdu Tianfu Intl', [104.4414, 30.3125], 'CN', true],
-  ['CTU', 'ZUUU', 'Chengdu Shuangliu Intl', [103.9471, 30.5785], 'CN', true],
-  ['CKG', 'ZUCK', 'Chongqing Jiangbei Intl', [106.6417, 29.7192], 'CN', true],
-  ['KMG', 'ZPPP', 'Kunming Changshui Intl', [102.9292, 25.1019], 'CN', true],
-  ['XIY', 'ZLXY', 'Xi\'an Xianyang Intl', [108.7516, 34.4471], 'CN', true],
-  ['HGH', 'ZSHC', 'Hangzhou Xiaoshan Intl', [120.4344, 30.2295], 'CN', true],
-  ['WUH', 'ZHHH', 'Wuhan Tianhe Intl', [114.2081, 30.7838], 'CN', true],
-  ['CSX', 'ZGHA', 'Changsha Huanghua Intl', [113.2196, 28.1892], 'CN', true],
-  ['XMN', 'ZSAM', 'Xiamen Gaoqi Intl', [118.1277, 24.5440], 'CN', true],
-  ['SYX', 'ZJSY', 'Sanya Phoenix Intl', [109.4123, 18.3029], 'CN', false],
-  ['KWL', 'ZGKL', 'Guilin Liangjiang Intl', [110.0392, 25.2181], 'CN', false],
-  ['LJG', 'ZPLJ', 'Lijiang Sanyi Intl', [100.2460, 26.6792], 'CN', false],
-  ['LXA', 'ZULS', 'Lhasa Gonggar Intl', [90.9119, 29.2978], 'CN', false],
-  ['URC', 'ZWWW', 'Urumqi Diwopu Intl', [87.4742, 43.9071], 'CN', true],
-  ['KHG', 'ZWSH', 'Kashgar Laining Intl', [76.0200, 39.5429], 'CN', false],
-  ['DNH', 'ZLDH', 'Dunhuang Mogao Intl', [94.8092, 40.1611], 'CN', false],
-  ['HRB', 'ZYHB', 'Harbin Taiping Intl', [126.2503, 45.6234], 'CN', true],
-  ['DLC', 'ZYTL', 'Dalian Zhoushuizi Intl', [121.5386, 38.9657], 'CN', true],
-  ['TAO', 'ZSQD', 'Qingdao Jiaodong Intl', [120.0956, 36.3653], 'CN', true],
-  ['HKG', 'VHHH', 'Hong Kong Intl', [113.9146, 22.3089], 'HK', true],
-  ['TPE', 'RCTP', 'Taiwan Taoyuan Intl', [121.2328, 25.0777], 'TW', true],
-  ['HND', 'RJTT', 'Tokyo Haneda', [139.7798, 35.5494], 'JP', true],
-  ['NRT', 'RJAA', 'Tokyo Narita Intl', [140.3929, 35.7720], 'JP', true],
-  ['KIX', 'RJBB', 'Kansai Intl (Osaka/Kyoto)', [135.2442, 34.4347], 'JP', true],
-  ['CTS', 'RJCC', 'New Chitose (Sapporo)', [141.6923, 42.7752], 'JP', true],
-  ['FUK', 'RJFF', 'Fukuoka Airport', [130.4517, 33.5859], 'JP', true],
-  ['OKA', 'ROAH', 'Naha Airport (Okinawa)', [127.6458, 26.1958], 'JP', true],
-  ['ICN', 'RKSI', 'Seoul Incheon Intl', [126.4505, 37.4691], 'KR', true],
-  ['CJU', 'RKPC', 'Jeju Intl', [126.4928, 33.5113], 'KR', true],
-  ['UBN', 'ZMCK', 'Chinggis Khaan Intl (Ulaanbaatar)', [106.8194, 47.6469], 'MN', true],
-  // SE Asia / South Asia / Central Asia / Middle East
-  ['SIN', 'WSSS', 'Singapore Changi', [103.9915, 1.3644], 'SG', true],
-  ['KUL', 'WMKK', 'Kuala Lumpur Intl', [101.7099, 2.7456], 'MY', true],
-  ['BKK', 'VTBS', 'Bangkok Suvarnabhumi', [100.7473, 13.6811], 'TH', true],
-  ['CNX', 'VTCC', 'Chiang Mai Intl', [98.9626, 18.7668], 'TH', true],
-  ['HKT', 'VTSP', 'Phuket Intl', [98.3169, 8.1132], 'TH', true],
-  ['HAN', 'VVNB', 'Hanoi Noi Bai Intl', [105.8072, 21.2212], 'VN', true],
-  ['SGN', 'VVTS', 'Ho Chi Minh Tan Son Nhat', [106.6520, 10.8188], 'VN', true],
-  ['DAD', 'VVDN', 'Da Nang Intl', [108.1992, 16.0439], 'VN', true],
-  ['SAI', 'VDSA', 'Siem Reap-Angkor Intl', [104.2233, 13.3689], 'KH', true],
-  ['DPS', 'WADD', 'Ngurah Rai (Bali)', [115.1672, -8.7482], 'ID', true],
-  ['CGK', 'WIII', 'Soekarno-Hatta (Jakarta)', [106.6559, -6.1256], 'ID', true],
-  ['MNL', 'RPLL', 'Manila Ninoy Aquino Intl', [121.0196, 14.5086], 'PH', true],
-  ['CEB', 'RPVM', 'Mactan-Cebu Intl', [123.9789, 10.3075], 'PH', true],
-  ['KTM', 'VNKT', 'Tribhuvan Intl (Kathmandu)', [85.3592, 27.6966], 'NP', true],
-  ['DEL', 'VIDP', 'Indira Gandhi Intl (Delhi)', [77.1031, 28.5665], 'IN', true],
-  ['BOM', 'VABB', 'Mumbai Chhatrapati Shivaji', [72.8679, 19.0887], 'IN', true],
-  ['IXL', 'VILH', 'Kushok Bakula Rimpochee (Leh)', [77.5465, 34.1359], 'IN', false],
-  ['CMB', 'VCBI', 'Bandaranaike Intl (Colombo)', [79.8841, 7.1808], 'LK', true],
-  ['MLE', 'VRMM', 'Velana Intl (Maldives)', [73.5291, 4.1918], 'MV', true],
-  ['ISB', 'OPIS', 'Islamabad Intl', [72.8258, 33.5490], 'PK', true],
-  ['TAS', 'UTTT', 'Tashkent Intl', [69.2812, 41.2579], 'UZ', true],
-  ['ALA', 'UAAA', 'Almaty Intl', [77.0405, 43.3521], 'KZ', true],
-  ['GYD', 'UBBB', 'Heydar Aliyev Intl (Baku)', [50.0467, 40.4675], 'AZ', true],
-  ['TBS', 'UGTB', 'Tbilisi Intl', [44.9547, 41.6692], 'GE', true],
-  ['DXB', 'OMDB', 'Dubai Intl', [55.3644, 25.2528], 'AE', true],
-  ['DOH', 'OTHH', 'Hamad Intl (Doha)', [51.6081, 25.2731], 'QA', true],
-  ['MCT', 'OOMS', 'Muscat Intl', [58.2844, 23.5933], 'OM', true],
-  ['AMM', 'OJAI', 'Queen Alia Intl (Amman)', [35.9932, 31.7226], 'JO', true],
-  ['TLV', 'LLBG', 'Ben Gurion Intl', [34.8867, 32.0114], 'IL', true],
-  ['IKA', 'OIIE', 'Tehran Imam Khomeini Intl', [51.1522, 35.4161], 'IR', true],
-  ['IST', 'LTFM', 'Istanbul Airport', [28.7519, 41.2753], 'TR', true],
-  ['ASR', 'LTAU', 'Kayseri Erkilet (Cappadocia)', [35.4954, 38.7704], 'TR', false],
-  // Europe
-  ['LHR', 'EGLL', 'London Heathrow', [-0.4614, 51.4775], 'GB', true],
-  ['EDI', 'EGPH', 'Edinburgh Airport', [-3.3725, 55.9500], 'GB', true],
-  ['DUB', 'EIDW', 'Dublin Airport', [-6.2701, 53.4213], 'IE', true],
-  ['CDG', 'LFPG', 'Paris Charles de Gaulle', [2.5479, 49.0097], 'FR', true],
-  ['NCE', 'LFMN', 'Nice Cote d\'Azur', [7.2159, 43.6584], 'FR', true],
-  ['AMS', 'EHAM', 'Amsterdam Schiphol', [4.7639, 52.3086], 'NL', true],
-  ['FRA', 'EDDF', 'Frankfurt Airport', [8.5706, 50.0333], 'DE', true],
-  ['MUC', 'EDDM', 'Munich Airport', [11.7861, 48.3538], 'DE', true],
-  ['ZRH', 'LSZH', 'Zurich Airport', [8.5492, 47.4647], 'CH', true],
-  ['GVA', 'LSGG', 'Geneva Airport', [6.1090, 46.2381], 'CH', true],
-  ['VIE', 'LOWW', 'Vienna Intl', [16.5697, 48.1103], 'AT', true],
-  ['MXP', 'LIMC', 'Milan Malpensa', [8.7281, 45.6306], 'IT', true],
-  ['VCE', 'LIPZ', 'Venice Marco Polo', [12.3519, 45.5053], 'IT', true],
-  ['FCO', 'LIRF', 'Rome Fiumicino', [12.2389, 41.8003], 'IT', true],
-  ['NAP', 'LIRN', 'Naples Intl', [14.2908, 40.8860], 'IT', true],
-  ['BCN', 'LEBL', 'Barcelona El Prat', [2.0785, 41.2971], 'ES', true],
-  ['MAD', 'LEMD', 'Madrid Barajas', [-3.5626, 40.4719], 'ES', true],
-  ['LIS', 'LPPT', 'Lisbon Humberto Delgado', [-9.1359, 38.7813], 'PT', true],
-  ['ATH', 'LGAV', 'Athens Intl', [23.9445, 37.9364], 'GR', true],
-  ['JTR', 'LGSR', 'Santorini (Thira)', [25.4793, 36.3992], 'GR', false],
-  ['DBV', 'LDDU', 'Dubrovnik Airport', [18.2682, 42.5614], 'HR', false],
-  ['PRG', 'LKPR', 'Vaclav Havel Prague', [14.2600, 50.1008], 'CZ', true],
-  ['BUD', 'LHBP', 'Budapest Ferenc Liszt', [19.2556, 47.4369], 'HU', true],
-  ['KRK', 'EPKK', 'Krakow John Paul II', [19.7848, 50.0777], 'PL', true],
-  ['CPH', 'EKCH', 'Copenhagen Kastrup', [12.6560, 55.6179], 'DK', true],
-  ['OSL', 'ENGM', 'Oslo Gardermoen', [11.1004, 60.1939], 'NO', true],
-  ['TOS', 'ENTC', 'Tromso Langnes', [18.9189, 69.6833], 'NO', true],
-  ['BGO', 'ENBR', 'Bergen Flesland', [5.2181, 60.2934], 'NO', true],
-  ['ARN', 'ESSA', 'Stockholm Arlanda', [17.9186, 59.6519], 'SE', true],
-  ['HEL', 'EFHK', 'Helsinki Vantaa', [24.9633, 60.3172], 'FI', true],
-  ['RVN', 'EFRO', 'Rovaniemi Airport', [25.8304, 66.5648], 'FI', false],
-  ['KEF', 'BIKF', 'Keflavik Intl (Reykjavik)', [-22.6056, 63.9850], 'IS', true],
-  ['FAE', 'EKVG', 'Vagar Airport (Faroe)', [-7.2772, 62.0636], 'FO', false],
-  ['SVO', 'UUEE', 'Moscow Sheremetyevo', [37.4146, 55.9726], 'RU', true],
-  ['LED', 'ULLI', 'St Petersburg Pulkovo', [30.2625, 59.8003], 'RU', true],
-  ['MMK', 'ULMM', 'Murmansk Airport', [32.7508, 68.7817], 'RU', false],
-  ['VVO', 'UHWW', 'Vladivostok Knevichi', [132.1480, 43.3989], 'RU', true],
-  // Oceania
-  ['AKL', 'NZAA', 'Auckland Airport', [174.7917, -37.0081], 'NZ', true],
-  ['ZQN', 'NZQN', 'Queenstown Airport', [168.7392, -45.0211], 'NZ', true],
-  ['CHC', 'NZCH', 'Christchurch Intl', [172.5322, -43.4894], 'NZ', true],
-  ['SYD', 'YSSY', 'Sydney Kingsford Smith', [151.1772, -33.9461], 'AU', true],
-  ['MEL', 'YMML', 'Melbourne Tullamarine', [144.8433, -37.6733], 'AU', true],
-  ['CNS', 'YBCS', 'Cairns Airport', [145.7553, -16.8858], 'AU', true],
-  ['AYQ', 'YAYE', 'Ayers Rock (Uluru)', [130.9756, -25.1861], 'AU', false],
-  ['PER', 'YPPH', 'Perth Airport', [115.9669, -31.9403], 'AU', true],
-  ['HBA', 'YMHB', 'Hobart Airport', [147.5103, -42.8361], 'AU', false],
-  ['PPT', 'NTAA', 'Faa\'a Intl (Tahiti)', [-149.6067, -17.5537], 'PF', true],
-  ['NAN', 'NFFN', 'Nadi Intl (Fiji)', [177.4434, -17.7554], 'FJ', true],
-  ['ROR', 'PTRO', 'Roman Tmetuchl Intl (Palau)', [134.5442, 7.3673], 'PW', true],
-  // North America
-  ['JFK', 'KJFK', 'New York John F. Kennedy', [-73.7789, 40.6398], 'US', true],
-  ['BOS', 'KBOS', 'Boston Logan Intl', [-71.0052, 42.3643], 'US', true],
-  ['IAD', 'KIAD', 'Washington Dulles Intl', [-77.4558, 38.9445], 'US', true],
-  ['MIA', 'KMIA', 'Miami Intl', [-80.2906, 25.7932], 'US', true],
-  ['ORD', 'KORD', 'Chicago O\'Hare Intl', [-87.9048, 41.9786], 'US', true],
-  ['DEN', 'KDEN', 'Denver Intl', [-104.6732, 39.8617], 'US', true],
-  ['SLC', 'KSLC', 'Salt Lake City Intl', [-111.9778, 40.7884], 'US', true],
-  ['LAS', 'KLAS', 'Las Vegas Harry Reid Intl', [-115.1522, 36.0801], 'US', true],
-  ['PHX', 'KPHX', 'Phoenix Sky Harbor Intl', [-112.0116, 33.4343], 'US', true],
-  ['LAX', 'KLAX', 'Los Angeles Intl', [-118.4081, 33.9425], 'US', true],
-  ['SFO', 'KSFO', 'San Francisco Intl', [-122.3750, 37.6189], 'US', true],
-  ['SEA', 'KSEA', 'Seattle-Tacoma Intl', [-122.3093, 47.4490], 'US', true],
-  ['ANC', 'PANC', 'Anchorage Ted Stevens', [-149.9964, 61.1744], 'US', true],
-  ['FAI', 'PAFA', 'Fairbanks Intl', [-147.8564, 64.8151], 'US', true],
-  ['HNL', 'PHNL', 'Honolulu Daniel K. Inouye', [-157.9224, 21.3187], 'US', true],
-  ['KOA', 'PHKO', 'Kona Intl (Big Island)', [-156.0456, 19.7388], 'US', true],
-  ['YYC', 'CYYC', 'Calgary Intl (Banff)', [-114.0192, 51.1139], 'CA', true],
-  ['YVR', 'CYVR', 'Vancouver Intl', [-123.1839, 49.1939], 'CA', true],
-  ['YYZ', 'CYYZ', 'Toronto Pearson Intl', [-79.6306, 43.6772], 'CA', true],
-  ['YQB', 'CYQB', 'Quebec City Jean Lesage', [-71.3933, 46.7911], 'CA', true],
-  ['YZF', 'CYZF', 'Yellowknife Airport', [-114.4403, 62.4628], 'CA', false],
-  ['SFJ', 'BGSF', 'Kangerlussuaq (Greenland)', [-50.6894, 67.0170], 'GL', false],
-  ['MEX', 'MMMX', 'Mexico City Benito Juarez', [-99.0721, 19.4363], 'MX', true],
-  ['CUN', 'MMUN', 'Cancun Intl', [-86.8771, 21.0365], 'MX', true],
-  ['SJO', 'MROC', 'San Jose Juan Santamaria', [-84.2088, 9.9939], 'CR', true],
-  ['PTY', 'MPTO', 'Panama Tocumen Intl', [-79.3835, 9.0714], 'PA', true],
-  ['HAV', 'MUHA', 'Havana Jose Marti Intl', [-82.4091, 22.9892], 'CU', true],
-  // South America
-  ['LIM', 'SPJC', 'Lima Jorge Chavez Intl', [-77.1143, -12.0219], 'PE', true],
-  ['CUZ', 'SPZO', 'Cusco Alejandro Velasco', [-71.9388, -13.5357], 'PE', false],
-  ['UIO', 'SEQM', 'Quito Mariscal Sucre', [-78.3575, -0.1292], 'EC', true],
-  ['GPS', 'SEGS', 'Galapagos Seymour (Baltra)', [-90.2659, -0.4538], 'EC', false],
-  ['LPB', 'SLLP', 'La Paz El Alto Intl', [-68.1923, -16.5133], 'BO', true],
-  ['UYU', 'SLUY', 'Uyuni Joya Andina', [-66.8422, -20.4500], 'BO', false],
-  ['SCL', 'SCEL', 'Santiago Arturo Merino', [-70.7858, -33.3930], 'CL', true],
-  ['CJC', 'SCCF', 'Calama El Loa (Atacama)', [-68.9036, -22.4982], 'CL', false],
-  ['PUQ', 'SCCI', 'Punta Arenas Carlos Ibanez', [-70.8546, -53.0026], 'CL', false],
-  ['EZE', 'SAEZ', 'Buenos Aires Ezeiza Intl', [-58.5358, -34.8222], 'AR', true],
-  ['FTE', 'SAWC', 'El Calafate Intl', [-72.0531, -50.2803], 'AR', false],
-  ['USH', 'SAWH', 'Ushuaia Malvinas Argentinas', [-68.2958, -54.8433], 'AR', false],
-  ['IGR', 'SARI', 'Iguazu Cataratas Intl', [-54.4734, -25.7373], 'AR', false],
-  ['GRU', 'SBGR', 'Sao Paulo Guarulhos', [-46.4731, -23.4356], 'BR', true],
-  ['GIG', 'SBGL', 'Rio de Janeiro Galeao', [-43.2506, -22.8090], 'BR', true],
-  ['BOG', 'SKBO', 'Bogota El Dorado Intl', [-74.1469, 4.7016], 'CO', true],
-  // Africa & Antarctica gateways
-  ['NBO', 'HKJK', 'Nairobi Jomo Kenyatta', [36.9278, -1.3192], 'KE', true],
-  ['JRO', 'HTKJ', 'Kilimanjaro Intl', [37.0745, -3.4294], 'TZ', true],
-  ['ZNZ', 'HTZA', 'Zanzibar Abeid Amani', [39.2249, -6.2220], 'TZ', true],
-  ['ADD', 'HAAB', 'Addis Ababa Bole Intl', [38.7993, 8.9779], 'ET', true],
-  ['WDH', 'FYWH', 'Windhoek Hosea Kutako', [17.4709, -22.4799], 'NA', true],
-  ['MUB', 'FBMN', 'Maun Airport (Okavango)', [23.4311, -19.9726], 'BW', false],
-  ['VFA', 'FVFA', 'Victoria Falls Airport', [25.8390, -18.0959], 'ZW', false],
-  ['CPT', 'FACT', 'Cape Town Intl', [18.6017, -33.9648], 'ZA', true],
-  ['JNB', 'FAOR', 'Johannesburg OR Tambo', [28.2460, -26.1392], 'ZA', true],
-  ['TNR', 'FMMI', 'Antananarivo Ivato Intl', [47.4788, -18.7969], 'MG', true],
-  ['SEZ', 'FSIA', 'Seychelles Intl (Mahe)', [55.5218, -4.6743], 'SC', true],
-  ['MRU', 'FIMP', 'Mauritius Sir Seewoosagur', [57.6836, -20.4302], 'MU', true],
-  ['CMN', 'GMMN', 'Casablanca Mohammed V', [-7.5898, 33.3675], 'MA', true],
-  ['RAK', 'GMMX', 'Marrakech Menara', [-8.0363, 31.6069], 'MA', true],
-  ['CAI', 'HECA', 'Cairo Intl', [31.4056, 30.1219], 'EG', true],
-  ['LXR', 'HELX', 'Luxor Intl', [32.7066, 25.6710], 'EG', false],
-  ['DKR', 'GOBD', 'Dakar Blaise Diagne Intl', [-17.0733, 14.6700], 'SN', true],
-  ['MPN', 'EGYP', 'Mount Pleasant (Falklands)', [-58.4472, -51.8228], 'FK', false]
-];
+const COUNTRY_TO_ISO = {
+  '中国': ['CN'],
+  '日本': ['JP'],
+  '韩国': ['KR'],
+  '蒙古': ['MN'],
+  '新加坡': ['SG'],
+  '马来西亚': ['MY'],
+  '印度尼西亚': ['ID'],
+  '菲律宾': ['PH'],
+  '泰国': ['TH'],
+  '越南': ['VN'],
+  '柬埔寨': ['KH'],
+  '老挝': ['LA'],
+  '缅甸': ['MM'],
+  '文莱': ['BN'],
+  '马尔代夫': ['MV'],
+  '斯里兰卡': ['LK'],
+  '尼泊尔': ['NP'],
+  '不丹': ['BT'],
+  '印度': ['IN'],
+  '阿联酋': ['AE'],
+  '阿曼': ['OM'],
+  '约旦': ['JO'],
+  '沙特阿拉伯': ['SA'],
+  '土耳其': ['TR'],
+  '格鲁吉亚': ['GE'],
+  '阿塞拜疆': ['AZ'],
+  '亚美尼亚': ['AM'],
+  '乌兹别克斯坦': ['UZ'],
+  '哈萨克斯坦': ['KZ'],
+  '吉尔吉斯斯坦': ['KG'],
+  '土库曼斯坦': ['TM'],
+  '塔吉克斯坦': ['TJ'],
+  '俄罗斯': ['RU'],
+  '巴基斯坦': ['PK'],
+  '伊朗': ['IR'],
+  '卡塔尔': ['QA'],
+  '巴林': ['BH'],
+  '科威特': ['KW'],
+  '也门': ['YE'],
+  '塞浦路斯': ['CY'],
+  '以色列': ['IL'],
+  '新西兰': ['NZ'],
+  '澳大利亚': ['AU'],
+  '法属波利尼西亚': ['PF'],
+  '帕劳': ['PW'],
+  '斐济': ['FJ'],
+  '瓦努阿图': ['VU'],
+  '库克群岛': ['CK'],
+  '新喀里多尼亚': ['NC'],
+  '冰岛': ['IS'],
+  '法罗群岛': ['FO'],
+  '挪威': ['NO'],
+  '芬兰': ['FI'],
+  '瑞典': ['SE'],
+  '丹麦': ['DK'],
+  '瑞士': ['CH'],
+  '意大利': ['IT'],
+  '奥地利': ['AT'],
+  '德国': ['DE'],
+  '斯洛文尼亚': ['SI'],
+  '梵蒂冈': ['VA', 'IT'],
+  '希腊': ['GR'],
+  '捷克': ['CZ'],
+  '匈牙利': ['HU'],
+  '波兰': ['PL'],
+  '西班牙': ['ES'],
+  '葡萄牙': ['PT'],
+  '克罗地亚': ['HR'],
+  '黑山': ['ME'],
+  '法国': ['FR'],
+  '荷兰': ['NL'],
+  '比利时': ['BE'],
+  '英国': ['GB'],
+  '爱尔兰': ['IE'],
+  '加拿大': ['CA'],
+  '格陵兰': ['GL'],
+  '美国': ['US'],
+  '墨西哥': ['MX'],
+  '哥斯达黎加': ['CR'],
+  '危地马拉': ['GT'],
+  '伯利兹': ['BZ'],
+  '尼加拉瓜': ['NI'],
+  '古巴': ['CU'],
+  '巴拿马': ['PA'],
+  '波多黎各': ['PR'],
+  '巴哈马': ['BS'],
+  '圣卢西亚': ['LC'],
+  '特克斯和凯科斯群岛': ['TC'],
+  '英属维尔京群岛': ['VG'],
+  '阿鲁巴': ['AW'],
+  '库拉索': ['CW'],
+  '百慕大': ['BM'],
+  '秘鲁': ['PE'],
+  '厄瓜多尔': ['EC'],
+  '玻利维亚': ['BO'],
+  '智利': ['CL'],
+  '阿根廷': ['AR'],
+  '乌拉圭': ['UY'],
+  '巴西': ['BR'],
+  '委内瑞拉': ['VE'],
+  '圭亚那': ['GY'],
+  '哥伦比亚': ['CO'],
+  '肯尼亚': ['KE'],
+  '坦桑尼亚': ['TZ'],
+  '乌干达': ['UG'],
+  '卢旺达': ['RW'],
+  '埃塞俄比亚': ['ET'],
+  '吉布提': ['DJ'],
+  '纳米比亚': ['NA'],
+  '博茨瓦纳': ['BW'],
+  '赞比亚': ['ZM'],
+  '津巴布韦': ['ZW'],
+  '马拉维': ['MW'],
+  '南非': ['ZA'],
+  '莱索托': ['LS'],
+  '莫桑比克': ['MZ'],
+  '马达加斯加': ['MG'],
+  '塞舌尔': ['SC'],
+  '毛里求斯': ['MU'],
+  '留尼汪': ['RE'],
+  '科摩罗': ['KM'],
+  '摩洛哥': ['MA'],
+  '突尼斯': ['TN'],
+  '阿尔及利亚': ['DZ'],
+  '毛里塔尼亚': ['MR'],
+  '埃及': ['EG'],
+  '苏丹': ['SD'],
+  '佛得角': ['CV'],
+  '塞内加尔': ['SN'],
+  '加纳': ['GH'],
+  '圣多美和普林西比': ['ST'],
+  '乍得': ['TD'],
+  '喀麦隆': ['CM'],
+  '加蓬': ['GA'],
+  '南极洲': ['AQ'],
+  '南乔治亚和南桑威奇群岛': ['GS', 'FK'],
+  '福克兰群岛': ['FK']
+};
 
-const HSR_COUNTRIES = new Set(['中国', '日本', '韩国', '法国', '德国', '瑞士', '意大利', '西班牙', '英国', '比利时', '荷兰', '奥地利', '瑞典', '挪威', '芬兰', '俄罗斯', '土耳其', '摩洛哥', '沙特阿拉伯', '乌兹别克斯坦']);
+const HSR_COUNTRIES = new Set([
+  '中国', '日本', '韩国', '法国', '德国', '瑞士', '意大利', '西班牙', '英国',
+  '比利时', '荷兰', '奥地利', '瑞典', '挪威', '芬兰', '俄罗斯', '土耳其',
+  '摩洛哥', '沙特阿拉伯', '乌兹别克斯坦'
+]);
+
+const METRO_CITIES_RE = /(北京|上海|广州|深圳|成都|重庆|西安|杭州|南京|苏州|武汉|长沙|青岛|大连|哈尔滨|昆明|沈阳|郑州|天津|香港|澳门|台北|高雄|东京|京都|大阪|名古屋|横滨|福冈|札幌|神户|首尔|釜山|新加坡|吉隆坡|曼谷|河内|胡志明|马尼拉|雅加达|德里|孟买|迪拜|多哈|利雅得|伊斯坦布尔|安卡拉|巴库|第比利斯|塔什干|阿拉木图|德黑兰|莫斯科|圣彼得堡|伦敦|巴黎|阿姆斯特丹|布鲁塞尔|柏林|慕尼黑|法兰克福|苏黎世|日内瓦|维也纳|米兰|罗马|那不勒斯|马德里|巴塞罗那|里斯本|雅典|布拉格|布达佩斯|华沙|哥本哈根|奥斯陆|斯德哥尔摩|赫尔辛基|纽约|波士顿|华盛顿|芝加哥|洛杉矶|旧金山|西雅图|迈阿密|多伦多|温哥华|蒙特利尔|墨西哥城|巴拿马城|利马|圣地亚哥|布宜诺斯艾利斯|里约热内卢|圣保罗|波哥大|基多|开罗|卡萨布兰卡|悉尼|墨尔本|奥克兰|Tokyo|Kyoto|Osaka|Beijing|Shanghai|Seoul|Singapore|London|Paris|New York|Chicago|San Francisco|Sydney|Melbourne|Madrid|Barcelona|Rome|Milan|Berlin|Munich|Vienna|Zurich|Amsterdam|Brussels|Stockholm|Oslo|Helsinki|Copenhagen|Moscow|Istanbul|Bangkok|Dubai|Cairo)/i;
+
+function parseCsvLine(line) {
+  const fields = [];
+  let cur = '';
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (inQuotes) {
+      if (ch === '"' && line[i + 1] === '"') {
+        cur += '"';
+        i++;
+      } else if (ch === '"') {
+        inQuotes = false;
+      } else {
+        cur += ch;
+      }
+    } else if (ch === '"') {
+      inQuotes = true;
+    } else if (ch === ',') {
+      fields.push(cur);
+      cur = '';
+    } else {
+      cur += ch;
+    }
+  }
+  fields.push(cur);
+  return fields;
+}
+
+function loadOurAirports() {
+  if (!fs.existsSync(OURAIRPORTS_CSV)) {
+    throw new Error(`Missing OurAirports CSV at ${OURAIRPORTS_CSV}`);
+  }
+  const text = fs.readFileSync(OURAIRPORTS_CSV, 'utf8');
+  const lines = text.split(/\r?\n/);
+  const headers = parseCsvLine(lines[0]);
+  const col = Object.fromEntries(headers.map((h, i) => [h, i]));
+  const airports = [];
+
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i];
+    if (!line) continue;
+    const f = parseCsvLine(line);
+    const type = f[col.type];
+    if (type !== 'large_airport' && type !== 'medium_airport' && type !== 'small_airport') continue;
+    const sched = f[col.scheduled_service];
+    const iata = (f[col.iata_code] || '').trim().toUpperCase();
+    if (!/^[A-Z]{3}$/.test(iata)) continue;
+    if (sched !== 'yes' && type !== 'large_airport') continue;
+    const lat = Number(f[col.latitude_deg]);
+    const lng = Number(f[col.longitude_deg]);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) continue;
+    airports.push({
+      iata,
+      icao: (f[col.icao_code] || f[col.ident] || '').trim().toUpperCase(),
+      name: (f[col.name] || iata).trim(),
+      coords: [Number(lng.toFixed(4)), Number(lat.toFixed(4))],
+      countryIso: (f[col.iso_country] || '').trim().toUpperCase(),
+      isoRegion: (f[col.iso_region] || '').trim().toUpperCase(),
+      type,
+      intl: type === 'large_airport'
+    });
+  }
+  return airports;
+}
 
 function haversineKm(a, b) {
   const r = Math.PI / 180;
@@ -210,6 +234,211 @@ function haversineKm(a, b) {
   const dLng = (b[0] - a[0]) * r;
   const s = Math.sin(dLat / 2) ** 2 + Math.cos(a[1] * r) * Math.cos(b[1] * r) * Math.sin(dLng / 2) ** 2;
   return 6371 * 2 * Math.asin(Math.min(1, Math.sqrt(s)));
+}
+
+function classifyLandmass(d) {
+  const id = String(d.id || '').toLowerCase();
+  const text = `${d.id} ${d.country} ${d.region} ${d.province} ${d.name} ${d.subtitle || ''}`;
+  const cont = String(d.continent || '').toLowerCase();
+  const c = String(d.country || '');
+  const coords = Array.isArray(d.coords) ? d.coords : [0, 0];
+
+  if (cont === 'antarctica' || /南极|南乔治亚|福克兰|antarctica|south georgia|falkland/i.test(text)) {
+    if (/福克兰|falkland/i.test(text)) return { landmass: 'falklands', island: true, railConnected: false };
+    if (/南乔治亚|south georgia/i.test(text)) return { landmass: 'south_georgia', island: true, railConnected: false };
+    return { landmass: 'antarctica', island: true, railConnected: false };
+  }
+
+  // China & Taiwan / Hainan / Islands
+  if (c === '中国') {
+    if (/taiwan|taipei|kaohsiung|hualien|taitung|penghu|kinmen|alishan|taroko|sun-moon|台湾|台北|高雄|花莲|台东|阿里山|太鲁阁|日月潭|澎湖|金门|马祖|绿岛|兰屿/i.test(text) || id.includes('tw')) {
+      if (/澎湖|金门|马祖|绿岛|兰屿/i.test(text)) return { landmass: 'taiwan_offshore', island: true, railConnected: false };
+      return { landmass: 'taiwan', island: true, railConnected: true };
+    }
+    if (/海南|三亚|海口|万宁|陵水|琼海|五指山|sanya|haikou|hainan/i.test(text)) {
+      return { landmass: 'hainan', island: true, railConnected: true };
+    }
+    if (/舟山|普陀|东极|嵊泗|涠洲|平潭/i.test(text)) {
+      return { landmass: 'china_offshore_island', island: true, railConnected: /平潭/.test(text) };
+    }
+    if (/珠峰|阿里|冈仁波齐|古格|可可西里|纳木错|萨迦|墨脱|额济纳|巴丹吉林|阿尔山|呼伦贝尔|喀纳斯|塔县|帕米尔/i.test(text)) {
+      return { landmass: 'eurasia_mainland', island: false, railConnected: false };
+    }
+    return { landmass: 'eurasia_mainland', island: false, railConnected: true };
+  }
+
+  if (c === '日本') {
+    if (/冲绳|那霸|石垣|宫古|久米|西表|okinawa|naha|ishigaki|miyako/i.test(text)) {
+      return { landmass: 'japan_okinawa', island: true, railConnected: false };
+    }
+    if (/屋久岛|奄美|利尻|礼文|佐渡|小笠原|五岛|yakushima|rishiri|rebun|ogasawara|sado/i.test(text)) {
+      return { landmass: 'japan_remote_island', island: true, railConnected: false };
+    }
+    // Honshu, Kyushu, Shikoku, Hokkaido are connected by rail tunnels/bridges
+    return { landmass: 'japan_main', island: true, railConnected: true };
+  }
+
+  if (c === '韩国') {
+    if (/济州|jeju|郁陵|ulleung/i.test(text)) {
+      return { landmass: 'korea_jeju', island: true, railConnected: false };
+    }
+    return { landmass: 'korea_peninsula', island: false, railConnected: true };
+  }
+
+  if (c === '英国') {
+    if (/斯凯|奥克尼|设得兰|赫布里底|skye|orkney|shetland|hebrides/i.test(text)) {
+      return { landmass: 'uk_islands', island: true, railConnected: false };
+    }
+    return { landmass: 'uk_gb', island: true, railConnected: true }; // Channel Tunnel rail to Europe
+  }
+  if (c === '爱尔兰') return { landmass: 'ireland', island: true, railConnected: true };
+  if (c === '冰岛') return { landmass: 'iceland', island: true, railConnected: false };
+  if (c === '法罗群岛') return { landmass: 'faroe', island: true, railConnected: false };
+  if (c === '格陵兰') return { landmass: 'greenland', island: true, railConnected: false };
+  if (c === '塞浦路斯') return { landmass: 'cyprus', island: true, railConnected: false };
+
+  if (c === '挪威') {
+    if (/斯瓦尔巴|朗伊尔|svalbard|longyearbyen/i.test(text) || coords[1] > 74) {
+      return { landmass: 'svalbard', island: true, railConnected: false };
+    }
+    if (/罗弗敦|lofoten|reine|森雅|senja/i.test(text)) {
+      return { landmass: 'norway_lofoten', island: true, railConnected: false };
+    }
+    if (/特罗姆瑟|北角|tromso|nordkapp/i.test(text) && coords[1] > 68.5) {
+      return { landmass: 'eurasia_mainland', island: false, railConnected: false };
+    }
+    return { landmass: 'eurasia_mainland', island: false, railConnected: true };
+  }
+
+  if (c === '西班牙') {
+    if (/特内里费|兰萨罗特|大加那利|拉帕尔马|富埃特文图拉|加那利|tenerife|lanzarote|canary/i.test(text)) {
+      return { landmass: 'canary_islands', island: true, railConnected: false };
+    }
+    if (/马略卡|梅诺卡|伊维萨|巴利阿里|mallorca|menorca|ibiza|balearic/i.test(text)) {
+      return { landmass: 'balearic_islands', island: true, railConnected: false };
+    }
+    return { landmass: 'eurasia_mainland', island: false, railConnected: true };
+  }
+
+  if (c === '葡萄牙') {
+    if (/马德拉|亚速尔|madeira|azores|sao-miguel|pico/i.test(text)) {
+      return { landmass: 'portugal_atlantic_islands', island: true, railConnected: false };
+    }
+    return { landmass: 'eurasia_mainland', island: false, railConnected: true };
+  }
+
+  if (c === '法国') {
+    if (/科西嘉|corsica|bonifacio/i.test(text)) return { landmass: 'corsica', island: true, railConnected: false };
+    return { landmass: 'eurasia_mainland', island: false, railConnected: true };
+  }
+
+  if (c === '意大利') {
+    if (/撒丁|sardinia|la-maddalena/i.test(text)) return { landmass: 'sardinia', island: true, railConnected: false };
+    if (/西西里|埃特纳|陶尔米纳|巴勒莫|阿格里真托|sicily|etna|taormina/i.test(text)) return { landmass: 'sicily', island: true, railConnected: true };
+    return { landmass: 'eurasia_mainland', island: false, railConnected: true };
+  }
+
+  if (c === '希腊') {
+    if (/圣托里尼|米科诺斯|克里特|罗德|扎金索斯|米洛斯|科孚|凯法利尼亚|帕罗斯|纳克索斯|santorini|mykonos|crete|rhodes|zakynthos|milos/i.test(text)) {
+      return { landmass: 'greek_islands', island: true, railConnected: false };
+    }
+    return { landmass: 'eurasia_mainland', island: false, railConnected: true };
+  }
+
+  if (c === '克罗地亚') {
+    if (/赫瓦尔|科尔丘拉|维斯|布拉奇|hvar|bisevo|korcula/i.test(text)) {
+      return { landmass: 'adriatic_islands', island: true, railConnected: false };
+    }
+    return { landmass: 'eurasia_mainland', island: false, railConnected: false };
+  }
+
+  if (c === '俄罗斯') {
+    if (/堪察加|库页|萨哈林|千岛|维柳钦斯克|阿瓦恰|kamchatka|sakhalin|kuril|avacha/i.test(text)) {
+      return { landmass: 'kamchatka_fareast', island: /库页|千岛|sakhalin/i.test(text), railConnected: false };
+    }
+    return { landmass: 'eurasia_mainland', island: false, railConnected: true };
+  }
+
+  if (c === '美国') {
+    if (/夏威夷|瓦胡|檀香山|茂宜|考艾|大岛|oahu|honolulu|maui|kauai|big-island|hawaii/i.test(text)) {
+      if (/茂宜|maui/i.test(text)) return { landmass: 'hawaii_maui', island: true, railConnected: false };
+      if (/考艾|kauai/i.test(text)) return { landmass: 'hawaii_kauai', island: true, railConnected: false };
+      if (/大岛|kona|hilo|volcanoes/i.test(text)) return { landmass: 'hawaii_bigisland', island: true, railConnected: false };
+      return { landmass: 'hawaii_oahu', island: true, railConnected: false };
+    }
+    if (/阿拉斯加|科迪亚克|朱诺|卡特迈|alaska|juneau|kodiak|katmai|sitka|kenai/i.test(text) && !/anchorage|denali|fairbanks/i.test(text)) {
+      return { landmass: 'north_america', island: false, railConnected: false };
+    }
+    return { landmass: 'north_america', island: false, railConnected: true };
+  }
+
+  if (c === '智利' && /复活节岛|easter-island|rapa-nui/i.test(text)) {
+    return { landmass: 'easter_island', island: true, railConnected: false };
+  }
+  if (c === '厄瓜多尔' && /加拉帕戈斯|galapagos/i.test(text)) {
+    return { landmass: 'galapagos', island: true, railConnected: false };
+  }
+  if (c === '巴西' && /费尔南多|noronha/i.test(text)) {
+    return { landmass: 'noronha', island: true, railConnected: false };
+  }
+
+  if (c === '澳大利亚') {
+    if (/塔斯马尼亚|霍巴特|摇篮山|菲欣纳|tasmania|hobart|cradle|freycinet|bruny/i.test(text)) {
+      return { landmass: 'tasmania', island: true, railConnected: false };
+    }
+    if (/袋鼠岛|降灵|圣灵|白天堂|汉密尔顿|诺福克|豪勋爵|kangaroo-island|whitsunday|hamilton/i.test(text)) {
+      return { landmass: 'australia_island', island: true, railConnected: false };
+    }
+    return { landmass: 'australia', island: false, railConnected: true };
+  }
+  if (c === '新西兰') {
+    if (/南岛|皇后镇|瓦纳卡|库克山|米尔福德|蒂阿瑙|凯库拉|基督城|格雷茅斯|亚伯塔斯曼|南极光|奥塔哥|蒂卡波|queenstown|wanaka|milford|christchurch|tekapo|cook/i.test(text)) {
+      return { landmass: 'nz_south', island: true, railConnected: true };
+    }
+    return { landmass: 'nz_north', island: true, railConnected: true };
+  }
+
+  if (['法属波利尼西亚', '帕劳', '斐济', '瓦努阿图', '库克群岛', '新喀里多尼亚'].includes(c)) {
+    return { landmass: `pacific_${c}`, island: true, railConnected: false };
+  }
+  if (['马尔代夫', '塞舌尔', '毛里求斯', '留尼汪', '科摩罗', '马达加斯加', '佛得角', '圣多美和普林西比'].includes(c)) {
+    return { landmass: `island_${c}`, island: true, railConnected: false };
+  }
+  if (['古巴', '巴哈马', '圣卢西亚', '波多黎各', '特克斯和凯科斯群岛', '英属维尔京群岛', '阿鲁巴', '库拉索', '百慕大'].includes(c)) {
+    return { landmass: `carib_${c}`, island: true, railConnected: false };
+  }
+  if (c === '斯里兰卡') return { landmass: 'sri_lanka', island: true, railConnected: true };
+  if (c === '菲律宾') return { landmass: `philippines_${id}`, island: true, railConnected: false };
+  if (c === '印度尼西亚') {
+    if (/巴厘|bali/i.test(text)) return { landmass: 'indonesia_bali', island: true, railConnected: false };
+    if (/爪哇|布罗莫|宜珍|日惹|雅加达|java|bromo|ijen/i.test(text)) return { landmass: 'indonesia_java', island: true, railConnected: true };
+    return { landmass: `indonesia_${id}`, island: true, railConnected: false };
+  }
+  if (c === '马来西亚') {
+    if (/沙巴|亚庇|仙本那|斗湖|古晋|砂拉越|姆鲁|婆罗洲|borneo|sabah|kota-kinabalu|semporna|kuching/i.test(text)) {
+      return { landmass: 'borneo', island: true, railConnected: false };
+    }
+    if (/兰卡威|仙本那|热浪|停泊|刁曼/i.test(text)) return { landmass: 'malaysia_island', island: true, railConnected: false };
+    return { landmass: 'eurasia_mainland', island: false, railConnected: true };
+  }
+  if (c === '文莱') return { landmass: 'borneo', island: true, railConnected: false };
+  if (c === '新加坡') return { landmass: 'eurasia_mainland', island: false, railConnected: true };
+  if (c === '泰国' && /普吉|苏梅|甲米|皮皮|象岛|涛岛|斯米兰|丽贝|phuket|samui|phi|similan/i.test(text)) {
+    return { landmass: `thailand_island_${id}`, island: true, railConnected: false };
+  }
+  if (c === '越南' && /富国|昆仑|phu-quoc/i.test(text)) {
+    return { landmass: `vietnam_island_${id}`, island: true, railConnected: false };
+  }
+  if (c === '蒙古') return { landmass: 'eurasia_mainland', island: false, railConnected: false };
+  if (c === '埃及') return { landmass: 'africa_sinai', island: false, railConnected: true };
+
+  if (cont === 'north_america') return { landmass: 'north_america', island: false, railConnected: ['美国', '加拿大', '墨西哥'].includes(c) };
+  if (cont === 'south_america') return { landmass: 'south_america', island: false, railConnected: false };
+  if (cont === 'africa_antarctica') return { landmass: 'africa', island: false, railConnected: c === '摩洛哥' || c === '突尼斯' };
+
+  const primaryCountry = c.split('/')[0].trim();
+  const hasRail = HSR_COUNTRIES.has(primaryCountry);
+  return { landmass: 'eurasia_mainland', island: false, railConnected: hasRail };
 }
 
 function loadAllDestinations() {
@@ -223,53 +452,114 @@ function loadAllDestinations() {
   return sandbox.TRAVEL_ATLAS.getAll();
 }
 
+function pickNearestAirports(d, allAirports) {
+  const coords = Array.isArray(d.coords) ? d.coords : [0, 0];
+  const countryParts = String(d.country || '').split('/').map((s) => s.trim()).filter(Boolean);
+  const targetIsos = new Set();
+  for (const cp of countryParts) {
+    (COUNTRY_TO_ISO[cp] || []).forEach((iso) => targetIsos.add(iso));
+  }
+  // Special handling for HK/MO/TW vs CN
+  if (d.id.includes('tw') || /台湾|台北|高雄|花莲|太鲁阁|日月潭|阿里山|澎湖|金门/.test(`${d.province} ${d.name}`)) {
+    targetIsos.clear();
+    targetIsos.add('TW');
+  } else if (/香港|澳门/.test(`${d.province} ${d.name}`)) {
+    targetIsos.add('HK');
+    targetIsos.add('MO');
+  }
+
+  const sameCountry = [];
+  const globalPool = [];
+  for (const a of allAirports) {
+    const dist = Math.round(haversineKm(coords, a.coords));
+    const entry = {
+      iata: a.iata,
+      icao: a.icao,
+      name: a.name,
+      coords: a.coords,
+      countryIso: a.countryIso,
+      intl: a.intl,
+      type: a.type,
+      distanceKm: dist
+    };
+    if (dist <= 3500) globalPool.push(entry);
+    if (targetIsos.has(a.countryIso)) sameCountry.push(entry);
+  }
+
+  sameCountry.sort((a, b) => {
+    const da = a.distanceKm + (a.type === 'small_airport' ? 35 : 0);
+    const db = b.distanceKm + (b.type === 'small_airport' ? 35 : 0);
+    return da - db;
+  });
+  globalPool.sort((a, b) => a.distanceKm - b.distanceKm);
+
+  let primary = null;
+  if (sameCountry.length > 0 && (sameCountry[0].distanceKm <= 650 || d.continent === 'antarctica')) {
+    primary = sameCountry[0];
+  } else if (sameCountry.length > 0 && globalPool.length > 0 && sameCountry[0].distanceKm <= globalPool[0].distanceKm * 1.8) {
+    primary = sameCountry[0];
+  } else {
+    primary = globalPool[0] || sameCountry[0] || allAirports[0];
+  }
+
+  const sameCountryIntl = sameCountry.find((a) => a.intl && a.distanceKm <= 1200);
+  const globalIntl = globalPool.find((a) => a.intl);
+  const intlHub = sameCountryIntl || globalIntl || primary;
+
+  return primary.iata === intlHub.iata ? [primary] : [primary, intlHub];
+}
+
 function main() {
+  const airports = loadOurAirports();
   const all = loadAllDestinations();
   const byId = {};
-  for (const d of all) {
-    const coords = Array.isArray(d.coords) ? d.coords : [0, 0];
-    const ranked = AIRPORTS.map((a) => ({
-      iata: a[0],
-      icao: a[1],
-      name: a[2],
-      coords: a[3],
-      countryIso: a[4],
-      intl: a[5],
-      distanceKm: Math.round(haversineKm(coords, a[3]))
-    })).sort((a, b) => a.distanceKm - b.distanceKm);
 
-    const primary = ranked[0];
-    const intlHub = ranked.find((a) => a.intl) || primary;
+  for (const d of all) {
+    const lm = classifyLandmass(d);
+    const nearestAirports = pickNearestAirports(d, airports);
+    const primary = nearestAirports[0];
     const countryParts = String(d.country || '').split('/').map((s) => s.trim());
-    const hasHsrCorridor = countryParts.some((c) => HSR_COUNTRIES.has(c)) && d.continent !== 'antarctica';
-    const isIslandOrCoastal = /岛|礁|湾|海|island|atoll|archipelago|palau|maldives|fiji|tahiti|seychelles|mauritius/i.test(`${d.name} ${d.country} ${d.subtitle}`);
+    const hasRailCountry = countryParts.some((c) => HSR_COUNTRIES.has(c)) || ['台湾', '斯里兰卡', '新西兰', '美国', '加拿大', '澳大利亚', '爱尔兰'].some((c) => countryParts.includes(c));
+    const railAvailable = Boolean(lm.railConnected && hasRailCountry && d.continent !== 'antarctica');
+
+    const hasMetro = METRO_CITIES_RE.test(`${d.shortName || ''} ${d.name || ''} ${d.province || ''}`) && primary.distanceKm <= 90;
+    const isPolarVessel = lm.landmass === 'antarctica' || lm.landmass === 'south_georgia';
+    const transferModes = isPolarVessel
+      ? ['polar_vessel', 'expedition_zodiac']
+      : hasMetro
+        ? ['airport_express', 'metro', 'airport_bus', 'taxi']
+        : railAvailable && primary.distanceKm <= 150
+          ? ['intercity_rail', 'airport_bus', 'taxi']
+          : ['airport_bus', 'taxi', 'car_rental'];
 
     byId[d.id] = {
-      nearestAirports: primary.iata === intlHub.iata ? [primary] : [primary, intlHub],
-      railHub: hasHsrCorridor
+      landmass: lm.landmass,
+      isIsland: lm.island,
+      nearestAirports,
+      railHub: railAvailable
         ? {
             available: true,
             stationHint: `${d.shortName || d.name} Railway / HSR Hub`,
             operatorUrl: countryParts.includes('中国')
-              ? 'https://www.12306.cn/'
+              ? (lm.landmass === 'taiwan' ? 'https://www.thsrc.com.tw/' : 'https://www.12306.cn/')
               : countryParts.includes('日本')
                 ? 'https://www.jreast.co.jp/multi/'
                 : countryParts.includes('韩国')
                   ? 'https://www.letskorail.com/'
-                  : 'https://www.eurail.com/'
+                  : countryParts.includes('美国')
+                    ? 'https://www.amtrak.com/'
+                    : 'https://www.eurail.com/'
           }
         : { available: false },
-      ferryLikely: isIslandOrCoastal,
-      transferModes: primary.distanceKm <= 65
-        ? ['airport_express', 'metro', 'airport_bus', 'taxi']
-        : ['intercity_rail', 'airport_bus', 'taxi']
+      ferryLikely: lm.island,
+      transferModes
     };
   }
 
   const out = {
-    schemaVersion: '5.0.0',
+    schemaVersion: '5.1.0',
     generatedAt: new Date().toISOString(),
-    source: 'OurAirports Gateway Subset (Public Domain) + Regional Rail Network Reference',
+    source: `OurAirports Full Scheduled Commercial CSV (${airports.length} airports, Public Domain) + Landmass Connectivity Graph`,
     license: 'Public Domain / Open Data',
     count: Object.keys(byId).length,
     byId
@@ -277,7 +567,7 @@ function main() {
 
   fs.mkdirSync(path.dirname(OUT_PATH), { recursive: true });
   fs.writeFileSync(OUT_PATH, JSON.stringify(out), 'utf8');
-  console.log(`Generated ${OUT_PATH} for ${out.count} destinations (${(fs.statSync(OUT_PATH).size / 1024).toFixed(1)} KB).`);
+  console.log(`Generated ${OUT_PATH} from ${airports.length} OurAirports hubs for ${out.count} destinations (${(fs.statSync(OUT_PATH).size / 1024).toFixed(1)} KB).`);
 }
 
 main();

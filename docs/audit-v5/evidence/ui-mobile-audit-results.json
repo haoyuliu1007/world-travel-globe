@@ -1,0 +1,4603 @@
+{
+  "generatedAt": "2026-11-28T05:05:26.318Z",
+  "url": "https://world-travel-globe.globe-app.workers.dev/",
+  "screenshots": {
+    "prod-01-prologue.png": "c:\\Users\\Liam\\Desktop\\旅游计划\\globe-app\\docs\\audit-v5\\screenshots\\prod-01-prologue.png",
+    "prod-02-globe-dark-zh.png": "c:\\Users\\Liam\\Desktop\\旅游计划\\globe-app\\docs\\audit-v5\\screenshots\\prod-02-globe-dark-zh.png",
+    "prod-03-globe-light-en.png": "c:\\Users\\Liam\\Desktop\\旅游计划\\globe-app\\docs\\audit-v5\\screenshots\\prod-03-globe-light-en.png",
+    "prod-04-command-palette.png": "c:\\Users\\Liam\\Desktop\\旅游计划\\globe-app\\docs\\audit-v5\\screenshots\\prod-04-command-palette.png",
+    "prod-05-drawer-overview.png": "c:\\Users\\Liam\\Desktop\\旅游计划\\globe-app\\docs\\audit-v5\\screenshots\\prod-05-drawer-overview.png",
+    "prod-06-drawer-phenology-weather.png": "c:\\Users\\Liam\\Desktop\\旅游计划\\globe-app\\docs\\audit-v5\\screenshots\\prod-06-drawer-phenology-weather.png",
+    "prod-07-drawer-photo-sim.png": "c:\\Users\\Liam\\Desktop\\旅游计划\\globe-app\\docs\\audit-v5\\screenshots\\prod-07-drawer-photo-sim.png",
+    "prod-08-viewfinder-3d.png": "c:\\Users\\Liam\\Desktop\\旅游计划\\globe-app\\docs\\audit-v5\\screenshots\\prod-08-viewfinder-3d.png",
+    "prod-09-timemachine.png": "c:\\Users\\Liam\\Desktop\\旅游计划\\globe-app\\docs\\audit-v5\\screenshots\\prod-09-timemachine.png",
+    "prod-10-epic-modal.png": "c:\\Users\\Liam\\Desktop\\旅游计划\\globe-app\\docs\\audit-v5\\screenshots\\prod-10-epic-modal.png",
+    "prod-11-trip-planner.png": "c:\\Users\\Liam\\Desktop\\旅游计划\\globe-app\\docs\\audit-v5\\screenshots\\prod-11-trip-planner.png",
+    "prod-12-planner-transport.png": "c:\\Users\\Liam\\Desktop\\旅游计划\\globe-app\\docs\\audit-v5\\screenshots\\prod-12-planner-transport.png",
+    "prod-13-collab-aa-modal.png": "c:\\Users\\Liam\\Desktop\\旅游计划\\globe-app\\docs\\audit-v5\\screenshots\\prod-13-collab-aa-modal.png",
+    "prod-14-share-center.png": "c:\\Users\\Liam\\Desktop\\旅游计划\\globe-app\\docs\\audit-v5\\screenshots\\prod-14-share-center.png",
+    "prod-15-help-center.png": "c:\\Users\\Liam\\Desktop\\旅游计划\\globe-app\\docs\\audit-v5\\screenshots\\prod-15-help-center.png",
+    "prod-16-account-modal.png": "c:\\Users\\Liam\\Desktop\\旅游计划\\globe-app\\docs\\audit-v5\\screenshots\\prod-16-account-modal.png",
+    "prod-17-dest-compare.png": "c:\\Users\\Liam\\Desktop\\旅游计划\\globe-app\\docs\\audit-v5\\screenshots\\prod-17-dest-compare.png",
+    "vp-360x800.png": "c:\\Users\\Liam\\Desktop\\旅游计划\\globe-app\\docs\\audit-v5\\screenshots\\vp-360x800.png",
+    "vp-390x844.png": "c:\\Users\\Liam\\Desktop\\旅游计划\\globe-app\\docs\\audit-v5\\screenshots\\vp-390x844.png",
+    "prod-18-mobile-drawer-390x844.png": "c:\\Users\\Liam\\Desktop\\旅游计划\\globe-app\\docs\\audit-v5\\screenshots\\prod-18-mobile-drawer-390x844.png",
+    "prod-19-mobile-planner-390x844.png": "c:\\Users\\Liam\\Desktop\\旅游计划\\globe-app\\docs\\audit-v5\\screenshots\\prod-19-mobile-planner-390x844.png",
+    "vp-430x932.png": "c:\\Users\\Liam\\Desktop\\旅游计划\\globe-app\\docs\\audit-v5\\screenshots\\vp-430x932.png",
+    "vp-768x1024.png": "c:\\Users\\Liam\\Desktop\\旅游计划\\globe-app\\docs\\audit-v5\\screenshots\\vp-768x1024.png",
+    "vp-820x1180.png": "c:\\Users\\Liam\\Desktop\\旅游计划\\globe-app\\docs\\audit-v5\\screenshots\\vp-820x1180.png",
+    "vp-1024x768.png": "c:\\Users\\Liam\\Desktop\\旅游计划\\globe-app\\docs\\audit-v5\\screenshots\\vp-1024x768.png",
+    "vp-1440x900.png": "c:\\Users\\Liam\\Desktop\\旅游计划\\globe-app\\docs\\audit-v5\\screenshots\\vp-1440x900.png",
+    "vp-1920x1080.png": "c:\\Users\\Liam\\Desktop\\旅游计划\\globe-app\\docs\\audit-v5\\screenshots\\vp-1920x1080.png",
+    "vp-2560x1440.png": "c:\\Users\\Liam\\Desktop\\旅游计划\\globe-app\\docs\\audit-v5\\screenshots\\vp-2560x1440.png",
+    "vp-mobile-landscape-844x390.png": "c:\\Users\\Liam\\Desktop\\旅游计划\\globe-app\\docs\\audit-v5\\screenshots\\vp-mobile-landscape-844x390.png",
+    "vp-tablet-landscape-1024x768.png": "c:\\Users\\Liam\\Desktop\\旅游计划\\globe-app\\docs\\audit-v5\\screenshots\\vp-tablet-landscape-1024x768.png"
+  },
+  "viewports": [
+    {
+      "label": "360x800",
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "scrollWidth": 360,
+      "horizontalOverflowPx": 0,
+      "visibleInteractiveCount": 29,
+      "smallTouchTargetsCount": 23,
+      "smallTouchTargetsSample": [
+        {
+          "tag": "button",
+          "id": "brand-home-btn",
+          "cls": "kairos-brand-link",
+          "w": 34,
+          "h": 26,
+          "text": ""
+        },
+        {
+          "tag": "button",
+          "id": "sidebar-toggle-btn",
+          "cls": "capsule-pill-btn",
+          "w": 40,
+          "h": 44,
+          "text": "清单"
+        },
+        {
+          "tag": "button",
+          "id": "filter-popover-btn",
+          "cls": "capsule-icon-btn",
+          "w": 40,
+          "h": 44,
+          "text": "0"
+        },
+        {
+          "tag": "button",
+          "id": "favorites-toggle-btn",
+          "cls": "capsule-icon-btn",
+          "w": 40,
+          "h": 44,
+          "text": "0"
+        },
+        {
+          "tag": "button",
+          "id": "music-popover-btn",
+          "cls": "capsule-pill-btn music-trigger-btn",
+          "w": 40,
+          "h": 44,
+          "text": "电台"
+        },
+        {
+          "tag": "button",
+          "id": "appearance-btn",
+          "cls": "capsule-icon-btn",
+          "w": 40,
+          "h": 44,
+          "text": ""
+        },
+        {
+          "tag": "button",
+          "id": "lang-btn",
+          "cls": "capsule-lang-btn",
+          "w": 41,
+          "h": 44,
+          "text": "简"
+        },
+        {
+          "tag": "button",
+          "id": "account-btn",
+          "cls": "capsule-icon-btn",
+          "w": 40,
+          "h": 44,
+          "text": ""
+        },
+        {
+          "tag": "button",
+          "id": "help-btn",
+          "cls": "capsule-icon-btn",
+          "w": 40,
+          "h": 44,
+          "text": "?"
+        },
+        {
+          "tag": "button",
+          "id": null,
+          "cls": "pheno-btn active",
+          "w": 42,
+          "h": 40,
+          "text": "全年"
+        },
+        {
+          "tag": "button",
+          "id": null,
+          "cls": "pheno-btn ",
+          "w": 42,
+          "h": 40,
+          "text": "1月"
+        },
+        {
+          "tag": "button",
+          "id": null,
+          "cls": "pheno-btn ",
+          "w": 42,
+          "h": 40,
+          "text": "2月"
+        }
+      ],
+      "clippedControlsCount": 0,
+      "clippedControlsSample": [],
+      "chromeOverlapsCount": 0,
+      "chromeOverlapsSample": [],
+      "lowContrastCount": 2,
+      "lowContrastSample": [
+        {
+          "id": null,
+          "text": "全年",
+          "ratio": 3.56,
+          "minReq": 4.5,
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(180,125,34)"
+        },
+        {
+          "id": null,
+          "text": "地球",
+          "ratio": 2.41,
+          "minReq": 4.5,
+          "fg": "rgb(180, 125, 34)",
+          "bg": "rgb(219,211,199)"
+        }
+      ],
+      "touchActionMap": "none",
+      "touchActionDrawer": "auto",
+      "dialogs": [
+        {
+          "id": "cosmic-intro",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "story-prologue",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "appearance-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "lang-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "filter-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "layers-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "music-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "command-palette",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "streetview-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "diagnostics-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "media-lightbox",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "viewfinder-hud",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "poster-share-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "epic-earth-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "onboarding-tour-root",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        }
+      ]
+    },
+    {
+      "label": "390x844",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "scrollWidth": 390,
+      "horizontalOverflowPx": 0,
+      "visibleInteractiveCount": 30,
+      "smallTouchTargetsCount": 24,
+      "smallTouchTargetsSample": [
+        {
+          "tag": "button",
+          "id": "brand-home-btn",
+          "cls": "kairos-brand-link",
+          "w": 34,
+          "h": 26,
+          "text": ""
+        },
+        {
+          "tag": "button",
+          "id": "sidebar-toggle-btn",
+          "cls": "capsule-pill-btn",
+          "w": 40,
+          "h": 44,
+          "text": "清单"
+        },
+        {
+          "tag": "button",
+          "id": "filter-popover-btn",
+          "cls": "capsule-icon-btn",
+          "w": 40,
+          "h": 44,
+          "text": "0"
+        },
+        {
+          "tag": "button",
+          "id": "favorites-toggle-btn",
+          "cls": "capsule-icon-btn",
+          "w": 40,
+          "h": 44,
+          "text": "0"
+        },
+        {
+          "tag": "button",
+          "id": "music-popover-btn",
+          "cls": "capsule-pill-btn music-trigger-btn",
+          "w": 40,
+          "h": 44,
+          "text": "电台"
+        },
+        {
+          "tag": "button",
+          "id": "appearance-btn",
+          "cls": "capsule-icon-btn",
+          "w": 40,
+          "h": 44,
+          "text": ""
+        },
+        {
+          "tag": "button",
+          "id": "lang-btn",
+          "cls": "capsule-lang-btn",
+          "w": 41,
+          "h": 44,
+          "text": "简"
+        },
+        {
+          "tag": "button",
+          "id": "account-btn",
+          "cls": "capsule-icon-btn",
+          "w": 40,
+          "h": 44,
+          "text": ""
+        },
+        {
+          "tag": "button",
+          "id": "help-btn",
+          "cls": "capsule-icon-btn",
+          "w": 40,
+          "h": 44,
+          "text": "?"
+        },
+        {
+          "tag": "button",
+          "id": null,
+          "cls": "pheno-btn active",
+          "w": 42,
+          "h": 40,
+          "text": "全年"
+        },
+        {
+          "tag": "button",
+          "id": null,
+          "cls": "pheno-btn ",
+          "w": 42,
+          "h": 40,
+          "text": "1月"
+        },
+        {
+          "tag": "button",
+          "id": null,
+          "cls": "pheno-btn ",
+          "w": 42,
+          "h": 40,
+          "text": "2月"
+        }
+      ],
+      "clippedControlsCount": 1,
+      "clippedControlsSample": [
+        {
+          "id": null,
+          "cls": "pheno-btn ",
+          "left": 362,
+          "right": 404,
+          "vw": 390
+        }
+      ],
+      "chromeOverlapsCount": 0,
+      "chromeOverlapsSample": [],
+      "lowContrastCount": 2,
+      "lowContrastSample": [
+        {
+          "id": null,
+          "text": "全年",
+          "ratio": 3.56,
+          "minReq": 4.5,
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(180,125,34)"
+        },
+        {
+          "id": null,
+          "text": "地球",
+          "ratio": 2.41,
+          "minReq": 4.5,
+          "fg": "rgb(180, 125, 34)",
+          "bg": "rgb(219,211,199)"
+        }
+      ],
+      "touchActionMap": "none",
+      "touchActionDrawer": "auto",
+      "dialogs": [
+        {
+          "id": "cosmic-intro",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "story-prologue",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "appearance-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "lang-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "filter-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "layers-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "music-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "command-palette",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "streetview-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "diagnostics-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "media-lightbox",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "viewfinder-hud",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "poster-share-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "epic-earth-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "onboarding-tour-root",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        }
+      ],
+      "mobileDrawerMetrics": {
+        "label": "390x844-drawer",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "scrollWidth": 390,
+        "horizontalOverflowPx": 0,
+        "visibleInteractiveCount": 47,
+        "smallTouchTargetsCount": 41,
+        "smallTouchTargetsSample": [
+          {
+            "tag": "button",
+            "id": "brand-home-btn",
+            "cls": "kairos-brand-link",
+            "w": 34,
+            "h": 26,
+            "text": ""
+          },
+          {
+            "tag": "button",
+            "id": "sidebar-toggle-btn",
+            "cls": "capsule-pill-btn",
+            "w": 40,
+            "h": 44,
+            "text": "清单"
+          },
+          {
+            "tag": "button",
+            "id": "filter-popover-btn",
+            "cls": "capsule-icon-btn",
+            "w": 40,
+            "h": 44,
+            "text": "0"
+          },
+          {
+            "tag": "button",
+            "id": "favorites-toggle-btn",
+            "cls": "capsule-icon-btn",
+            "w": 40,
+            "h": 44,
+            "text": "0"
+          },
+          {
+            "tag": "button",
+            "id": "music-popover-btn",
+            "cls": "capsule-pill-btn music-trigger-btn",
+            "w": 40,
+            "h": 44,
+            "text": "电台"
+          },
+          {
+            "tag": "button",
+            "id": "appearance-btn",
+            "cls": "capsule-icon-btn",
+            "w": 40,
+            "h": 44,
+            "text": ""
+          },
+          {
+            "tag": "button",
+            "id": "lang-btn",
+            "cls": "capsule-lang-btn",
+            "w": 41,
+            "h": 44,
+            "text": "简"
+          },
+          {
+            "tag": "button",
+            "id": "account-btn",
+            "cls": "capsule-icon-btn",
+            "w": 40,
+            "h": 44,
+            "text": ""
+          },
+          {
+            "tag": "button",
+            "id": "help-btn",
+            "cls": "capsule-icon-btn",
+            "w": 40,
+            "h": 44,
+            "text": "?"
+          },
+          {
+            "tag": "button",
+            "id": null,
+            "cls": "pheno-btn active",
+            "w": 42,
+            "h": 40,
+            "text": "全年"
+          },
+          {
+            "tag": "button",
+            "id": null,
+            "cls": "pheno-btn ",
+            "w": 42,
+            "h": 40,
+            "text": "1月"
+          },
+          {
+            "tag": "button",
+            "id": null,
+            "cls": "pheno-btn ",
+            "w": 42,
+            "h": 40,
+            "text": "2月"
+          }
+        ],
+        "clippedControlsCount": 1,
+        "clippedControlsSample": [
+          {
+            "id": null,
+            "cls": "pheno-btn ",
+            "left": 386,
+            "right": 428,
+            "vw": 390
+          }
+        ],
+        "chromeOverlapsCount": 4,
+        "chromeOverlapsSample": [
+          {
+            "a": "layers-popover-btn",
+            "b": "mob-nav-btn active",
+            "area": 1760
+          },
+          {
+            "a": "fly-china-btn",
+            "b": "mob-nav-btn active",
+            "area": 488
+          },
+          {
+            "a": "fly-china-btn",
+            "b": "mob-nav-btn",
+            "area": 1113
+          },
+          {
+            "a": "fly-global-btn",
+            "b": "mob-nav-btn",
+            "area": 1576
+          }
+        ],
+        "lowContrastCount": 2,
+        "lowContrastSample": [
+          {
+            "id": null,
+            "text": "全年",
+            "ratio": 3.56,
+            "minReq": 4.5,
+            "fg": "rgb(255, 255, 255)",
+            "bg": "rgb(180,125,34)"
+          },
+          {
+            "id": null,
+            "text": "地球",
+            "ratio": 2.41,
+            "minReq": 4.5,
+            "fg": "rgb(180, 125, 34)",
+            "bg": "rgb(219,211,199)"
+          }
+        ],
+        "touchActionMap": "none",
+        "touchActionDrawer": "auto",
+        "dialogs": [
+          {
+            "id": "cosmic-intro",
+            "role": "dialog",
+            "ariaModal": "true",
+            "ariaLabel": true,
+            "visible": false
+          },
+          {
+            "id": "story-prologue",
+            "role": "dialog",
+            "ariaModal": "true",
+            "ariaLabel": true,
+            "visible": false
+          },
+          {
+            "id": "appearance-popover",
+            "role": "dialog",
+            "ariaModal": null,
+            "ariaLabel": true,
+            "visible": false
+          },
+          {
+            "id": "lang-popover",
+            "role": "dialog",
+            "ariaModal": null,
+            "ariaLabel": true,
+            "visible": false
+          },
+          {
+            "id": "filter-popover",
+            "role": "dialog",
+            "ariaModal": null,
+            "ariaLabel": true,
+            "visible": false
+          },
+          {
+            "id": "layers-popover",
+            "role": "dialog",
+            "ariaModal": null,
+            "ariaLabel": true,
+            "visible": false
+          },
+          {
+            "id": "music-popover",
+            "role": "dialog",
+            "ariaModal": null,
+            "ariaLabel": true,
+            "visible": false
+          },
+          {
+            "id": "command-palette",
+            "role": "dialog",
+            "ariaModal": "true",
+            "ariaLabel": true,
+            "visible": false
+          },
+          {
+            "id": "streetview-modal",
+            "role": "dialog",
+            "ariaModal": "true",
+            "ariaLabel": true,
+            "visible": false
+          },
+          {
+            "id": "diagnostics-modal",
+            "role": "dialog",
+            "ariaModal": "true",
+            "ariaLabel": true,
+            "visible": false
+          },
+          {
+            "id": "media-lightbox",
+            "role": "dialog",
+            "ariaModal": "true",
+            "ariaLabel": true,
+            "visible": false
+          },
+          {
+            "id": "viewfinder-hud",
+            "role": "dialog",
+            "ariaModal": "true",
+            "ariaLabel": true,
+            "visible": false
+          },
+          {
+            "id": "poster-share-modal",
+            "role": "dialog",
+            "ariaModal": "true",
+            "ariaLabel": true,
+            "visible": false
+          },
+          {
+            "id": "epic-earth-modal",
+            "role": "dialog",
+            "ariaModal": "true",
+            "ariaLabel": true,
+            "visible": false
+          },
+          {
+            "id": "onboarding-tour-root",
+            "role": "dialog",
+            "ariaModal": "true",
+            "ariaLabel": true,
+            "visible": false
+          }
+        ]
+      },
+      "mobilePlannerMetrics": {
+        "label": "390x844-planner",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "scrollWidth": 390,
+        "horizontalOverflowPx": 0,
+        "visibleInteractiveCount": 45,
+        "smallTouchTargetsCount": 33,
+        "smallTouchTargetsSample": [
+          {
+            "tag": "button",
+            "id": "brand-home-btn",
+            "cls": "kairos-brand-link",
+            "w": 34,
+            "h": 26,
+            "text": ""
+          },
+          {
+            "tag": "button",
+            "id": "sidebar-toggle-btn",
+            "cls": "capsule-pill-btn",
+            "w": 40,
+            "h": 44,
+            "text": "清单"
+          },
+          {
+            "tag": "button",
+            "id": "filter-popover-btn",
+            "cls": "capsule-icon-btn",
+            "w": 40,
+            "h": 44,
+            "text": "0"
+          },
+          {
+            "tag": "button",
+            "id": "favorites-toggle-btn",
+            "cls": "capsule-icon-btn",
+            "w": 40,
+            "h": 44,
+            "text": "0"
+          },
+          {
+            "tag": "button",
+            "id": "music-popover-btn",
+            "cls": "capsule-pill-btn music-trigger-btn",
+            "w": 40,
+            "h": 44,
+            "text": "电台"
+          },
+          {
+            "tag": "button",
+            "id": "appearance-btn",
+            "cls": "capsule-icon-btn",
+            "w": 40,
+            "h": 44,
+            "text": ""
+          },
+          {
+            "tag": "button",
+            "id": "lang-btn",
+            "cls": "capsule-lang-btn",
+            "w": 41,
+            "h": 44,
+            "text": "简"
+          },
+          {
+            "tag": "button",
+            "id": "account-btn",
+            "cls": "capsule-icon-btn",
+            "w": 40,
+            "h": 44,
+            "text": ""
+          },
+          {
+            "tag": "button",
+            "id": "help-btn",
+            "cls": "capsule-icon-btn",
+            "w": 40,
+            "h": 44,
+            "text": "?"
+          },
+          {
+            "tag": "button",
+            "id": null,
+            "cls": "pheno-btn active",
+            "w": 42,
+            "h": 40,
+            "text": "全年"
+          },
+          {
+            "tag": "button",
+            "id": null,
+            "cls": "pheno-btn ",
+            "w": 42,
+            "h": 40,
+            "text": "1月"
+          },
+          {
+            "tag": "button",
+            "id": null,
+            "cls": "pheno-btn ",
+            "w": 42,
+            "h": 40,
+            "text": "2月"
+          }
+        ],
+        "clippedControlsCount": 1,
+        "clippedControlsSample": [
+          {
+            "id": null,
+            "cls": "pheno-btn ",
+            "left": 362,
+            "right": 404,
+            "vw": 390
+          }
+        ],
+        "chromeOverlapsCount": 0,
+        "chromeOverlapsSample": [],
+        "lowContrastCount": 3,
+        "lowContrastSample": [
+          {
+            "id": null,
+            "text": "全年",
+            "ratio": 3.56,
+            "minReq": 4.5,
+            "fg": "rgb(255, 255, 255)",
+            "bg": "rgb(180,125,34)"
+          },
+          {
+            "id": null,
+            "text": "规划",
+            "ratio": 2.41,
+            "minReq": 4.5,
+            "fg": "rgb(180, 125, 34)",
+            "bg": "rgb(219,211,199)"
+          },
+          {
+            "id": "tp-preview-globe-btn",
+            "text": "在地球上预览路线",
+            "ratio": 3.56,
+            "minReq": 4.5,
+            "fg": "rgb(255, 255, 255)",
+            "bg": "rgb(180,125,34)"
+          }
+        ],
+        "touchActionMap": "none",
+        "touchActionDrawer": "auto",
+        "dialogs": [
+          {
+            "id": "cosmic-intro",
+            "role": "dialog",
+            "ariaModal": "true",
+            "ariaLabel": true,
+            "visible": false
+          },
+          {
+            "id": "story-prologue",
+            "role": "dialog",
+            "ariaModal": "true",
+            "ariaLabel": true,
+            "visible": false
+          },
+          {
+            "id": "appearance-popover",
+            "role": "dialog",
+            "ariaModal": null,
+            "ariaLabel": true,
+            "visible": false
+          },
+          {
+            "id": "lang-popover",
+            "role": "dialog",
+            "ariaModal": null,
+            "ariaLabel": true,
+            "visible": false
+          },
+          {
+            "id": "filter-popover",
+            "role": "dialog",
+            "ariaModal": null,
+            "ariaLabel": true,
+            "visible": false
+          },
+          {
+            "id": "layers-popover",
+            "role": "dialog",
+            "ariaModal": null,
+            "ariaLabel": true,
+            "visible": false
+          },
+          {
+            "id": "music-popover",
+            "role": "dialog",
+            "ariaModal": null,
+            "ariaLabel": true,
+            "visible": false
+          },
+          {
+            "id": "command-palette",
+            "role": "dialog",
+            "ariaModal": "true",
+            "ariaLabel": true,
+            "visible": false
+          },
+          {
+            "id": "streetview-modal",
+            "role": "dialog",
+            "ariaModal": "true",
+            "ariaLabel": true,
+            "visible": false
+          },
+          {
+            "id": "diagnostics-modal",
+            "role": "dialog",
+            "ariaModal": "true",
+            "ariaLabel": true,
+            "visible": false
+          },
+          {
+            "id": "media-lightbox",
+            "role": "dialog",
+            "ariaModal": "true",
+            "ariaLabel": true,
+            "visible": false
+          },
+          {
+            "id": "viewfinder-hud",
+            "role": "dialog",
+            "ariaModal": "true",
+            "ariaLabel": true,
+            "visible": false
+          },
+          {
+            "id": "poster-share-modal",
+            "role": "dialog",
+            "ariaModal": "true",
+            "ariaLabel": true,
+            "visible": false
+          },
+          {
+            "id": "epic-earth-modal",
+            "role": "dialog",
+            "ariaModal": "true",
+            "ariaLabel": true,
+            "visible": false
+          },
+          {
+            "id": "onboarding-tour-root",
+            "role": "dialog",
+            "ariaModal": "true",
+            "ariaLabel": true,
+            "visible": false
+          }
+        ]
+      }
+    },
+    {
+      "label": "430x932",
+      "viewport": {
+        "width": 430,
+        "height": 932
+      },
+      "scrollWidth": 430,
+      "horizontalOverflowPx": 0,
+      "visibleInteractiveCount": 33,
+      "smallTouchTargetsCount": 27,
+      "smallTouchTargetsSample": [
+        {
+          "tag": "button",
+          "id": "brand-home-btn",
+          "cls": "kairos-brand-link",
+          "w": 34,
+          "h": 26,
+          "text": ""
+        },
+        {
+          "tag": "button",
+          "id": "sidebar-toggle-btn",
+          "cls": "capsule-pill-btn",
+          "w": 40,
+          "h": 44,
+          "text": "清单"
+        },
+        {
+          "tag": "button",
+          "id": "filter-popover-btn",
+          "cls": "capsule-icon-btn",
+          "w": 40,
+          "h": 44,
+          "text": "0"
+        },
+        {
+          "tag": "button",
+          "id": "favorites-toggle-btn",
+          "cls": "capsule-icon-btn",
+          "w": 40,
+          "h": 44,
+          "text": "0"
+        },
+        {
+          "tag": "button",
+          "id": "music-popover-btn",
+          "cls": "capsule-pill-btn music-trigger-btn",
+          "w": 40,
+          "h": 44,
+          "text": "电台"
+        },
+        {
+          "tag": "button",
+          "id": "appearance-btn",
+          "cls": "capsule-icon-btn",
+          "w": 40,
+          "h": 44,
+          "text": ""
+        },
+        {
+          "tag": "button",
+          "id": "lang-btn",
+          "cls": "capsule-lang-btn",
+          "w": 41,
+          "h": 44,
+          "text": "简"
+        },
+        {
+          "tag": "button",
+          "id": "account-btn",
+          "cls": "capsule-icon-btn",
+          "w": 40,
+          "h": 44,
+          "text": ""
+        },
+        {
+          "tag": "button",
+          "id": "help-btn",
+          "cls": "capsule-icon-btn",
+          "w": 40,
+          "h": 44,
+          "text": "?"
+        },
+        {
+          "tag": "button",
+          "id": null,
+          "cls": "pheno-btn active",
+          "w": 42,
+          "h": 40,
+          "text": "全年"
+        },
+        {
+          "tag": "button",
+          "id": null,
+          "cls": "pheno-btn ",
+          "w": 42,
+          "h": 40,
+          "text": "1月"
+        },
+        {
+          "tag": "button",
+          "id": null,
+          "cls": "pheno-btn ",
+          "w": 42,
+          "h": 40,
+          "text": "2月"
+        }
+      ],
+      "clippedControlsCount": 1,
+      "clippedControlsSample": [
+        {
+          "id": null,
+          "cls": "pheno-btn ",
+          "left": 405,
+          "right": 447,
+          "vw": 430
+        }
+      ],
+      "chromeOverlapsCount": 0,
+      "chromeOverlapsSample": [],
+      "lowContrastCount": 3,
+      "lowContrastSample": [
+        {
+          "id": null,
+          "text": "全年",
+          "ratio": 3.56,
+          "minReq": 4.5,
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(180,125,34)"
+        },
+        {
+          "id": null,
+          "text": "地球",
+          "ratio": 2.41,
+          "minReq": 4.5,
+          "fg": "rgb(180, 125, 34)",
+          "bg": "rgb(219,211,199)"
+        },
+        {
+          "id": "tour-welcome-skip-btn",
+          "text": "暂不导览",
+          "ratio": 3.71,
+          "minReq": 4.5,
+          "fg": "rgb(113, 113, 122)",
+          "bg": "rgb(225,225,226)"
+        }
+      ],
+      "touchActionMap": "none",
+      "touchActionDrawer": "auto",
+      "dialogs": [
+        {
+          "id": "cosmic-intro",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "story-prologue",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "appearance-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "lang-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "filter-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "layers-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "music-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "command-palette",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "streetview-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "diagnostics-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "media-lightbox",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "viewfinder-hud",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "poster-share-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "epic-earth-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "onboarding-tour-root",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        }
+      ]
+    },
+    {
+      "label": "768x1024",
+      "viewport": {
+        "width": 768,
+        "height": 1024
+      },
+      "scrollWidth": 768,
+      "horizontalOverflowPx": 0,
+      "visibleInteractiveCount": 34,
+      "smallTouchTargetsCount": 28,
+      "smallTouchTargetsSample": [
+        {
+          "tag": "button",
+          "id": "brand-home-btn",
+          "cls": "kairos-brand-link",
+          "w": 34,
+          "h": 26,
+          "text": ""
+        },
+        {
+          "tag": "button",
+          "id": "sidebar-toggle-btn",
+          "cls": "capsule-pill-btn",
+          "w": 40,
+          "h": 44,
+          "text": "清单"
+        },
+        {
+          "tag": "button",
+          "id": "filter-popover-btn",
+          "cls": "capsule-icon-btn",
+          "w": 40,
+          "h": 44,
+          "text": "0"
+        },
+        {
+          "tag": "button",
+          "id": "favorites-toggle-btn",
+          "cls": "capsule-icon-btn",
+          "w": 40,
+          "h": 44,
+          "text": "0"
+        },
+        {
+          "tag": "button",
+          "id": "music-popover-btn",
+          "cls": "capsule-pill-btn music-trigger-btn",
+          "w": 40,
+          "h": 44,
+          "text": "电台"
+        },
+        {
+          "tag": "button",
+          "id": "appearance-btn",
+          "cls": "capsule-icon-btn",
+          "w": 40,
+          "h": 44,
+          "text": ""
+        },
+        {
+          "tag": "button",
+          "id": "lang-btn",
+          "cls": "capsule-lang-btn",
+          "w": 41,
+          "h": 44,
+          "text": "简"
+        },
+        {
+          "tag": "button",
+          "id": "account-btn",
+          "cls": "capsule-icon-btn",
+          "w": 40,
+          "h": 44,
+          "text": ""
+        },
+        {
+          "tag": "button",
+          "id": "help-btn",
+          "cls": "capsule-icon-btn",
+          "w": 40,
+          "h": 44,
+          "text": "?"
+        },
+        {
+          "tag": "button",
+          "id": null,
+          "cls": "pheno-btn active",
+          "w": 42,
+          "h": 40,
+          "text": "全年"
+        },
+        {
+          "tag": "button",
+          "id": null,
+          "cls": "pheno-btn ",
+          "w": 42,
+          "h": 40,
+          "text": "1月"
+        },
+        {
+          "tag": "button",
+          "id": null,
+          "cls": "pheno-btn ",
+          "w": 42,
+          "h": 40,
+          "text": "2月"
+        }
+      ],
+      "clippedControlsCount": 0,
+      "clippedControlsSample": [],
+      "chromeOverlapsCount": 0,
+      "chromeOverlapsSample": [],
+      "lowContrastCount": 2,
+      "lowContrastSample": [
+        {
+          "id": null,
+          "text": "全年",
+          "ratio": 3.56,
+          "minReq": 4.5,
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(180,125,34)"
+        },
+        {
+          "id": null,
+          "text": "地球",
+          "ratio": 2.41,
+          "minReq": 4.5,
+          "fg": "rgb(180, 125, 34)",
+          "bg": "rgb(219,211,199)"
+        }
+      ],
+      "touchActionMap": "none",
+      "touchActionDrawer": "auto",
+      "dialogs": [
+        {
+          "id": "cosmic-intro",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "story-prologue",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "appearance-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "lang-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "filter-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "layers-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "music-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "command-palette",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "streetview-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "diagnostics-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "media-lightbox",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "viewfinder-hud",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "poster-share-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "epic-earth-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "onboarding-tour-root",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        }
+      ]
+    },
+    {
+      "label": "820x1180",
+      "viewport": {
+        "width": 820,
+        "height": 1180
+      },
+      "scrollWidth": 820,
+      "horizontalOverflowPx": 0,
+      "visibleInteractiveCount": 35,
+      "smallTouchTargetsCount": 35,
+      "smallTouchTargetsSample": [
+        {
+          "tag": "button",
+          "id": "brand-home-btn",
+          "cls": "kairos-brand-link",
+          "w": 34,
+          "h": 26,
+          "text": ""
+        },
+        {
+          "tag": "button",
+          "id": "sidebar-toggle-btn",
+          "cls": "capsule-pill-btn",
+          "w": 34,
+          "h": 34,
+          "text": "清单"
+        },
+        {
+          "tag": "button",
+          "id": "filter-popover-btn",
+          "cls": "capsule-icon-btn",
+          "w": 34,
+          "h": 34,
+          "text": "0"
+        },
+        {
+          "tag": "button",
+          "id": "favorites-toggle-btn",
+          "cls": "capsule-icon-btn",
+          "w": 34,
+          "h": 34,
+          "text": "0"
+        },
+        {
+          "tag": "button",
+          "id": "mode-map-btn",
+          "cls": "mode-btn active",
+          "w": 52,
+          "h": 34,
+          "text": "地球"
+        },
+        {
+          "tag": "button",
+          "id": "mode-gallery-btn",
+          "cls": "mode-btn",
+          "w": 52,
+          "h": 34,
+          "text": "图鉴"
+        },
+        {
+          "tag": "button",
+          "id": "mode-planner-btn",
+          "cls": "mode-btn",
+          "w": 52,
+          "h": 34,
+          "text": "规划"
+        },
+        {
+          "tag": "button",
+          "id": "mode-archive-btn",
+          "cls": "mode-btn",
+          "w": 52,
+          "h": 34,
+          "text": "档案"
+        },
+        {
+          "tag": "button",
+          "id": "open-palette-btn",
+          "cls": "cmd-trigger",
+          "w": 152,
+          "h": 34,
+          "text": "搜索 722 城与 5,414 机位…\n        ⌘K"
+        },
+        {
+          "tag": "button",
+          "id": "music-popover-btn",
+          "cls": "capsule-pill-btn music-trigger-btn",
+          "w": 34,
+          "h": 34,
+          "text": "电台"
+        },
+        {
+          "tag": "button",
+          "id": "appearance-btn",
+          "cls": "capsule-icon-btn",
+          "w": 34,
+          "h": 34,
+          "text": ""
+        },
+        {
+          "tag": "button",
+          "id": "lang-btn",
+          "cls": "capsule-lang-btn",
+          "w": 47,
+          "h": 32,
+          "text": "简"
+        }
+      ],
+      "clippedControlsCount": 0,
+      "clippedControlsSample": [],
+      "chromeOverlapsCount": 0,
+      "chromeOverlapsSample": [],
+      "lowContrastCount": 1,
+      "lowContrastSample": [
+        {
+          "id": null,
+          "text": "全年",
+          "ratio": 3.56,
+          "minReq": 4.5,
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(180,125,34)"
+        }
+      ],
+      "touchActionMap": "none",
+      "touchActionDrawer": "auto",
+      "dialogs": [
+        {
+          "id": "cosmic-intro",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "story-prologue",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "appearance-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "lang-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "filter-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "layers-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "music-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "command-palette",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "streetview-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "diagnostics-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "media-lightbox",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "viewfinder-hud",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "poster-share-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "epic-earth-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "onboarding-tour-root",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        }
+      ]
+    },
+    {
+      "label": "1024x768",
+      "viewport": {
+        "width": 1024,
+        "height": 768
+      },
+      "scrollWidth": 1024,
+      "horizontalOverflowPx": 0,
+      "visibleInteractiveCount": 35,
+      "smallTouchTargetsCount": 35,
+      "smallTouchTargetsSample": [
+        {
+          "tag": "button",
+          "id": "brand-home-btn",
+          "cls": "kairos-brand-link",
+          "w": 109,
+          "h": 26,
+          "text": ""
+        },
+        {
+          "tag": "button",
+          "id": "sidebar-toggle-btn",
+          "cls": "capsule-pill-btn",
+          "w": 34,
+          "h": 34,
+          "text": "清单"
+        },
+        {
+          "tag": "button",
+          "id": "filter-popover-btn",
+          "cls": "capsule-icon-btn",
+          "w": 34,
+          "h": 34,
+          "text": "0"
+        },
+        {
+          "tag": "button",
+          "id": "favorites-toggle-btn",
+          "cls": "capsule-icon-btn",
+          "w": 34,
+          "h": 34,
+          "text": "0"
+        },
+        {
+          "tag": "button",
+          "id": "mode-map-btn",
+          "cls": "mode-btn active",
+          "w": 52,
+          "h": 34,
+          "text": "地球"
+        },
+        {
+          "tag": "button",
+          "id": "mode-gallery-btn",
+          "cls": "mode-btn",
+          "w": 52,
+          "h": 34,
+          "text": "图鉴"
+        },
+        {
+          "tag": "button",
+          "id": "mode-planner-btn",
+          "cls": "mode-btn",
+          "w": 52,
+          "h": 34,
+          "text": "规划"
+        },
+        {
+          "tag": "button",
+          "id": "mode-archive-btn",
+          "cls": "mode-btn",
+          "w": 52,
+          "h": 34,
+          "text": "档案"
+        },
+        {
+          "tag": "button",
+          "id": "open-palette-btn",
+          "cls": "cmd-trigger",
+          "w": 152,
+          "h": 34,
+          "text": "搜索 722 城与 5,414 机位…\n        ⌘K"
+        },
+        {
+          "tag": "button",
+          "id": "music-popover-btn",
+          "cls": "capsule-pill-btn music-trigger-btn",
+          "w": 34,
+          "h": 34,
+          "text": "电台"
+        },
+        {
+          "tag": "button",
+          "id": "appearance-btn",
+          "cls": "capsule-icon-btn",
+          "w": 34,
+          "h": 34,
+          "text": ""
+        },
+        {
+          "tag": "button",
+          "id": "lang-btn",
+          "cls": "capsule-lang-btn",
+          "w": 47,
+          "h": 32,
+          "text": "简"
+        }
+      ],
+      "clippedControlsCount": 0,
+      "clippedControlsSample": [],
+      "chromeOverlapsCount": 0,
+      "chromeOverlapsSample": [],
+      "lowContrastCount": 1,
+      "lowContrastSample": [
+        {
+          "id": null,
+          "text": "全年",
+          "ratio": 3.56,
+          "minReq": 4.5,
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(180,125,34)"
+        }
+      ],
+      "touchActionMap": "none",
+      "touchActionDrawer": "auto",
+      "dialogs": [
+        {
+          "id": "cosmic-intro",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "story-prologue",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "appearance-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "lang-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "filter-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "layers-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "music-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "command-palette",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "streetview-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "diagnostics-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "media-lightbox",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "viewfinder-hud",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "poster-share-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "epic-earth-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "onboarding-tour-root",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        }
+      ]
+    },
+    {
+      "label": "1440x900",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "scrollWidth": 1440,
+      "horizontalOverflowPx": 0,
+      "visibleInteractiveCount": 35,
+      "smallTouchTargetsCount": 35,
+      "smallTouchTargetsSample": [
+        {
+          "tag": "button",
+          "id": "brand-home-btn",
+          "cls": "kairos-brand-link",
+          "w": 109,
+          "h": 26,
+          "text": ""
+        },
+        {
+          "tag": "button",
+          "id": "sidebar-toggle-btn",
+          "cls": "capsule-pill-btn",
+          "w": 66,
+          "h": 34,
+          "text": "清单"
+        },
+        {
+          "tag": "button",
+          "id": "filter-popover-btn",
+          "cls": "capsule-icon-btn",
+          "w": 34,
+          "h": 34,
+          "text": "0"
+        },
+        {
+          "tag": "button",
+          "id": "favorites-toggle-btn",
+          "cls": "capsule-icon-btn",
+          "w": 34,
+          "h": 34,
+          "text": "0"
+        },
+        {
+          "tag": "button",
+          "id": "mode-map-btn",
+          "cls": "mode-btn active",
+          "w": 52,
+          "h": 34,
+          "text": "地球"
+        },
+        {
+          "tag": "button",
+          "id": "mode-gallery-btn",
+          "cls": "mode-btn",
+          "w": 52,
+          "h": 34,
+          "text": "图鉴"
+        },
+        {
+          "tag": "button",
+          "id": "mode-planner-btn",
+          "cls": "mode-btn",
+          "w": 52,
+          "h": 34,
+          "text": "规划"
+        },
+        {
+          "tag": "button",
+          "id": "mode-archive-btn",
+          "cls": "mode-btn",
+          "w": 52,
+          "h": 34,
+          "text": "档案"
+        },
+        {
+          "tag": "button",
+          "id": "open-palette-btn",
+          "cls": "cmd-trigger",
+          "w": 192,
+          "h": 34,
+          "text": "搜索 722 城与 5,414 机位…\n        ⌘K"
+        },
+        {
+          "tag": "button",
+          "id": "music-popover-btn",
+          "cls": "capsule-pill-btn music-trigger-btn",
+          "w": 66,
+          "h": 34,
+          "text": "电台"
+        },
+        {
+          "tag": "button",
+          "id": "appearance-btn",
+          "cls": "capsule-icon-btn",
+          "w": 34,
+          "h": 34,
+          "text": ""
+        },
+        {
+          "tag": "button",
+          "id": "lang-btn",
+          "cls": "capsule-lang-btn",
+          "w": 47,
+          "h": 32,
+          "text": "简"
+        }
+      ],
+      "clippedControlsCount": 0,
+      "clippedControlsSample": [],
+      "chromeOverlapsCount": 0,
+      "chromeOverlapsSample": [],
+      "lowContrastCount": 1,
+      "lowContrastSample": [
+        {
+          "id": null,
+          "text": "全年",
+          "ratio": 3.56,
+          "minReq": 4.5,
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(180,125,34)"
+        }
+      ],
+      "touchActionMap": "none",
+      "touchActionDrawer": "auto",
+      "dialogs": [
+        {
+          "id": "cosmic-intro",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "story-prologue",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "appearance-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "lang-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "filter-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "layers-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "music-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "command-palette",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "streetview-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "diagnostics-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "media-lightbox",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "viewfinder-hud",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "poster-share-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "epic-earth-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "onboarding-tour-root",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        }
+      ]
+    },
+    {
+      "label": "1920x1080",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "scrollWidth": 1920,
+      "horizontalOverflowPx": 0,
+      "visibleInteractiveCount": 35,
+      "smallTouchTargetsCount": 35,
+      "smallTouchTargetsSample": [
+        {
+          "tag": "button",
+          "id": "brand-home-btn",
+          "cls": "kairos-brand-link",
+          "w": 109,
+          "h": 26,
+          "text": ""
+        },
+        {
+          "tag": "button",
+          "id": "sidebar-toggle-btn",
+          "cls": "capsule-pill-btn",
+          "w": 66,
+          "h": 34,
+          "text": "清单"
+        },
+        {
+          "tag": "button",
+          "id": "filter-popover-btn",
+          "cls": "capsule-icon-btn",
+          "w": 34,
+          "h": 34,
+          "text": "0"
+        },
+        {
+          "tag": "button",
+          "id": "favorites-toggle-btn",
+          "cls": "capsule-icon-btn",
+          "w": 34,
+          "h": 34,
+          "text": "0"
+        },
+        {
+          "tag": "button",
+          "id": "mode-map-btn",
+          "cls": "mode-btn active",
+          "w": 52,
+          "h": 34,
+          "text": "地球"
+        },
+        {
+          "tag": "button",
+          "id": "mode-gallery-btn",
+          "cls": "mode-btn",
+          "w": 52,
+          "h": 34,
+          "text": "图鉴"
+        },
+        {
+          "tag": "button",
+          "id": "mode-planner-btn",
+          "cls": "mode-btn",
+          "w": 52,
+          "h": 34,
+          "text": "规划"
+        },
+        {
+          "tag": "button",
+          "id": "mode-archive-btn",
+          "cls": "mode-btn",
+          "w": 52,
+          "h": 34,
+          "text": "档案"
+        },
+        {
+          "tag": "button",
+          "id": "open-palette-btn",
+          "cls": "cmd-trigger",
+          "w": 192,
+          "h": 34,
+          "text": "搜索 722 城与 5,414 机位…\n        ⌘K"
+        },
+        {
+          "tag": "button",
+          "id": "music-popover-btn",
+          "cls": "capsule-pill-btn music-trigger-btn",
+          "w": 66,
+          "h": 34,
+          "text": "电台"
+        },
+        {
+          "tag": "button",
+          "id": "appearance-btn",
+          "cls": "capsule-icon-btn",
+          "w": 34,
+          "h": 34,
+          "text": ""
+        },
+        {
+          "tag": "button",
+          "id": "lang-btn",
+          "cls": "capsule-lang-btn",
+          "w": 47,
+          "h": 32,
+          "text": "简"
+        }
+      ],
+      "clippedControlsCount": 0,
+      "clippedControlsSample": [],
+      "chromeOverlapsCount": 0,
+      "chromeOverlapsSample": [],
+      "lowContrastCount": 1,
+      "lowContrastSample": [
+        {
+          "id": null,
+          "text": "全年",
+          "ratio": 3.56,
+          "minReq": 4.5,
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(180,125,34)"
+        }
+      ],
+      "touchActionMap": "none",
+      "touchActionDrawer": "auto",
+      "dialogs": [
+        {
+          "id": "cosmic-intro",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "story-prologue",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "appearance-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "lang-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "filter-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "layers-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "music-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "command-palette",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "streetview-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "diagnostics-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "media-lightbox",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "viewfinder-hud",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "poster-share-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "epic-earth-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "onboarding-tour-root",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        }
+      ]
+    },
+    {
+      "label": "2560x1440",
+      "viewport": {
+        "width": 2560,
+        "height": 1440
+      },
+      "scrollWidth": 2560,
+      "horizontalOverflowPx": 0,
+      "visibleInteractiveCount": 39,
+      "smallTouchTargetsCount": 39,
+      "smallTouchTargetsSample": [
+        {
+          "tag": "button",
+          "id": "brand-home-btn",
+          "cls": "kairos-brand-link",
+          "w": 109,
+          "h": 26,
+          "text": ""
+        },
+        {
+          "tag": "button",
+          "id": "sidebar-toggle-btn",
+          "cls": "capsule-pill-btn",
+          "w": 66,
+          "h": 34,
+          "text": "清单"
+        },
+        {
+          "tag": "button",
+          "id": "filter-popover-btn",
+          "cls": "capsule-icon-btn",
+          "w": 34,
+          "h": 34,
+          "text": "0"
+        },
+        {
+          "tag": "button",
+          "id": "favorites-toggle-btn",
+          "cls": "capsule-icon-btn",
+          "w": 34,
+          "h": 34,
+          "text": "0"
+        },
+        {
+          "tag": "button",
+          "id": "mode-map-btn",
+          "cls": "mode-btn active",
+          "w": 52,
+          "h": 34,
+          "text": "地球"
+        },
+        {
+          "tag": "button",
+          "id": "mode-gallery-btn",
+          "cls": "mode-btn",
+          "w": 52,
+          "h": 34,
+          "text": "图鉴"
+        },
+        {
+          "tag": "button",
+          "id": "mode-planner-btn",
+          "cls": "mode-btn",
+          "w": 52,
+          "h": 34,
+          "text": "规划"
+        },
+        {
+          "tag": "button",
+          "id": "mode-archive-btn",
+          "cls": "mode-btn",
+          "w": 52,
+          "h": 34,
+          "text": "档案"
+        },
+        {
+          "tag": "button",
+          "id": "open-palette-btn",
+          "cls": "cmd-trigger",
+          "w": 192,
+          "h": 34,
+          "text": "搜索 722 城与 5,414 机位…\n        ⌘K"
+        },
+        {
+          "tag": "button",
+          "id": "music-popover-btn",
+          "cls": "capsule-pill-btn music-trigger-btn",
+          "w": 66,
+          "h": 34,
+          "text": "电台"
+        },
+        {
+          "tag": "button",
+          "id": "appearance-btn",
+          "cls": "capsule-icon-btn",
+          "w": 34,
+          "h": 34,
+          "text": ""
+        },
+        {
+          "tag": "button",
+          "id": "lang-btn",
+          "cls": "capsule-lang-btn",
+          "w": 47,
+          "h": 32,
+          "text": "简"
+        }
+      ],
+      "clippedControlsCount": 0,
+      "clippedControlsSample": [],
+      "chromeOverlapsCount": 0,
+      "chromeOverlapsSample": [],
+      "lowContrastCount": 2,
+      "lowContrastSample": [
+        {
+          "id": null,
+          "text": "全年",
+          "ratio": 3.56,
+          "minReq": 4.5,
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(180,125,34)"
+        },
+        {
+          "id": "tour-welcome-skip-btn",
+          "text": "暂不导览",
+          "ratio": 3.71,
+          "minReq": 4.5,
+          "fg": "rgb(113, 113, 122)",
+          "bg": "rgb(225,225,226)"
+        }
+      ],
+      "touchActionMap": "none",
+      "touchActionDrawer": "auto",
+      "dialogs": [
+        {
+          "id": "cosmic-intro",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "story-prologue",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "appearance-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "lang-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "filter-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "layers-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "music-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "command-palette",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "streetview-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "diagnostics-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "media-lightbox",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "viewfinder-hud",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "poster-share-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "epic-earth-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "onboarding-tour-root",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        }
+      ]
+    },
+    {
+      "label": "mobile-landscape-844x390",
+      "viewport": {
+        "width": 844,
+        "height": 390
+      },
+      "scrollWidth": 844,
+      "horizontalOverflowPx": 0,
+      "visibleInteractiveCount": 35,
+      "smallTouchTargetsCount": 35,
+      "smallTouchTargetsSample": [
+        {
+          "tag": "button",
+          "id": "brand-home-btn",
+          "cls": "kairos-brand-link",
+          "w": 34,
+          "h": 26,
+          "text": ""
+        },
+        {
+          "tag": "button",
+          "id": "sidebar-toggle-btn",
+          "cls": "capsule-pill-btn",
+          "w": 34,
+          "h": 34,
+          "text": "清单"
+        },
+        {
+          "tag": "button",
+          "id": "filter-popover-btn",
+          "cls": "capsule-icon-btn",
+          "w": 34,
+          "h": 34,
+          "text": "0"
+        },
+        {
+          "tag": "button",
+          "id": "favorites-toggle-btn",
+          "cls": "capsule-icon-btn",
+          "w": 34,
+          "h": 34,
+          "text": "0"
+        },
+        {
+          "tag": "button",
+          "id": "mode-map-btn",
+          "cls": "mode-btn active",
+          "w": 52,
+          "h": 34,
+          "text": "地球"
+        },
+        {
+          "tag": "button",
+          "id": "mode-gallery-btn",
+          "cls": "mode-btn",
+          "w": 52,
+          "h": 34,
+          "text": "图鉴"
+        },
+        {
+          "tag": "button",
+          "id": "mode-planner-btn",
+          "cls": "mode-btn",
+          "w": 52,
+          "h": 34,
+          "text": "规划"
+        },
+        {
+          "tag": "button",
+          "id": "mode-archive-btn",
+          "cls": "mode-btn",
+          "w": 52,
+          "h": 34,
+          "text": "档案"
+        },
+        {
+          "tag": "button",
+          "id": "open-palette-btn",
+          "cls": "cmd-trigger",
+          "w": 152,
+          "h": 34,
+          "text": "搜索 722 城与 5,414 机位…\n        ⌘K"
+        },
+        {
+          "tag": "button",
+          "id": "music-popover-btn",
+          "cls": "capsule-pill-btn music-trigger-btn",
+          "w": 34,
+          "h": 34,
+          "text": "电台"
+        },
+        {
+          "tag": "button",
+          "id": "appearance-btn",
+          "cls": "capsule-icon-btn",
+          "w": 34,
+          "h": 34,
+          "text": ""
+        },
+        {
+          "tag": "button",
+          "id": "lang-btn",
+          "cls": "capsule-lang-btn",
+          "w": 47,
+          "h": 32,
+          "text": "简"
+        }
+      ],
+      "clippedControlsCount": 0,
+      "clippedControlsSample": [],
+      "chromeOverlapsCount": 0,
+      "chromeOverlapsSample": [],
+      "lowContrastCount": 1,
+      "lowContrastSample": [
+        {
+          "id": null,
+          "text": "全年",
+          "ratio": 3.56,
+          "minReq": 4.5,
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(180,125,34)"
+        }
+      ],
+      "touchActionMap": "none",
+      "touchActionDrawer": "auto",
+      "dialogs": [
+        {
+          "id": "cosmic-intro",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "story-prologue",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "appearance-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "lang-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "filter-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "layers-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "music-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "command-palette",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "streetview-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "diagnostics-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "media-lightbox",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "viewfinder-hud",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "poster-share-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "epic-earth-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "onboarding-tour-root",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        }
+      ]
+    },
+    {
+      "label": "tablet-landscape-1024x768",
+      "viewport": {
+        "width": 1024,
+        "height": 768
+      },
+      "scrollWidth": 1024,
+      "horizontalOverflowPx": 0,
+      "visibleInteractiveCount": 35,
+      "smallTouchTargetsCount": 35,
+      "smallTouchTargetsSample": [
+        {
+          "tag": "button",
+          "id": "brand-home-btn",
+          "cls": "kairos-brand-link",
+          "w": 109,
+          "h": 26,
+          "text": ""
+        },
+        {
+          "tag": "button",
+          "id": "sidebar-toggle-btn",
+          "cls": "capsule-pill-btn",
+          "w": 34,
+          "h": 34,
+          "text": "清单"
+        },
+        {
+          "tag": "button",
+          "id": "filter-popover-btn",
+          "cls": "capsule-icon-btn",
+          "w": 34,
+          "h": 34,
+          "text": "0"
+        },
+        {
+          "tag": "button",
+          "id": "favorites-toggle-btn",
+          "cls": "capsule-icon-btn",
+          "w": 34,
+          "h": 34,
+          "text": "0"
+        },
+        {
+          "tag": "button",
+          "id": "mode-map-btn",
+          "cls": "mode-btn active",
+          "w": 52,
+          "h": 34,
+          "text": "地球"
+        },
+        {
+          "tag": "button",
+          "id": "mode-gallery-btn",
+          "cls": "mode-btn",
+          "w": 52,
+          "h": 34,
+          "text": "图鉴"
+        },
+        {
+          "tag": "button",
+          "id": "mode-planner-btn",
+          "cls": "mode-btn",
+          "w": 52,
+          "h": 34,
+          "text": "规划"
+        },
+        {
+          "tag": "button",
+          "id": "mode-archive-btn",
+          "cls": "mode-btn",
+          "w": 52,
+          "h": 34,
+          "text": "档案"
+        },
+        {
+          "tag": "button",
+          "id": "open-palette-btn",
+          "cls": "cmd-trigger",
+          "w": 152,
+          "h": 34,
+          "text": "搜索 722 城与 5,414 机位…\n        ⌘K"
+        },
+        {
+          "tag": "button",
+          "id": "music-popover-btn",
+          "cls": "capsule-pill-btn music-trigger-btn",
+          "w": 34,
+          "h": 34,
+          "text": "电台"
+        },
+        {
+          "tag": "button",
+          "id": "appearance-btn",
+          "cls": "capsule-icon-btn",
+          "w": 34,
+          "h": 34,
+          "text": ""
+        },
+        {
+          "tag": "button",
+          "id": "lang-btn",
+          "cls": "capsule-lang-btn",
+          "w": 47,
+          "h": 32,
+          "text": "简"
+        }
+      ],
+      "clippedControlsCount": 0,
+      "clippedControlsSample": [],
+      "chromeOverlapsCount": 0,
+      "chromeOverlapsSample": [],
+      "lowContrastCount": 1,
+      "lowContrastSample": [
+        {
+          "id": null,
+          "text": "全年",
+          "ratio": 3.56,
+          "minReq": 4.5,
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(180,125,34)"
+        }
+      ],
+      "touchActionMap": "none",
+      "touchActionDrawer": "auto",
+      "dialogs": [
+        {
+          "id": "cosmic-intro",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "story-prologue",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "appearance-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "lang-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "filter-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "layers-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "music-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "command-palette",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "streetview-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "diagnostics-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "media-lightbox",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "viewfinder-hud",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "poster-share-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "epic-earth-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "onboarding-tour-root",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        }
+      ]
+    }
+  ],
+  "modalA11y": {
+    "epic": {
+      "label": "epic-modal",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "scrollWidth": 1440,
+      "horizontalOverflowPx": 0,
+      "visibleInteractiveCount": 41,
+      "smallTouchTargetsCount": 41,
+      "smallTouchTargetsSample": [
+        {
+          "tag": "button",
+          "id": "brand-home-btn",
+          "cls": "kairos-brand-link",
+          "w": 109,
+          "h": 26,
+          "text": ""
+        },
+        {
+          "tag": "button",
+          "id": "sidebar-toggle-btn",
+          "cls": "capsule-pill-btn",
+          "w": 66,
+          "h": 34,
+          "text": "清单"
+        },
+        {
+          "tag": "button",
+          "id": "filter-popover-btn",
+          "cls": "capsule-icon-btn",
+          "w": 34,
+          "h": 34,
+          "text": "0"
+        },
+        {
+          "tag": "button",
+          "id": "favorites-toggle-btn",
+          "cls": "capsule-icon-btn",
+          "w": 34,
+          "h": 34,
+          "text": "0"
+        },
+        {
+          "tag": "button",
+          "id": "mode-map-btn",
+          "cls": "mode-btn active",
+          "w": 52,
+          "h": 34,
+          "text": "地球"
+        },
+        {
+          "tag": "button",
+          "id": "mode-gallery-btn",
+          "cls": "mode-btn",
+          "w": 52,
+          "h": 34,
+          "text": "图鉴"
+        },
+        {
+          "tag": "button",
+          "id": "mode-planner-btn",
+          "cls": "mode-btn",
+          "w": 52,
+          "h": 34,
+          "text": "规划"
+        },
+        {
+          "tag": "button",
+          "id": "mode-archive-btn",
+          "cls": "mode-btn",
+          "w": 52,
+          "h": 34,
+          "text": "档案"
+        },
+        {
+          "tag": "button",
+          "id": "open-palette-btn",
+          "cls": "cmd-trigger",
+          "w": 192,
+          "h": 34,
+          "text": "搜索 722 城与 5,414 机位…\n        ⌘K"
+        },
+        {
+          "tag": "button",
+          "id": "music-popover-btn",
+          "cls": "capsule-pill-btn music-trigger-btn",
+          "w": 66,
+          "h": 34,
+          "text": "电台"
+        },
+        {
+          "tag": "button",
+          "id": "appearance-btn",
+          "cls": "capsule-icon-btn",
+          "w": 34,
+          "h": 34,
+          "text": ""
+        },
+        {
+          "tag": "button",
+          "id": "lang-btn",
+          "cls": "capsule-lang-btn",
+          "w": 47,
+          "h": 32,
+          "text": "简"
+        }
+      ],
+      "clippedControlsCount": 0,
+      "clippedControlsSample": [],
+      "chromeOverlapsCount": 0,
+      "chromeOverlapsSample": [],
+      "lowContrastCount": 2,
+      "lowContrastSample": [
+        {
+          "id": null,
+          "text": "全年",
+          "ratio": 3.56,
+          "minReq": 4.5,
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(180,125,34)"
+        },
+        {
+          "id": null,
+          "text": "查看高清原图 (2048px PNG) ↗",
+          "ratio": 3.56,
+          "minReq": 4.5,
+          "fg": "rgb(180, 125, 34)",
+          "bg": "rgb(255,255,255)"
+        }
+      ],
+      "touchActionMap": "none",
+      "touchActionDrawer": "auto",
+      "dialogs": [
+        {
+          "id": "cosmic-intro",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "story-prologue",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "appearance-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "lang-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "filter-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "layers-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "music-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "command-palette",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "streetview-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "diagnostics-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "media-lightbox",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "viewfinder-hud",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "poster-share-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "epic-earth-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": true
+        },
+        {
+          "id": "onboarding-tour-root",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        }
+      ]
+    },
+    "shareCenter": {
+      "label": "share-center",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "scrollWidth": 1440,
+      "horizontalOverflowPx": 0,
+      "visibleInteractiveCount": 96,
+      "smallTouchTargetsCount": 96,
+      "smallTouchTargetsSample": [
+        {
+          "tag": "button",
+          "id": "brand-home-btn",
+          "cls": "kairos-brand-link",
+          "w": 109,
+          "h": 26,
+          "text": ""
+        },
+        {
+          "tag": "button",
+          "id": "sidebar-toggle-btn",
+          "cls": "capsule-pill-btn",
+          "w": 66,
+          "h": 34,
+          "text": "清单"
+        },
+        {
+          "tag": "button",
+          "id": "filter-popover-btn",
+          "cls": "capsule-icon-btn",
+          "w": 34,
+          "h": 34,
+          "text": "0"
+        },
+        {
+          "tag": "button",
+          "id": "favorites-toggle-btn",
+          "cls": "capsule-icon-btn",
+          "w": 34,
+          "h": 34,
+          "text": "0"
+        },
+        {
+          "tag": "button",
+          "id": "mode-map-btn",
+          "cls": "mode-btn",
+          "w": 52,
+          "h": 34,
+          "text": "地球"
+        },
+        {
+          "tag": "button",
+          "id": "mode-gallery-btn",
+          "cls": "mode-btn",
+          "w": 52,
+          "h": 34,
+          "text": "图鉴"
+        },
+        {
+          "tag": "button",
+          "id": "mode-planner-btn",
+          "cls": "mode-btn active",
+          "w": 52,
+          "h": 34,
+          "text": "规划"
+        },
+        {
+          "tag": "button",
+          "id": "mode-archive-btn",
+          "cls": "mode-btn",
+          "w": 52,
+          "h": 34,
+          "text": "档案"
+        },
+        {
+          "tag": "button",
+          "id": "open-palette-btn",
+          "cls": "cmd-trigger",
+          "w": 192,
+          "h": 34,
+          "text": "搜索 722 城与 5,414 机位…\n        ⌘K"
+        },
+        {
+          "tag": "button",
+          "id": "music-popover-btn",
+          "cls": "capsule-pill-btn music-trigger-btn",
+          "w": 66,
+          "h": 34,
+          "text": "电台"
+        },
+        {
+          "tag": "button",
+          "id": "appearance-btn",
+          "cls": "capsule-icon-btn",
+          "w": 34,
+          "h": 34,
+          "text": ""
+        },
+        {
+          "tag": "button",
+          "id": "lang-btn",
+          "cls": "capsule-lang-btn",
+          "w": 47,
+          "h": 32,
+          "text": "简"
+        }
+      ],
+      "clippedControlsCount": 0,
+      "clippedControlsSample": [],
+      "chromeOverlapsCount": 0,
+      "chromeOverlapsSample": [],
+      "lowContrastCount": 12,
+      "lowContrastSample": [
+        {
+          "id": null,
+          "text": "全年",
+          "ratio": 3.56,
+          "minReq": 4.5,
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(180,125,34)"
+        },
+        {
+          "id": "tp-preview-globe-btn",
+          "text": "在地球上预览路线",
+          "ratio": 3.56,
+          "minReq": 4.5,
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(180,125,34)"
+        },
+        {
+          "id": "tp-generate-btn",
+          "text": "智能生成逐日计划",
+          "ratio": 3.56,
+          "minReq": 4.5,
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(180,125,34)"
+        },
+        {
+          "id": "col-revoke-invite",
+          "text": "撤销并轮换链接",
+          "ratio": 2.41,
+          "minReq": 4.5,
+          "fg": "rgb(251, 113, 133)",
+          "bg": "rgb(242,242,243)"
+        },
+        {
+          "id": "col-exp-add",
+          "text": "记一笔",
+          "ratio": 3.56,
+          "minReq": 4.5,
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(180,125,34)"
+        },
+        {
+          "id": "sc-close-btn",
+          "text": "×",
+          "ratio": 1.03,
+          "minReq": 3,
+          "fg": "rgb(24, 24, 27)",
+          "bg": "rgb(16,22,33)"
+        },
+        {
+          "id": "sc-copy-link-btn",
+          "text": "复制链接",
+          "ratio": 3.56,
+          "minReq": 4.5,
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(180,125,34)"
+        },
+        {
+          "id": null,
+          "text": "X / Twitter ↗",
+          "ratio": 1.03,
+          "minReq": 4.5,
+          "fg": "rgb(24, 24, 27)",
+          "bg": "rgb(16,22,34)"
+        },
+        {
+          "id": null,
+          "text": "Reddit ↗",
+          "ratio": 1.03,
+          "minReq": 4.5,
+          "fg": "rgb(24, 24, 27)",
+          "bg": "rgb(16,22,34)"
+        },
+        {
+          "id": null,
+          "text": "WhatsApp ↗",
+          "ratio": 1.03,
+          "minReq": 4.5,
+          "fg": "rgb(24, 24, 27)",
+          "bg": "rgb(16,22,34)"
+        }
+      ],
+      "touchActionMap": "none",
+      "touchActionDrawer": "auto",
+      "dialogs": [
+        {
+          "id": "cosmic-intro",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "story-prologue",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "appearance-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "lang-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "filter-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "layers-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "music-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "command-palette",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "streetview-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "diagnostics-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "media-lightbox",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "viewfinder-hud",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "poster-share-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "epic-earth-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "onboarding-tour-root",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "share-center-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": false,
+          "visible": true
+        }
+      ]
+    },
+    "helpCenter": {
+      "label": "help-center",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "scrollWidth": 1440,
+      "horizontalOverflowPx": 0,
+      "visibleInteractiveCount": 53,
+      "smallTouchTargetsCount": 39,
+      "smallTouchTargetsSample": [
+        {
+          "tag": "button",
+          "id": "brand-home-btn",
+          "cls": "kairos-brand-link",
+          "w": 109,
+          "h": 26,
+          "text": ""
+        },
+        {
+          "tag": "button",
+          "id": "sidebar-toggle-btn",
+          "cls": "capsule-pill-btn",
+          "w": 66,
+          "h": 34,
+          "text": "清单"
+        },
+        {
+          "tag": "button",
+          "id": "filter-popover-btn",
+          "cls": "capsule-icon-btn",
+          "w": 34,
+          "h": 34,
+          "text": "0"
+        },
+        {
+          "tag": "button",
+          "id": "favorites-toggle-btn",
+          "cls": "capsule-icon-btn",
+          "w": 34,
+          "h": 34,
+          "text": "0"
+        },
+        {
+          "tag": "button",
+          "id": "mode-map-btn",
+          "cls": "mode-btn active",
+          "w": 52,
+          "h": 34,
+          "text": "地球"
+        },
+        {
+          "tag": "button",
+          "id": "mode-gallery-btn",
+          "cls": "mode-btn",
+          "w": 52,
+          "h": 34,
+          "text": "图鉴"
+        },
+        {
+          "tag": "button",
+          "id": "mode-planner-btn",
+          "cls": "mode-btn",
+          "w": 52,
+          "h": 34,
+          "text": "规划"
+        },
+        {
+          "tag": "button",
+          "id": "mode-archive-btn",
+          "cls": "mode-btn",
+          "w": 52,
+          "h": 34,
+          "text": "档案"
+        },
+        {
+          "tag": "button",
+          "id": "open-palette-btn",
+          "cls": "cmd-trigger",
+          "w": 192,
+          "h": 34,
+          "text": "搜索 722 城与 5,414 机位…\n        ⌘K"
+        },
+        {
+          "tag": "button",
+          "id": "music-popover-btn",
+          "cls": "capsule-pill-btn music-trigger-btn",
+          "w": 66,
+          "h": 34,
+          "text": "电台"
+        },
+        {
+          "tag": "button",
+          "id": "appearance-btn",
+          "cls": "capsule-icon-btn",
+          "w": 34,
+          "h": 34,
+          "text": ""
+        },
+        {
+          "tag": "button",
+          "id": "lang-btn",
+          "cls": "capsule-lang-btn",
+          "w": 47,
+          "h": 32,
+          "text": "简"
+        }
+      ],
+      "clippedControlsCount": 0,
+      "clippedControlsSample": [],
+      "chromeOverlapsCount": 0,
+      "chromeOverlapsSample": [],
+      "lowContrastCount": 6,
+      "lowContrastSample": [
+        {
+          "id": null,
+          "text": "全年",
+          "ratio": 3.56,
+          "minReq": 4.5,
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(180,125,34)"
+        },
+        {
+          "id": "hc-close-btn",
+          "text": "×",
+          "ratio": 1.03,
+          "minReq": 3,
+          "fg": "rgb(24, 24, 27)",
+          "bg": "rgb(16,22,33)"
+        },
+        {
+          "id": null,
+          "text": "4. 探索地球\n                智能搜索",
+          "ratio": 1.03,
+          "minReq": 4.5,
+          "fg": "rgb(24, 24, 27)",
+          "bg": "rgb(16,22,33)"
+        },
+        {
+          "id": null,
+          "text": "5. 探索地球\n                目的地档",
+          "ratio": 1.03,
+          "minReq": 4.5,
+          "fg": "rgb(24, 24, 27)",
+          "bg": "rgb(16,22,33)"
+        },
+        {
+          "id": null,
+          "text": "6. 科学引擎\n                物候预测",
+          "ratio": 1.03,
+          "minReq": 4.5,
+          "fg": "rgb(24, 24, 27)",
+          "bg": "rgb(16,22,33)"
+        },
+        {
+          "id": null,
+          "text": "7. 科学引擎\n                极光与空",
+          "ratio": 1.03,
+          "minReq": 4.5,
+          "fg": "rgb(24, 24, 27)",
+          "bg": "rgb(16,22,33)"
+        }
+      ],
+      "touchActionMap": "none",
+      "touchActionDrawer": "auto",
+      "dialogs": [
+        {
+          "id": "cosmic-intro",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "story-prologue",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "appearance-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "lang-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "filter-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "layers-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "music-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "command-palette",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "streetview-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "diagnostics-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "media-lightbox",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "viewfinder-hud",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "poster-share-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "epic-earth-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "onboarding-tour-root",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "share-center-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": false,
+          "visible": false
+        },
+        {
+          "id": "help-center-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": false,
+          "visible": true
+        }
+      ]
+    },
+    "accountModal": {
+      "label": "account-modal",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "scrollWidth": 1440,
+      "horizontalOverflowPx": 0,
+      "visibleInteractiveCount": 38,
+      "smallTouchTargetsCount": 38,
+      "smallTouchTargetsSample": [
+        {
+          "tag": "button",
+          "id": "brand-home-btn",
+          "cls": "kairos-brand-link",
+          "w": 109,
+          "h": 26,
+          "text": ""
+        },
+        {
+          "tag": "button",
+          "id": "sidebar-toggle-btn",
+          "cls": "capsule-pill-btn",
+          "w": 66,
+          "h": 34,
+          "text": "清单"
+        },
+        {
+          "tag": "button",
+          "id": "filter-popover-btn",
+          "cls": "capsule-icon-btn",
+          "w": 34,
+          "h": 34,
+          "text": "0"
+        },
+        {
+          "tag": "button",
+          "id": "favorites-toggle-btn",
+          "cls": "capsule-icon-btn",
+          "w": 34,
+          "h": 34,
+          "text": "0"
+        },
+        {
+          "tag": "button",
+          "id": "mode-map-btn",
+          "cls": "mode-btn active",
+          "w": 52,
+          "h": 34,
+          "text": "地球"
+        },
+        {
+          "tag": "button",
+          "id": "mode-gallery-btn",
+          "cls": "mode-btn",
+          "w": 52,
+          "h": 34,
+          "text": "图鉴"
+        },
+        {
+          "tag": "button",
+          "id": "mode-planner-btn",
+          "cls": "mode-btn",
+          "w": 52,
+          "h": 34,
+          "text": "规划"
+        },
+        {
+          "tag": "button",
+          "id": "mode-archive-btn",
+          "cls": "mode-btn",
+          "w": 52,
+          "h": 34,
+          "text": "档案"
+        },
+        {
+          "tag": "button",
+          "id": "open-palette-btn",
+          "cls": "cmd-trigger",
+          "w": 192,
+          "h": 34,
+          "text": "搜索 722 城与 5,414 机位…\n        ⌘K"
+        },
+        {
+          "tag": "button",
+          "id": "music-popover-btn",
+          "cls": "capsule-pill-btn music-trigger-btn",
+          "w": 66,
+          "h": 34,
+          "text": "电台"
+        },
+        {
+          "tag": "button",
+          "id": "appearance-btn",
+          "cls": "capsule-icon-btn",
+          "w": 34,
+          "h": 34,
+          "text": ""
+        },
+        {
+          "tag": "button",
+          "id": "lang-btn",
+          "cls": "capsule-lang-btn",
+          "w": 47,
+          "h": 32,
+          "text": "简"
+        }
+      ],
+      "clippedControlsCount": 0,
+      "clippedControlsSample": [],
+      "chromeOverlapsCount": 0,
+      "chromeOverlapsSample": [],
+      "lowContrastCount": 2,
+      "lowContrastSample": [
+        {
+          "id": null,
+          "text": "全年",
+          "ratio": 3.56,
+          "minReq": 4.5,
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(180,125,34)"
+        },
+        {
+          "id": null,
+          "text": "前往 Workers 站点 ↗",
+          "ratio": 3.56,
+          "minReq": 4.5,
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(180,125,34)"
+        }
+      ],
+      "touchActionMap": "none",
+      "touchActionDrawer": "auto",
+      "dialogs": [
+        {
+          "id": "cosmic-intro",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "story-prologue",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "appearance-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "lang-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "filter-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "layers-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "music-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "command-palette",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "streetview-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "diagnostics-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "media-lightbox",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "viewfinder-hud",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "poster-share-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "epic-earth-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "onboarding-tour-root",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "share-center-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": false,
+          "visible": false
+        },
+        {
+          "id": "help-center-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": false,
+          "visible": false
+        },
+        {
+          "id": "account-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": true
+        }
+      ]
+    },
+    "destCompare": {
+      "label": "dest-compare",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "scrollWidth": 1440,
+      "horizontalOverflowPx": 0,
+      "visibleInteractiveCount": 41,
+      "smallTouchTargetsCount": 41,
+      "smallTouchTargetsSample": [
+        {
+          "tag": "button",
+          "id": "brand-home-btn",
+          "cls": "kairos-brand-link",
+          "w": 109,
+          "h": 26,
+          "text": ""
+        },
+        {
+          "tag": "button",
+          "id": "sidebar-toggle-btn",
+          "cls": "capsule-pill-btn",
+          "w": 66,
+          "h": 34,
+          "text": "清单"
+        },
+        {
+          "tag": "button",
+          "id": "filter-popover-btn",
+          "cls": "capsule-icon-btn",
+          "w": 34,
+          "h": 34,
+          "text": "0"
+        },
+        {
+          "tag": "button",
+          "id": "favorites-toggle-btn",
+          "cls": "capsule-icon-btn",
+          "w": 34,
+          "h": 34,
+          "text": "0"
+        },
+        {
+          "tag": "button",
+          "id": "mode-map-btn",
+          "cls": "mode-btn active",
+          "w": 52,
+          "h": 34,
+          "text": "地球"
+        },
+        {
+          "tag": "button",
+          "id": "mode-gallery-btn",
+          "cls": "mode-btn",
+          "w": 52,
+          "h": 34,
+          "text": "图鉴"
+        },
+        {
+          "tag": "button",
+          "id": "mode-planner-btn",
+          "cls": "mode-btn",
+          "w": 52,
+          "h": 34,
+          "text": "规划"
+        },
+        {
+          "tag": "button",
+          "id": "mode-archive-btn",
+          "cls": "mode-btn",
+          "w": 52,
+          "h": 34,
+          "text": "档案"
+        },
+        {
+          "tag": "button",
+          "id": "open-palette-btn",
+          "cls": "cmd-trigger",
+          "w": 192,
+          "h": 34,
+          "text": "搜索 722 城与 5,414 机位…\n        ⌘K"
+        },
+        {
+          "tag": "button",
+          "id": "music-popover-btn",
+          "cls": "capsule-pill-btn music-trigger-btn",
+          "w": 66,
+          "h": 34,
+          "text": "电台"
+        },
+        {
+          "tag": "button",
+          "id": "appearance-btn",
+          "cls": "capsule-icon-btn",
+          "w": 34,
+          "h": 34,
+          "text": ""
+        },
+        {
+          "tag": "button",
+          "id": "lang-btn",
+          "cls": "capsule-lang-btn",
+          "w": 47,
+          "h": 32,
+          "text": "简"
+        }
+      ],
+      "clippedControlsCount": 0,
+      "clippedControlsSample": [],
+      "chromeOverlapsCount": 0,
+      "chromeOverlapsSample": [],
+      "lowContrastCount": 6,
+      "lowContrastSample": [
+        {
+          "id": null,
+          "text": "全年",
+          "ratio": 3.56,
+          "minReq": 4.5,
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(180,125,34)"
+        },
+        {
+          "id": "dc-close-btn",
+          "text": "×",
+          "ratio": 1.03,
+          "minReq": 3,
+          "fg": "rgb(24, 24, 27)",
+          "bg": "rgb(16,22,33)"
+        },
+        {
+          "id": null,
+          "text": "×",
+          "ratio": 1.03,
+          "minReq": 4.5,
+          "fg": "rgb(24, 24, 27)",
+          "bg": "rgb(16,22,34)"
+        },
+        {
+          "id": null,
+          "text": "×",
+          "ratio": 1.03,
+          "minReq": 4.5,
+          "fg": "rgb(24, 24, 27)",
+          "bg": "rgb(16,22,34)"
+        },
+        {
+          "id": null,
+          "text": "查看详情",
+          "ratio": 1.03,
+          "minReq": 4.5,
+          "fg": "rgb(24, 24, 27)",
+          "bg": "rgb(16,22,34)"
+        },
+        {
+          "id": null,
+          "text": "查看详情",
+          "ratio": 1.03,
+          "minReq": 4.5,
+          "fg": "rgb(24, 24, 27)",
+          "bg": "rgb(16,22,34)"
+        }
+      ],
+      "touchActionMap": "none",
+      "touchActionDrawer": "auto",
+      "dialogs": [
+        {
+          "id": "cosmic-intro",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "story-prologue",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "appearance-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "lang-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "filter-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "layers-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "music-popover",
+          "role": "dialog",
+          "ariaModal": null,
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "command-palette",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "streetview-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "diagnostics-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "media-lightbox",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "viewfinder-hud",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "poster-share-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "epic-earth-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "onboarding-tour-root",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "share-center-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": false,
+          "visible": false
+        },
+        {
+          "id": "help-center-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": false,
+          "visible": false
+        },
+        {
+          "id": "account-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": true,
+          "visible": false
+        },
+        {
+          "id": "dest-compare-modal",
+          "role": "dialog",
+          "ariaModal": "true",
+          "ariaLabel": false,
+          "visible": true
+        }
+      ]
+    }
+  },
+  "cssScan": {
+    "cssUrls": 2,
+    "safeAreaCount": 39,
+    "focusVisibleRules": 7,
+    "touchActionRules": 10
+  }
+}

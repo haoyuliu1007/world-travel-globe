@@ -210,7 +210,10 @@
 
   function close() {
     const modal = document.getElementById('dest-compare-modal');
-    if (modal) modal.classList.add('is-hidden');
+    if (modal) {
+      modal.classList.add('is-hidden');
+      modal.innerHTML = '';
+    }
   }
 
   global.DestCompare = { open, close };

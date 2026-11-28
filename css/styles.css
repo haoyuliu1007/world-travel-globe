@@ -4,6 +4,7 @@
   --bg-material: rgba(16, 17, 22, 0.74);
   --bg-material-strong: rgba(13, 14, 19, 0.84);
   --bg-solid: #16161A;
+  --bg-panel: rgba(16, 22, 34, 0.96);
   --bg-hover: rgba(255, 255, 255, 0.065);
   --bg-active: rgba(255, 255, 255, 0.12);
 
@@ -58,18 +59,24 @@
 /* Apple Maps Daylight Mode Tokens (Floating UI only; 3D Space stays realistic black) */
 html[data-theme="light"] {
   --bg-space: #09090B;
-  --bg-material: rgba(252, 252, 255, 0.78);
-  --bg-material-strong: rgba(255, 255, 255, 0.88);
+  --bg-material: rgba(252, 252, 255, 0.84);
+  --bg-material-strong: rgba(255, 255, 255, 0.94);
   --bg-solid: #FFFFFF;
+  --bg-panel: #FFFFFF;
   --bg-hover: rgba(15, 23, 42, 0.055);
   --bg-active: rgba(15, 23, 42, 0.10);
 
   --text-primary: #18181B;
   --text-secondary: #52525B;
-  --text-muted: #71717A;
+  --text-muted: #52525B;
 
-  --accent-ice: #2563EB;
-  --accent-ice-soft: rgba(37, 99, 235, 0.12);
+  --accent-primary: #8C5E12;
+  --accent-primary-soft: rgba(140, 94, 18, 0.14);
+  --accent-primary-border: rgba(140, 94, 18, 0.42);
+  --accent-primary-fg: #FFFFFF;
+
+  --accent-ice: #1D4ED8;
+  --accent-ice-soft: rgba(29, 78, 216, 0.12);
 
   --bg-gallery-overlay: rgba(244, 246, 250, 0.94);
   --bg-gallery-card: #FFFFFF;
@@ -746,7 +753,7 @@ body.drawer-open .studio-popover {
   display: flex;
   align-items: center;
   gap: 7px;
-  width: 192px;
+  width: clamp(220px, 22vw, 320px);
   height: 34px;
   padding: 0 8px 0 8px;
   border: none;

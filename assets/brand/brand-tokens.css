@@ -29,26 +29,26 @@
   height: 22px;
   width: auto;
 }
-.kairos-brand-symbol {
+.kairos-brand-link .kairos-brand-symbol {
   display: none;
   height: 24px;
   width: 24px;
 }
 
 /* Automatic light / dark lockup switching */
-html[data-theme="dark"] .kairos-logo-light,
-html:not([data-theme="light"]) .kairos-logo-light {
+html[data-theme="dark"] .kairos-brand-link .kairos-logo-light,
+html:not([data-theme="light"]) .kairos-brand-link .kairos-logo-light {
   display: none;
 }
-html[data-theme="light"] .kairos-logo-dark {
+html[data-theme="light"] .kairos-brand-link .kairos-logo-dark {
   display: none;
 }
 
 @media (max-width: 960px) {
-  .kairos-brand-wordmark {
+  .kairos-brand-link .kairos-brand-wordmark {
     display: none !important;
   }
-  .kairos-brand-symbol {
+  .kairos-brand-link .kairos-brand-symbol {
     display: block;
   }
 }

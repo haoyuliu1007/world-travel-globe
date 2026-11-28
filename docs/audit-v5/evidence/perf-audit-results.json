@@ -1,0 +1,501 @@
+{
+  "auditedAt": "2026-11-28T05:31:36.731Z",
+  "environment": "Headless Chrome + SwiftShader WebGL (Note: GPU numbers reflect SwiftShader software rasterizer, not hardware GPU)",
+  "bundleMetrics": {
+    "totalDistFiles": 2382,
+    "totalDistBytes": 160302229,
+    "breakdown": {
+      "js/app.bundle.min.js": {
+        "rawBytes": 920560,
+        "gzipBytes": 245148
+      },
+      "css/app.bundle.min.css": {
+        "rawBytes": 230648,
+        "gzipBytes": 36521
+      },
+      "vendor/libs.bundle.min.js": {
+        "rawBytes": 359616,
+        "gzipBytes": 132441
+      },
+      "vendor/maplibre-gl.js": {
+        "rawBytes": 1058059,
+        "gzipBytes": 276491
+      },
+      "vendor/maplibre-gl.css": null,
+      "data/atlas-index.min.js": {
+        "rawBytes": 1296021,
+        "gzipBytes": 462079
+      },
+      "data/enrichment/atlas-enrichment.json": {
+        "rawBytes": 1487033,
+        "gzipBytes": 173352
+      },
+      "data/transport/hubs.json": {
+        "rawBytes": 243718,
+        "gzipBytes": 25408
+      },
+      "data/docs/manual-zh-CN.json": {
+        "rawBytes": 31639,
+        "gzipBytes": 14024
+      },
+      "js/lazy/account-center.js": {
+        "rawBytes": 14818,
+        "gzipBytes": 4555
+      },
+      "js/lazy/collab-space.js": {
+        "rawBytes": 15794,
+        "gzipBytes": 4904
+      },
+      "js/lazy/expense-splitter.js": {
+        "rawBytes": 3469,
+        "gzipBytes": 1271
+      },
+      "js/lazy/dest-compare.js": {
+        "rawBytes": 10981,
+        "gzipBytes": 3474
+      },
+      "js/lazy/export-service.js": {
+        "rawBytes": 15243,
+        "gzipBytes": 5399
+      },
+      "js/lazy/share-center.js": {
+        "rawBytes": 12752,
+        "gzipBytes": 4637
+      },
+      "js/lazy/help-center.js": {
+        "rawBytes": 8483,
+        "gzipBytes": 3307
+      },
+      "vendor/echarts.min.js": {
+        "rawBytes": 715020,
+        "gzipBytes": 240439
+      }
+    }
+  },
+  "profiles": [
+    {
+      "label": "prod-cold-desktop-instant-1920x1080",
+      "url": "https://world-travel-globe.globe-app.workers.dev/?instant=1",
+      "wallLoadMs": 9101,
+      "pageStats": {
+        "ttfbMs": 321,
+        "domInteractiveMs": 3414,
+        "dclMs": 3489,
+        "loadMs": 7084,
+        "fcpMs": 1980,
+        "lcpMs": 1980,
+        "lcpElement": "SPAN#loader-text",
+        "cls": 0.0219,
+        "longTaskCount": 43,
+        "maxLongTaskMs": 185,
+        "tbtMs": 403,
+        "resourceCount": 52,
+        "decodedBodyBytes": 5692780,
+        "transferBytes": 1589302,
+        "lazyLoadedOnBoot": [],
+        "swControlled": true
+      },
+      "netStats": {
+        "requests": 141,
+        "failedRequests": 0,
+        "encodedBytes": 1958358,
+        "compressedCount": 30,
+        "uncompressedCount": 0,
+        "sampleUncompressed": [],
+        "byType": {
+          "text/html": {
+            "count": 2,
+            "bytes": 11873
+          },
+          "image/jpeg": {
+            "count": 111,
+            "bytes": 555156
+          },
+          "text/css": {
+            "count": 4,
+            "bytes": 43397
+          },
+          "image/svg+xml": {
+            "count": 10,
+            "bytes": 20662
+          },
+          "text/javascript": {
+            "count": 10,
+            "bytes": 1141326
+          },
+          "application/json": {
+            "count": 4,
+            "bytes": 185944
+          }
+        }
+      },
+      "cdpHeapUsedMB": 12.87,
+      "cdpNodes": 3130,
+      "cdpListeners": 499,
+      "warmStats": {
+        "ttfbMs": 287,
+        "dclMs": 680,
+        "loadMs": 1644,
+        "fcpMs": 652,
+        "lcpMs": 652,
+        "transferBytes": 0,
+        "cachedResources": 52,
+        "totalResources": 87,
+        "swControlled": true,
+        "wallReloadMs": 3153
+      },
+      "pageErrors": []
+    },
+    {
+      "label": "prod-cold-prologue-1440x900",
+      "url": "https://world-travel-globe.globe-app.workers.dev/",
+      "wallLoadMs": 9102,
+      "pageStats": {
+        "ttfbMs": 351,
+        "domInteractiveMs": 3700,
+        "dclMs": 3785,
+        "loadMs": 7091,
+        "fcpMs": 2124,
+        "lcpMs": 2196,
+        "lcpElement": "SPAN#",
+        "cls": 0.0384,
+        "longTaskCount": 28,
+        "maxLongTaskMs": 236,
+        "tbtMs": 382,
+        "resourceCount": 58,
+        "decodedBodyBytes": 6406957,
+        "transferBytes": 2311149,
+        "lazyLoadedOnBoot": [],
+        "swControlled": true
+      },
+      "netStats": {
+        "requests": 59,
+        "failedRequests": 0,
+        "encodedBytes": 2681383,
+        "compressedCount": 14,
+        "uncompressedCount": 0,
+        "sampleUncompressed": [],
+        "byType": {
+          "text/html": {
+            "count": 1,
+            "bytes": 11872
+          },
+          "image/jpeg": {
+            "count": 45,
+            "bytes": 1278224
+          },
+          "image/svg+xml": {
+            "count": 4,
+            "bytes": 20620
+          },
+          "text/css": {
+            "count": 2,
+            "bytes": 43403
+          },
+          "text/javascript": {
+            "count": 5,
+            "bytes": 1141278
+          },
+          "application/json": {
+            "count": 2,
+            "bytes": 185986
+          }
+        }
+      },
+      "cdpHeapUsedMB": 14.2,
+      "cdpNodes": 3665,
+      "cdpListeners": 522,
+      "warmStats": null,
+      "pageErrors": []
+    },
+    {
+      "label": "prod-laptop-2x-cpu-1440x900",
+      "url": "https://world-travel-globe.globe-app.workers.dev/?instant=1",
+      "wallLoadMs": 9841,
+      "pageStats": {
+        "ttfbMs": 322,
+        "domInteractiveMs": 4394,
+        "dclMs": 4584,
+        "loadMs": 7826,
+        "fcpMs": 2904,
+        "lcpMs": 2904,
+        "lcpElement": "SPAN#loader-text",
+        "cls": 0.0387,
+        "longTaskCount": 39,
+        "maxLongTaskMs": 197,
+        "tbtMs": 708,
+        "resourceCount": 52,
+        "decodedBodyBytes": 5692780,
+        "transferBytes": 1589240,
+        "lazyLoadedOnBoot": [],
+        "swControlled": true
+      },
+      "netStats": {
+        "requests": 53,
+        "failedRequests": 0,
+        "encodedBytes": 1958347,
+        "compressedCount": 15,
+        "uncompressedCount": 0,
+        "sampleUncompressed": [],
+        "byType": {
+          "text/html": {
+            "count": 1,
+            "bytes": 11876
+          },
+          "image/jpeg": {
+            "count": 38,
+            "bytes": 555176
+          },
+          "text/css": {
+            "count": 2,
+            "bytes": 43407
+          },
+          "image/svg+xml": {
+            "count": 5,
+            "bytes": 20671
+          },
+          "text/javascript": {
+            "count": 5,
+            "bytes": 1141277
+          },
+          "application/json": {
+            "count": 2,
+            "bytes": 185940
+          }
+        }
+      },
+      "cdpHeapUsedMB": 16.98,
+      "cdpNodes": 3451,
+      "cdpListeners": 554,
+      "warmStats": null,
+      "pageErrors": []
+    },
+    {
+      "label": "prod-lowend-6x-cpu-390x844",
+      "url": "https://world-travel-globe.globe-app.workers.dev/?instant=1",
+      "wallLoadMs": 10744,
+      "pageStats": {
+        "ttfbMs": 333,
+        "domInteractiveMs": 3819,
+        "dclMs": 4877,
+        "loadMs": 8726,
+        "fcpMs": 2280,
+        "lcpMs": 2280,
+        "lcpElement": "SPAN#loader-text",
+        "cls": 0.0224,
+        "longTaskCount": 39,
+        "maxLongTaskMs": 1065,
+        "tbtMs": 3262,
+        "resourceCount": 52,
+        "decodedBodyBytes": 5692780,
+        "transferBytes": 1589258,
+        "lazyLoadedOnBoot": [],
+        "swControlled": true
+      },
+      "netStats": {
+        "requests": 53,
+        "failedRequests": 0,
+        "encodedBytes": 1958027,
+        "compressedCount": 15,
+        "uncompressedCount": 0,
+        "sampleUncompressed": [],
+        "byType": {
+          "text/html": {
+            "count": 1,
+            "bytes": 11882
+          },
+          "image/jpeg": {
+            "count": 38,
+            "bytes": 554857
+          },
+          "text/css": {
+            "count": 2,
+            "bytes": 43395
+          },
+          "image/svg+xml": {
+            "count": 5,
+            "bytes": 20562
+          },
+          "text/javascript": {
+            "count": 5,
+            "bytes": 1141377
+          },
+          "application/json": {
+            "count": 2,
+            "bytes": 185954
+          }
+        }
+      },
+      "cdpHeapUsedMB": 17.41,
+      "cdpNodes": 3451,
+      "cdpListeners": 542,
+      "warmStats": null,
+      "pageErrors": []
+    },
+    {
+      "label": "prod-mobile-4g-390x844",
+      "url": "https://world-travel-globe.globe-app.workers.dev/?instant=1",
+      "wallLoadMs": 17097,
+      "pageStats": {
+        "ttfbMs": 344,
+        "domInteractiveMs": 9288,
+        "dclMs": 9872,
+        "loadMs": 15091,
+        "fcpMs": 2500,
+        "lcpMs": 2500,
+        "lcpElement": "SPAN#loader-text",
+        "cls": 0.0224,
+        "longTaskCount": 41,
+        "maxLongTaskMs": 589,
+        "tbtMs": 1440,
+        "resourceCount": 52,
+        "decodedBodyBytes": 5692780,
+        "transferBytes": 1589255,
+        "lazyLoadedOnBoot": [],
+        "swControlled": true
+      },
+      "netStats": {
+        "requests": 53,
+        "failedRequests": 0,
+        "encodedBytes": 1958377,
+        "compressedCount": 15,
+        "uncompressedCount": 0,
+        "sampleUncompressed": [],
+        "byType": {
+          "text/html": {
+            "count": 1,
+            "bytes": 11874
+          },
+          "text/css": {
+            "count": 2,
+            "bytes": 43396
+          },
+          "image/svg+xml": {
+            "count": 5,
+            "bytes": 20604
+          },
+          "image/jpeg": {
+            "count": 38,
+            "bytes": 555186
+          },
+          "text/javascript": {
+            "count": 5,
+            "bytes": 1141354
+          },
+          "application/json": {
+            "count": 2,
+            "bytes": 185963
+          }
+        }
+      },
+      "cdpHeapUsedMB": 13.86,
+      "cdpNodes": 3451,
+      "cdpListeners": 586,
+      "warmStats": null,
+      "pageErrors": []
+    },
+    {
+      "label": "prod-slow-3g-390x844",
+      "url": "https://world-travel-globe.globe-app.workers.dev/?instant=1",
+      "wallLoadMs": 36560,
+      "pageStats": {
+        "ttfbMs": 400,
+        "domInteractiveMs": 24078,
+        "dclMs": 24552,
+        "loadMs": 35653,
+        "fcpMs": 3024,
+        "lcpMs": 3024,
+        "lcpElement": "SPAN#loader-text",
+        "cls": 0.0224,
+        "longTaskCount": 50,
+        "maxLongTaskMs": 478,
+        "tbtMs": 1181,
+        "resourceCount": 52,
+        "decodedBodyBytes": 4205747,
+        "transferBytes": 1404597,
+        "lazyLoadedOnBoot": [],
+        "swControlled": true
+      },
+      "netStats": {
+        "requests": 52,
+        "failedRequests": 1,
+        "encodedBytes": 1773200,
+        "compressedCount": 14,
+        "uncompressedCount": 0,
+        "sampleUncompressed": [],
+        "byType": {
+          "text/html": {
+            "count": 1,
+            "bytes": 11872
+          },
+          "text/css": {
+            "count": 2,
+            "bytes": 43427
+          },
+          "image/svg+xml": {
+            "count": 5,
+            "bytes": 20689
+          },
+          "image/jpeg": {
+            "count": 38,
+            "bytes": 555194
+          },
+          "text/javascript": {
+            "count": 5,
+            "bytes": 1141331
+          },
+          "application/json": {
+            "count": 1,
+            "bytes": 687
+          }
+        }
+      },
+      "cdpHeapUsedMB": 12.09,
+      "cdpNodes": 3451,
+      "cdpListeners": 686,
+      "warmStats": null,
+      "pageErrors": []
+    }
+  ],
+  "webglStability": {
+    "fpsStats": {
+      "frames": 233,
+      "avgFps": 19.4,
+      "avgFrameMs": 51.67,
+      "p50Ms": 50,
+      "p95Ms": 66.7,
+      "p99Ms": 66.8,
+      "droppedOver33ms": 207,
+      "jankOver50ms": 98
+    },
+    "memoryBefore": {
+      "heapMB": 13.28,
+      "nodes": 3086,
+      "listeners": 314
+    },
+    "memoryAfter": {
+      "heapMB": 13.95,
+      "nodes": 4454,
+      "listeners": 458
+    },
+    "deltas": {
+      "heapDeltaMB": 0.66,
+      "nodesDelta": 1368,
+      "listenersDelta": 144
+    },
+    "webglContextLoss": {
+      "lostCount": 1,
+      "restoredCount": 1,
+      "lostAfterLose": true,
+      "lostAfterRestore": false
+    },
+    "pageErrors": [],
+    "consoleErrorsCount": 0,
+    "consoleErrorsSample": []
+  },
+  "timeoutResilience": {
+    "drawerStillResponsive": false,
+    "weatherFallbackSnippet": "",
+    "pageErrors": []
+  }
+}

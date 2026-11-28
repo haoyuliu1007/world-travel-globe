@@ -49,12 +49,34 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Cache-first for lazy region/i18n/docs/transport/lazy-UI/brand chunks and vendor libs
+  // Versioned bundled shell assets (/css/, /js/, /vendor/libs.bundle, /data/atlas-index.min.js): cache-first per release
+  if (
+    url.searchParams.has('v') &&
+    (url.pathname.includes('/css/') ||
+      url.pathname.includes('/js/') ||
+      url.pathname.includes('/vendor/libs.bundle') ||
+      url.pathname.includes('/assets/prologue/intro.bundle') ||
+      url.pathname.includes('/data/atlas-index.min.js'))
+  ) {
+    event.respondWith(
+      caches.open(CACHE_NAME).then(async (cache) => {
+        const hit = await cache.match(req);
+        if (hit) return hit;
+        const res = await fetch(req);
+        if (res && res.ok) cache.put(req, res.clone());
+        return res;
+      })
+    );
+    return;
+  }
+
+  // Cache-first for lazy region/i18n/docs/transport/enrichment/lazy-UI/brand chunks and static vendor libs
   if (
     url.pathname.includes('/data/regions/') ||
     url.pathname.includes('/data/i18n/') ||
     url.pathname.includes('/data/docs/') ||
     url.pathname.includes('/data/transport/') ||
+    url.pathname.includes('/data/enrichment/') ||
     url.pathname.includes('/js/lazy/') ||
     url.pathname.includes('/assets/brand/') ||
     url.pathname.includes('/vendor/')
@@ -63,9 +85,13 @@ self.addEventListener('fetch', (event) => {
       caches.open(DATA_CACHE).then(async (cache) => {
         const hit = await cache.match(req);
         if (hit) return hit;
-        const res = await fetch(req);
-        if (res && res.ok) cache.put(req, res.clone());
-        return res;
+        try {
+          const res = await fetch(req);
+          if (res && res.ok) cache.put(req, res.clone());
+          return res;
+        } catch {
+          return new Response('Offline', { status: 503 });
+        }
       })
     );
     return;
@@ -82,27 +108,8 @@ self.addEventListener('fetch', (event) => {
           }
           return res;
         } catch {
-          return (await cache.match('./index.html')) || (await cache.match('./'));
+          return (await cache.match('./index.html')) || (await cache.match('./')) || new Response('Offline', { status: 503 });
         }
-      })
-    );
-    return;
-  }
-
-  // Versioned bundled shell assets (/css/, /js/, /data/atlas-index.min.js): cache-first
-  if (
-    url.searchParams.has('v') &&
-    (url.pathname.includes('/css/') ||
-      url.pathname.includes('/js/') ||
-      url.pathname.includes('/data/atlas-index.min.js'))
-  ) {
-    event.respondWith(
-      caches.open(CACHE_NAME).then(async (cache) => {
-        const hit = await cache.match(req);
-        if (hit) return hit;
-        const res = await fetch(req);
-        if (res && res.ok) cache.put(req, res.clone());
-        return res;
       })
     );
     return;
@@ -118,7 +125,12 @@ self.addEventListener('fetch', (event) => {
           return res;
         })
         .catch(() => null);
-      return hit || (await netPromise);
+      if (hit) return hit;
+      const netRes = await netPromise;
+      return netRes || new Response(url.pathname.endsWith('.json') ? '{"offline":true}' : 'Offline', {
+        status: 503,
+        headers: { 'Content-Type': url.pathname.endsWith('.json') ? 'application/json' : 'text/plain' }
+      });
     })
   );
 });

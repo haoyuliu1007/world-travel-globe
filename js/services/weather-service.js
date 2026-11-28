@@ -83,7 +83,7 @@
     return zh ? L(zh, WMO_LABELS_EN[n] || zh) : `WMO ${code}`;
   }
 
-  async function requestWeatherEndpoint(base, params, cacheKey, ttlMs, sourceName) {
+  async function requestWeatherEndpoint(base, params, cacheKey, ttlMs, sourceName, opts) {
     const Api = global.ApiClient;
     const caps = Api ? await Api.detectWorkerCapabilities() : { available: false };
     const qs = new URLSearchParams(params).toString();
@@ -98,14 +98,15 @@
         cacheKey,
         ttlMs,
         source: sourceName || 'Open-Meteo',
-        timeoutMs: 11000
+        timeoutMs: 11000,
+        signal: opts && opts.signal
       });
     }
-    const res = await fetch(url);
+    const res = await fetch(url, { signal: opts && opts.signal });
     return res.json();
   }
 
-  async function fetchLiveWeather(lat, lng) {
+  async function fetchLiveWeather(lat, lng, opts) {
     const la = Number(lat).toFixed(3);
     const lo = Number(lng).toFixed(3);
     const cacheKey = `om:live:${la},${lo}`;
@@ -122,7 +123,8 @@
       },
       cacheKey,
       THIRTY_MIN_MS,
-      'Open-Meteo Forecast'
+      'Open-Meteo Forecast',
+      opts
     );
   }
 

@@ -5,18 +5,18 @@
   const ACCENT_KEY = 'wtg_accent_v1';
 
   const SWATCHES = [
-    { id: 'champagne', name: '香槟金', dark: '#E2C07D', light: '#B47D22' },
-    { id: 'glacier', name: '天青蓝', dark: '#60A5FA', light: '#2563EB' },
-    { id: 'emerald', name: '翡翠绿', dark: '#34D399', light: '#059669' },
-    { id: 'terracotta', name: '珊瑚橘', dark: '#FB923C', light: '#D95D24' },
-    { id: 'rose', name: '蔷薇粉', dark: '#F472B6', light: '#DB2777' },
-    { id: 'iris', name: '暮光紫', dark: '#A78BFA', light: '#7C3AED' },
-    { id: 'teal', name: '松石青', dark: '#2DD4BF', light: '#0D9488' },
+    { id: 'champagne', name: '香槟金', dark: '#E2C07D', light: '#8C5E12' },
+    { id: 'glacier', name: '天青蓝', dark: '#60A5FA', light: '#1D4ED8' },
+    { id: 'emerald', name: '翡翠绿', dark: '#34D399', light: '#047857' },
+    { id: 'terracotta', name: '珊瑚橘', dark: '#FB923C', light: '#B45309' },
+    { id: 'rose', name: '蔷薇粉', dark: '#F472B6', light: '#BE185D' },
+    { id: 'iris', name: '暮光紫', dark: '#A78BFA', light: '#6D28D9' },
+    { id: 'teal', name: '松石青', dark: '#2DD4BF', light: '#0F766E' },
     { id: 'mono', name: '极简黑白', dark: '#F5F5F7', light: '#18181B' }
   ];
 
   let mode = 'light'; // 'dark' | 'light'
-  let accentHex = '#B47D22';
+  let accentHex = '#8C5E12';
   let activeSwatchId = 'champagne';
   let onChangeListeners = [];
 
@@ -43,7 +43,7 @@
       return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
     });
     const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-    return lum > 0.42 ? '#09090B' : '#FFFFFF';
+    return lum > 0.179 ? '#09090B' : '#FFFFFF';
   }
 
   function applyTokens() {

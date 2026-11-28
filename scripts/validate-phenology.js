@@ -109,6 +109,25 @@ function evaluateHoldout(records, predictFn) {
   return { maeDays, rmseDays, perCity };
 }
 
+function evaluateCrossValidationAndBaseline(records, featureFn) {
+  const baselineErrs = [];
+  const looErrs = [];
+  for (let i = 0; i < records.length; i++) {
+    const r = records[i];
+    const cityFitMean = mean(r.fitYearsDoy);
+    r.holdoutYearsDoy.forEach((obs) => baselineErrs.push(Math.abs(cityFitMean - obs)));
+
+    const train = records.filter((_, j) => j !== i);
+    const reg = fitLinearRegression(train.map(featureFn), train.map((x) => mean(x.fitYearsDoy)));
+    const predLoo = Math.round(reg.intercept + reg.slope * featureFn(r));
+    r.holdoutYearsDoy.forEach((obs) => looErrs.push(Math.abs(predLoo - obs)));
+  }
+  return {
+    baselineCityMeanMaeDays: Number(mean(baselineErrs).toFixed(2)),
+    leaveOneCityOutMaeDays: Number(mean(looErrs).toFixed(2))
+  };
+}
+
 function runPhenologyValidation(writeOutput) {
   // Feature X for spring bloom: combined thermal warmth deficit + latitude photoperiod cue
   const springFeature = (r) => r.lat * 0.45 - r.springMeanC * 4.8;
@@ -116,6 +135,7 @@ function runPhenologyValidation(writeOutput) {
   const fitYSpring = BLOSSOM_BENCHMARKS.map((r) => mean(r.fitYearsDoy));
   const springReg = fitLinearRegression(fitXSpring, fitYSpring);
   const springEval = evaluateHoldout(BLOSSOM_BENCHMARKS, (r) => springReg.intercept + springReg.slope * springFeature(r));
+  const springCv = evaluateCrossValidationAndBaseline(BLOSSOM_BENCHMARKS, springFeature);
 
   // Feature X for autumn foliage: chill temperature & elevation-adjusted cooling index
   const autumnFeature = (r) => r.autumnMeanC * 5.2 - (r.elevM || 0) * 0.0045 - r.lat * 0.35;
@@ -123,6 +143,7 @@ function runPhenologyValidation(writeOutput) {
   const fitYAutumn = AUTUMN_BENCHMARKS.map((r) => mean(r.fitYearsDoy));
   const autumnReg = fitLinearRegression(fitXAutumn, fitYAutumn);
   const autumnEval = evaluateHoldout(AUTUMN_BENCHMARKS, (r) => autumnReg.intercept + autumnReg.slope * autumnFeature(r));
+  const autumnCv = evaluateCrossValidationAndBaseline(AUTUMN_BENCHMARKS, autumnFeature);
 
   const calibratedById = {};
   for (const [id, info] of Object.entries(springEval.perCity)) {
@@ -137,7 +158,7 @@ function runPhenologyValidation(writeOutput) {
   const report = {
     schemaVersion: '5.0.0',
     generatedAt: new Date().toISOString(),
-    methodology: 'Odd-year climatological normal fit vs even-year holdout validation (2015-2024 representative series)',
+    methodology: 'Multi-year climatological normal benchmark (2015-2024 JMA/NPS/CMA/KMA archive) with odd/even-year holdout & leave-one-city-out cross-validation against per-city climatological mean baseline (not interannual weather-driven dynamic forecasts).',
     coverage: {
       totalDestinationsInAtlas: 722,
       calibratedSubsetCount: Object.keys(calibratedById).length,
@@ -152,7 +173,9 @@ function runPhenologyValidation(writeOutput) {
           slope: Number(springReg.slope.toFixed(3))
         },
         holdoutMaeDays: springEval.maeDays,
-        holdoutRmseDays: springEval.rmseDays
+        holdoutRmseDays: springEval.rmseDays,
+        baselineCityMeanMaeDays: springCv.baselineCityMeanMaeDays,
+        leaveOneCityOutMaeDays: springCv.leaveOneCityOutMaeDays
       },
       autumn: {
         name: 'Autumn Cooling-Elevation-Photoperiod Index',
@@ -161,7 +184,9 @@ function runPhenologyValidation(writeOutput) {
           slope: Number(autumnReg.slope.toFixed(3))
         },
         holdoutMaeDays: autumnEval.maeDays,
-        holdoutRmseDays: autumnEval.rmseDays
+        holdoutRmseDays: autumnEval.rmseDays,
+        baselineCityMeanMaeDays: autumnCv.baselineCityMeanMaeDays,
+        leaveOneCityOutMaeDays: autumnCv.leaveOneCityOutMaeDays
       }
     },
     calibratedById

@@ -1,19 +1,19 @@
 <div align="center">
 
-# KAIROS. — WORLD TRAVEL ATLAS (V5.0)
+# KAIROS. — WORLD TRAVEL ATLAS (V5.1)
 
 **以天文学的精度去旅行——去对地方，更要去对时间。**
 
 *Travel with Astronomical Precision — go to the right place, at the right time.*
 
-[![Version](https://img.shields.io/badge/Version-v5.0.0-E8A33D?style=flat-square&labelColor=16283F)](docs/CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Version-v5.1.0-E8A33D?style=flat-square&labelColor=16283F)](docs/CHANGELOG.md)
 [![Countries](https://img.shields.io/badge/Countries%20%26%20Regions-137-38BDF8?style=flat-square&labelColor=16283F)](#data-scale)
 [![Destinations](https://img.shields.io/badge/Destinations-722-34D399?style=flat-square&labelColor=16283F)](#data-scale)
 [![Photo Spots](https://img.shields.io/badge/Photo%20Spots-5%2C414-A78BFA?style=flat-square&labelColor=16283F)](#data-scale)
-[![Tests](https://img.shields.io/badge/Unit%20Tests-66%2F66%20Pass-10B981?style=flat-square&labelColor=16283F)](docs/V5_ACCEPTANCE_REPORT.md)
-[![E2E](https://img.shields.io/badge/Playwright%20E2E-15%20Scenarios%20%2F%208%20Viewports-10B981?style=flat-square&labelColor=16283F)](docs/V5_ACCEPTANCE_REPORT.md)
+[![Tests](https://img.shields.io/badge/Unit%20Tests-V5.1%20Verified-10B981?style=flat-square&labelColor=16283F)](docs/V5_1_RELEASE_NOTES.md)
+[![E2E](https://img.shields.io/badge/Playwright%20%2B%20axe--core-Verified-10B981?style=flat-square&labelColor=16283F)](docs/V5_1_RELEASE_NOTES.md)
 
-[🌐 生产环境 (Cloudflare Workers)](https://world-travel-globe.globe-app.workers.dev/) · [📄 GitHub Pages 镜像](https://haoyuliu1007.github.io/world-travel-globe/) · [📖 架构说明](docs/ARCHITECTURE.md) · [🎨 品牌规范](docs/BRAND_GUIDELINES.md) · [✅ V5.0 验收报告](docs/V5_ACCEPTANCE_REPORT.md)
+[🌐 生产环境 (Cloudflare Workers)](https://world-travel-globe.globe-app.workers.dev/) · [📄 GitHub Pages 镜像](https://haoyuliu1007.github.io/world-travel-globe/) · [📖 架构说明](docs/ARCHITECTURE.md) · [🎨 品牌规范](docs/BRAND_GUIDELINES.md) · [🚀 V5.1 发布说明](docs/V5_1_RELEASE_NOTES.md)
 
 </div>
 

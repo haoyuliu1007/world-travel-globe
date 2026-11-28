@@ -10,6 +10,8 @@ const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, '..');
 const DIST_DIR = path.join(ROOT_DIR, 'dist');
 const SHOT_DIR = path.join(__dirname, 'screenshots');
+const VERIFY_SHOT_DIR = path.join(ROOT_DIR, 'docs', 'audit-v5', 'v5-1-verify');
+const AXE_PATH = path.join(ROOT_DIR, 'node_modules', 'axe-core', 'axe.min.js');
 
 const MIME_MAP = {
   '.html': 'text/html; charset=utf-8',
@@ -175,6 +177,8 @@ async function attachFastNetworkStubs(page, localOrigin) {
 
 async function run() {
   fs.mkdirSync(SHOT_DIR, { recursive: true });
+  fs.mkdirSync(VERIFY_SHOT_DIR, { recursive: true });
+  const axeSource = fs.existsSync(AXE_PATH) ? fs.readFileSync(AXE_PATH, 'utf8') : '';
   const executablePath = findBrowserExecutable();
   const { server, baseUrl } = await startStaticServer();
   const browser = await chromium.launch({
@@ -474,11 +478,13 @@ async function run() {
     await page.click('#tp-exp-more');
     await page.waitForSelector('#trip-export-modal:not(.is-hidden) .exp-fmt-btn', { timeout: 6000 });
     const fmtCount = await page.locator('#trip-export-modal .exp-fmt-btn').count();
-    assert.equal(fmtCount, 7, 'Expected 7 file export formats in Export Modal');
-    await page.click('#exp-modal-close');
+    assert.equal(fmtCount, 8, 'Expected 8 file export formats (including Markdown) in Export Modal');
+    await page.keyboard.press('Escape');
+    await page.waitForSelector('#trip-export-modal.is-hidden', { state: 'attached', timeout: 4000 });
+    await page.screenshot({ path: path.join(VERIFY_SHOT_DIR, 'desktop-light-planner.png') });
     await page.click('#tp-sticky-back-btn');
     await page.waitForSelector('#planner-view.is-hidden', { state: 'attached', timeout: 6000 });
-    report.scenarios.push('12-13. V5.0 Beijing vs Tokyo planner, multimodal hubs & ExportService modal');
+    report.scenarios.push('12-13. V5.1 Beijing vs Tokyo planner, multimodal hubs, Esc modal dismiss & 8-format ExportService');
 
     // 14. V5.0 Photo Opportunity Index (>14d forecast guard) + Help Center (30 chapters) + Share Center (6 ratios, QR)
     await page.goto(`${baseUrl}/?instant=1&focus=jp-kansai-kyoto`, { waitUntil: 'load' });
@@ -508,12 +514,87 @@ async function run() {
     await page.click('#hc-close-btn');
     report.scenarios.push('14. V5.0 Photo Opportunity Index (>14d guard), ShareCenter local QR & 30-chapter HelpCenter');
 
-    // 15. V5.0 Multi-Context Collab BroadcastChannel Convergence + DOM Accessibility sanity check
-    const ctxB = await browser.newContext({ viewport: { width: 1280, height: 800 } });
-    const pageB = await ctxB.newPage();
-    pageB.on('pageerror', (err) => pageErrors.push(`collab-ctxB: ${err}`));
-    await attachFastNetworkStubs(pageB, baseUrl);
-    await pageB.goto(`${baseUrl}/?instant=1`, { waitUntil: 'load' });
+    // 15. V5.1 Real Same-Context BroadcastChannel Sync, Dark/Light axe-core Accessibility & Mobile Overlap Gate
+    await page.evaluate(() => {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    });
+    await page.waitForTimeout(150);
+    await page.screenshot({ path: path.join(VERIFY_SHOT_DIR, 'desktop-dark.png') });
+    await page.evaluate(() => {
+      document.documentElement.setAttribute('data-theme', 'light');
+    });
+    await page.waitForTimeout(150);
+    await page.screenshot({ path: path.join(VERIFY_SHOT_DIR, 'desktop-light.png') });
+
+    // Open Help modal in light theme and verify non-dark background + screenshot
+    await page.click('#help-btn');
+    await page.waitForSelector('#help-center-modal:not(.is-hidden) .modal-card', { timeout: 6000 });
+    await page.waitForTimeout(150);
+    const helpCardBg = await page.evaluate(() => getComputedStyle(document.querySelector('#help-center-modal .modal-card')).backgroundColor);
+    assert.ok(helpCardBg.includes('255, 255, 255'), `Expected light modal card white bg in light mode, got ${helpCardBg}`);
+    await page.screenshot({ path: path.join(VERIFY_SHOT_DIR, 'desktop-help-light.png') });
+    await page.keyboard.press('Escape');
+    await page.waitForSelector('#help-center-modal.is-hidden', { state: 'attached', timeout: 4000 });
+
+    // Real same-context BroadcastChannel delivery test
+    const tab2 = await ctx.newPage();
+    tab2.on('pageerror', (err) => pageErrors.push(`collab-tab2: ${err}`));
+    await attachFastNetworkStubs(tab2, baseUrl);
+    await tab2.goto(`${baseUrl}/?instant=1`, { waitUntil: 'load' });
+    await tab2.evaluate(() => {
+      window.__rxBcMsgs = [];
+      const ch = new BroadcastChannel('kairos_collab');
+      ch.onmessage = (ev) => window.__rxBcMsgs.push(ev.data);
+    });
+    await page.evaluate(() => {
+      const ch = new BroadcastChannel('kairos_collab');
+      ch.postMessage({ tripId: 'trip_bc_v51', ping: 'kairos_5_1' });
+    });
+    await tab2.waitForFunction(() => Array.isArray(window.__rxBcMsgs) && window.__rxBcMsgs.length > 0, null, { timeout: 5000 });
+    const rx = await tab2.evaluate(() => window.__rxBcMsgs[0]);
+    assert.equal(rx.ping, 'kairos_5_1', 'Same-context BroadcastChannel must synchronize across tabs');
+    await tab2.close();
+
+    // Mobile 390x844 bottom-nav overlap & clearance check
+    const mobCheckCtx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
+    const mobCheckPage = await mobCheckCtx.newPage();
+    await attachFastNetworkStubs(mobCheckPage, baseUrl);
+    await mobCheckPage.goto(`${baseUrl}/?instant=1&focus=jp-kanto-tokyo`, { waitUntil: 'load' });
+    await mobCheckPage.waitForSelector('#detail-drawer:not(.is-hidden)', { timeout: 10000 });
+    await mobCheckPage.waitForTimeout(250);
+    await mobCheckPage.screenshot({ path: path.join(VERIFY_SHOT_DIR, 'mobile-390.png') });
+    const mobBarCheck = await mobCheckPage.evaluate(() => {
+      const nav = document.getElementById('mobile-bottom-nav');
+      const pheno = document.getElementById('phenology-bar');
+      const controls = document.getElementById('globe-controls');
+      const rNav = nav ? nav.getBoundingClientRect() : null;
+      const rPheno = pheno ? pheno.getBoundingClientRect() : null;
+      const rCtrl = controls ? controls.getBoundingClientRect() : null;
+      return {
+        navTop: rNav ? rNav.top : 9999,
+        phenoBottom: rPheno ? rPheno.bottom : 0,
+        ctrlBottom: rCtrl ? rCtrl.bottom : 0
+      };
+    });
+    assert.ok(mobBarCheck.ctrlBottom <= mobBarCheck.navTop + 4, `Controls (${mobBarCheck.ctrlBottom}) overlap mobile bottom nav (${mobBarCheck.navTop})`);
+    await mobCheckCtx.close();
+
+    // Run axe-core audit on desktop page
+    if (axeSource) {
+      await page.addScriptTag({ content: axeSource });
+      const axeRes = await page.evaluate(async () => {
+        const res = await window.axe.run(document, {
+          runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa'] }
+        });
+        return {
+          violations: res.violations.map((v) => ({ id: v.id, impact: v.impact, count: v.nodes.length, help: v.help }))
+        };
+      });
+      const criticalOrSerious = axeRes.violations.filter((v) => v.impact === 'critical' || v.impact === 'serious');
+      report.axeViolations = axeRes.violations;
+      assert.equal(criticalOrSerious.length, 0, `Unexpected serious/critical axe-core a11y violations: ${JSON.stringify(criticalOrSerious)}`);
+    }
+
     const a11yAudit = await page.evaluate(() => {
       const topBtns = [...document.querySelectorAll('#topbar button')];
       const missingLabels = topBtns.filter((b) => !b.textContent.trim() && !b.getAttribute('aria-label') && !b.getAttribute('title')).length;
@@ -522,8 +603,7 @@ async function run() {
     });
     assert.equal(a11yAudit.missingLabels, 0, 'Every #topbar icon button must have text, aria-label, or title');
     assert.ok(a11yAudit.hasMainAria, 'Page must preserve semantic landmarks');
-    await ctxB.close();
-    report.scenarios.push('15. Multi-context workspace load + DOM accessibility landmark/label audit');
+    report.scenarios.push('15. BroadcastChannel real sync, dark/light theme verify, mobile zero-overlap & axe-core WCAG gate');
 
     assert.equal(pageErrors.length, 0, `Uncaught pageerrors occurred: ${pageErrors.join(' | ')}`);
     await ctx.close();

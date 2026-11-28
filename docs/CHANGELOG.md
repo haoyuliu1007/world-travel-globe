@@ -1,5 +1,30 @@
 # 更新日志 (CHANGELOG)
 
+## [5.1.0] - 2026-11-28 · KAIROS. World Travel Atlas — 全项目深度审计 34 项问题闭环与科学/安全/体验全面精修
+
+### 安全加固 (Security Hardening)
+- **Worker Auth / Collab / Edge API 纵深防御 (`worker/auth.js`, `worker/collab.js`, `worker/index.js`)**：
+  - 协作写接口强制执行 CSRF Origin/Fetch-Site 校验、`POST /api/collab/trips` 所有权防篡改（403）与 `PUT` 乐观并发版本号检查 (`WHERE version = ? AND id = ?` 返回 409)；历史版本回滚同步写入新快照并推进逻辑时钟。
+  - 公开分享视图 (`GET /api/collab/trips/:id`) 严格脱敏隐藏成员邮箱、消费流水、讨论评论与投票选项；修复 `getMemberRole` 拥有者权限优先级并禁止降级 owner。
+  - 密码重置后撤销该用户全部 D1 旧 `sessions`；登录/验证码限流按 `(ip, email)` 与 `ip` 隔离；OAuth 回调强制校验 `verified_email === true`；账户注销执行关联表全量级联删除；`/api/profile` 严检 `X-Base-Updated-At` 并发版本，`/api/img` 与 `/api/photos` 拦截 SVG XSS、限制体积并验证幻数签名；严格收紧高敏接口 CORS 与动态 `frame-ancestors`。
+
+### 科学计算、地理数据与核心算法升级 (Science, Data & Algorithms)
+- **标准开源资源替换与数据质量治理 (`vendor/qrcode-generator.min.js`, `scripts/build-transport-hubs.js`, `data/**`)**：
+  - 接入标准 MIT `qrcode-generator` 替换手写二维码（支持 Version 1–40 全字符与 UTF-8）；基于 OurAirports 全量 4,029 座商用机场重建 `data/transport/hubs.json`（修复 CN/HK/MO/TW 跨界匹配、27 座海岛误标铁路枢纽、非地铁城市及南极探险模式）；修复阿尔达布拉海域错位坐标、Jasper 重复机位与 314 处英文地标叠词。
+- **跨海交通连通图、抗日界线与智能规划 (`transport-service.js`, `routing-service.js`, `trip-planner.js`, `geo-intelligence.js`)**：
+  - 引入陆块/岛屿连通矩阵与英法海底隧道特例：上海/北京/首尔/台北至东京、火奴鲁鲁至茂宜岛不再误判高铁/自驾可行；南极禁用商业航班并展示极地破冰探险邮轮；跨越 ±180° 日界线自动切分 `MultiLineString`。
+  - 修复 OSRM 短途陆路超时误报 `crossSea: true`；对齐 `CITY_ALIASES` 真实 ID 并补充 Fuse.js 模糊回退、重建草案重置、光影时段桶内 2-opt 路由优化、CSV 公式注入转义及严格自然语言预算/月份/大洲解析。
+- **确定性星历与诚实气候统计 (`photo-simulator.js`, `terrain-3d.js`, `phenology-engine.js`, `scripts/validate-phenology.js`)**：
+  - 集成 Astronomy Engine 民用日窗口求解高纬夏至日出日落（消除雷克雅未克夏至 `+24h` 偏移与极夜/白夜/无月升落文案混淆）；修复 `Terrain3DModule` 平地 `0°` 地平线偏差；物候报告新增每城均值基线与留一城交叉验证指标，并收敛极昼银河与热带红叶外推。
+- **CRDT 全局 LWW 与整数分 AA 分账 (`crdt-merge.js`, `expense-splitter.js`, `collab-space.js`, `storage-db.js`, `auth-service.js`)**：
+  - 修复 `mergeTripDocuments` 结合律/交换律反例并在 IndexedDB 回滚与登出时严格维护时空单调性与隐私隔离；AA 分账升级整数分最大余数守恒、`N≤12` Exact Bitmask DP 最优最少转账及前端自定义权重界面。
+
+### 界面体验、移动端、PWA 与工程校验 (UI/UX, Mobile, SW & Verification)
+- 修复明暗双主题 `--bg-panel` 缺失、浅色 WCAG AA 对比度（`#8C5E12`）、工作区 `#topbar` 遮挡、`account-center.js` 主题与登出隔离、移动端底部安全区留白与 `44px` 触控热区、`sw.js` 版本化 vendor 缓存与 `503` 离线兜底、`api-client.js` 5 秒超时与短暂错误 TTL 过期，移除 9 个冗余源图像。
+- 新增 `tests/v5-1-security-sqlite.test.js`、`tests/v5-1-algorithms-and-qr.test.js`（含 `fast-check` 500 轮随机性质测试与 `jsqr` 二维码端到端解码校验）、`tests/v5-1-science-and-data.test.js` 及 `axe-core` 无障碍 E2E 门禁。
+
+---
+
 ## [5.0.0] - 2026-11-28 · KAIROS. World Travel Atlas — 全链路旅行决策闭环升级
 
 ### 重大品牌与闭环体验升级 (Added & Upgraded)

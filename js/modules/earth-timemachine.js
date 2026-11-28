@@ -88,11 +88,27 @@
     return `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/${layerObj.id}/default/${d}/${layerObj.matrix}/{z}/{y}/{x}.${layerObj.ext}`;
   }
 
+  let latestSyncCtrl = null;
+
+  function L(zh, en) {
+    const lang = global.AppI18n && typeof global.AppI18n.getLang === 'function' ? global.AppI18n.getLang() : 'zh-CN';
+    if (lang === 'en') return en;
+    if (lang === 'zh-TW' && global.AppI18n && typeof global.AppI18n.toTraditional === 'function') {
+      return global.AppI18n.toTraditional(zh);
+    }
+    return zh;
+  }
+
   async function syncLatestGibsDate() {
     if (serverDateChecked) return;
     serverDateChecked = true;
     try {
-      const res = await fetch('https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/VIIRS_SNPP_CorrectedReflectance_TrueColor/default/2025-10-15/GoogleMapsCompatible_Level9/2/1/2.jpg', { method: 'HEAD' });
+      if (latestSyncCtrl) latestSyncCtrl.abort();
+      latestSyncCtrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+      const res = await fetch('https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/VIIRS_SNPP_CorrectedReflectance_TrueColor/default/2025-10-15/GoogleMapsCompatible_Level9/2/1/2.jpg', {
+        method: 'HEAD',
+        signal: latestSyncCtrl ? latestSyncCtrl.signal : undefined
+      });
       const srvHdr = res.headers.get('date');
       if (srvHdr) {
         const srvDt = new Date(srvHdr);
@@ -112,6 +128,12 @@
   }
 
   function buildNightTerminatorPolygon(dateObj) {
+    if (global.SolarTerminator && typeof global.SolarTerminator.buildTerminatorFeature === 'function') {
+      const feat = global.SolarTerminator.buildTerminatorFeature(dateObj || new Date());
+      if (feat) {
+        return { type: 'FeatureCollection', features: [feat] };
+      }
+    }
     if (!global.SunCalc) return null;
     // Find subsolar point: where sun altitude is maximum at dateObj
     const dt = dateObj || new Date();
@@ -234,12 +256,12 @@
 
     dock.innerHTML = `
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-        <strong style="font-size:13px;">${icon('history', 14)} 地球时光机 · NASA GIBS 遥感</strong>
+        <strong style="font-size:13px;">${icon('history', 14)} ${esc(L('地球时光机 · NASA GIBS 遥感', 'Earth Time Machine · NASA GIBS'))}</strong>
         <div style="display:flex;gap:6px;align-items:center;">
           <label style="font-size:11.5px;display:inline-flex;align-items:center;gap:4px;cursor:pointer;">
-            <input id="tm-enable-chk" type="checkbox" ${state.enabled ? 'checked' : ''} /> 启用图层
+            <input id="tm-enable-chk" type="checkbox" ${state.enabled ? 'checked' : ''} /> ${esc(L('启用图层', 'Enable Layer'))}
           </label>
-          <button class="icon-btn" id="tm-close-btn" type="button" aria-label="关闭">${icon('x', 14)}</button>
+          <button class="icon-btn" id="tm-close-btn" type="button" aria-label="${esc(L('关闭', 'Close'))}">${icon('x', 14)}</button>
         </div>
       </div>
 
@@ -249,39 +271,39 @@
 
       <div style="font-size:11px;color:var(--text-secondary);margin-bottom:8px;line-height:1.45;">
         ${esc(layerObj.desc)}<br/>
-        <span class="source-tag realtime">来源：NASA EOSDIS GIBS (Public Domain)</span> · <span class="mono-num">分辨率 ${esc(layerObj.resolution)}</span>
-        <div style="color:var(--text-muted);margin-top:2px;">说明：卫星过境受云层与高纬极夜影响，局部日期可能存在黑色空窗条带（绝不插值伪造影像）。</div>
+        <span class="source-tag realtime">${esc(L('来源：NASA EOSDIS GIBS (Public Domain)', 'Source: NASA EOSDIS GIBS (Public Domain)'))}</span> · <span class="mono-num">${esc(L('分辨率', 'Res'))} ${esc(layerObj.resolution)}</span>
+        <div style="color:var(--text-muted);margin-top:2px;">${esc(L('说明：卫星过境受云层与高纬极夜影响，局部日期可能存在黑色空窗条带（绝不插值伪造影像）。', 'Note: Swath gaps or high-latitude polar night blackout strips reflect real satellite coverage (never interpolated).'))}</div>
       </div>
 
       <div class="form-grid-2" style="margin-bottom:8px;">
         <label class="form-field">
-          <span>影像日期 A</span>
+          <span>${esc(L('影像日期 A', 'Date A'))}</span>
           <input id="tm-date-a" class="sim-input mono-num" type="date" max="${state.latestServerDate}" value="${state.dateA}" />
         </label>
         <label class="form-field">
-          <span>透明度 (${state.opacity}%)</span>
+          <span>${esc(L('透明度', 'Opacity'))} (${state.opacity}%)</span>
           <input id="tm-opacity" type="range" min="10" max="100" value="${state.opacity}" style="margin-top:8px;" />
         </label>
       </div>
 
       <div style="margin-bottom:8px;">
-        <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">时间轴快捷跳转（相对最新可用影像）</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">${esc(L('时间轴快捷跳转（相对最新可用影像）', 'Quick Time Jumps (vs latest pass)'))}</div>
         <div style="display:flex;gap:5px;flex-wrap:wrap;">
-          <button class="mini-action-pill tm-jump-btn" data-days="0" type="button">最新</button>
-          <button class="mini-action-pill tm-jump-btn" data-days="-30" type="button">1月前</button>
-          <button class="mini-action-pill tm-jump-btn" data-days="-90" type="button">上季</button>
-          <button class="mini-action-pill tm-jump-btn" data-days="-180" type="button">半年前</button>
-          <button class="mini-action-pill tm-jump-btn" data-days="-365" type="button">1年前</button>
-          <button class="mini-action-pill tm-jump-btn" data-days="-1825" type="button">5年前</button>
+          <button class="mini-action-pill tm-jump-btn" data-days="0" type="button">${esc(L('最新', 'Latest'))}</button>
+          <button class="mini-action-pill tm-jump-btn" data-days="-30" type="button">${esc(L('1月前', '1 Mo Ago'))}</button>
+          <button class="mini-action-pill tm-jump-btn" data-days="-90" type="button">${esc(L('上季', '1 Qtr Ago'))}</button>
+          <button class="mini-action-pill tm-jump-btn" data-days="-180" type="button">${esc(L('半年前', '6 Mo Ago'))}</button>
+          <button class="mini-action-pill tm-jump-btn" data-days="-365" type="button">${esc(L('1年前', '1 Yr Ago'))}</button>
+          <button class="mini-action-pill tm-jump-btn" data-days="-1825" type="button">${esc(L('5年前', '5 Yr Ago'))}</button>
         </div>
       </div>
 
       <div style="padding-top:8px;border-top:1px solid var(--border-hairline);display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap;">
         <label style="font-size:11.5px;display:inline-flex;align-items:center;gap:4px;cursor:pointer;">
-          <input id="tm-compare-chk" type="checkbox" ${state.compareMode ? 'checked' : ''} /> 双日期对比
+          <input id="tm-compare-chk" type="checkbox" ${state.compareMode ? 'checked' : ''} /> ${esc(L('双日期对比', 'Dual Compare'))}
         </label>
         <label style="font-size:11.5px;display:inline-flex;align-items:center;gap:4px;cursor:pointer;">
-          <input id="tm-term-chk" type="checkbox" ${state.showTerminator ? 'checked' : ''} /> 晨昏昼夜线
+          <input id="tm-term-chk" type="checkbox" ${state.showTerminator ? 'checked' : ''} /> ${esc(L('晨昏昼夜线', 'Terminator'))}
         </label>
       </div>
 
@@ -289,12 +311,12 @@
         state.compareMode
           ? `<div style="margin-top:8px;padding:8px;border-radius:8px;background:var(--bg-hover);">
               <div class="form-grid-2">
-                <label class="form-field"><span>对比日期 B</span><input id="tm-date-b" class="sim-input mono-num" type="date" max="${state.latestServerDate}" value="${state.dateB}" /></label>
-                <label class="form-field"><span>分屏卷帘 / 混合 (${state.compareMix}%)</span><input id="tm-mix-range" type="range" min="0" max="100" value="${state.compareMix}" style="margin-top:8px;" /></label>
+                <label class="form-field"><span>${esc(L('对比日期 B', 'Date B'))}</span><input id="tm-date-b" class="sim-input mono-num" type="date" max="${state.latestServerDate}" value="${state.dateB}" /></label>
+                <label class="form-field"><span>${esc(L('分屏卷帘 / 混合', 'Blend'))} (${state.compareMix}%)</span><input id="tm-mix-range" type="range" min="0" max="100" value="${state.compareMix}" style="margin-top:8px;" /></label>
               </div>
               <div style="margin-top:6px;display:flex;justify-content:space-between;font-size:10.5px;color:var(--text-muted);">
                 <span>A: ${esc(state.dateA)} (${100 - state.compareMix}%)</span>
-                <span>◀ 分屏对比卷帘 ▶</span>
+                <span>◀ ${esc(L('分屏对比卷帘', 'Split Compare'))} ▶</span>
                 <span>B: ${esc(state.dateB)} (${state.compareMix}%)</span>
               </div>
             </div>`

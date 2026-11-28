@@ -187,11 +187,12 @@
     let adjSunset = null;
     let prevClear = false;
 
-    for (let min = 0; min < 1440; min += 2) {
+    for (let min = 0; min < 1440; min += 1) {
       const dt = new Date(Date.UTC(yr, mo, dy, 0, min - offsetMin, 0));
       const pos = SC.getPosition(dt, lat, lng);
       const obsDeg = interpolateHorizonAngle(profile, pos.azimuth);
-      const isClear = pos.altitude > Math.max(-0.833, obsDeg);
+      const effHorizon = obsDeg > 0.05 ? obsDeg : -0.833;
+      const isClear = pos.altitude > effHorizon;
       if (isClear && !prevClear && !adjSunrise) {
         adjSunrise = dt;
       }
@@ -199,6 +200,19 @@
         adjSunset = dt;
       }
       prevClear = isClear;
+    }
+
+    if (geomSunrise && adjSunrise) {
+      const srPos = SC.getPosition(geomSunrise, lat, lng);
+      if (interpolateHorizonAngle(profile, srPos.azimuth) <= 0.05 && Math.abs(adjSunrise.getTime() - geomSunrise.getTime()) <= 120000) {
+        adjSunrise = geomSunrise;
+      }
+    }
+    if (geomSunset && adjSunset) {
+      const ssPos = SC.getPosition(geomSunset, lat, lng);
+      if (interpolateHorizonAngle(profile, ssPos.azimuth) <= 0.05 && Math.abs(adjSunset.getTime() - geomSunset.getTime()) <= 120000) {
+        adjSunset = geomSunset;
+      }
     }
 
     const sunriseDelayMin = geomSunrise && adjSunrise

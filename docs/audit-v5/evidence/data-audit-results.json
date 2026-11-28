@@ -1,0 +1,5739 @@
+{
+  "auditedAt": "2026-11-28T04:32:08.488Z",
+  "counts": {
+    "dataJsFilesOnDisk": 56,
+    "dataJsFilesLoadedInIndexHtml": 56,
+    "unloadedDataJsFiles": [],
+    "continents": 6,
+    "regions": 42,
+    "countries": 137,
+    "destinations": 722,
+    "photoSpots": 5414,
+    "continentCounts": {
+      "asia": 245,
+      "oceania": 48,
+      "europe": 133,
+      "north_america": 128,
+      "south_america": 74,
+      "africa_antarctica": 94
+    },
+    "matchesAuditReportJson": {
+      "citiesMatch": true,
+      "spotsMatch": true,
+      "countriesMatch": true
+    }
+  },
+  "coordinateAndStructureChecks": {
+    "duplicateCityIdsCount": 0,
+    "duplicateCityNamesCount": 0,
+    "duplicateCityNames": [],
+    "invalidCityCoordsCount": 0,
+    "zeroZeroCityCoordsCount": 0,
+    "continentBoundsAnomaliesCount": 8,
+    "continentBoundsAnomalies": [
+      {
+        "id": "arctic-islands-svalbard-longyearbyen",
+        "name": "斯瓦尔巴群岛朗伊尔城 · 北纬78度极地冰川世界",
+        "country": "挪威",
+        "continent": "europe",
+        "coords": [
+          15.6267,
+          78.2232
+        ]
+      },
+      {
+        "id": "es-islands-tenerife",
+        "name": "特内里费岛 · 泰德火山云海银河与第三纪月桂雾林",
+        "country": "西班牙",
+        "continent": "europe",
+        "coords": [
+          -16.6,
+          28.3
+        ]
+      },
+      {
+        "id": "es-islands-lanzarote",
+        "name": "兰萨罗特岛 · 黑红火山月球地貌与曼里克熔岩建筑",
+        "country": "西班牙",
+        "continent": "europe",
+        "coords": [
+          -13.63,
+          29.04
+        ]
+      },
+      {
+        "id": "pt-madeira-azores",
+        "name": "马德拉岛与亚速尔群岛 · 大西洋云海仙林与双色火山湖",
+        "country": "葡萄牙",
+        "continent": "europe",
+        "coords": [
+          -16.9287,
+          32.7357
+        ]
+      },
+      {
+        "id": "cl-center-ei-rapa-nui",
+        "name": "复活节岛拉帕努伊 · 太平洋孤岛摩艾文明与火山秘境",
+        "country": "智利",
+        "continent": "south_america",
+        "coords": [
+          -109.4269,
+          -27.1501
+        ]
+      },
+      {
+        "id": "br-coast-fernando-de-noronha",
+        "name": "费尔南多·迪诺罗尼亚群岛 · 火山海蚀尖岩与海豚天堂",
+        "country": "巴西",
+        "continent": "south_america",
+        "coords": [
+          -32.4246,
+          -3.8547
+        ]
+      },
+      {
+        "id": "aq-polar-circle-detaille",
+        "name": "南极圈66°33′S与德塔耶岛 · 跨越极圈线与时光冻结科考站",
+        "country": "南极洲",
+        "continent": "africa_antarctica",
+        "coords": [
+          -66.85,
+          -66.75
+        ]
+      },
+      {
+        "id": "aq-ross-sea-dry-valleys",
+        "name": "罗斯海埃里伯斯火山与麦克默多干谷 · 极地英雄遗址与火星级无冰干谷",
+        "country": "南极洲",
+        "continent": "africa_antarctica",
+        "coords": [
+          166.5,
+          -77.55
+        ]
+      }
+    ],
+    "oceanTzCityAnomaliesCount": 1,
+    "oceanTzCityAnomalies": [
+      {
+        "id": "sc-aldabra-outer",
+        "name": "阿尔达布拉环礁与外岛秘境 · 十万巨陆龟伊甸园与珊瑚天涯海角",
+        "country": "塞舌尔",
+        "coords": [
+          51.5,
+          -7
+        ],
+        "tz": "Etc/GMT-3"
+      }
+    ],
+    "invalidSpotCoordsCount": 0,
+    "zeroZeroSpotCoordsCount": 0,
+    "spotContinentAnomaliesCount": 60,
+    "spotContinentAnomalies": [
+      {
+        "cityId": "arctic-islands-svalbard-longyearbyen",
+        "country": "挪威",
+        "continent": "europe",
+        "spotName": "朗伊尔冰川 Longyearbreen · 冰下蓝色洞穴",
+        "coords": [
+          15.4802,
+          78.1729
+        ]
+      },
+      {
+        "cityId": "arctic-islands-svalbard-longyearbyen",
+        "country": "挪威",
+        "continent": "europe",
+        "spotName": "拉尔斯冰川 Larsbreen · 冰川徒步与冻结融水通道",
+        "coords": [
+          15.5545,
+          78.1766
+        ]
+      },
+      {
+        "cityId": "arctic-islands-svalbard-longyearbyen",
+        "country": "挪威",
+        "continent": "europe",
+        "spotName": "泰尔冰川 Tellbreen · 雪地摩托与极地冰洞",
+        "coords": [
+          16.1881,
+          78.2544
+        ]
+      },
+      {
+        "cityId": "arctic-islands-svalbard-longyearbyen",
+        "country": "挪威",
+        "continent": "europe",
+        "spotName": "降临谷 Adventdalen · 冻土冰原与斯瓦尔巴驯鹿",
+        "coords": [
+          15.9308,
+          78.1933
+        ]
+      },
+      {
+        "cityId": "arctic-islands-svalbard-longyearbyen",
+        "country": "挪威",
+        "continent": "europe",
+        "spotName": "降临峡湾 Adventfjorden · 极光与午夜太阳海上视野",
+        "coords": [
+          15.5535,
+          78.2585
+        ]
+      },
+      {
+        "cityId": "arctic-islands-svalbard-longyearbyen",
+        "country": "挪威",
+        "continent": "europe",
+        "spotName": "伊默湾 Ymerbukta · 埃斯马克冰川入海生态巡航",
+        "coords": [
+          13.986,
+          78.2712
+        ]
+      },
+      {
+        "cityId": "arctic-islands-svalbard-longyearbyen",
+        "country": "挪威",
+        "continent": "europe",
+        "spotName": "坦普尔峡湾 Tempelfjorden · 极地雪原与远方冰川壁",
+        "coords": [
+          17.0763,
+          78.4035
+        ]
+      },
+      {
+        "cityId": "arctic-islands-svalbard-longyearbyen",
+        "country": "挪威",
+        "continent": "europe",
+        "spotName": "希奥尔特山 Hiorthfjellet · 北极峡湾登高全景",
+        "coords": [
+          15.8292,
+          78.2569
+        ]
+      },
+      {
+        "cityId": "es-islands-tenerife",
+        "country": "西班牙",
+        "continent": "europe",
+        "spotName": "泰德火山顶 Pico del Teide · 云海日出与火山锥影",
+        "coords": [
+          -16.6425,
+          28.2725
+        ]
+      },
+      {
+        "cityId": "es-islands-tenerife",
+        "country": "西班牙",
+        "continent": "europe",
+        "spotName": "加西亚岩群 Roques de García · 火山岩柱与泰德经典构图",
+        "coords": [
+          -16.6298,
+          28.2234
+        ]
+      },
+      {
+        "cityId": "es-islands-tenerife",
+        "country": "西班牙",
+        "continent": "europe",
+        "spotName": "泰德高原暗夜观测点 · Teleférico del Teide 下站",
+        "coords": [
+          -16.6257,
+          28.2544
+        ]
+      },
+      {
+        "cityId": "es-islands-tenerife",
+        "country": "西班牙",
+        "continent": "europe",
+        "spotName": "奇佩克云海观景台 Mirador de Chipeque · 云上火山日落",
+        "coords": [
+          -16.4639,
+          28.374
+        ]
+      },
+      {
+        "cityId": "es-islands-tenerife",
+        "country": "西班牙",
+        "continent": "europe",
+        "spotName": "马斯卡峡谷观景台 Mirador de Masca · 云雾中的火山深谷",
+        "coords": [
+          -16.8399,
+          28.3064
+        ]
+      },
+      {
+        "cityId": "es-islands-tenerife",
+        "country": "西班牙",
+        "continent": "europe",
+        "spotName": "安纳加月桂林 Cruz del Carmen · 第三纪遗存雾森林",
+        "coords": [
+          -16.2807,
+          28.5318
+        ]
+      },
+      {
+        "cityId": "es-islands-tenerife",
+        "country": "西班牙",
+        "continent": "europe",
+        "spotName": "英格莱斯峰观景台 Mirador Pico del Inglés · 云雾山脊",
+        "coords": [
+          -16.2638,
+          28.5325
+        ]
+      },
+      {
+        "cityId": "es-islands-tenerife",
+        "country": "西班牙",
+        "continent": "europe",
+        "spotName": "阿奇彭克观景台 Mirador de Archipenque · 洛斯巨人海崖",
+        "coords": [
+          -16.837,
+          28.2405
+        ]
+      },
+      {
+        "cityId": "es-islands-lanzarote",
+        "country": "西班牙",
+        "continent": "europe",
+        "spotName": "蒂曼法亚国家公园 Islote de Hilario · 黑红火星地表",
+        "coords": [
+          -13.7529,
+          29.0055
+        ]
+      },
+      {
+        "cityId": "es-islands-lanzarote",
+        "country": "西班牙",
+        "continent": "europe",
+        "spotName": "水之火山洞 Jameos del Agua · 曼里克地下盐水湖",
+        "coords": [
+          -13.4322,
+          29.1572
+        ]
+      },
+      {
+        "cityId": "es-islands-lanzarote",
+        "country": "西班牙",
+        "continent": "europe",
+        "spotName": "绿洞 Cueva de los Verdes · 科罗纳火山地下熔岩隧道",
+        "coords": [
+          -13.4394,
+          29.1604
+        ]
+      },
+      {
+        "cityId": "es-islands-lanzarote",
+        "country": "西班牙",
+        "continent": "europe",
+        "spotName": "绿色火山泻湖 Charco de los Clicos · 黑沙与翡翠湖",
+        "coords": [
+          -13.8287,
+          28.9777
+        ]
+      },
+      {
+        "cityId": "es-islands-lanzarote",
+        "country": "西班牙",
+        "continent": "europe",
+        "spotName": "海峡观景建筑 Mirador del Río · 曼里克隐入悬崖的建筑",
+        "coords": [
+          -13.4809,
+          29.2141
+        ]
+      },
+      {
+        "cityId": "es-islands-lanzarote",
+        "country": "西班牙",
+        "continent": "europe",
+        "spotName": "仙人掌花园 Jardín de Cactus · 火山采石坑植物剧场",
+        "coords": [
+          -13.4768,
+          29.0804
+        ]
+      },
+      {
+        "cityId": "es-islands-lanzarote",
+        "country": "西班牙",
+        "continent": "europe",
+        "spotName": "塞萨尔·曼里克基金会 Fundación César Manrique · 地下熔岩泡住宅",
+        "coords": [
+          -13.5476,
+          29.0021
+        ]
+      },
+      {
+        "cityId": "es-islands-lanzarote",
+        "country": "西班牙",
+        "continent": "europe",
+        "spotName": "帕帕加约海角 Punta de Papagayo · 金色沙湾与玻璃海",
+        "coords": [
+          -13.7872,
+          28.8388
+        ]
+      },
+      {
+        "cityId": "pt-madeira-azores",
+        "country": "葡萄牙",
+        "continent": "europe",
+        "spotName": "皮科里埃罗峰 Pico do Areeiro · PR1云海脊线起点",
+        "coords": [
+          -16.9287,
+          32.7357
+        ]
+      },
+      {
+        "cityId": "pt-madeira-azores",
+        "country": "葡萄牙",
+        "continent": "europe",
+        "spotName": "鲁伊沃峰 Pico Ruivo · 马德拉最高峰",
+        "coords": [
+          -16.9426,
+          32.7584
+        ]
+      },
+      {
+        "cityId": "pt-madeira-azores",
+        "country": "葡萄牙",
+        "continent": "europe",
+        "spotName": "法纳尔月桂林 Fanal · 千年古树雾境",
+        "coords": [
+          -17.141,
+          32.8095
+        ]
+      },
+      {
+        "cityId": "pt-madeira-azores",
+        "country": "葡萄牙",
+        "continent": "europe",
+        "spotName": "庞塔杜罗斯托 Miradouro da Ponta do Rosto · 圣洛伦索火山海崖",
+        "coords": [
+          -16.7068,
+          32.7492
+        ]
+      },
+      {
+        "cityId": "cl-center-ei-rapa-nui",
+        "country": "智利",
+        "continent": "south_america",
+        "spotName": "拉诺拉拉库摩艾采石场 Rano Raraku",
+        "coords": [
+          -109.2886,
+          -27.1247
+        ]
+      },
+      {
+        "cityId": "cl-center-ei-rapa-nui",
+        "country": "智利",
+        "continent": "south_america",
+        "spotName": "汤加里基十五尊摩艾日出 Ahu Tongariki",
+        "coords": [
+          -109.2778,
+          -27.1262
+        ]
+      }
+    ],
+    "spotDistanceGT250kmCount": 243,
+    "spotDistanceGT600kmCount": 65,
+    "topSpotDistanceOutliers": [
+      {
+        "cityId": "br-coast-jericoacoara-aparados",
+        "cityName": "杰里科科拉与大峡谷",
+        "country": "巴西",
+        "spotName": "峡谷肘部观景台 Mirante do Cotovelo",
+        "km": 3102,
+        "cityCoords": [
+          -40.5194,
+          -2.7966
+        ],
+        "spotCoords": [
+          -50.0968,
+          -29.1662
+        ]
+      },
+      {
+        "cityId": "br-coast-jericoacoara-aparados",
+        "cityName": "杰里科科拉与大峡谷",
+        "country": "巴西",
+        "spotName": "伊泰姆贝济纽峡谷顶点 Mirante do Vértice",
+        "km": 3101,
+        "cityCoords": [
+          -40.5194,
+          -2.7966
+        ],
+        "spotCoords": [
+          -50.0767,
+          -29.1592
+        ]
+      },
+      {
+        "cityId": "br-coast-jericoacoara-aparados",
+        "cityName": "杰里科科拉与大峡谷",
+        "country": "巴西",
+        "spotName": "新娘面纱瀑布观景台 Mirante da Cachoeira Véu de Noiva",
+        "km": 3101,
+        "cityCoords": [
+          -40.5194,
+          -2.7966
+        ],
+        "spotCoords": [
+          -50.0791,
+          -29.1594
+        ]
+      },
+      {
+        "cityId": "br-coast-jericoacoara-aparados",
+        "cityName": "杰里科科拉与大峡谷",
+        "country": "巴西",
+        "spotName": "燕子瀑布观景台 Mirante das Andorinhas",
+        "km": 3101,
+        "cityCoords": [
+          -40.5194,
+          -2.7966
+        ],
+        "spotCoords": [
+          -50.0799,
+          -29.1592
+        ]
+      },
+      {
+        "cityId": "carib-aruba-curacao-bermuda",
+        "cityName": "火烈鸟与粉红海岸",
+        "country": "阿鲁巴 / 库拉索 / 百慕大",
+        "spotName": "百慕大乔布森粉红岩湾 Jobson's Cove",
+        "km": 2260,
+        "cityCoords": [
+          -70.0295,
+          12.5013
+        ],
+        "spotCoords": [
+          -64.8126,
+          32.2561
+        ]
+      },
+      {
+        "cityId": "carib-aruba-curacao-bermuda",
+        "cityName": "火烈鸟与粉红海岸",
+        "country": "阿鲁巴 / 库拉索 / 百慕大",
+        "spotName": "百慕大马蹄湾悬崖观景点 Horseshoe Bay Viewpoint",
+        "km": 2259,
+        "cityCoords": [
+          -70.0295,
+          12.5013
+        ],
+        "spotCoords": [
+          -64.8227,
+          32.2505
+        ]
+      },
+      {
+        "cityId": "aq-queen-maud-south-pole",
+        "cityName": "毛德皇后与南极点",
+        "country": "南极洲",
+        "spotName": "地理南极点与阿蒙森-斯科特科考站 Geographic South Pole & Amundsen-Scott Station",
+        "km": 2041,
+        "cityCoords": [
+          8.6,
+          -71.65
+        ],
+        "spotCoords": [
+          -139.2667,
+          -89.99
+        ]
+      },
+      {
+        "cityId": "au-outback-wa-esperance-ningaloo",
+        "cityName": "埃斯佩兰斯与宁格鲁礁",
+        "country": "澳大利亚",
+        "spotName": "水平瀑布 Garaanngaddim · 金伯利潮汐峡口",
+        "km": 1966,
+        "cityCoords": [
+          122.2196,
+          -33.9919
+        ],
+        "spotCoords": [
+          123.958,
+          -16.3833
+        ]
+      },
+      {
+        "cityId": "au-outback-wa-esperance-ningaloo",
+        "cityName": "埃斯佩兰斯与宁格鲁礁",
+        "country": "澳大利亚",
+        "spotName": "宁格鲁礁鲸鲨伴游 · Tantabiddi 出海基地",
+        "km": 1567,
+        "cityCoords": [
+          122.2196,
+          -33.9919
+        ],
+        "spotCoords": [
+          113.9779,
+          -21.9123
+        ]
+      },
+      {
+        "cityId": "au-outback-wa-esperance-ningaloo",
+        "cityName": "埃斯佩兰斯与宁格鲁礁",
+        "country": "澳大利亚",
+        "spotName": "Turquoise Bay · 宁格鲁绿松石珊瑚海湾",
+        "km": 1553,
+        "cityCoords": [
+          122.2196,
+          -33.9919
+        ],
+        "spotCoords": [
+          113.8875,
+          -22.0987
+        ]
+      },
+      {
+        "cityId": "au-outback-wa-esperance-ningaloo",
+        "cityName": "埃斯佩兰斯与宁格鲁礁",
+        "country": "澳大利亚",
+        "spotName": "Coral Bay · Bill's Bay 近岸珊瑚花园",
+        "km": 1460,
+        "cityCoords": [
+          122.2196,
+          -33.9919
+        ],
+        "spotCoords": [
+          113.769,
+          -23.142
+        ]
+      },
+      {
+        "cityId": "stans-wild-darvaza-pamir",
+        "cityName": "达瓦札",
+        "country": "土库曼斯坦 / 塔吉克斯坦",
+        "spotName": "塔吉克斯坦 · 阿克拜塔尔山口 Ak-Baital Pass",
+        "km": 1314,
+        "cityCoords": [
+          58.4396,
+          40.2525
+        ],
+        "spotCoords": [
+          73.5975,
+          38.5609
+        ]
+      },
+      {
+        "cityId": "stans-wild-darvaza-pamir",
+        "cityName": "达瓦札",
+        "country": "土库曼斯坦 / 塔吉克斯坦",
+        "spotName": "塔吉克斯坦 · 帕米尔喀拉库勒湖 Karakul",
+        "km": 1300,
+        "cityCoords": [
+          58.4396,
+          40.2525
+        ],
+        "spotCoords": [
+          73.5541,
+          39.0148
+        ]
+      },
+      {
+        "cityId": "mz-bazaruto-quirimbas",
+        "cityName": "巴扎鲁托",
+        "country": "莫桑比克",
+        "spotName": "基林巴斯群岛·伊博岛与梅杜姆贝沙洲 Quirimbas Archipelago · Ibo & Medjumbe",
+        "km": 1169,
+        "cityCoords": [
+          35.45,
+          -21.65
+        ],
+        "spotCoords": [
+          40.5833,
+          -12.345
+        ]
+      },
+      {
+        "cityId": "pe-north-amazon-iquitos-tambopata",
+        "cityName": "秘鲁亚马孙",
+        "country": "秘鲁",
+        "spotName": "春乔金刚鹦鹉粘土崖 Collpa Chuncho",
+        "km": 1108,
+        "cityCoords": [
+          -73.2516,
+          -3.7437
+        ],
+        "spotCoords": [
+          -69.5128,
+          -12.9997
+        ]
+      },
+      {
+        "cityId": "pe-north-amazon-iquitos-tambopata",
+        "cityName": "秘鲁亚马孙",
+        "country": "秘鲁",
+        "spotName": "特雷斯钦巴达斯牛轭湖 Tres Chimbadas",
+        "km": 1093,
+        "cityCoords": [
+          -73.2516,
+          -3.7437
+        ],
+        "spotCoords": [
+          -69.3415,
+          -12.7852
+        ]
+      },
+      {
+        "cityId": "pe-north-amazon-iquitos-tambopata",
+        "cityName": "秘鲁亚马孙",
+        "country": "秘鲁",
+        "spotName": "桑多瓦尔牛轭湖 Lago Sandoval",
+        "km": 1088,
+        "cityCoords": [
+          -73.2516,
+          -3.7437
+        ],
+        "spotCoords": [
+          -69.0398,
+          -12.6025
+        ]
+      },
+      {
+        "cityId": "pe-north-amazon-iquitos-tambopata",
+        "cityName": "秘鲁亚马孙",
+        "country": "秘鲁",
+        "spotName": "因卡特拉雨林树冠廊桥 Inkaterra Canopy Walkway",
+        "km": 1082,
+        "cityCoords": [
+          -73.2516,
+          -3.7437
+        ],
+        "spotCoords": [
+          -69.0526,
+          -12.5408
+        ]
+      },
+      {
+        "cityId": "cl-center-ei-valparaiso-antofagasta",
+        "cityName": "瓦尔帕莱索",
+        "country": "智利",
+        "spotName": "拉波塔达海蚀拱门官方观景台 Mirador de La Portada",
+        "km": 1067,
+        "cityCoords": [
+          -71.6288,
+          -33.0386
+        ],
+        "spotCoords": [
+          -70.4287,
+          -23.5
+        ]
+      },
+      {
+        "cityId": "cl-center-ei-valparaiso-antofagasta",
+        "cityName": "瓦尔帕莱索",
+        "country": "智利",
+        "spotName": "阿塔卡马沙漠之手 Mano del Desierto",
+        "km": 998,
+        "cityCoords": [
+          -71.6288,
+          -33.0386
+        ],
+        "spotCoords": [
+          -70.1564,
+          -24.1585
+        ]
+      }
+    ],
+    "duplicateSpotsInCityCount": 0,
+    "missingCityFieldsCount": 0,
+    "missingSpotFieldsCount": 0,
+    "invalidMonthsCount": 0,
+    "cityExactDupCoordsCount": 0,
+    "cityNearDupCoordsLT10mCount": 0,
+    "cityNearDupCoordsLT100mCount": 0,
+    "cityNearDupSamples": [],
+    "spotExactDupCoordsCount": 2,
+    "spotNearDupCoordsLT10mCount": 0,
+    "spotNearDupCoordsLT100mCount": 53,
+    "intraCitySpotDupCoordsCount": 52,
+    "intraCitySpotDupSamples": [
+      {
+        "a": "ar-patagonia-el-calafate#1:莫雷诺冰川第二观景平台 Segundo Balcón",
+        "b": "ar-patagonia-el-calafate#0:莫雷诺冰川第一观景平台 Primer Balcón",
+        "aCoords": [
+          -73.0331,
+          -50.4693
+        ],
+        "bCoords": [
+          -73.0322,
+          -50.4688
+        ],
+        "distM": 84.55
+      },
+      {
+        "a": "cl-south-general-carrera-marble-caves#0:大理石礼拜堂 Capilla de Mármol",
+        "b": "cl-south-general-carrera-marble-caves#1:大理石大教堂 Catedral de Mármol",
+        "aCoords": [
+          -72.6284,
+          -46.6589
+        ],
+        "bCoords": [
+          -72.6275,
+          -46.6586
+        ],
+        "distM": 76.36
+      },
+      {
+        "a": "ar-north-buenos-aires-colonia#6:科洛尼亚叹息街 Calle de los Suspiros",
+        "b": "ar-north-buenos-aires-colonia#5:科洛尼亚古城门 Portón de Campo",
+        "aCoords": [
+          -57.8512,
+          -34.4729
+        ],
+        "bCoords": [
+          -57.8505,
+          -34.4727
+        ],
+        "distM": 67.91
+      },
+      {
+        "a": "br-coast-jericoacoara-aparados#5:新娘面纱瀑布观景台 Mirante da Cachoeira Véu de Noiva",
+        "b": "br-coast-jericoacoara-aparados#6:燕子瀑布观景台 Mirante das Andorinhas",
+        "aCoords": [
+          -50.0791,
+          -29.1594
+        ],
+        "bCoords": [
+          -50.0799,
+          -29.1592
+        ],
+        "distM": 80.8
+      },
+      {
+        "a": "cl-atacama-el-tatio#2:塔蒂奥天然地热泉池 Piscina Termal El Tatio",
+        "b": "cl-atacama-el-tatio#1:塔蒂奥主地热喷泉观景台 Geyser El Tatio",
+        "aCoords": [
+          -68.0122,
+          -22.3419
+        ],
+        "bCoords": [
+          -68.0118,
+          -22.3416
+        ],
+        "distM": 52.96
+      },
+      {
+        "a": "br-cities-salvador-ouro-preto#4:奥罗普雷图圣方济各教堂 Igreja de São Francisco de Assis",
+        "b": "br-cities-salvador-ouro-preto#6:蒂拉登特斯广场与历史博物馆 Praça Tiradentes",
+        "aCoords": [
+          -43.5028,
+          -20.3863
+        ],
+        "bCoords": [
+          -43.5035,
+          -20.3859
+        ],
+        "distM": 85.45
+      },
+      {
+        "a": "pe-cusco-machu-picchu#6:太阳神庙 Templo del Sol · 弧形花岗岩祭祀建筑",
+        "b": "pe-cusco-machu-picchu#5:神圣广场 Plaza Sagrada · 三窗神庙与印加石构艺术",
+        "aCoords": [
+          -72.5448,
+          -13.1641
+        ],
+        "bCoords": [
+          -72.5453,
+          -13.1637
+        ],
+        "distM": 70.06
+      },
+      {
+        "a": "pe-andes-huaraz-laguna-69#1:69号湖冰川盆地高位步道 Laguna 69 Upper Approach",
+        "b": "pe-andes-huaraz-laguna-69#0:69号蓝湖南岸经典冰川湖机位 Laguna 69",
+        "aCoords": [
+          -77.6103,
+          -9.0122
+        ],
+        "bCoords": [
+          -77.6102,
+          -9.0117
+        ],
+        "distM": 56.67
+      },
+      {
+        "a": "ec-andes-cotopaxi#0:林皮奥蓬戈湖停车区湖岸 Laguna Limpiopungo",
+        "b": "ec-andes-cotopaxi#1:林皮奥蓬戈湖环线观景台 Mirador Laguna Limpiopungo",
+        "aCoords": [
+          -78.4737,
+          -0.6144
+        ],
+        "bCoords": [
+          -78.4733,
+          -0.6142
+        ],
+        "distM": 49.73
+      },
+      {
+        "a": "co-wonders-las-lajas-tatacoa#2:拉斯哈斯圣殿博物馆与石造基座 Museo Santuario de Las Lajas",
+        "b": "co-wonders-las-lajas-tatacoa#0:拉斯哈斯圣殿 Santuario de Nuestra Señora de Las Lajas",
+        "aCoords": [
+          -77.5859,
+          0.8055
+        ],
+        "bCoords": [
+          -77.586,
+          0.8056
+        ],
+        "distM": 15.72
+      },
+      {
+        "a": "sg-heritage-nature#5:甘榜格南哈芝巷 Haji Lane · 南洋店屋与街头壁画",
+        "b": "sg-heritage-nature#6:苏丹清真寺 Sultan Mosque · 黄金穹顶与Bussorah Street",
+        "aCoords": [
+          103.8585,
+          1.3016
+        ],
+        "bCoords": [
+          103.859,
+          1.3022
+        ],
+        "distM": 86.84
+      },
+      {
+        "a": "my-peninsula-melaka#2:鸡场街 Jonker Walk · 南洋骑楼灯笼夜市",
+        "b": "my-peninsula-melaka#4:青云亭 Cheng Hoon Teng · 闽南雕梁画栋",
+        "aCoords": [
+          102.2465,
+          2.1967
+        ],
+        "bCoords": [
+          102.2469,
+          2.1975
+        ],
+        "distM": 99.44
+      },
+      {
+        "a": "lk-galle-southwest#1:加勒古堡旗岩堡垒 Flag Rock Bastion",
+        "b": "lk-galle-southwest#0:加勒古堡白灯塔 Galle Lighthouse · Utrecht Bastion",
+        "aCoords": [
+          80.219,
+          6.0244
+        ],
+        "bCoords": [
+          80.2194,
+          6.0246
+        ],
+        "distM": 49.51
+      },
+      {
+        "a": "co-coffee-guatape-medellin#4:记忆彩街 Calle de los Recuerdos",
+        "b": "co-coffee-guatape-medellin#3:彩色浮雕广场 Plazoleta de los Zócalos",
+        "aCoords": [
+          -75.1608,
+          6.2333
+        ],
+        "bCoords": [
+          -75.1606,
+          6.2339
+        ],
+        "distM": 70.28
+      },
+      {
+        "a": "in-arch-nature-hampi-goa#2:赫马库塔山 Hemakuta Hill",
+        "b": "in-arch-nature-hampi-goa#1:毗鲁巴克沙神庙 Virupaksha Temple",
+        "aCoords": [
+          76.4586,
+          15.3345
+        ],
+        "bCoords": [
+          76.4587,
+          15.3352
+        ],
+        "distM": 78.57
+      },
+      {
+        "a": "mx-south-palenque-agua-azul#2:十字神庙 Templo de la Cruz · 雨林神殿高台",
+        "b": "mx-south-palenque-agua-azul#3:太阳神庙 Templo del Sol · 玛雅屋脊雕塑",
+        "aCoords": [
+          -92.0452,
+          17.4829
+        ],
+        "bCoords": [
+          -92.0459,
+          17.4829
+        ],
+        "distM": 74.24
+      },
+      {
+        "a": "mx-yucatan-las-coloradas-uxmal#4:乌斯马尔魔术师金字塔 Pirámide del Adivino",
+        "b": "mx-yucatan-las-coloradas-uxmal#5:乌斯马尔修女四合院 Cuadrángulo de las Monjas",
+        "aCoords": [
+          -89.7698,
+          20.3609
+        ],
+        "bCoords": [
+          -89.7705,
+          20.3614
+        ],
+        "distM": 91.74
+      },
+      {
+        "a": "mx-central-guanajuato#3:接吻巷彩色峡谷 Callejón del Beso",
+        "b": "mx-central-guanajuato#4:地下传统隧道 Túnel de Tradición · Calle Subterránea",
+        "aCoords": [
+          -101.2564,
+          21.0164
+        ],
+        "bCoords": [
+          -101.2563,
+          21.017
+        ],
+        "distM": 67.52
+      },
+      {
+        "a": "mx-west-los-cabos#2:离婚海滩 Playa del Divorcio",
+        "b": "mx-west-los-cabos#1:情人海滩 Playa del Amor",
+        "aCoords": [
+          -109.8967,
+          22.8767
+        ],
+        "bCoords": [
+          -109.8964,
+          22.8768
+        ],
+        "distM": 32.68
+      },
+      {
+        "a": "ir-persia-persepolis#3:哈迪什宫 Hadish · 薛西斯王宫残台",
+        "b": "ir-persia-persepolis#2:塔查拉宫 Tachara · 大流士一世石门框景",
+        "aCoords": [
+          52.8902,
+          29.934
+        ],
+        "bCoords": [
+          52.8896,
+          29.9344
+        ],
+        "distM": 72.95
+      },
+      {
+        "a": "ir-persia-persepolis#2:塔查拉宫 Tachara · 大流士一世石门框景",
+        "b": "ir-persia-persepolis#1:阿帕达纳宫 Apadana · 万国贡使浮雕阶梯",
+        "aCoords": [
+          52.8896,
+          29.9344
+        ],
+        "bCoords": [
+          52.8895,
+          29.9351
+        ],
+        "distM": 78.43
+      },
+      {
+        "a": "us-sw-carlsbad-taos#0:卡尔斯巴德巨洞自然入口 Natural Entrance Trail",
+        "b": "us-sw-carlsbad-taos#2:蝙蝠出洞露天剧场 Bat Flight Amphitheater",
+        "aCoords": [
+          -104.4415,
+          32.1765
+        ],
+        "bCoords": [
+          -104.4413,
+          32.1769
+        ],
+        "distM": 48.3
+      },
+      {
+        "a": "jp-nature-plus-kumano-kodo#3:熊野那智大社 Kumano Nachi Taisha · 朱红神殿与古樟",
+        "b": "jp-nature-plus-kumano-kodo#1:青岸渡寺 Seigantoji · 朱红三重塔与那智瀑布同框",
+        "aCoords": [
+          135.8901,
+          33.6687
+        ],
+        "bCoords": [
+          135.8898,
+          33.6694
+        ],
+        "distM": 82.64
+      },
+      {
+        "a": "us-az-north-havasupai#4:哈瓦苏主瀑蓝池 Havasu Falls Basin",
+        "b": "us-az-north-havasupai#3:哈瓦苏瀑布上方崖边观景点 Havasu Falls Overlook",
+        "aCoords": [
+          -112.698,
+          36.2552
+        ],
+        "bCoords": [
+          -112.6985,
+          36.2558
+        ],
+        "distM": 80.38
+      },
+      {
+        "a": "es-south-ronda-white-villages#0:Mirador La Hoya del Tajo · 新桥峡谷低位全景",
+        "b": "es-south-ronda-white-villages#1:Mirador del Cristo · 新桥近距离岩壁仰拍",
+        "aCoords": [
+          -5.1692,
+          36.7393
+        ],
+        "bCoords": [
+          -5.1682,
+          36.7393
+        ],
+        "distM": 89.11
+      },
+      {
+        "a": "es-south-ronda-white-villages#6:塞特尼尔 Calle Cuevas de la Sombra · 天然岩石穹廊",
+        "b": "es-south-ronda-white-villages#5:塞特尼尔 Calle Cuevas del Sol · 巨石压顶阳光街",
+        "aCoords": [
+          -5.179,
+          36.862
+        ],
+        "bCoords": [
+          -5.179,
+          36.8623
+        ],
+        "distM": 33.36
+      },
+      {
+        "a": "us-az-north-monument-wave#4:波浪谷 The Wave · 北郊狼丘主波纹",
+        "b": "us-az-north-monument-wave#6:脑纹岩花园 The Brain Rock Garden",
+        "aCoords": [
+          -112.0063,
+          36.996
+        ],
+        "bCoords": [
+          -112.0056,
+          36.9964
+        ],
+        "distM": 76.44
+      },
+      {
+        "a": "gr-mainland-athens#0:雅典卫城帕特农神庙 Parthenon · 多立克柱廊黄金时刻",
+        "b": "gr-mainland-athens#1:伊瑞克提翁神庙 Erechtheion · 卡律阿提德女像柱廊",
+        "aCoords": [
+          23.7266,
+          37.9715
+        ],
+        "bCoords": [
+          23.7264,
+          37.9721
+        ],
+        "distM": 68.98
+      },
+      {
+        "a": "gr-mainland-delphi-peloponnese-vikos#0:德尔菲阿波罗神庙 Temple of Apollo · 帕纳索斯山神谕圣殿",
+        "b": "gr-mainland-delphi-peloponnese-vikos#1:德尔菲古剧场 Ancient Theatre of Delphi · 山坡石阶与神庙俯瞰",
+        "aCoords": [
+          22.5013,
+          38.4823
+        ],
+        "bCoords": [
+          22.5007,
+          38.4825
+        ],
+        "distM": 56.76
+      },
+      {
+        "a": "it-south-matera-puglia#2:圣玛利亚伊德里斯教堂 Santa Maria de Idris · 岩峰洞穴圣堂",
+        "b": "it-south-matera-puglia#3:圣彼得卡韦奥索广场 Piazza San Pietro Caveoso · 峡谷古城",
+        "aCoords": [
+          16.612,
+          40.6641
+        ],
+        "bCoords": [
+          16.6121,
+          40.6646
+        ],
+        "distM": 56.23
+      }
+    ],
+    "interCitySpotDupCoordsCount": 3,
+    "interCitySpotDupSamples": [
+      {
+        "a": "ca-banff-lake-louise-moraine#6:弓湖观景台 Bow Lake Viewpoint · 冰川湖与红顶山屋",
+        "b": "ca-jasper-icefields-parkway#0:弓湖东岸观景台 Bow Lake Viewpoint",
+        "coords": [
+          -116.45,
+          51.6736
+        ],
+        "distM": 0
+      },
+      {
+        "a": "ca-banff-lake-louise-moraine#7:佩托湖狼头观景台 Peyto Lake Viewpoint · 冰原大道蓝色狼影",
+        "b": "ca-jasper-icefields-parkway#2:佩托湖高空观景平台 Peyto Lake Viewpoint",
+        "coords": [
+          -116.5075,
+          51.7174
+        ],
+        "distM": 0
+      },
+      {
+        "a": "stans-wild-darvaza-pamir#4:塔吉克斯坦 · 阿克拜塔尔山口 Ak-Baital Pass",
+        "b": "ca-tr-plus-pamir-highway#6:阿克拜塔尔山口 Ak-Baital Pass · M41最高点",
+        "aCoords": [
+          73.5975,
+          38.5609
+        ],
+        "bCoords": [
+          73.5978,
+          38.561
+        ],
+        "distM": 28.36
+      }
+    ]
+  },
+  "budgetAudit": {
+    "anomaliesCount": 8,
+    "anomalies": [
+      {
+        "id": "aq-lemaire-paradise-bay",
+        "tier": "comfort",
+        "issue": "comfort budget outlier",
+        "sum": 82000
+      },
+      {
+        "id": "aq-gerlache-wilhelmina",
+        "tier": "comfort",
+        "issue": "comfort budget outlier",
+        "sum": 86000
+      },
+      {
+        "id": "aq-antarctic-sound-brown-bluff",
+        "tier": "comfort",
+        "issue": "comfort budget outlier",
+        "sum": 84000
+      },
+      {
+        "id": "aq-polar-circle-detaille",
+        "tier": "comfort",
+        "issue": "comfort budget outlier",
+        "sum": 112000
+      },
+      {
+        "id": "aq-snow-hill-weddell",
+        "tier": "comfort",
+        "issue": "comfort budget outlier",
+        "sum": 168000
+      },
+      {
+        "id": "aq-ross-sea-dry-valleys",
+        "tier": "comfort",
+        "issue": "comfort budget outlier",
+        "sum": 185000
+      },
+      {
+        "id": "aq-queen-maud-south-pole",
+        "tier": "comfort",
+        "issue": "comfort budget outlier",
+        "sum": 198000
+      },
+      {
+        "id": "gs-south-georgia",
+        "tier": "comfort",
+        "issue": "comfort budget outlier",
+        "sum": 118000
+      }
+    ]
+  },
+  "transportHubsAudit": {
+    "hubsCount": 722,
+    "missingDestinationsCount": 0,
+    "crossCountryNearestAirportCount": 97,
+    "crossCountryNearestAirportSamples": [
+      {
+        "id": "cn-changbaishan",
+        "name": "长白山",
+        "country": "中国",
+        "airport": "VVO (Vladivostok Knevichi)",
+        "airportCountry": "RU",
+        "distKm": 368
+      },
+      {
+        "id": "cn-chongzuo",
+        "name": "崇左",
+        "country": "中国",
+        "airport": "HAN (Hanoi Noi Bai Intl)",
+        "airportCountry": "VN",
+        "distKm": 205
+      },
+      {
+        "id": "cn-everest-ali",
+        "name": "珠峰/阿里",
+        "country": "中国",
+        "airport": "KTM (Tribhuvan Intl (Kathmandu))",
+        "airportCountry": "NP",
+        "distKm": 155
+      },
+      {
+        "id": "cn-yili",
+        "name": "伊犁",
+        "country": "中国",
+        "airport": "ALA (Almaty Intl)",
+        "airportCountry": "KZ",
+        "distKm": 358
+      },
+      {
+        "id": "kr-mainland-busan",
+        "name": "釜山",
+        "country": "韩国",
+        "airport": "FUK (Fukuoka Airport)",
+        "airportCountry": "JP",
+        "distKm": 213
+      },
+      {
+        "id": "kr-mainland-gyeongju",
+        "name": "庆州",
+        "country": "韩国",
+        "airport": "FUK (Fukuoka Airport)",
+        "airportCountry": "JP",
+        "distKm": 276
+      },
+      {
+        "id": "my-peninsula-langkawi-ipoh",
+        "name": "兰卡威",
+        "country": "马来西亚",
+        "airport": "HKT (Phuket Intl)",
+        "airportCountry": "TH",
+        "distKm": 254
+      },
+      {
+        "id": "my-borneo-semporna",
+        "name": "仙本那",
+        "country": "马来西亚",
+        "airport": "CEB (Mactan-Cebu Intl)",
+        "airportCountry": "PH",
+        "distKm": 877
+      },
+      {
+        "id": "my-borneo-kota-kinabalu",
+        "name": "亚庇",
+        "country": "马来西亚",
+        "airport": "CEB (Mactan-Cebu Intl)",
+        "airportCountry": "PH",
+        "distKm": 995
+      },
+      {
+        "id": "my-borneo-kuching-mulu",
+        "name": "古晋姆鲁",
+        "country": "马来西亚",
+        "airport": "SIN (Singapore Changi)",
+        "airportCountry": "SG",
+        "distKm": 706
+      },
+      {
+        "id": "id-volcano-east-raja-ampat",
+        "name": "四王群岛",
+        "country": "印度尼西亚",
+        "airport": "ROR (Roman Tmetuchl Intl (Palau))",
+        "airportCountry": "PW",
+        "distKm": 959
+      },
+      {
+        "id": "in-north-varanasi-delhi",
+        "name": "恒河德里",
+        "country": "印度",
+        "airport": "KTM (Tribhuvan Intl (Kathmandu))",
+        "airportCountry": "NP",
+        "distKm": 355
+      },
+      {
+        "id": "in-arch-nature-kerala-backwaters",
+        "name": "喀拉拉",
+        "country": "印度",
+        "airport": "CMB (Bandaranaike Intl (Colombo))",
+        "airportCountry": "LK",
+        "distKm": 468
+      },
+      {
+        "id": "tr-west-central-pamukkale-ephesus",
+        "name": "棉花堡",
+        "country": "土耳其",
+        "airport": "JTR (Santorini (Thira))",
+        "airportCountry": "GR",
+        "distKm": 365
+      },
+      {
+        "id": "tr-coasts-fethiye",
+        "name": "费特希耶",
+        "country": "土耳其",
+        "airport": "JTR (Santorini (Thira))",
+        "airportCountry": "GR",
+        "distKm": 327
+      },
+      {
+        "id": "tr-coasts-kas-d400",
+        "name": "卡什",
+        "country": "土耳其",
+        "airport": "JTR (Santorini (Thira))",
+        "airportCountry": "GR",
+        "distKm": 373
+      },
+      {
+        "id": "tr-coasts-antalya-aegean",
+        "name": "安塔利亚",
+        "country": "土耳其",
+        "airport": "JTR (Santorini (Thira))",
+        "airportCountry": "GR",
+        "distKm": 469
+      },
+      {
+        "id": "ru-baikal-olkhon",
+        "name": "奥尔洪岛",
+        "country": "俄罗斯",
+        "airport": "UBN (Chinggis Khaan Intl (Ulaanbaatar))",
+        "airportCountry": "MN",
+        "distKm": 618
+      },
+      {
+        "id": "ru-baikal-listvyanka-railway",
+        "name": "利斯特维扬卡",
+        "country": "俄罗斯",
+        "airport": "UBN (Chinggis Khaan Intl (Ulaanbaatar))",
+        "airportCountry": "MN",
+        "distKm": 488
+      },
+      {
+        "id": "ru-baikal-irkutsk-taltsy",
+        "name": "伊尔库茨克",
+        "country": "俄罗斯",
+        "airport": "UBN (Chinggis Khaan Intl (Ulaanbaatar))",
+        "airportCountry": "MN",
+        "distKm": 547
+      },
+      {
+        "id": "ru-fareast-avacha-mutnovsky",
+        "name": "堪察加活火山",
+        "country": "俄罗斯",
+        "airport": "CTS (New Chitose (Sapporo))",
+        "airportCountry": "JP",
+        "distKm": 1695
+      },
+      {
+        "id": "ru-fareast-geysers-kurile",
+        "name": "间歇泉谷与库里尔湖",
+        "country": "俄罗斯",
+        "airport": "CTS (New Chitose (Sapporo))",
+        "airportCountry": "JP",
+        "distKm": 1866
+      },
+      {
+        "id": "ru-fareast-altai-chuya-highway",
+        "name": "俄属阿尔泰楚亚公路",
+        "country": "俄罗斯",
+        "airport": "URC (Urumqi Diwopu Intl)",
+        "airportCountry": "CN",
+        "distKm": 710
+      },
+      {
+        "id": "ru-fareast-altai-belukha",
+        "name": "贝卢哈雪山与冰川湖群",
+        "country": "俄罗斯",
+        "airport": "URC (Urumqi Diwopu Intl)",
+        "airportCountry": "CN",
+        "distKm": 671
+      },
+      {
+        "id": "pk-north-passu-karakoram",
+        "name": "帕苏冰川",
+        "country": "巴基斯坦",
+        "airport": "IXL (Kushok Bakula Rimpochee (Leh))",
+        "airportCountry": "IN",
+        "distKm": 353
+      },
+      {
+        "id": "pk-north-skardu-deosai",
+        "name": "斯卡杜",
+        "country": "巴基斯坦",
+        "airport": "IXL (Kushok Bakula Rimpochee (Leh))",
+        "airportCountry": "IN",
+        "distKm": 217
+      },
+      {
+        "id": "ir-persia-shiraz",
+        "name": "设拉子",
+        "country": "伊朗",
+        "airport": "DOH (Hamad Intl (Doha))",
+        "airportCountry": "QA",
+        "distKm": 491
+      },
+      {
+        "id": "ir-persia-persepolis",
+        "name": "波斯波利斯与帝王谷",
+        "country": "伊朗",
+        "airport": "DOH (Hamad Intl (Doha))",
+        "airportCountry": "QA",
+        "distKm": 534
+      },
+      {
+        "id": "ir-gulf-hormuz-qeshm",
+        "name": "霍尔木兹彩虹岛",
+        "country": "伊朗",
+        "airport": "DXB (Dubai Intl)",
+        "airportCountry": "AE",
+        "distKm": 229
+      },
+      {
+        "id": "ir-gulf-lut-kaluts",
+        "name": "卢特沙漠",
+        "country": "伊朗",
+        "airport": "DXB (Dubai Intl)",
+        "airportCountry": "AE",
+        "distKm": 665
+      },
+      {
+        "id": "jp-nature-plus-ishigaki-yaeyama",
+        "name": "石垣岛与八重山",
+        "country": "日本",
+        "airport": "TPE (Taiwan Taoyuan Intl)",
+        "airportCountry": "TW",
+        "distKm": 304
+      },
+      {
+        "id": "id-nature-plus-lake-toba",
+        "name": "多巴湖",
+        "country": "印度尼西亚",
+        "airport": "KUL (Kuala Lumpur Intl)",
+        "airportCountry": "MY",
+        "distKm": 329
+      },
+      {
+        "id": "in-nature-plus-srinagar-gulmarg",
+        "name": "克什米尔斯利那加",
+        "country": "印度",
+        "airport": "ISB (Islamabad Intl)",
+        "airportCountry": "PK",
+        "distKm": 196
+      },
+      {
+        "id": "in-nature-plus-meghalaya-sohra",
+        "name": "梅加拉亚秘境",
+        "country": "印度",
+        "airport": "LXA (Lhasa Gonggar Intl)",
+        "airportCountry": "CN",
+        "distKm": 455
+      },
+      {
+        "id": "in-nature-plus-havelock-island",
+        "name": "哈夫洛克岛",
+        "country": "印度",
+        "airport": "HKT (Phuket Intl)",
+        "airportCountry": "TH",
+        "distKm": 727
+      },
+      {
+        "id": "ca-tr-plus-van-ani-ararat",
+        "name": "凡湖·阿尼·阿勒",
+        "country": "土耳其",
+        "airport": "TBS (Tbilisi Intl)",
+        "airportCountry": "GE",
+        "distKm": 262
+      },
+      {
+        "id": "ru-sib-lena-pillars-yakutsk",
+        "name": "勒拿河石柱",
+        "country": "俄罗斯",
+        "airport": "HRB (Harbin Taiping Intl)",
+        "airportCountry": "CN",
+        "distKm": 1728
+      },
+      {
+        "id": "ru-sib-oymyakon-kolyma",
+        "name": "奥伊米亚康",
+        "country": "俄罗斯",
+        "airport": "HRB (Harbin Taiping Intl)",
+        "airportCountry": "CN",
+        "distKm": 2237
+      },
+      {
+        "id": "ru-sib-ergaki-krasnoyarsk",
+        "name": "埃尔加基萨彦岭",
+        "country": "俄罗斯",
+        "airport": "URC (Urumqi Diwopu Intl)",
+        "airportCountry": "CN",
+        "distKm": 1083
+      },
+      {
+        "id": "ru-sib-chukotka-wrangel",
+        "name": "楚科奇与弗兰格尔岛",
+        "country": "俄罗斯",
+        "airport": "FAI (Fairbanks Intl)",
+        "airportCountry": "US",
+        "distKm": 1525
+      },
+      {
+        "id": "ru-sib-kamchatka-klyuchevskaya",
+        "name": "克柳切夫与托尔巴奇克",
+        "country": "俄罗斯",
+        "airport": "CTS (New Chitose (Sapporo))",
+        "airportCountry": "JP",
+        "distKm": 1971
+      },
+      {
+        "id": "ru-sib-kuril-iturup-onekotan",
+        "name": "千岛·伊图鲁普",
+        "country": "俄罗斯",
+        "airport": "CTS (New Chitose (Sapporo))",
+        "airportCountry": "JP",
+        "distKm": 592
+      },
+      {
+        "id": "ru-sib-sakhalin-aniva-giant",
+        "name": "库页岛阿尼瓦",
+        "country": "俄罗斯",
+        "airport": "CTS (New Chitose (Sapporo))",
+        "airportCountry": "JP",
+        "distKm": 386
+      },
+      {
+        "id": "ru-sib-chara-sands-baikal-north",
+        "name": "恰拉沙海与北贝加尔",
+        "country": "俄罗斯",
+        "airport": "UBN (Chinggis Khaan Intl (Ulaanbaatar))",
+        "airportCountry": "MN",
+        "distKm": 1277
+      },
+      {
+        "id": "se-dk-abisko",
+        "name": "阿比斯库",
+        "country": "瑞典",
+        "airport": "TOS (Tromso Langnes)",
+        "airportCountry": "NO",
+        "distKm": 148
+      },
+      {
+        "id": "se-dk-kiruna",
+        "name": "基律纳",
+        "country": "瑞典",
+        "airport": "TOS (Tromso Langnes)",
+        "airportCountry": "NO",
+        "distKm": 211
+      },
+      {
+        "id": "ch-valais-zermatt",
+        "name": "采尔马特",
+        "country": "瑞士",
+        "airport": "MXP (Milan Malpensa)",
+        "airportCountry": "IT",
+        "distKm": 87
+      },
+      {
+        "id": "ch-valais-aletsch-glacier",
+        "name": "阿莱奇冰川",
+        "country": "瑞士",
+        "airport": "MXP (Milan Malpensa)",
+        "airportCountry": "IT",
+        "distKm": 100
+      },
+      {
+        "id": "ch-valais-st-moritz-bernina",
+        "name": "圣莫里茨",
+        "country": "瑞士",
+        "airport": "MXP (Milan Malpensa)",
+        "airportCountry": "IT",
+        "distKm": 128
+      },
+      {
+        "id": "at-hallstatt-gosau",
+        "name": "哈尔施塔特",
+        "country": "奥地利",
+        "airport": "MUC (Munich Airport)",
+        "airportCountry": "DE",
+        "distKm": 164
+      },
+      {
+        "id": "at-salzburg-grossglockner",
+        "name": "萨尔茨堡",
+        "country": "奥地利",
+        "airport": "MUC (Munich Airport)",
+        "airportCountry": "DE",
+        "distKm": 112
+      },
+      {
+        "id": "at-innsbruck-tyrol",
+        "name": "因斯布鲁克",
+        "country": "奥地利",
+        "airport": "MUC (Munich Airport)",
+        "airportCountry": "DE",
+        "distKm": 124
+      },
+      {
+        "id": "es-south-ronda-white-villages",
+        "name": "龙达与白色山城",
+        "country": "西班牙",
+        "airport": "LIS (Lisbon Humberto Delgado)",
+        "airportCountry": "PT",
+        "distKm": 416
+      },
+      {
+        "id": "es-south-seville-cordoba",
+        "name": "塞维利亚与科尔多瓦",
+        "country": "西班牙",
+        "airport": "LIS (Lisbon Humberto Delgado)",
+        "airportCountry": "PT",
+        "distKm": 316
+      },
+      {
+        "id": "es-islands-tenerife",
+        "name": "特内里费岛",
+        "country": "西班牙",
+        "airport": "RAK (Marrakech Menara)",
+        "airportCountry": "MA",
+        "distKm": 903
+      },
+      {
+        "id": "es-islands-lanzarote",
+        "name": "兰萨罗特岛",
+        "country": "西班牙",
+        "airport": "RAK (Marrakech Menara)",
+        "airportCountry": "MA",
+        "distKm": 608
+      },
+      {
+        "id": "pt-madeira-azores",
+        "name": "马德拉与亚速尔",
+        "country": "葡萄牙",
+        "airport": "RAK (Marrakech Menara)",
+        "airportCountry": "MA",
+        "distKm": 846
+      },
+      {
+        "id": "adriatic-plitvice-lakes",
+        "name": "十六湖国家公园",
+        "country": "克罗地亚",
+        "airport": "VCE (Venice Marco Polo)",
+        "airportCountry": "IT",
+        "distKm": 264
+      },
+      {
+        "id": "fr-alps-chamonix-mont-blanc",
+        "name": "霞慕尼勃朗峰",
+        "country": "法国",
+        "airport": "GVA (Geneva Airport)",
+        "airportCountry": "CH",
+        "distKm": 68
+      },
+      {
+        "id": "fr-alps-annecy-lake",
+        "name": "安纳西",
+        "country": "法国",
+        "airport": "GVA (Geneva Airport)",
+        "airportCountry": "CH",
+        "distKm": 38
+      },
+      {
+        "id": "fr-alps-colmar-alsace",
+        "name": "科尔马与阿尔萨斯",
+        "country": "法国",
+        "airport": "ZRH (Zurich Airport)",
+        "airportCountry": "CH",
+        "distKm": 112
+      },
+      {
+        "id": "de-classic-saxon-switzerland-dresden",
+        "name": "萨克森小瑞士",
+        "country": "德国",
+        "airport": "PRG (Vaclav Havel Prague)",
+        "airportCountry": "CZ",
+        "distKm": 97
+      },
+      {
+        "id": "ie-giants-causeway-antrim",
+        "name": "巨人之路",
+        "country": "英国",
+        "airport": "DUB (Dublin Airport)",
+        "airportCountry": "IE",
+        "distKm": 203
+      },
+      {
+        "id": "ru-eu-elbrus-caucasus",
+        "name": "厄尔布鲁士雪域",
+        "country": "俄罗斯",
+        "airport": "TBS (Tbilisi Intl)",
+        "airportCountry": "GE",
+        "distKm": 271
+      },
+      {
+        "id": "ru-eu-dagestan-sulak",
+        "name": "达吉斯坦",
+        "country": "俄罗斯",
+        "airport": "TBS (Tbilisi Intl)",
+        "airportCountry": "GE",
+        "distKm": 216
+      },
+      {
+        "id": "ru-eu-kaliningrad-curonian",
+        "name": "加里宁格勒",
+        "country": "俄罗斯",
+        "airport": "CPH (Copenhagen Kastrup)",
+        "airportCountry": "DK",
+        "distKm": 509
+      },
+      {
+        "id": "ca-arctic-w-yukon-tombstone",
+        "name": "育空墓碑公园",
+        "country": "加拿大",
+        "airport": "FAI (Fairbanks Intl)",
+        "airportCountry": "US",
+        "distKm": 458
+      },
+      {
+        "id": "ca-arctic-e-baffin-auyuittuq",
+        "name": "巴芬岛",
+        "country": "加拿大",
+        "airport": "SFJ (Kangerlussuaq (Greenland))",
+        "airportCountry": "GL",
+        "distKm": 637
+      },
+      {
+        "id": "gl-scoresby-sund",
+        "name": "斯科斯比松",
+        "country": "格陵兰",
+        "airport": "KEF (Keflavik Intl (Reykjavik))",
+        "airportCountry": "IS",
+        "distKm": 732
+      },
+      {
+        "id": "us-wy-mt-glacier-national-park",
+        "name": "蒙大拿冰川",
+        "country": "美国",
+        "airport": "YYC (Calgary Intl (Banff))",
+        "airportCountry": "CA",
+        "distKm": 270
+      },
+      {
+        "id": "us-pnw-wa-north-cascades",
+        "name": "北喀斯喀特",
+        "country": "美国",
+        "airport": "YVR (Vancouver Intl)",
+        "airportCountry": "CA",
+        "distKm": 145
+      },
+      {
+        "id": "us-se-new-orleans-atchafalaya",
+        "name": "新奥尔良与阿查法拉亚",
+        "country": "美国",
+        "airport": "CUN (Cancun Intl)",
+        "airportCountry": "MX",
+        "distKm": 1083
+      },
+      {
+        "id": "mx-west-copper-canyon",
+        "name": "奇瓦瓦铜峡谷",
+        "country": "墨西哥",
+        "airport": "PHX (Phoenix Sky Harbor Intl)",
+        "airportCountry": "US",
+        "distKm": 769
+      },
+      {
+        "id": "mx-west-la-paz-balandra",
+        "name": "下加利福尼亚鲸湾",
+        "country": "墨西哥",
+        "airport": "PHX (Phoenix Sky Harbor Intl)",
+        "airportCountry": "US",
+        "distKm": 1027
+      },
+      {
+        "id": "pe-andes-puno-titicaca",
+        "name": "普诺的的喀喀湖",
+        "country": "秘鲁",
+        "airport": "LPB (La Paz El Alto Intl)",
+        "airportCountry": "BO",
+        "distKm": 190
+      },
+      {
+        "id": "pe-north-amazon-iquitos-tambopata",
+        "name": "秘鲁亚马孙",
+        "country": "秘鲁",
+        "airport": "UIO (Quito Mariscal Sucre)",
+        "airportCountry": "EC",
+        "distKm": 695
+      },
+      {
+        "id": "bo-uyuni-eduardo-avaroa",
+        "name": "阿瓦罗亚彩湖群",
+        "country": "玻利维亚",
+        "airport": "CJC (Calama El Loa (Atacama))",
+        "airportCountry": "CL",
+        "distKm": 119
+      },
+      {
+        "id": "cl-center-ei-rapa-nui",
+        "name": "复活节岛",
+        "country": "智利",
+        "airport": "GPS (Galapagos Seymour (Baltra))",
+        "airportCountry": "EC",
+        "distKm": 3605
+      },
+      {
+        "id": "cl-south-chiloe-island",
+        "name": "奇洛埃岛",
+        "country": "智利",
+        "airport": "FTE (El Calafate Intl)",
+        "airportCountry": "AR",
+        "distKm": 877
+      },
+      {
+        "id": "cl-south-general-carrera-marble-caves",
+        "name": "卡雷拉湖大理石洞",
+        "country": "智利",
+        "airport": "FTE (El Calafate Intl)",
+        "airportCountry": "AR",
+        "distKm": 409
+      },
+      {
+        "id": "cl-torres-east-base",
+        "name": "百内三塔",
+        "country": "智利",
+        "airport": "FTE (El Calafate Intl)",
+        "airportCountry": "AR",
+        "distKm": 97
+      },
+      {
+        "id": "cl-torres-west-grey-frances",
+        "name": "法国谷与格雷冰川",
+        "country": "智利",
+        "airport": "FTE (El Calafate Intl)",
+        "airportCountry": "AR",
+        "distKm": 113
+      },
+      {
+        "id": "ar-west-nw-bariloche",
+        "name": "巴里洛切七湖",
+        "country": "阿根廷",
+        "airport": "SCL (Santiago Arturo Merino)",
+        "airportCountry": "CL",
+        "distKm": 862
+      },
+      {
+        "id": "ar-west-nw-jujuy",
+        "name": "胡胡伊七色山",
+        "country": "阿根廷",
+        "airport": "CJC (Calama El Loa (Atacama))",
+        "airportCountry": "CL",
+        "distKm": 375
+      },
+      {
+        "id": "ar-west-nw-cafayate-ischigualasto-talampaya",
+        "name": "卡法亚特月亮谷",
+        "country": "阿根廷",
+        "airport": "CJC (Calama El Loa (Atacama))",
+        "airportCountry": "CL",
+        "distKm": 496
+      },
+      {
+        "id": "ar-north-mendoza-aconcagua",
+        "name": "门多萨雪山酒谷",
+        "country": "阿根廷",
+        "airport": "SCL (Santiago Arturo Merino)",
+        "airportCountry": "CL",
+        "distKm": 189
+      },
+      {
+        "id": "br-inland-bonito",
+        "name": "博尼图蓝洞",
+        "country": "巴西",
+        "airport": "IGR (Iguazu Cataratas Intl)",
+        "airportCountry": "AR",
+        "distKm": 552
+      },
+      {
+        "id": "br-inland-pantanal",
+        "name": "潘塔纳尔湿地",
+        "country": "巴西",
+        "airport": "IGR (Iguazu Cataratas Intl)",
+        "airportCountry": "AR",
+        "distKm": 961
+      },
+      {
+        "id": "br-guiana-manaus-amazon",
+        "name": "马瑙斯亚马孙",
+        "country": "巴西",
+        "airport": "LPB (La Paz El Alto Intl)",
+        "airportCountry": "BO",
+        "distKm": 1738
+      },
+      {
+        "id": "co-wonders-las-lajas-tatacoa",
+        "name": "悬崖教堂与火星沙漠",
+        "country": "哥伦比亚",
+        "airport": "UIO (Quito Mariscal Sucre)",
+        "airportCountry": "EC",
+        "distKm": 135
+      },
+      {
+        "id": "co-coast-cartagena-rosario",
+        "name": "卡塔赫纳",
+        "country": "哥伦比亚",
+        "airport": "PTY (Panama Tocumen Intl)",
+        "airportCountry": "PA",
+        "distKm": 446
+      },
+      {
+        "id": "co-coast-tayrona-sierra-nevada",
+        "name": "泰罗纳雪山海岸",
+        "country": "哥伦比亚",
+        "airport": "PTY (Panama Tocumen Intl)",
+        "airportCountry": "PA",
+        "distKm": 633
+      },
+      {
+        "id": "co-coast-san-andres-providencia",
+        "name": "加勒比七色海",
+        "country": "哥伦比亚",
+        "airport": "SJO (San Jose Juan Santamaria)",
+        "airportCountry": "CR",
+        "distKm": 395
+      },
+      {
+        "id": "ke-amboseli",
+        "name": "安博塞利",
+        "country": "肯尼亚",
+        "airport": "JRO (Kilimanjaro Intl)",
+        "airportCountry": "TZ",
+        "distKm": 89
+      },
+      {
+        "id": "ke-lamu-diani",
+        "name": "拉穆与迪亚尼",
+        "country": "肯尼亚",
+        "airport": "JRO (Kilimanjaro Intl)",
+        "airportCountry": "TZ",
+        "distKm": 444
+      },
+      {
+        "id": "tz-serengeti",
+        "name": "塞伦盖蒂",
+        "country": "坦桑尼亚",
+        "airport": "NBO (Nairobi Jomo Kenyatta)",
+        "airportCountry": "KE",
+        "distKm": 259
+      },
+      {
+        "id": "bw-chobe-makgadikgadi",
+        "name": "乔贝与马卡迪卡迪",
+        "country": "博茨瓦纳",
+        "airport": "VFA (Victoria Falls Airport)",
+        "airportCountry": "ZW",
+        "distKm": 154
+      }
+    ],
+    "airportDistanceGT300kmCount": 251,
+    "airportDistanceGT600kmCount": 115,
+    "airportDistanceGT600kmSamples": [
+      {
+        "id": "cn-hulunbeier",
+        "name": "呼伦贝尔",
+        "country": "中国",
+        "airport": "HRB",
+        "airportCountry": "CN",
+        "distKm": 646
+      },
+      {
+        "id": "cn-mohe",
+        "name": "漠河",
+        "country": "中国",
+        "airport": "HRB",
+        "airportCountry": "CN",
+        "distKm": 879
+      },
+      {
+        "id": "cn-qinghai",
+        "name": "青海湖",
+        "country": "中国",
+        "airport": "DNH",
+        "airportCountry": "CN",
+        "distKm": 614
+      },
+      {
+        "id": "my-borneo-semporna",
+        "name": "仙本那",
+        "country": "马来西亚",
+        "airport": "CEB",
+        "airportCountry": "PH",
+        "distKm": 877
+      },
+      {
+        "id": "my-borneo-kota-kinabalu",
+        "name": "亚庇",
+        "country": "马来西亚",
+        "airport": "CEB",
+        "airportCountry": "PH",
+        "distKm": 995
+      },
+      {
+        "id": "my-borneo-kuching-mulu",
+        "name": "古晋姆鲁",
+        "country": "马来西亚",
+        "airport": "SIN",
+        "airportCountry": "SG",
+        "distKm": 706
+      },
+      {
+        "id": "id-volcano-east-raja-ampat",
+        "name": "四王群岛",
+        "country": "印度尼西亚",
+        "airport": "ROR",
+        "airportCountry": "PW",
+        "distKm": 959
+      },
+      {
+        "id": "indochina-brunei-bandar-seri-begawan",
+        "name": "文莱王城",
+        "country": "文莱",
+        "airport": "SGN",
+        "airportCountry": "VN",
+        "distKm": 1126
+      },
+      {
+        "id": "uz-khiva",
+        "name": "希瓦",
+        "country": "乌兹别克斯坦",
+        "airport": "TAS",
+        "airportCountry": "UZ",
+        "distKm": 745
+      },
+      {
+        "id": "stans-wild-astana",
+        "name": "阿斯塔纳",
+        "country": "哈萨克斯坦",
+        "airport": "ALA",
+        "airportCountry": "KZ",
+        "distKm": 966
+      },
+      {
+        "id": "stans-wild-darvaza-pamir",
+        "name": "达瓦札",
+        "country": "土库曼斯坦 / 塔吉克斯坦",
+        "airport": "GYD",
+        "airportCountry": "AZ",
+        "distKm": 711
+      },
+      {
+        "id": "ru-baikal-olkhon",
+        "name": "奥尔洪岛",
+        "country": "俄罗斯",
+        "airport": "UBN",
+        "airportCountry": "MN",
+        "distKm": 618
+      },
+      {
+        "id": "ru-fareast-avacha-mutnovsky",
+        "name": "堪察加活火山",
+        "country": "俄罗斯",
+        "airport": "CTS",
+        "airportCountry": "JP",
+        "distKm": 1695
+      },
+      {
+        "id": "ru-fareast-geysers-kurile",
+        "name": "间歇泉谷与库里尔湖",
+        "country": "俄罗斯",
+        "airport": "CTS",
+        "airportCountry": "JP",
+        "distKm": 1866
+      },
+      {
+        "id": "ru-fareast-altai-chuya-highway",
+        "name": "俄属阿尔泰楚亚公路",
+        "country": "俄罗斯",
+        "airport": "URC",
+        "airportCountry": "CN",
+        "distKm": 710
+      },
+      {
+        "id": "ru-fareast-altai-belukha",
+        "name": "贝卢哈雪山与冰川湖群",
+        "country": "俄罗斯",
+        "airport": "URC",
+        "airportCountry": "CN",
+        "distKm": 671
+      },
+      {
+        "id": "ir-gulf-lut-kaluts",
+        "name": "卢特沙漠",
+        "country": "伊朗",
+        "airport": "DXB",
+        "airportCountry": "AE",
+        "distKm": 665
+      },
+      {
+        "id": "me-levant-gems-socotra",
+        "name": "索科特拉岛",
+        "country": "也门",
+        "airport": "MCT",
+        "airportCountry": "OM",
+        "distKm": 1317
+      },
+      {
+        "id": "id-nature-plus-kelimutu",
+        "name": "克里穆图三色湖",
+        "country": "印度尼西亚",
+        "airport": "DPS",
+        "airportCountry": "ID",
+        "distKm": 730
+      },
+      {
+        "id": "in-nature-plus-havelock-island",
+        "name": "哈夫洛克岛",
+        "country": "印度",
+        "airport": "HKT",
+        "airportCountry": "TH",
+        "distKm": 727
+      },
+      {
+        "id": "ru-sib-putorana-plateau",
+        "name": "普托拉纳高原",
+        "country": "俄罗斯",
+        "airport": "MMK",
+        "airportCountry": "RU",
+        "distKm": 2207
+      },
+      {
+        "id": "ru-sib-manpupuner-urals",
+        "name": "曼普普纳七巨人",
+        "country": "俄罗斯",
+        "airport": "MMK",
+        "airportCountry": "RU",
+        "distKm": 1406
+      },
+      {
+        "id": "ru-sib-lena-pillars-yakutsk",
+        "name": "勒拿河石柱",
+        "country": "俄罗斯",
+        "airport": "HRB",
+        "airportCountry": "CN",
+        "distKm": 1728
+      },
+      {
+        "id": "ru-sib-oymyakon-kolyma",
+        "name": "奥伊米亚康",
+        "country": "俄罗斯",
+        "airport": "HRB",
+        "airportCountry": "CN",
+        "distKm": 2237
+      },
+      {
+        "id": "ru-sib-ergaki-krasnoyarsk",
+        "name": "埃尔加基萨彦岭",
+        "country": "俄罗斯",
+        "airport": "URC",
+        "airportCountry": "CN",
+        "distKm": 1083
+      },
+      {
+        "id": "ru-sib-chukotka-wrangel",
+        "name": "楚科奇与弗兰格尔岛",
+        "country": "俄罗斯",
+        "airport": "FAI",
+        "airportCountry": "US",
+        "distKm": 1525
+      },
+      {
+        "id": "ru-sib-kamchatka-klyuchevskaya",
+        "name": "克柳切夫与托尔巴奇克",
+        "country": "俄罗斯",
+        "airport": "CTS",
+        "airportCountry": "JP",
+        "distKm": 1971
+      },
+      {
+        "id": "ru-sib-chara-sands-baikal-north",
+        "name": "恰拉沙海与北贝加尔",
+        "country": "俄罗斯",
+        "airport": "UBN",
+        "airportCountry": "MN",
+        "distKm": 1277
+      },
+      {
+        "id": "au-nsw-qld-byron-gold-coast",
+        "name": "拜伦湾与黄金海岸",
+        "country": "澳大利亚",
+        "airport": "SYD",
+        "airportCountry": "AU",
+        "distKm": 635
+      },
+      {
+        "id": "au-nsw-qld-kgari-moreton",
+        "name": "K'gari与摩顿岛",
+        "country": "澳大利亚",
+        "airport": "SYD",
+        "airportCountry": "AU",
+        "distKm": 962
+      },
+      {
+        "id": "au-vic-sa-adelaide-kangaroo-island",
+        "name": "阿德莱德与袋鼠岛",
+        "country": "澳大利亚",
+        "airport": "MEL",
+        "airportCountry": "AU",
+        "distKm": 707
+      },
+      {
+        "id": "au-outback-wa-esperance-ningaloo",
+        "name": "埃斯佩兰斯与宁格鲁礁",
+        "country": "澳大利亚",
+        "airport": "PER",
+        "airportCountry": "AU",
+        "distKm": 626
+      },
+      {
+        "id": "pac-gems-vanuatu-tanna",
+        "name": "瓦努阿图塔纳岛",
+        "country": "瓦努阿图",
+        "airport": "NAN",
+        "airportCountry": "FJ",
+        "distKm": 875
+      },
+      {
+        "id": "pac-gems-cook-islands-aitutaki",
+        "name": "艾图塔基泻湖",
+        "country": "库克群岛",
+        "airport": "PPT",
+        "airportCountry": "PF",
+        "distKm": 1084
+      },
+      {
+        "id": "pac-gems-new-caledonia",
+        "name": "新喀里多尼亚",
+        "country": "新喀里多尼亚",
+        "airport": "NAN",
+        "airportCountry": "FJ",
+        "distKm": 1252
+      },
+      {
+        "id": "arctic-islands-svalbard-longyearbyen",
+        "name": "斯瓦尔巴群岛",
+        "country": "挪威",
+        "airport": "TOS",
+        "airportCountry": "NO",
+        "distKm": 955
+      },
+      {
+        "id": "es-islands-tenerife",
+        "name": "特内里费岛",
+        "country": "西班牙",
+        "airport": "RAK",
+        "airportCountry": "MA",
+        "distKm": 903
+      },
+      {
+        "id": "es-islands-lanzarote",
+        "name": "兰萨罗特岛",
+        "country": "西班牙",
+        "airport": "RAK",
+        "airportCountry": "MA",
+        "distKm": 608
+      },
+      {
+        "id": "pt-madeira-azores",
+        "name": "马德拉与亚速尔",
+        "country": "葡萄牙",
+        "airport": "RAK",
+        "airportCountry": "MA",
+        "distKm": 846
+      },
+      {
+        "id": "ru-eu-kazan-volga",
+        "name": "喀山",
+        "country": "俄罗斯",
+        "airport": "SVO",
+        "airportCountry": "RU",
+        "distKm": 730
+      },
+      {
+        "id": "ca-arctic-e-churchill",
+        "name": "丘吉尔镇",
+        "country": "加拿大",
+        "airport": "YZF",
+        "airportCountry": "CA",
+        "distKm": 1172
+      },
+      {
+        "id": "ca-arctic-e-baffin-auyuittuq",
+        "name": "巴芬岛",
+        "country": "加拿大",
+        "airport": "SFJ",
+        "airportCountry": "GL",
+        "distKm": 637
+      },
+      {
+        "id": "ca-atlantic-prince-edward-island",
+        "name": "爱德华王子岛",
+        "country": "加拿大",
+        "airport": "YQB",
+        "airportCountry": "CA",
+        "distKm": 612
+      },
+      {
+        "id": "ca-atlantic-cabot-trail",
+        "name": "卡博特天路",
+        "country": "加拿大",
+        "airport": "YQB",
+        "airportCountry": "CA",
+        "distKm": 800
+      },
+      {
+        "id": "ca-atlantic-gros-morne-iceberg-alley",
+        "name": "纽芬兰格罗莫讷",
+        "country": "加拿大",
+        "airport": "YQB",
+        "airportCountry": "CA",
+        "distKm": 1060
+      },
+      {
+        "id": "gl-scoresby-sund",
+        "name": "斯科斯比松",
+        "country": "格陵兰",
+        "airport": "KEF",
+        "airportCountry": "IS",
+        "distKm": 732
+      },
+      {
+        "id": "us-ak-north-glacier-bay-juneau",
+        "name": "冰川湾",
+        "country": "美国",
+        "airport": "ANC",
+        "airportCountry": "US",
+        "distKm": 758
+      },
+      {
+        "id": "us-sw-carlsbad-taos",
+        "name": "卡尔斯巴德巨洞与陶斯",
+        "country": "美国",
+        "airport": "PHX",
+        "airportCountry": "US",
+        "distKm": 721
+      },
+      {
+        "id": "us-sw-big-bend",
+        "name": "大弯国家公园",
+        "country": "美国",
+        "airport": "PHX",
+        "airportCountry": "US",
+        "distKm": 947
+      },
+      {
+        "id": "us-mid-appal-great-smoky-mountains",
+        "name": "大烟山",
+        "country": "美国",
+        "airport": "IAD",
+        "airportCountry": "US",
+        "distKm": 651
+      },
+      {
+        "id": "us-se-charleston-savannah",
+        "name": "查尔斯顿与萨凡纳",
+        "country": "美国",
+        "airport": "MIA",
+        "airportCountry": "US",
+        "distKm": 741
+      },
+      {
+        "id": "us-se-new-orleans-atchafalaya",
+        "name": "新奥尔良与阿查法拉亚",
+        "country": "美国",
+        "airport": "CUN",
+        "airportCountry": "MX",
+        "distKm": 1083
+      },
+      {
+        "id": "mx-west-copper-canyon",
+        "name": "奇瓦瓦铜峡谷",
+        "country": "墨西哥",
+        "airport": "PHX",
+        "airportCountry": "US",
+        "distKm": 769
+      },
+      {
+        "id": "mx-west-la-paz-balandra",
+        "name": "下加利福尼亚鲸湾",
+        "country": "墨西哥",
+        "airport": "PHX",
+        "airportCountry": "US",
+        "distKm": 1027
+      },
+      {
+        "id": "mx-west-los-cabos",
+        "name": "洛斯卡沃斯",
+        "country": "墨西哥",
+        "airport": "MEX",
+        "airportCountry": "MX",
+        "distKm": 1185
+      },
+      {
+        "id": "mx-south-palenque-agua-azul",
+        "name": "帕伦克古城",
+        "country": "墨西哥",
+        "airport": "CUN",
+        "airportCountry": "MX",
+        "distKm": 671
+      },
+      {
+        "id": "mx-south-sumidero-san-cristobal",
+        "name": "苏米德罗大峡谷",
+        "country": "墨西哥",
+        "airport": "MEX",
+        "airportCountry": "MX",
+        "distKm": 694
+      },
+      {
+        "id": "ca-central-antigua-acatenango",
+        "name": "安提瓜火山",
+        "country": "危地马拉",
+        "airport": "CUN",
+        "airportCountry": "MX",
+        "distKm": 828
+      },
+      {
+        "id": "ca-central-atitlan-tikal",
+        "name": "阿蒂特兰湖与蒂卡尔",
+        "country": "危地马拉",
+        "airport": "CUN",
+        "airportCountry": "MX",
+        "distKm": 842
+      },
+      {
+        "id": "ca-isl-west-vieques-san-juan",
+        "name": "波多黎各荧光海",
+        "country": "波多黎各",
+        "airport": "MIA",
+        "airportCountry": "US",
+        "distKm": 1752
+      },
+      {
+        "id": "carib-saint-lucia-pitons",
+        "name": "圣卢西亚双峰岩",
+        "country": "圣卢西亚",
+        "airport": "BOG",
+        "airportCountry": "CO",
+        "distKm": 1757
+      },
+      {
+        "id": "carib-turks-caicos-virgin-gorda",
+        "name": "格雷斯湾与巨石浴场",
+        "country": "特克斯和凯科斯群岛 / 英属维尔京群岛",
+        "airport": "MIA",
+        "airportCountry": "US",
+        "distKm": 938
+      },
+      {
+        "id": "carib-aruba-curacao-bermuda",
+        "name": "火烈鸟与粉红海岸",
+        "country": "阿鲁巴 / 库拉索 / 百慕大",
+        "airport": "BOG",
+        "airportCountry": "CO",
+        "distKm": 978
+      },
+      {
+        "id": "pe-north-chachapoyas-gocta-kuelap",
+        "name": "戈克塔与库埃拉普",
+        "country": "秘鲁",
+        "airport": "LIM",
+        "airportCountry": "PE",
+        "distKm": 649
+      },
+      {
+        "id": "pe-north-amazon-iquitos-tambopata",
+        "name": "秘鲁亚马孙",
+        "country": "秘鲁",
+        "airport": "UIO",
+        "airportCountry": "EC",
+        "distKm": 695
+      },
+      {
+        "id": "cl-center-ei-rapa-nui",
+        "name": "复活节岛",
+        "country": "智利",
+        "airport": "GPS",
+        "airportCountry": "EC",
+        "distKm": 3605
+      },
+      {
+        "id": "cl-south-puerto-varas-osorno",
+        "name": "奥索尔诺火山",
+        "country": "智利",
+        "airport": "SCL",
+        "airportCountry": "CL",
+        "distKm": 902
+      },
+      {
+        "id": "cl-south-chiloe-island",
+        "name": "奇洛埃岛",
+        "country": "智利",
+        "airport": "FTE",
+        "airportCountry": "AR",
+        "distKm": 877
+      },
+      {
+        "id": "cl-south-pucon-villarrica",
+        "name": "普孔活火山",
+        "country": "智利",
+        "airport": "SCL",
+        "airportCountry": "CL",
+        "distKm": 663
+      },
+      {
+        "id": "ar-west-nw-bariloche",
+        "name": "巴里洛切七湖",
+        "country": "阿根廷",
+        "airport": "SCL",
+        "airportCountry": "CL",
+        "distKm": 862
+      },
+      {
+        "id": "ar-west-nw-peninsula-valdes",
+        "name": "瓦尔德斯半岛",
+        "country": "阿根廷",
+        "airport": "EZE",
+        "airportCountry": "AR",
+        "distKm": 970
+      },
+      {
+        "id": "br-cities-brasilia",
+        "name": "巴西利亚",
+        "country": "巴西",
+        "airport": "GRU",
+        "airportCountry": "BR",
+        "distKm": 862
+      },
+      {
+        "id": "br-cities-salvador-ouro-preto",
+        "name": "双城巴洛克",
+        "country": "巴西",
+        "airport": "GIG",
+        "airportCountry": "BR",
+        "distKm": 1203
+      },
+      {
+        "id": "br-coast-lencois-maranhenses",
+        "name": "拉克依斯千湖沙漠",
+        "country": "巴西",
+        "airport": "GIG",
+        "airportCountry": "BR",
+        "distKm": 2255
+      },
+      {
+        "id": "br-coast-fernando-de-noronha",
+        "name": "费尔南多群岛",
+        "country": "巴西",
+        "airport": "GIG",
+        "airportCountry": "BR",
+        "distKm": 2408
+      },
+      {
+        "id": "br-coast-jericoacoara-aparados",
+        "name": "杰里科科拉与大峡谷",
+        "country": "巴西",
+        "airport": "GIG",
+        "airportCountry": "BR",
+        "distKm": 2245
+      },
+      {
+        "id": "br-inland-chapada-diamantina",
+        "name": "查帕达蓝洞",
+        "country": "巴西",
+        "airport": "GIG",
+        "airportCountry": "BR",
+        "distKm": 1156
+      },
+      {
+        "id": "br-inland-pantanal",
+        "name": "潘塔纳尔湿地",
+        "country": "巴西",
+        "airport": "IGR",
+        "airportCountry": "AR",
+        "distKm": 961
+      },
+      {
+        "id": "br-guiana-manaus-amazon",
+        "name": "马瑙斯亚马孙",
+        "country": "巴西",
+        "airport": "LPB",
+        "airportCountry": "BO",
+        "distKm": 1738
+      },
+      {
+        "id": "br-guiana-angel-falls",
+        "name": "天使瀑布",
+        "country": "委内瑞拉",
+        "airport": "BOG",
+        "airportCountry": "CO",
+        "distKm": 1293
+      },
+      {
+        "id": "br-guiana-mount-roraima",
+        "name": "罗赖马桌山",
+        "country": "委内瑞拉",
+        "airport": "BOG",
+        "airportCountry": "CO",
+        "distKm": 1484
+      },
+      {
+        "id": "br-guiana-kaieteur-falls",
+        "name": "凯厄图尔瀑布",
+        "country": "圭亚那",
+        "airport": "BOG",
+        "airportCountry": "CO",
+        "distKm": 1626
+      },
+      {
+        "id": "co-coast-tayrona-sierra-nevada",
+        "name": "泰罗纳雪山海岸",
+        "country": "哥伦比亚",
+        "airport": "PTY",
+        "airportCountry": "PA",
+        "distKm": 633
+      },
+      {
+        "id": "co-coast-guajira-nuqui",
+        "name": "沙漠与鲸歌双海岸",
+        "country": "哥伦比亚",
+        "airport": "BOG",
+        "airportCountry": "CO",
+        "distKm": 905
+      },
+      {
+        "id": "ug-bwindi-queen-elizabeth",
+        "name": "布温迪与伊丽莎白女王",
+        "country": "乌干达",
+        "airport": "NBO",
+        "airportCountry": "KE",
+        "distKm": 801
+      },
+      {
+        "id": "ug-murchison-rwenzori",
+        "name": "默奇森与鲁文佐里",
+        "country": "乌干达",
+        "airport": "NBO",
+        "airportCountry": "KE",
+        "distKm": 748
+      },
+      {
+        "id": "rw-volcanoes-kivu",
+        "name": "卢旺达火山与基伍湖",
+        "country": "卢旺达",
+        "airport": "NBO",
+        "airportCountry": "KE",
+        "distKm": 823
+      },
+      {
+        "id": "zm-south-luangwa-lower-zambezi",
+        "name": "南卢安瓜与下赞比西",
+        "country": "赞比亚",
+        "airport": "VFA",
+        "airportCountry": "ZW",
+        "distKm": 653
+      },
+      {
+        "id": "mw-lake-malawi-mulanje",
+        "name": "马拉维湖与穆兰杰",
+        "country": "马拉维",
+        "airport": "ZNZ",
+        "airportCountry": "TZ",
+        "distKm": 990
+      },
+      {
+        "id": "mz-bazaruto-quirimbas",
+        "name": "巴扎鲁托",
+        "country": "莫桑比克",
+        "airport": "JNB",
+        "airportCountry": "ZA",
+        "distKm": 886
+      },
+      {
+        "id": "km-moheli-karthala",
+        "name": "科摩罗火山龟岛",
+        "country": "科摩罗",
+        "airport": "ZNZ",
+        "airportCountry": "TZ",
+        "distKm": 792
+      },
+      {
+        "id": "tn-tozeur-douz-matmata",
+        "name": "托泽尔杜兹",
+        "country": "突尼斯",
+        "airport": "NAP",
+        "airportCountry": "IT",
+        "distKm": 933
+      },
+      {
+        "id": "dz-tassili-najjer",
+        "name": "塔西利",
+        "country": "阿尔及利亚",
+        "airport": "NAP",
+        "airportCountry": "IT",
+        "distKm": 1856
+      },
+      {
+        "id": "dz-hoggar-assekrem",
+        "name": "阿哈加尔",
+        "country": "阿尔及利亚",
+        "airport": "RAK",
+        "airportCountry": "MA",
+        "distKm": 1642
+      },
+      {
+        "id": "dz-constantine-timgad",
+        "name": "君士坦丁",
+        "country": "阿尔及利亚",
+        "airport": "BCN",
+        "airportCountry": "ES",
+        "distKm": 711
+      },
+      {
+        "id": "mr-richat-chinguetti",
+        "name": "撒哈拉之眼",
+        "country": "毛里塔尼亚",
+        "airport": "DKR",
+        "airportCountry": "SN",
+        "distKm": 875
+      },
+      {
+        "id": "mr-banc-darguin-ben-amera",
+        "name": "阿尔金湾",
+        "country": "毛里塔尼亚",
+        "airport": "DKR",
+        "airportCountry": "SN",
+        "distKm": 667
+      },
+      {
+        "id": "sd-meroe-pyramids",
+        "name": "麦罗埃",
+        "country": "苏丹",
+        "airport": "LXR",
+        "airportCountry": "EG",
+        "distKm": 977
+      },
+      {
+        "id": "cv-santo-antao-fogo",
+        "name": "佛得角双岛",
+        "country": "佛得角",
+        "airport": "DKR",
+        "airportCountry": "SN",
+        "distKm": 896
+      },
+      {
+        "id": "gh-cape-coast-kakum",
+        "name": "海岸角与卡库姆",
+        "country": "加纳",
+        "airport": "DKR",
+        "airportCountry": "SN",
+        "distKm": 2032
+      },
+      {
+        "id": "st-sao-tome-cao-grande",
+        "name": "圣多美大狗峰",
+        "country": "圣多美和普林西比",
+        "airport": "WDH",
+        "airportCountry": "NA",
+        "distKm": 2776
+      },
+      {
+        "id": "td-ennedi-ounianga",
+        "name": "恩内迪与乌尼昂加",
+        "country": "乍得",
+        "airport": "LXR",
+        "airportCountry": "EG",
+        "distKm": 1476
+      },
+      {
+        "id": "cm-mount-cameroon-rhumsiki",
+        "name": "喀麦隆双极秘境",
+        "country": "喀麦隆",
+        "airport": "VFA",
+        "airportCountry": "ZW",
+        "distKm": 3081
+      },
+      {
+        "id": "ga-loango",
+        "name": "洛安果",
+        "country": "加蓬",
+        "airport": "WDH",
+        "airportCountry": "NA",
+        "distKm": 2415
+      },
+      {
+        "id": "aq-lemaire-paradise-bay",
+        "name": "勒梅尔与天堂湾",
+        "country": "南极洲",
+        "airport": "USH",
+        "airportCountry": "AR",
+        "distKm": 1163
+      },
+      {
+        "id": "aq-neko-cuverville",
+        "name": "尼科港与库佛维尔",
+        "country": "南极洲",
+        "airport": "USH",
+        "airportCountry": "AR",
+        "distKm": 1146
+      },
+      {
+        "id": "aq-deception-island",
+        "name": "欺骗岛火山湾",
+        "country": "南极洲",
+        "airport": "USH",
+        "airportCountry": "AR",
+        "distKm": 1002
+      },
+      {
+        "id": "aq-gerlache-wilhelmina",
+        "name": "杰拉许与威廉敏娜",
+        "country": "南极洲",
+        "airport": "USH",
+        "airportCountry": "AR",
+        "distKm": 1133
+      },
+      {
+        "id": "aq-antarctic-sound-brown-bluff",
+        "name": "南极海峡与布朗断崖",
+        "country": "南极洲",
+        "airport": "USH",
+        "airportCountry": "AR",
+        "distKm": 1154
+      },
+      {
+        "id": "aq-polar-circle-detaille",
+        "name": "南极圈与德塔耶岛",
+        "country": "南极洲",
+        "airport": "USH",
+        "airportCountry": "AR",
+        "distKm": 1326
+      },
+      {
+        "id": "aq-port-lockroy-damoy",
+        "name": "洛克罗伊与多利安湾",
+        "country": "南极洲",
+        "airport": "USH",
+        "airportCountry": "AR",
+        "distKm": 1140
+      },
+      {
+        "id": "aq-snow-hill-weddell",
+        "name": "雪丘岛帝企鹅",
+        "country": "南极洲",
+        "airport": "USH",
+        "airportCountry": "AR",
+        "distKm": 1234
+      },
+      {
+        "id": "aq-ross-sea-dry-valleys",
+        "name": "罗斯海与干谷",
+        "country": "南极洲",
+        "airport": "ZQN",
+        "airportCountry": "NZ",
+        "distKm": 3618
+      },
+      {
+        "id": "aq-queen-maud-south-pole",
+        "name": "毛德皇后与南极点",
+        "country": "南极洲",
+        "airport": "MPN",
+        "airportCountry": "FK",
+        "distKm": 3860
+      },
+      {
+        "id": "gs-south-georgia",
+        "name": "南乔治亚岛",
+        "country": "南乔治亚和南桑威奇群岛",
+        "airport": "MPN",
+        "airportCountry": "FK",
+        "distKm": 1483
+      }
+    ],
+    "suspiciousRailOnNoRailIslandsOrRemoteCount": 27,
+    "suspiciousRailSamples": [
+      {
+        "id": "cn-hulunbeier",
+        "name": "呼伦贝尔",
+        "country": "中国",
+        "stationHint": "呼伦贝尔 Railway / HSR Hub",
+        "operatorUrl": "https://www.12306.cn/"
+      },
+      {
+        "id": "cn-arxan-ulanbutong",
+        "name": "阿尔山/乌兰",
+        "country": "中国",
+        "stationHint": "阿尔山/乌兰 Railway / HSR Hub",
+        "operatorUrl": "https://www.12306.cn/"
+      },
+      {
+        "id": "cn-alxa",
+        "name": "额济纳",
+        "country": "中国",
+        "stationHint": "额济纳 Railway / HSR Hub",
+        "operatorUrl": "https://www.12306.cn/"
+      },
+      {
+        "id": "cn-mohe",
+        "name": "漠河",
+        "country": "中国",
+        "stationHint": "漠河 Railway / HSR Hub",
+        "operatorUrl": "https://www.12306.cn/"
+      },
+      {
+        "id": "cn-dalian",
+        "name": "大连/盘锦",
+        "country": "中国",
+        "stationHint": "大连/盘锦 Railway / HSR Hub",
+        "operatorUrl": "https://www.12306.cn/"
+      },
+      {
+        "id": "cn-dali-shaxi",
+        "name": "大理",
+        "country": "中国",
+        "stationHint": "大理 Railway / HSR Hub",
+        "operatorUrl": "https://www.12306.cn/"
+      },
+      {
+        "id": "cn-everest-ali",
+        "name": "珠峰/阿里",
+        "country": "中国",
+        "stationHint": "珠峰/阿里 Railway / HSR Hub",
+        "operatorUrl": "https://www.12306.cn/"
+      },
+      {
+        "id": "cn-kanas",
+        "name": "喀纳斯",
+        "country": "中国",
+        "stationHint": "喀纳斯 Railway / HSR Hub",
+        "operatorUrl": "https://www.12306.cn/"
+      },
+      {
+        "id": "cn-yili",
+        "name": "伊犁",
+        "country": "中国",
+        "stationHint": "伊犁 Railway / HSR Hub",
+        "operatorUrl": "https://www.12306.cn/"
+      },
+      {
+        "id": "cn-taiwan-scenic",
+        "name": "花莲/垦丁",
+        "country": "中国",
+        "stationHint": "花莲/垦丁 Railway / HSR Hub",
+        "operatorUrl": "https://www.12306.cn/"
+      },
+      {
+        "id": "jp-hokkaido-shiretoko-akan",
+        "name": "知床阿寒",
+        "country": "日本",
+        "stationHint": "知床阿寒 Railway / HSR Hub",
+        "operatorUrl": "https://www.jreast.co.jp/multi/"
+      },
+      {
+        "id": "jp-kyushu-tohoku-nagasaki-yakushima-okinawa",
+        "name": "屋久岛冲绳",
+        "country": "日本",
+        "stationHint": "屋久岛冲绳 Railway / HSR Hub",
+        "operatorUrl": "https://www.jreast.co.jp/multi/"
+      },
+      {
+        "id": "kr-islands-jeju-east-south",
+        "name": "济州东南",
+        "country": "韩国",
+        "stationHint": "济州东南 Railway / HSR Hub",
+        "operatorUrl": "https://www.letskorail.com/"
+      },
+      {
+        "id": "kr-islands-jeju-west-hallasan",
+        "name": "济州西部",
+        "country": "韩国",
+        "stationHint": "济州西部 Railway / HSR Hub",
+        "operatorUrl": "https://www.letskorail.com/"
+      },
+      {
+        "id": "jp-nature-plus-yakushima",
+        "name": "屋久岛",
+        "country": "日本",
+        "stationHint": "屋久岛 Railway / HSR Hub",
+        "operatorUrl": "https://www.jreast.co.jp/multi/"
+      },
+      {
+        "id": "ru-sib-sakhalin-aniva-giant",
+        "name": "库页岛阿尼瓦",
+        "country": "俄罗斯",
+        "stationHint": "库页岛阿尼瓦 Railway / HSR Hub",
+        "operatorUrl": "https://www.eurail.com/"
+      },
+      {
+        "id": "arctic-islands-svalbard-longyearbyen",
+        "name": "斯瓦尔巴群岛",
+        "country": "挪威",
+        "stationHint": "斯瓦尔巴群岛 Railway / HSR Hub",
+        "operatorUrl": "https://www.eurail.com/"
+      },
+      {
+        "id": "no-arctic-lofoten-reine",
+        "name": "罗弗敦南段",
+        "country": "挪威",
+        "stationHint": "罗弗敦南段 Railway / HSR Hub",
+        "operatorUrl": "https://www.eurail.com/"
+      },
+      {
+        "id": "no-arctic-lofoten-beaches",
+        "name": "罗弗敦中北段",
+        "country": "挪威",
+        "stationHint": "罗弗敦中北段 Railway / HSR Hub",
+        "operatorUrl": "https://www.eurail.com/"
+      },
+      {
+        "id": "no-arctic-senja",
+        "name": "塞尼亚岛",
+        "country": "挪威",
+        "stationHint": "塞尼亚岛 Railway / HSR Hub",
+        "operatorUrl": "https://www.eurail.com/"
+      },
+      {
+        "id": "no-arctic-tromso-nordkapp",
+        "name": "特罗姆瑟与北角",
+        "country": "挪威",
+        "stationHint": "特罗姆瑟与北角 Railway / HSR Hub",
+        "operatorUrl": "https://www.eurail.com/"
+      },
+      {
+        "id": "es-islands-mallorca",
+        "name": "马略卡岛",
+        "country": "西班牙",
+        "stationHint": "马略卡岛 Railway / HSR Hub",
+        "operatorUrl": "https://www.eurail.com/"
+      },
+      {
+        "id": "es-islands-tenerife",
+        "name": "特内里费岛",
+        "country": "西班牙",
+        "stationHint": "特内里费岛 Railway / HSR Hub",
+        "operatorUrl": "https://www.eurail.com/"
+      },
+      {
+        "id": "es-islands-lanzarote",
+        "name": "兰萨罗特岛",
+        "country": "西班牙",
+        "stationHint": "兰萨罗特岛 Railway / HSR Hub",
+        "operatorUrl": "https://www.eurail.com/"
+      },
+      {
+        "id": "fr-south-corsica",
+        "name": "科西嘉岛",
+        "country": "法国",
+        "stationHint": "科西嘉岛 Railway / HSR Hub",
+        "operatorUrl": "https://www.eurail.com/"
+      },
+      {
+        "id": "uk-scot-wild-isle-of-skye",
+        "name": "天空岛",
+        "country": "英国",
+        "stationHint": "天空岛 Railway / HSR Hub",
+        "operatorUrl": "https://www.eurail.com/"
+      },
+      {
+        "id": "ru-eu-kaliningrad-curonian",
+        "name": "加里宁格勒",
+        "country": "俄罗斯",
+        "stationHint": "加里宁格勒 Railway / HSR Hub",
+        "operatorUrl": "https://www.eurail.com/"
+      }
+    ],
+    "suspiciousMetroOnRemoteOrSmallDestCount": 17,
+    "suspiciousMetroSamples": [
+      {
+        "id": "cn-dalian",
+        "name": "大连/盘锦",
+        "country": "中国",
+        "primaryAirportKm": 9
+      },
+      {
+        "id": "cn-guilin",
+        "name": "桂林",
+        "country": "中国",
+        "primaryAirportKm": 57
+      },
+      {
+        "id": "cn-sanya-wanning",
+        "name": "三亚",
+        "country": "中国",
+        "primaryAirportKm": 12
+      },
+      {
+        "id": "cn-lijiang-luguhu",
+        "name": "丽江/泸沽湖",
+        "country": "中国",
+        "primaryAirportKm": 22
+      },
+      {
+        "id": "cn-dunhuang",
+        "name": "敦煌",
+        "country": "中国",
+        "primaryAirportKm": 13
+      },
+      {
+        "id": "kr-islands-jeju-east-south",
+        "name": "济州东南",
+        "country": "韩国",
+        "primaryAirportKm": 30
+      },
+      {
+        "id": "kr-islands-jeju-west-hallasan",
+        "name": "济州西部",
+        "country": "韩国",
+        "primaryAirportKm": 18
+      },
+      {
+        "id": "id-bali-java-bali",
+        "name": "巴厘岛",
+        "country": "印度尼西亚",
+        "primaryAirportKm": 29
+      },
+      {
+        "id": "id-bali-java-nusa-penida",
+        "name": "佩妮达岛",
+        "country": "印度尼西亚",
+        "primaryAirportKm": 40
+      },
+      {
+        "id": "id-bali-java-jakarta-bandung",
+        "name": "雅加达",
+        "country": "印度尼西亚",
+        "primaryAirportKm": 23
+      },
+      {
+        "id": "nz-qt-queenstown",
+        "name": "皇后镇",
+        "country": "新西兰",
+        "primaryAirportKm": 6
+      },
+      {
+        "id": "is-sw-reykjavik-blue-lagoon",
+        "name": "雷克雅未克",
+        "country": "冰岛",
+        "primaryAirportKm": 37
+      },
+      {
+        "id": "no-arctic-tromso-nordkapp",
+        "name": "特罗姆瑟与北角",
+        "country": "挪威",
+        "primaryAirportKm": 4
+      },
+      {
+        "id": "gr-islands-santorini",
+        "name": "圣托里尼",
+        "country": "希腊",
+        "primaryAirportKm": 5
+      },
+      {
+        "id": "pe-cusco-historic-city",
+        "name": "库斯科",
+        "country": "秘鲁",
+        "primaryAirportKm": 5
+      },
+      {
+        "id": "pe-cusco-sacred-valley",
+        "name": "印加圣谷",
+        "country": "秘鲁",
+        "primaryAirportKm": 32
+      },
+      {
+        "id": "ar-patagonia-ushuaia",
+        "name": "乌斯怀亚",
+        "country": "阿根廷",
+        "primaryAirportKm": 5
+      }
+    ]
+  },
+  "enI18nAudit": {
+    "totalCjkSourceFieldsChecked": 75482,
+    "missingTranslationCount": 0,
+    "missingByField": {},
+    "missingSamples": [],
+    "residualCjkInMatchedTranslationsCount": 0,
+    "residualCjkMatchedSamples": [],
+    "enJsonFilesTotalKeys": 81840,
+    "enJsonValuesContainingCjkCount": 0,
+    "enJsonCjkValueSamples": []
+  },
+  "mediaFilterTests": [
+    {
+      "label": "Pad Thai food photo in Bangkok",
+      "score": -50,
+      "isIrrelevant": true
+    },
+    {
+      "label": "US State flag in Kyoto",
+      "score": -170,
+      "isIrrelevant": true
+    },
+    {
+      "label": "Yuanyang Rice Terraces (allowed landscape)",
+      "score": 76,
+      "isIrrelevant": false
+    },
+    {
+      "label": "Fried rice culinary (should reject despite rice)",
+      "score": -36,
+      "isIrrelevant": true
+    },
+    {
+      "label": "Saffron / Curry in Kerala (cuisine false positive?)",
+      "score": 62,
+      "isIrrelevant": false
+    },
+    {
+      "label": "Season flip Southern Hemisphere (Jul in Patagonia = winter)",
+      "seasonTest": {
+        "season": "winter",
+        "month": 7,
+        "raw": "2024-07-15"
+      }
+    },
+    {
+      "label": "Season Northern Hemisphere (Jul in Kyoto = summer)",
+      "seasonTest": {
+        "season": "summer",
+        "month": 7,
+        "raw": "2024-07-15"
+      }
+    }
+  ],
+  "stratifiedSample": {
+    "destinationsCount": 40,
+    "destinationsVerdictCounts": {
+      "PASS": 27,
+      "PASS_WITH_CAVEAT": 13
+    },
+    "spotsCount": 60,
+    "spotsVerdictCounts": {
+      "PASS": 56,
+      "PASS_WITH_CAVEAT": 3,
+      "ISSUE_FLAGGED": 1
+    },
+    "destinations": [
+      {
+        "id": "cn-beijing",
+        "continent": "asia",
+        "country": "中国",
+        "nameZh": "北京 · 紫禁城与未来建筑",
+        "nameEn": "Beijing · Forbidden City and Future Architecture",
+        "coords": [
+          116.3972,
+          39.9163
+        ],
+        "tz": "Asia/Shanghai",
+        "elevation": "40m – 1,050m",
+        "peakMonths": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          9,
+          10,
+          11,
+          12
+        ],
+        "comfortBudgetRmb": 5900,
+        "luxuryBudgetRmb": 116000,
+        "spotCount": 7,
+        "nearestAirport": "PEK (24km, CN)",
+        "railAvailable": true,
+        "auditVerdict": "PASS",
+        "auditNotes": "Coords, timezone, seasonal peaks, budget, and EN i18n verified plausible"
+      },
+      {
+        "id": "cn-wuxi-yangzhou",
+        "continent": "asia",
+        "country": "中国",
+        "nameZh": "无锡与扬州 · 樱海烟花",
+        "nameEn": "Wuxi and Yangzhou · Sea of Cherry Blossoms and Fireworks",
+        "coords": [
+          119.85,
+          31.95
+        ],
+        "tz": "Asia/Shanghai",
+        "elevation": "5m – 120m",
+        "peakMonths": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          9,
+          10,
+          11,
+          12
+        ],
+        "comfortBudgetRmb": 3300,
+        "luxuryBudgetRmb": 35000,
+        "spotCount": 5,
+        "nearestAirport": "HGH (199km, CN)",
+        "railAvailable": true,
+        "auditVerdict": "PASS",
+        "auditNotes": "Coords, timezone, seasonal peaks, budget, and EN i18n verified plausible"
+      },
+      {
+        "id": "cn-chaoshan-danxia",
+        "continent": "asia",
+        "country": "中国",
+        "nameZh": "潮汕开平与丹霞山 · 侨乡碉楼、灯塔与丹崖赤壁",
+        "nameEn": "Chaoshan, Kaiping, and Danxia Mountain · Hometown Watchtowers, Lighthouses, and Crimson Danxia Cliffs",
+        "coords": [
+          116.622,
+          23.657
+        ],
+        "tz": "Asia/Shanghai",
+        "elevation": "0m – 618m",
+        "peakMonths": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12
+        ],
+        "comfortBudgetRmb": 7500,
+        "luxuryBudgetRmb": 22500,
+        "spotCount": 5,
+        "nearestAirport": "XMN (182km, CN)",
+        "railAvailable": true,
+        "auditVerdict": "PASS",
+        "auditNotes": "Coords, timezone, seasonal peaks, budget, and EN i18n verified plausible"
+      },
+      {
+        "id": "cn-lhasa",
+        "continent": "asia",
+        "country": "中国",
+        "nameZh": "拉萨与羊湖纳木错 · 日光圣城与雪山圣湖",
+        "nameEn": "Lhasa, Yamdrok Lake, and Namtso · Sunlit Holy City and Snow-Mountain Sacred Lakes",
+        "coords": [
+          91.117,
+          29.655
+        ],
+        "tz": "Asia/Shanghai",
+        "elevation": "3650m – 5190m",
+        "peakMonths": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12
+        ],
+        "comfortBudgetRmb": 10600,
+        "luxuryBudgetRmb": 38000,
+        "spotCount": 5,
+        "nearestAirport": "LXA (44km, CN)",
+        "railAvailable": true,
+        "auditVerdict": "PASS",
+        "auditNotes": "Coords, timezone, seasonal peaks, budget, and EN i18n verified plausible"
+      },
+      {
+        "id": "jp-kanto-yokohama",
+        "continent": "asia",
+        "country": "日本",
+        "nameZh": "横滨 · 海港折板建筑与未来港镜面天际线",
+        "nameEn": "Yokohama · Harbor Folded Plate Architecture and Minato Mirai Mirrored Skyline",
+        "coords": [
+          139.638,
+          35.4437
+        ],
+        "tz": "Asia/Tokyo",
+        "elevation": "0m – 50m（港湾及邻近城区）",
+        "peakMonths": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          10,
+          11,
+          12
+        ],
+        "comfortBudgetRmb": 3900,
+        "luxuryBudgetRmb": 23000,
+        "spotCount": 7,
+        "nearestAirport": "HND (17km, JP)",
+        "railAvailable": true,
+        "auditVerdict": "PASS",
+        "auditNotes": "Coords, timezone, seasonal peaks, budget, and EN i18n verified plausible"
+      },
+      {
+        "id": "jp-setouchi-tottori-kinosaki-izumo",
+        "continent": "asia",
+        "country": "日本",
+        "nameZh": "鸟取、城崎与出云 · 日本海沙丘、第一庭园与雪国温泉",
+        "nameEn": "Tottori, Kinosaki and Izumo · Sea of Japan Dunes, Premier Garden and Snow Country Onsen",
+        "coords": [
+          134.233,
+          35.5
+        ],
+        "tz": "Asia/Tokyo",
+        "elevation": "0m – 100m（主要机位，不含沿线高山）",
+        "peakMonths": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          9,
+          10,
+          11,
+          12
+        ],
+        "comfortBudgetRmb": 12500,
+        "luxuryBudgetRmb": 46000,
+        "spotCount": 6,
+        "nearestAirport": "KIX (150km, JP)",
+        "railAvailable": true,
+        "auditVerdict": "PASS",
+        "auditNotes": "Coords, timezone, seasonal peaks, budget, and EN i18n verified plausible"
+      },
+      {
+        "id": "sg-heritage-nature",
+        "continent": "asia",
+        "country": "新加坡",
+        "nameZh": "新加坡历史街区与生态建筑 · 南洋旧城与热带树冠秘境",
+        "nameEn": "Singapore Historic Districts and Eco-Architecture · Nanyang Old Town and Tropical Tree Canopy Sanctuary",
+        "coords": [
+          103.8437,
+          1.28
+        ],
+        "tz": "Asia/Singapore",
+        "elevation": "0m – 约120m（含森林山脊与步道）",
+        "peakMonths": [
+          2,
+          3,
+          4,
+          6,
+          7,
+          8,
+          9
+        ],
+        "comfortBudgetRmb": 11600,
+        "luxuryBudgetRmb": 35700,
+        "spotCount": 9,
+        "nearestAirport": "SIN (19km, SG)",
+        "railAvailable": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Coords, timezone, seasonal peaks, budget, and EN i18n verified plausible"
+      },
+      {
+        "id": "ph-visayas-bohol-moalboal",
+        "continent": "asia",
+        "country": "菲律宾",
+        "nameZh": "薄荷岛与莫阿尔博阿尔 · 巧克力群山与银色沙丁鱼风暴",
+        "nameEn": "Bohol Island and Moalboal · Chocolate Hills and Silver Sardine Run",
+        "coords": [
+          123.7453,
+          9.5792
+        ],
+        "tz": "Asia/Manila",
+        "elevation": "0m – 约870m",
+        "peakMonths": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          12
+        ],
+        "comfortBudgetRmb": 7800,
+        "luxuryBudgetRmb": 21700,
+        "spotCount": 6,
+        "nearestAirport": "CEB (85km, PH)",
+        "railAvailable": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Coords, timezone, seasonal peaks, budget, and EN i18n verified plausible"
+      },
+      {
+        "id": "indochina-cambodia-siem-reap-phnom-penh",
+        "continent": "asia",
+        "country": "柬埔寨",
+        "nameZh": "暹粒与金边 · 吴哥神庙的千年树影与湄公河金顶王城",
+        "nameEn": "Siem Reap and Phnom Penh · Millennial Tree Shadows of Angkor Temples and the Golden-Domed Royal City on the Mekong",
+        "coords": [
+          103.8597,
+          13.3622
+        ],
+        "tz": "Asia/Phnom_Penh",
+        "elevation": "0m – 70m",
+        "peakMonths": [
+          1,
+          2,
+          3,
+          6,
+          7,
+          9,
+          10,
+          11,
+          12
+        ],
+        "comfortBudgetRmb": 10200,
+        "luxuryBudgetRmb": 65000,
+        "spotCount": 7,
+        "nearestAirport": "SAI (39km, KH)",
+        "railAvailable": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Coords, timezone, seasonal peaks, budget, and EN i18n verified plausible"
+      },
+      {
+        "id": "in-north-jodhpur-udaipur",
+        "continent": "asia",
+        "country": "印度",
+        "nameZh": "焦特布尔与乌代布尔 · 蓝色沙漠堡垒与白色湖上王宫",
+        "nameEn": "Jodhpur and Udaipur · Blue Desert Fortress and White Lake Palace",
+        "coords": [
+          73.0059,
+          26.2684
+        ],
+        "tz": "Asia/Kolkata",
+        "elevation": "220m – 600m",
+        "peakMonths": [
+          1,
+          2,
+          3,
+          8,
+          9,
+          10,
+          11,
+          12
+        ],
+        "comfortBudgetRmb": 7800,
+        "luxuryBudgetRmb": 64000,
+        "spotCount": 6,
+        "nearestAirport": "DEL (478km, IN)",
+        "railAvailable": false,
+        "auditVerdict": "PASS_WITH_CAVEAT",
+        "auditNotes": "nearest gateway airport >300km (DEL 478km)"
+      },
+      {
+        "id": "tr-coasts-kas-d400",
+        "continent": "asia",
+        "country": "土耳其",
+        "nameZh": "卡什与D400 · 蓝色悬崖公路和利西亚沉没城邦",
+        "nameEn": "Kaş and the D400 · Blue Cliff Highway and Lycian Sunken City",
+        "coords": [
+          29.6394,
+          36.2003
+        ],
+        "tz": "Europe/Istanbul",
+        "elevation": "0m – 300m",
+        "peakMonths": [
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
+        "comfortBudgetRmb": 9000,
+        "luxuryBudgetRmb": 32000,
+        "spotCount": 7,
+        "nearestAirport": "JTR (373km, GR)",
+        "railAvailable": true,
+        "auditVerdict": "PASS_WITH_CAVEAT",
+        "auditNotes": "cross-country airport (JTR/GR)"
+      },
+      {
+        "id": "ru-fareast-avacha-mutnovsky",
+        "continent": "asia",
+        "country": "俄罗斯",
+        "nameZh": "堪察加活火山 · 阿瓦恰双雪锥与穆特诺夫斯基地热冰川",
+        "nameEn": "Kamchatka's Active Volcanoes · Avacha's Twin Snow Cones and Mutnovsky's Geothermal Glacier",
+        "coords": [
+          158.6378,
+          53.0436
+        ],
+        "tz": "Asia/Kamchatka",
+        "elevation": "0m – 2,741m",
+        "peakMonths": [
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
+        "comfortBudgetRmb": 11100,
+        "luxuryBudgetRmb": 64000,
+        "spotCount": 8,
+        "nearestAirport": "CTS (1695km, JP)",
+        "railAvailable": true,
+        "auditVerdict": "PASS_WITH_CAVEAT",
+        "auditNotes": "cross-country airport (CTS/JP)"
+      },
+      {
+        "id": "me-levant-gems-ayia-napa-troodos",
+        "continent": "asia",
+        "country": "塞浦路斯",
+        "nameZh": "阿依纳帕与特罗多斯 · 蓝海天然拱门与拜占庭彩绘秘境",
+        "nameEn": "Ayia Napa and Troodos · Blue Sea Natural Arches and Byzantine Painted Secrets",
+        "coords": [
+          33.59,
+          34.98
+        ],
+        "tz": "Asia/Nicosia",
+        "elevation": "0m – 1,952m",
+        "peakMonths": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12
+        ],
+        "comfortBudgetRmb": 7000,
+        "luxuryBudgetRmb": 33000,
+        "spotCount": 8,
+        "nearestAirport": "TLV (351km, IL)",
+        "railAvailable": false,
+        "auditVerdict": "PASS_WITH_CAVEAT",
+        "auditNotes": "nearest gateway airport >300km (TLV 351km)"
+      },
+      {
+        "id": "is-sw-reykjavik-blue-lagoon",
+        "continent": "europe",
+        "country": "冰岛",
+        "nameZh": "雷克雅未克与蓝湖温泉 · 极北建筑美学与火山地热秘境",
+        "nameEn": "Reykjavik and Blue Lagoon Hot Springs · Arctic Architectural Aesthetics and Volcanic Geothermal Sanctuary",
+        "coords": [
+          -21.9268,
+          64.1418
+        ],
+        "tz": "Atlantic/Reykjavik",
+        "elevation": "0m – 约200m",
+        "peakMonths": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12
+        ],
+        "comfortBudgetRmb": 6800,
+        "luxuryBudgetRmb": 45500,
+        "spotCount": 8,
+        "nearestAirport": "KEF (37km, IS)",
+        "railAvailable": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Coords, timezone, seasonal peaks, budget, and EN i18n verified plausible"
+      },
+      {
+        "id": "no-arctic-lofoten-reine",
+        "continent": "europe",
+        "country": "挪威",
+        "nameZh": "罗弗敦南段 · 雷讷冰雪尖峰与哈姆诺伊红色渔屋",
+        "nameEn": "Southern Lofoten · Reine's Snowy Peaks and Hamnøy Red Fishermen's Cabins",
+        "coords": [
+          13.0894,
+          67.9324
+        ],
+        "tz": "Europe/Oslo",
+        "elevation": "0m – 484m（精选机位）",
+        "peakMonths": [
+          1,
+          2,
+          3,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          12
+        ],
+        "comfortBudgetRmb": 9100,
+        "luxuryBudgetRmb": 38000,
+        "spotCount": 8,
+        "nearestAirport": "TOS (304km, NO)",
+        "railAvailable": true,
+        "auditVerdict": "PASS_WITH_CAVEAT",
+        "auditNotes": "nearest gateway airport >300km (TOS 304km); false-positive railHub on no-rail island/region"
+      },
+      {
+        "id": "ch-valais-st-moritz-bernina",
+        "continent": "europe",
+        "country": "瑞士",
+        "nameZh": "圣莫里茨与伯尔尼纳快车 · 金秋湖泊与世界遗产红色铁路",
+        "nameEn": "St. Moritz and the Bernina Express · Golden Autumn Lakes and the World Heritage Red Railway",
+        "coords": [
+          9.8355,
+          46.4908
+        ],
+        "tz": "Europe/Zurich",
+        "elevation": "约1000m – 2978m",
+        "peakMonths": [
+          1,
+          2,
+          3,
+          6,
+          7,
+          8,
+          9,
+          10,
+          12
+        ],
+        "comfortBudgetRmb": 8100,
+        "luxuryBudgetRmb": 65000,
+        "spotCount": 8,
+        "nearestAirport": "MXP (128km, IT)",
+        "railAvailable": true,
+        "auditVerdict": "PASS_WITH_CAVEAT",
+        "auditNotes": "cross-country airport (MXP/IT)"
+      },
+      {
+        "id": "it-center-tuscany-valdorcia",
+        "continent": "europe",
+        "country": "意大利",
+        "nameZh": "托斯卡纳 · 奥尔恰谷波浪田野与锡耶纳中世纪石城",
+        "nameEn": "Tuscany · Val d'Orcia Rolling Fields and Siena's Medieval Stone City",
+        "coords": [
+          11.615,
+          43.0661
+        ],
+        "tz": "Europe/Rome",
+        "elevation": "约200m – 550m（精选机位范围）",
+        "peakMonths": [
+          3,
+          4,
+          5,
+          6,
+          7,
+          9,
+          10,
+          11
+        ],
+        "comfortBudgetRmb": 6300,
+        "luxuryBudgetRmb": 63000,
+        "spotCount": 8,
+        "nearestAirport": "FCO (150km, IT)",
+        "railAvailable": true,
+        "auditVerdict": "PASS",
+        "auditNotes": "Coords, timezone, seasonal peaks, budget, and EN i18n verified plausible"
+      },
+      {
+        "id": "es-north-barcelona",
+        "continent": "europe",
+        "country": "西班牙",
+        "nameZh": "巴塞罗那 · 高迪有机建筑宇宙与地中海天际线",
+        "nameEn": "Barcelona · Gaudí organic architecture universe and Mediterranean skyline",
+        "coords": [
+          2.1734,
+          41.3851
+        ],
+        "tz": "Europe/Madrid",
+        "elevation": "0m – 512m",
+        "peakMonths": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          9,
+          10,
+          11,
+          12
+        ],
+        "comfortBudgetRmb": 8000,
+        "luxuryBudgetRmb": 55000,
+        "spotCount": 8,
+        "nearestAirport": "BCN (13km, ES)",
+        "railAvailable": true,
+        "auditVerdict": "PASS",
+        "auditNotes": "Coords, timezone, seasonal peaks, budget, and EN i18n verified plausible"
+      },
+      {
+        "id": "fr-paris-nw-mont-saint-michel",
+        "continent": "europe",
+        "country": "法国",
+        "nameZh": "圣米歇尔山 · 海潮孤岛与哥特天空修道院",
+        "nameEn": "Mont Saint-Michel · Tidal islet and Gothic sky abbey",
+        "coords": [
+          -1.5106,
+          48.6356
+        ],
+        "tz": "Europe/Paris",
+        "elevation": "0m – 约80m（地面及修道院观景层）",
+        "peakMonths": [
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
+        "comfortBudgetRmb": 5100,
+        "luxuryBudgetRmb": 35500,
+        "spotCount": 8,
+        "nearestAirport": "CDG (300km, FR)",
+        "railAvailable": true,
+        "auditVerdict": "PASS",
+        "auditNotes": "Coords, timezone, seasonal peaks, budget, and EN i18n verified plausible"
+      },
+      {
+        "id": "uk-north-lake-district",
+        "continent": "europe",
+        "country": "英国",
+        "nameZh": "英格兰湖区 · 冰川镜湖与坎布里亚荒原",
+        "nameEn": "Lake District, England · Glacial Mirror Lakes and Cumbrian Moors",
+        "coords": [
+          -3.087,
+          54.5
+        ],
+        "tz": "Europe/London",
+        "elevation": "精选机位约 40m–356m",
+        "peakMonths": [
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "comfortBudgetRmb": 6600,
+        "luxuryBudgetRmb": 37000,
+        "spotCount": 9,
+        "nearestAirport": "EDI (162km, GB)",
+        "railAvailable": true,
+        "auditVerdict": "PASS",
+        "auditNotes": "Coords, timezone, seasonal peaks, budget, and EN i18n verified plausible"
+      },
+      {
+        "id": "ca-banff-lake-louise-moraine",
+        "continent": "north_america",
+        "country": "加拿大",
+        "nameZh": "路易斯湖与梦莲湖 · 十峰谷冰川蓝湖与金色落叶松",
+        "nameEn": "Lake Louise and Moraine Lake · Valley of the Ten Peaks Glacier-Blue Lakes and Golden Larches",
+        "coords": [
+          -116.1792,
+          51.4263
+        ],
+        "tz": "America/Edmonton",
+        "elevation": "1,540m – 2,611m",
+        "peakMonths": [
+          1,
+          2,
+          3,
+          6,
+          7,
+          8,
+          9,
+          10,
+          12
+        ],
+        "comfortBudgetRmb": 8300,
+        "luxuryBudgetRmb": 60000,
+        "spotCount": 8,
+        "nearestAirport": "YYC (154km, CA)",
+        "railAvailable": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Coords, timezone, seasonal peaks, budget, and EN i18n verified plausible"
+      },
+      {
+        "id": "ca-ontario-toronto",
+        "continent": "north_america",
+        "country": "加拿大",
+        "nameZh": "多伦多 · 安大略湖天际线与当代建筑殿堂",
+        "nameEn": "Toronto · Lake Ontario Skyline and Temples of Contemporary Architecture",
+        "coords": [
+          -79.3832,
+          43.6532
+        ],
+        "tz": "America/Toronto",
+        "elevation": "75m – 210m（地面）",
+        "peakMonths": [
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          12
+        ],
+        "comfortBudgetRmb": 5200,
+        "luxuryBudgetRmb": 33000,
+        "spotCount": 8,
+        "nearestAirport": "YYZ (20km, CA)",
+        "railAvailable": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Coords, timezone, seasonal peaks, budget, and EN i18n verified plausible"
+      },
+      {
+        "id": "us-ak-north-fairbanks-arctic-circle",
+        "continent": "north_america",
+        "country": "美国",
+        "nameZh": "费尔班克斯与北极圈 · 极光温泉与极地公路",
+        "nameEn": "Fairbanks and the Arctic Circle · Aurora Hot Springs and Arctic Highways",
+        "coords": [
+          -147.7164,
+          64.8378
+        ],
+        "tz": "America/Anchorage",
+        "elevation": "约130m – 900m（精选机位）",
+        "peakMonths": [
+          1,
+          2,
+          3,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12
+        ],
+        "comfortBudgetRmb": 10500,
+        "luxuryBudgetRmb": 55000,
+        "spotCount": 8,
+        "nearestAirport": "FAI (7km, US)",
+        "railAvailable": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Coords, timezone, seasonal peaks, budget, and EN i18n verified plausible"
+      },
+      {
+        "id": "us-az-north-monument-wave",
+        "continent": "north_america",
+        "country": "美国",
+        "nameZh": "纪念碑谷与波浪谷 · 西部电影荒原与流体砂岩圣殿",
+        "nameEn": "Monument Valley and The Wave · Wild West Badlands and Fluid Sandstone Sanctuaries",
+        "coords": [
+          -110.113,
+          36.9833
+        ],
+        "tz": "America/Denver",
+        "elevation": "约1,550m–1,800m",
+        "peakMonths": [
+          3,
+          4,
+          5,
+          9,
+          10,
+          11
+        ],
+        "comfortBudgetRmb": 8400,
+        "luxuryBudgetRmb": 42000,
+        "spotCount": 8,
+        "nearestAirport": "PHX (431km, US)",
+        "railAvailable": false,
+        "auditVerdict": "PASS_WITH_CAVEAT",
+        "auditNotes": "nearest gateway airport >300km (PHX 431km)"
+      },
+      {
+        "id": "us-pnw-wa-seattle",
+        "continent": "north_america",
+        "country": "美国",
+        "nameZh": "西雅图 · 太空针天际线与普吉特海湾雪山",
+        "nameEn": "Seattle · Space Needle Skyline and Puget Sound Snowy Mountains",
+        "coords": [
+          -122.3321,
+          47.6062
+        ],
+        "tz": "America/Los_Angeles",
+        "elevation": "0m – 158m",
+        "peakMonths": [
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
+        "comfortBudgetRmb": 6000,
+        "luxuryBudgetRmb": 40000,
+        "spotCount": 8,
+        "nearestAirport": "SEA (18km, US)",
+        "railAvailable": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Coords, timezone, seasonal peaks, budget, and EN i18n verified plausible"
+      },
+      {
+        "id": "us-ne-nature-white-mountains",
+        "continent": "north_america",
+        "country": "美国",
+        "nameZh": "白山国家森林 · 康卡马古斯红枫公路与华盛顿峰",
+        "nameEn": "White Mountain National Forest · Kancamagus Highway & Mount Washington",
+        "coords": [
+          -71.432,
+          44.082
+        ],
+        "tz": "America/New_York",
+        "elevation": "150m – 1,917m",
+        "peakMonths": [
+          2,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
+        "comfortBudgetRmb": 7900,
+        "luxuryBudgetRmb": 36500,
+        "spotCount": 8,
+        "nearestAirport": "BOS (194km, US)",
+        "railAvailable": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Coords, timezone, seasonal peaks, budget, and EN i18n verified plausible"
+      },
+      {
+        "id": "mx-yucatan-cancun-isla-mujeres-tulum",
+        "continent": "north_america",
+        "country": "墨西哥",
+        "nameZh": "坎昆、女人岛与图卢姆 · 加勒比海蓝及巴卡拉尔七色泻湖",
+        "nameEn": "Cancún, Isla Mujeres and Tulum · Caribbean Blues and the Seven-Colours Lagoon of Bacalar",
+        "coords": [
+          -87.428,
+          20.214
+        ],
+        "tz": "America/Cancun",
+        "elevation": "-10m – 30m",
+        "peakMonths": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          11,
+          12
+        ],
+        "comfortBudgetRmb": 10500,
+        "luxuryBudgetRmb": 76000,
+        "spotCount": 8,
+        "nearestAirport": "CUN (108km, MX)",
+        "railAvailable": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Coords, timezone, seasonal peaks, budget, and EN i18n verified plausible"
+      },
+      {
+        "id": "ke-masai-mara",
+        "continent": "africa_antarctica",
+        "country": "肯尼亚",
+        "nameZh": "马赛马拉国家保护区 · 马拉河天国之渡与无限稀树草原",
+        "nameEn": "Masai Mara National Reserve · Mara River Great Migration crossing and endless savanna",
+        "coords": [
+          35.1439,
+          -1.4061
+        ],
+        "tz": "Africa/Nairobi",
+        "elevation": "约1480m – 2100m",
+        "peakMonths": [
+          1,
+          2,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12
+        ],
+        "comfortBudgetRmb": 14800,
+        "luxuryBudgetRmb": 52500,
+        "spotCount": 8,
+        "nearestAirport": "NBO (199km, KE)",
+        "railAvailable": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Coords, timezone, seasonal peaks, budget, and EN i18n verified plausible"
+      },
+      {
+        "id": "et-tigray-axum",
+        "continent": "africa_antarctica",
+        "country": "埃塞俄比亚",
+        "nameZh": "提格雷绝壁教堂与阿克苏姆 · 天梯悬崖修道院与方尖碑圣城",
+        "nameEn": "Tigray Cliff Churches and Aksum · Ladder-Cliff Monasteries and the Stele Holy City",
+        "coords": [
+          39.15,
+          14.08
+        ],
+        "tz": "Africa/Addis_Ababa",
+        "elevation": "1,950m – 2,850m",
+        "peakMonths": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          9,
+          10,
+          11,
+          12
+        ],
+        "comfortBudgetRmb": 10300,
+        "luxuryBudgetRmb": 41000,
+        "spotCount": 8,
+        "nearestAirport": "ADD (569km, ET)",
+        "railAvailable": false,
+        "auditVerdict": "PASS_WITH_CAVEAT",
+        "auditNotes": "nearest gateway airport >300km (ADD 569km)"
+      },
+      {
+        "id": "za-namaqualand-cederberg",
+        "continent": "africa_antarctica",
+        "country": "南非",
+        "nameZh": "纳马夸兰花海与塞德伯格红岩 · 荒漠春日花毯与砂岩拱门",
+        "nameEn": "Namaqualand Flower Fields and Cederberg Red Rocks · Desert Spring Floral Tapestry and Sandstone Arches",
+        "coords": [
+          18.45,
+          -31.15
+        ],
+        "tz": "Africa/Johannesburg",
+        "elevation": "0m – 1,550m",
+        "peakMonths": [
+          3,
+          4,
+          5,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "comfortBudgetRmb": 6600,
+        "luxuryBudgetRmb": 39000,
+        "spotCount": 8,
+        "nearestAirport": "CPT (313km, ZA)",
+        "railAvailable": false,
+        "auditVerdict": "PASS_WITH_CAVEAT",
+        "auditNotes": "nearest gateway airport >300km (CPT 313km)"
+      },
+      {
+        "id": "ma-marrakech",
+        "continent": "africa_antarctica",
+        "country": "摩洛哥",
+        "nameZh": "马拉喀什 · 红城古堡与阿特拉斯山门",
+        "nameEn": "Marrakesh · Red City Kasbahs & Gateway to the Atlas Mountains",
+        "coords": [
+          -7.9811,
+          31.6295
+        ],
+        "tz": "Africa/Casablanca",
+        "elevation": "460m – 1,500m",
+        "peakMonths": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          9,
+          10,
+          11,
+          12
+        ],
+        "comfortBudgetRmb": 5100,
+        "luxuryBudgetRmb": 82000,
+        "spotCount": 8,
+        "nearestAirport": "RAK (6km, MA)",
+        "railAvailable": true,
+        "auditVerdict": "PASS",
+        "auditNotes": "Coords, timezone, seasonal peaks, budget, and EN i18n verified plausible"
+      },
+      {
+        "id": "eg-sinai-dahab",
+        "continent": "africa_antarctica",
+        "country": "埃及",
+        "nameZh": "西奈山与达哈卜 · 红海蓝洞珊瑚礁与红岩圣山日出",
+        "nameEn": "Mount Sinai and Dahab · Red Sea Blue Hole Coral Reef and Red Rock Holy Mountain Sunrise",
+        "coords": [
+          34.5136,
+          28.5091
+        ],
+        "tz": "Africa/Cairo",
+        "elevation": "0m – 2,285m",
+        "peakMonths": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          9,
+          10,
+          11,
+          12
+        ],
+        "comfortBudgetRmb": 4200,
+        "luxuryBudgetRmb": 31500,
+        "spotCount": 8,
+        "nearestAirport": "CAI (351km, EG)",
+        "railAvailable": false,
+        "auditVerdict": "PASS_WITH_CAVEAT",
+        "auditNotes": "nearest gateway airport >300km (CAI 351km)"
+      },
+      {
+        "id": "pe-cusco-machu-picchu",
+        "continent": "south_america",
+        "country": "秘鲁",
+        "nameZh": "马丘比丘 · 云端印加失落之城与安第斯尖峰",
+        "nameEn": "Machu Picchu · Lost City of the Incas in the Clouds and Andean Peaks",
+        "coords": [
+          -72.5456,
+          -13.1631
+        ],
+        "tz": "America/Lima",
+        "elevation": "2,040m – 3,082m",
+        "peakMonths": [
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
+        "comfortBudgetRmb": 8000,
+        "luxuryBudgetRmb": 71500,
+        "spotCount": 8,
+        "nearestAirport": "CUZ (78km, PE)",
+        "railAvailable": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Coords, timezone, seasonal peaks, budget, and EN i18n verified plausible"
+      },
+      {
+        "id": "ec-andes-quilotoa",
+        "continent": "south_america",
+        "country": "厄瓜多尔",
+        "nameZh": "基洛托阿翡翠火山口湖 · 安第斯巨型翠绿天池",
+        "nameEn": "Quilotoa Emerald Crater Lake · Giant Emerald Sky-Pool of the Andes",
+        "coords": [
+          -78.9044,
+          -0.8592
+        ],
+        "tz": "America/Guayaquil",
+        "elevation": "约3,500m – 3,930m",
+        "peakMonths": [
+          1,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          12
+        ],
+        "comfortBudgetRmb": 2000,
+        "luxuryBudgetRmb": 9600,
+        "spotCount": 7,
+        "nearestAirport": "UIO (101km, EC)",
+        "railAvailable": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Coords, timezone, seasonal peaks, budget, and EN i18n verified plausible"
+      },
+      {
+        "id": "cl-south-general-carrera-marble-caves",
+        "continent": "south_america",
+        "country": "智利",
+        "nameZh": "智利南方公路与卡雷拉湖 · 蓝色大理石洞窟与悬挂冰川",
+        "nameEn": "Carretera Austral and Lake General Carrera · Blue Marble Caves and Hanging Glaciers",
+        "coords": [
+          -72.6736,
+          -46.6251
+        ],
+        "tz": "America/Santiago",
+        "elevation": "约30m – 1,410m",
+        "peakMonths": [
+          1,
+          2,
+          3,
+          4,
+          9,
+          10,
+          11,
+          12
+        ],
+        "comfortBudgetRmb": 10800,
+        "luxuryBudgetRmb": 61500,
+        "spotCount": 8,
+        "nearestAirport": "FTE (409km, AR)",
+        "railAvailable": false,
+        "auditVerdict": "PASS_WITH_CAVEAT",
+        "auditNotes": "cross-country airport (FTE/AR)"
+      },
+      {
+        "id": "br-coast-lencois-maranhenses",
+        "continent": "south_america",
+        "country": "巴西",
+        "nameZh": "拉克依斯千湖沙漠国家公园 · 白色沙丘与翡翠千湖",
+        "nameEn": "Lençóis Maranhenses National Park · White Dunes and Emerald Thousand Lakes",
+        "coords": [
+          -43.112,
+          -2.533
+        ],
+        "tz": "America/Fortaleza",
+        "elevation": "0m – 40m（沙丘高度随风沙迁移变化）",
+        "peakMonths": [
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "comfortBudgetRmb": 7300,
+        "luxuryBudgetRmb": 43500,
+        "spotCount": 8,
+        "nearestAirport": "GIG (2255km, BR)",
+        "railAvailable": false,
+        "auditVerdict": "PASS_WITH_CAVEAT",
+        "auditNotes": "nearest gateway airport >300km (GIG 2255km)"
+      },
+      {
+        "id": "nz-qt-queenstown",
+        "continent": "oceania",
+        "country": "新西兰",
+        "nameZh": "皇后镇 · 南阿尔卑斯雪山湖湾与极限运动之都",
+        "nameEn": "Queenstown · Southern Alps Snowy Peaks, Glacial Bays & Adventure Capital",
+        "coords": [
+          168.6627,
+          -45.0302
+        ],
+        "tz": "Pacific/Auckland",
+        "elevation": "310m – 1,650m",
+        "peakMonths": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12
+        ],
+        "comfortBudgetRmb": 8700,
+        "luxuryBudgetRmb": 58500,
+        "spotCount": 8,
+        "nearestAirport": "ZQN (6km, NZ)",
+        "railAvailable": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Coords, timezone, seasonal peaks, budget, and EN i18n verified plausible"
+      },
+      {
+        "id": "nz-coast-kaikoura",
+        "continent": "oceania",
+        "country": "新西兰",
+        "nameZh": "凯库拉 · 太平洋巨鲸与雪山海岸",
+        "nameEn": "Kaikoura · Pacific Giant Whales and Snow Mountain Coast",
+        "coords": [
+          173.6814,
+          -42.4008
+        ],
+        "tz": "Pacific/Auckland",
+        "elevation": "0m – 1,602m",
+        "peakMonths": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12
+        ],
+        "comfortBudgetRmb": 4700,
+        "luxuryBudgetRmb": 33500,
+        "spotCount": 8,
+        "nearestAirport": "CHC (153km, NZ)",
+        "railAvailable": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Coords, timezone, seasonal peaks, budget, and EN i18n verified plausible"
+      },
+      {
+        "id": "au-gbr-whitsundays-whitehaven",
+        "continent": "oceania",
+        "country": "澳大利亚",
+        "nameZh": "圣灵群岛 · 白天堂硅沙与蒂芙尼蓝潮汐漩涡",
+        "nameEn": "Whitsunday Islands · Whitehaven silica sand and Tiffany-blue tidal swirls",
+        "coords": [
+          149.0205,
+          -20.2459
+        ],
+        "tz": "Australia/Brisbane",
+        "elevation": "0m – 约100m（精选机位）",
+        "peakMonths": [
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "comfortBudgetRmb": 6800,
+        "luxuryBudgetRmb": 47000,
+        "spotCount": 8,
+        "nearestAirport": "CNS (508km, AU)",
+        "railAvailable": false,
+        "auditVerdict": "PASS_WITH_CAVEAT",
+        "auditNotes": "nearest gateway airport >300km (CNS 508km)"
+      },
+      {
+        "id": "au-outback-wa-perth-rottnest",
+        "continent": "oceania",
+        "country": "澳大利亚",
+        "nameZh": "珀斯、罗特尼斯岛与尖峰石阵 · 果冻海与荒漠银河",
+        "nameEn": "Perth, Rottnest Island, and the Pinnacles · Jelly-Bean Seas and Desert Milky Way",
+        "coords": [
+          115.8605,
+          -31.9505
+        ],
+        "tz": "Australia/Perth",
+        "elevation": "0m – 约 80m",
+        "peakMonths": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          8,
+          9,
+          10,
+          11,
+          12
+        ],
+        "comfortBudgetRmb": 6500,
+        "luxuryBudgetRmb": 39000,
+        "spotCount": 8,
+        "nearestAirport": "PER (10km, AU)",
+        "railAvailable": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Coords, timezone, seasonal peaks, budget, and EN i18n verified plausible"
+      }
+    ],
+    "spots": [
+      {
+        "cityId": "cn-beijing",
+        "continent": "asia",
+        "country": "中国",
+        "cityNameZh": "北京",
+        "spotIndex": 0,
+        "spotNameZh": "故宫博物院 & 景山万春亭与角楼",
+        "spotNameEn": "Palace Museum & Wanchun Pavilion on Jingshan Hill and Corner Turret",
+        "coords": [
+          116.3967,
+          39.9261
+        ],
+        "distFromCityKm": 1.1,
+        "elevation": "108m",
+        "access": "地铁1号线天安门东站或8号线中国美术馆站步行15分钟即达",
+        "bestTime": "清晨08:30冲中轴线；16:30上景山万春亭看日落；19:30拍西北角楼亮灯倒影",
+        "hasRefUrl": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Real attraction, plausible coords/elevation/access/bestTime, EN i18n present"
+      },
+      {
+        "cityId": "cn-hangzhou",
+        "continent": "asia",
+        "country": "中国",
+        "cityNameZh": "杭州",
+        "spotIndex": 7,
+        "spotNameZh": "九溪烟树 & 西溪湿地水上红杉林",
+        "spotNameEn": "Nine Creeks in Misty Forest & the Red Cypress Forest on the Water at Xixi Wetland",
+        "coords": [
+          120.111,
+          30.193
+        ],
+        "distFromCityKm": 6.6,
+        "elevation": "60m",
+        "access": "九溪建议从龙井茶村徒步下山走十八涧；西溪湿地地铁3号线直抵西溪湿地南站",
+        "bestTime": "11月中旬–12月初九溪红枫倒映碧潭 & 西溪湿地水上万亩红杉秋芦飞雪",
+        "hasRefUrl": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Real attraction, plausible coords/elevation/access/bestTime, EN i18n present"
+      },
+      {
+        "cityId": "cn-xiangxi",
+        "continent": "asia",
+        "country": "中国",
+        "cityNameZh": "湘西凤凰",
+        "spotIndex": 1,
+        "spotNameZh": "凤凰古城 · 沱江虹桥、万名塔与木跳岩",
+        "spotNameEn": "Fenghuang Ancient Town · Tuojiang Rainbow Bridge, Wanming Tower, and Wooden Stepping Stones",
+        "coords": [
+          109.6,
+          27.949
+        ],
+        "distFromCityKm": 36.9,
+        "elevation": "350m",
+        "access": "高铁至凤凰古城站换乘磁浮观光专线或打车 20 分钟至江边",
+        "bestTime": "06:30–07:45 晨雾清静无喧嚣；20:00 避开酒吧区取上游静谧水段",
+        "hasRefUrl": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Real attraction, plausible coords/elevation/access/bestTime, EN i18n present"
+      },
+      {
+        "cityId": "cn-shangrila-meili",
+        "continent": "asia",
+        "country": "中国",
+        "cityNameZh": "香格里拉",
+        "spotIndex": 4,
+        "spotNameZh": "普达措国家公园属都湖 & 纳帕海草原环湖公路",
+        "spotNameEn": "Pudacuo National Park Shudu Lake & Napa Hai Grassland Lakeside Road",
+        "coords": [
+          99.946,
+          27.835
+        ],
+        "distFromCityKm": 23.4,
+        "elevation": "3550m (普达措) / 3270m (纳帕海)",
+        "access": "距独克宗古城分别约 35 分钟与 15 分钟车程（可租小电驴/轿车轻松环纳帕海）",
+        "bestTime": "6–8 月普达措野花林间漫步 / 9月下旬–10月底纳帕海大草原开出火红一片“狼毒花”配水上公路",
+        "hasRefUrl": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Real attraction, plausible coords/elevation/access/bestTime, EN i18n present"
+      },
+      {
+        "cityId": "cn-kashgar",
+        "continent": "asia",
+        "country": "中国",
+        "cityNameZh": "喀什",
+        "spotIndex": 1,
+        "spotNameZh": "白沙湖北岸 · 白色风积银沙山倒映高寒碧蓝水镜",
+        "spotNameEn": "North Shore of Baisha Lake · White Windblown Sand Mountain Reflected in Alpine Blue Water Mirror",
+        "coords": [
+          75.048,
+          38.742
+        ],
+        "distFromCityKm": 114.5,
+        "elevation": "3300m",
+        "access": "沿着 G314 中巴友谊喀喇昆仑公路从喀什向帕米尔塔县行驶约 2.5 小时直抵峡谷绝顶垭口展开！",
+        "bestTime": "11:00–16:00 太阳高照水面变发亮的高原青蒂芙尼蓝绿且风吹岸白沙纹路立现；强推多花半小时绕到人少得多的“白沙湖北岸观景点”！",
+        "hasRefUrl": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Real attraction, plausible coords/elevation/access/bestTime, EN i18n present"
+      },
+      {
+        "cityId": "jp-hokkaido-sapporo-otaru",
+        "continent": "asia",
+        "country": "日本",
+        "cityNameZh": "札幌小樽",
+        "spotIndex": 0,
+        "spotNameZh": "真驹内滝野灵园 · 安藤忠雄头大佛殿",
+        "spotNameEn": "Makomanai Takino Cemetery · Hill of the Buddha by Tadao Ando",
+        "coords": [
+          141.3627,
+          42.9205
+        ],
+        "distFromCityKm": 15.7,
+        "elevation": "约180m",
+        "access": "札幌地铁南北线至真驹内站，转中央巴士真108等适用班次前往滝野灵园，车程约25分钟；进入大佛殿核心区域需购票。",
+        "bestTime": "7月中旬至下旬薰衣草覆盖丘陵；1月中旬至2月中旬积雪稳定，冬季10:00–12:00优先。",
+        "hasRefUrl": true,
+        "auditVerdict": "PASS",
+        "auditNotes": "Real attraction, plausible coords/elevation/access/bestTime, EN i18n present"
+      },
+      {
+        "cityId": "jp-kyushu-tohoku-nagasaki-yakushima-okinawa",
+        "continent": "asia",
+        "country": "日本",
+        "cityNameZh": "屋久岛冲绳",
+        "spotIndex": 3,
+        "spotNameZh": "庆良间座间味岛古座间味海滩 · 珊瑚玻璃海",
+        "spotNameEn": "Furuzamami Beach, Zamami Island, Kerama Islands · Coral Glass Sea",
+        "coords": [
+          127.308,
+          26.2228
+        ],
+        "distFromCityKm": 37,
+        "elevation": "0m – 20m",
+        "access": "从那霸泊港乘Queen Zamami高速船约50–70分钟至座间味港，换乘村内巴士或步行约20分钟前往古座间味海滩。",
+        "bestTime": "4月下旬至5月上旬或6月下旬至7月中旬，10:00–14:00太阳高度较大时拍摄海水颜色。",
+        "hasRefUrl": true,
+        "auditVerdict": "PASS",
+        "auditNotes": "Real attraction, plausible coords/elevation/access/bestTime, EN i18n present"
+      },
+      {
+        "cityId": "sg-marina-civic",
+        "continent": "asia",
+        "country": "新加坡",
+        "cityNameZh": "新加坡",
+        "spotIndex": 6,
+        "spotNameZh": "星耀樟宜 Jewel Changi · 40米雨漩涡",
+        "spotNameEn": "Jewel Changi · 40m Rain Vortex",
+        "coords": [
+          103.9897,
+          1.3601
+        ],
+        "distFromCityKm": 17.7,
+        "elevation": "约5m – 40m（室内楼层）",
+        "access": "乘机场支线至Changi Airport站，从T2或T3经连接天桥步行约5–10分钟进入Jewel；T1到达层直接连通。主体瀑布及公共森林步道免费，五层Canopy Park部分项目收费。",
+        "bestTime": "10:00–11:30 穹顶自然光；19:30–21:00 夜间水幕灯光与空铁同框",
+        "hasRefUrl": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Real attraction, plausible coords/elevation/access/bestTime, EN i18n present"
+      },
+      {
+        "cityId": "id-volcano-east-bromo",
+        "continent": "asia",
+        "country": "印度尼西亚",
+        "cityNameZh": "布罗莫火山",
+        "spotIndex": 5,
+        "spotNameZh": "Goa Tetes · 苔藓石壁与滴水洞穴",
+        "spotNameEn": "Goa Tetes · Mossy Stone Walls and Dripping Cave",
+        "coords": [
+          112.9208,
+          -8.2335
+        ],
+        "distFromCityKm": 32.6,
+        "elevation": "约535m",
+        "access": "由 Pronojiwo 村附近独立入口进入，或者在当地向导确认峡谷连通路线开放后，与赛武瀑布谷底行程组合游览。",
+        "bestTime": "5月上旬至9月下旬，09:00–12:00",
+        "hasRefUrl": true,
+        "auditVerdict": "PASS",
+        "auditNotes": "Real attraction, plausible coords/elevation/access/bestTime, EN i18n present"
+      },
+      {
+        "cityId": "th-islands-samui-tao",
+        "continent": "asia",
+        "country": "泰国",
+        "cityNameZh": "苏梅岛",
+        "spotIndex": 4,
+        "spotNameZh": "涛岛塞利海滩 Sairee Beach",
+        "spotNameEn": "Sairee Beach, Koh Tao",
+        "coords": [
+          99.8271,
+          10.0973
+        ],
+        "distFromCityKm": 69.1,
+        "elevation": "0–5m",
+        "access": "从湄哈码头沿西岸道路向北步行约20–30分钟，或乘岛上出租车抵达塞利海滩公共通道。",
+        "bestTime": "2月至8月天气晴朗时，17:00–19:00",
+        "hasRefUrl": true,
+        "auditVerdict": "PASS",
+        "auditNotes": "Real attraction, plausible coords/elevation/access/bestTime, EN i18n present"
+      },
+      {
+        "cityId": "mv-male-atolls",
+        "continent": "asia",
+        "country": "马尔代夫",
+        "cityNameZh": "马累环礁",
+        "spotIndex": 3,
+        "spotNameZh": "维拉纳机场 · 水上飞机珊瑚环航拍起点",
+        "spotNameEn": "Velana Airport · Seaplane Coral Atoll Aerial Photography Starting Point",
+        "coords": [
+          73.5291,
+          4.1918
+        ],
+        "distFromCityKm": 4.1,
+        "elevation": "0m – 约600m（飞行高度随航线变化）",
+        "access": "国际航班抵达后至酒店接待柜台办理水飞手续，由工作人员安排前往水飞航站楼。须提前预订度假岛接驳或获准观光航班。",
+        "bestTime": "09:00–14:00，晴朗且低云较少时优先。",
+        "hasRefUrl": true,
+        "auditVerdict": "PASS",
+        "auditNotes": "Real attraction, plausible coords/elevation/access/bestTime, EN i18n present"
+      },
+      {
+        "cityId": "in-north-jodhpur-udaipur",
+        "continent": "asia",
+        "country": "印度",
+        "cityNameZh": "蓝白双城",
+        "spotIndex": 3,
+        "spotNameZh": "泰姬湖宫 Taj Lake Palace · 皮丘拉湖白色水上宫殿",
+        "spotNameEn": "Taj Lake Palace · White Water Palace on Lake Pichola",
+        "coords": [
+          73.6802,
+          24.5751
+        ],
+        "distFromCityKm": 200.1,
+        "elevation": "约420m",
+        "access": "焦特布尔包车南下约5–7小时抵乌代布尔。湖宫住客使用酒店安排的私人渡船，非住客可购买正规皮丘拉湖观光船票从水面欣赏外观。",
+        "bestTime": "07:00–09:00湖面通常较平静，16:30至日落适合环湖建筑摄影。",
+        "hasRefUrl": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Real attraction, plausible coords/elevation/access/bestTime, EN i18n present"
+      },
+      {
+        "cityId": "tr-west-central-istanbul",
+        "continent": "asia",
+        "country": "土耳其",
+        "cityNameZh": "伊斯坦布尔",
+        "spotIndex": 1,
+        "spotNameZh": "蓝色清真寺 Sultan Ahmed Mosque",
+        "spotNameEn": "Blue Mosque Sultan Ahmed Mosque",
+        "coords": [
+          28.9768,
+          41.0054
+        ],
+        "distFromCityKm": 0.3,
+        "elevation": "约35m",
+        "access": "T1电车Sultanahmet站步行约6分钟，从古赛马场方向进入公共庭院；非礼拜时间按游客通道免费参观。",
+        "bestTime": "上午开放后至10:00，或日落前40分钟拍摄庭院与穹顶。",
+        "hasRefUrl": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Real attraction, plausible coords/elevation/access/bestTime, EN i18n present"
+      },
+      {
+        "cityId": "uz-bukhara",
+        "continent": "asia",
+        "country": "乌兹别克斯坦",
+        "cityNameZh": "布哈拉",
+        "spotIndex": 1,
+        "spotNameZh": "雅克王堡 Ark of Bukhara · 沙丘形夯土城墙",
+        "spotNameEn": "Ark of Bukhara · Dune-shaped Rammed Earth City Walls",
+        "coords": [
+          64.4103,
+          39.7778
+        ],
+        "distFromCityKm": 1.9,
+        "elevation": "约220m，城墙高处约240m",
+        "access": "从波伊卡扬建筑群向西北步行约8分钟，沿王堡西面广场抵达主入口，购票后进入开放展区。",
+        "bestTime": "日落前60–90分钟拍摄西侧城墙斜光",
+        "hasRefUrl": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Real attraction, plausible coords/elevation/access/bestTime, EN i18n present"
+      },
+      {
+        "cityId": "ru-fareast-altai-chuya-highway",
+        "continent": "asia",
+        "country": "俄罗斯",
+        "cityNameZh": "俄属阿尔泰楚亚公路",
+        "spotIndex": 4,
+        "spotNameZh": "阿克塔什蓝眼湖 Geyser Lake · 湖底蓝色同心纹",
+        "spotNameEn": "Geyser Lake (Ak-Tash Blue Eye Lake) · Blue Concentric Patterns on Lake Bed",
+        "coords": [
+          87.6672,
+          50.2892
+        ],
+        "distFromCityKm": 0,
+        "elevation": "约1,370m",
+        "access": "沿R256抵达阿克塔什以东约796公里路段，从经营管理的入口进入木栈道，步行约5–15分钟。",
+        "bestTime": "无风上午或均匀云光天气。",
+        "hasRefUrl": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Real attraction, plausible coords/elevation/access/bestTime, EN i18n present"
+      },
+      {
+        "cityId": "ir-gulf-lut-kaluts",
+        "continent": "asia",
+        "country": "伊朗",
+        "cityNameZh": "卢特沙漠",
+        "spotIndex": 1,
+        "spotNameZh": "Egg Hill Viewpoint · 蛋形雅丹全景台",
+        "spotNameEn": "Egg Hill Viewpoint · panoramic platform over the egg-shaped yardang",
+        "coords": [
+          57.8474,
+          30.8651
+        ],
+        "distFromCityKm": 5,
+        "elevation": "未取得可靠测量值",
+        "access": "位于主雅丹地图定位点以北约5公里，具体进出路线须由持证向导依据开放区域确认。",
+        "bestTime": "低风速天气的日出后1小时。",
+        "hasRefUrl": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Real attraction, plausible coords/elevation/access/bestTime, EN i18n present"
+      },
+      {
+        "cityId": "id-nature-plus-kelimutu",
+        "continent": "asia",
+        "country": "印度尼西亚",
+        "cityNameZh": "克里穆图三色湖",
+        "spotIndex": 1,
+        "spotNameZh": "Nuwamuri Koofai · 青年湖观景台",
+        "spotNameEn": "Nuwamuri Koofai · Youth Lake Viewpoint",
+        "coords": [
+          121.8124,
+          -8.7654
+        ],
+        "distFromCityKm": 0.1,
+        "elevation": "1598m",
+        "access": "从国家公园停车场进入正式游览步道，沿青年湖观景台方向步行约20–30分钟。",
+        "bestTime": "06:00–09:00，太阳升高后湖水更容易呈现清晰的色彩层次。",
+        "hasRefUrl": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Real attraction, plausible coords/elevation/access/bestTime, EN i18n present"
+      },
+      {
+        "cityId": "ca-tr-plus-mardin-nemrut",
+        "continent": "asia",
+        "country": "土耳其",
+        "cityNameZh": "马尔丁·内姆鲁特",
+        "spotIndex": 1,
+        "spotNameZh": "卡西米耶经学院 Kasımiye Medrese · 石拱水庭",
+        "spotNameEn": "Kasımiye Medrese · Stone-Arched Water Courtyard",
+        "coords": [
+          40.72,
+          37.3081
+        ],
+        "distFromCityKm": 89.6,
+        "elevation": "约850–900m",
+        "access": "从马尔丁老城中心向西南乘出租车约10分钟，或步行约30–45分钟。",
+        "bestTime": "上午开馆后，或午后拱廊阴影较长时。",
+        "hasRefUrl": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Real attraction, plausible coords/elevation/access/bestTime, EN i18n present"
+      },
+      {
+        "cityId": "is-sw-reykjavik-blue-lagoon",
+        "continent": "europe",
+        "country": "冰岛",
+        "cityNameZh": "雷克雅未克",
+        "spotIndex": 0,
+        "spotNameZh": "哈尔格林姆斯教堂 Hallgrímskirkja · 中轴玄武岩立面与塔顶彩屋",
+        "spotNameEn": "Hallgrímskirkja Hallgrímskirkja · Central-axis basalt facade and colorful houses from the tower top",
+        "coords": [
+          -21.9268,
+          64.1418
+        ],
+        "distFromCityKm": 0,
+        "elevation": "地面约40m，塔高约74m",
+        "access": "从市中心沿 Skólavörðustígur 街向东南步行约10–15分钟抵达教堂广场，购买塔楼门票后乘电梯登高。",
+        "bestTime": "冬季10:30–12:30低角度日光，夏季07:00–09:00广场人少；塔楼开放时间内选择能见度良好的时段。",
+        "hasRefUrl": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Real attraction, plausible coords/elevation/access/bestTime, EN i18n present"
+      },
+      {
+        "cityId": "arctic-islands-svalbard-longyearbyen",
+        "continent": "europe",
+        "country": "挪威",
+        "cityNameZh": "斯瓦尔巴群岛",
+        "spotIndex": 1,
+        "spotNameZh": "拉尔斯冰川 Larsbreen · 冰川徒步与冻结融水通道",
+        "spotNameEn": "Larsbreen Glacier · Glacier Hiking and Frozen Meltwater Channels",
+        "coords": [
+          15.5545,
+          78.1766
+        ],
+        "distFromCityKm": 5.4,
+        "elevation": "约300–600m冰川区域",
+        "access": "参加从朗伊尔城出发的冰川徒步团，由车辆送至 Nybyen 附近徒步起点，沿雪覆盖的冰碛坡攀升，冰洞组合活动通常约4–5小时。",
+        "bestTime": "2月中旬至4月下旬，蓝调逐渐转为长日照且冰雪路线仍可安全通行时。",
+        "hasRefUrl": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Real attraction, plausible coords/elevation/access/bestTime, EN i18n present"
+      },
+      {
+        "cityId": "no-arctic-tromso-nordkapp",
+        "continent": "europe",
+        "country": "挪威",
+        "cityNameZh": "特罗姆瑟与北角",
+        "spotIndex": 2,
+        "spotNameZh": "Ersfjordbotn · 特罗姆瑟经典V形极光峡湾",
+        "spotNameEn": "Ersfjordbotn · Tromsø's classic V-shaped aurora fjord",
+        "coords": [
+          18.617,
+          69.6936
+        ],
+        "distFromCityKm": 14,
+        "elevation": "约5m",
+        "access": "从特罗姆瑟经Sandnessund大桥进入Kvaløya岛，沿Fv862及村道自驾约30–35分钟；也可查询425路区域公交。",
+        "bestTime": "9月上旬至次年4月上旬晴朗暗夜，冬季蓝调时段。",
+        "hasRefUrl": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Real attraction, plausible coords/elevation/access/bestTime, EN i18n present"
+      },
+      {
+        "cityId": "ch-lakes-interlaken-brienz-lungern",
+        "continent": "europe",
+        "country": "瑞士",
+        "cityNameZh": "因特拉肯",
+        "spotIndex": 1,
+        "spotNameZh": "伊瑟尔特瓦尔德 Iseltwald · 爱的迫降木栈桥",
+        "spotNameEn": "Iseltwald · The Wooden Jetty from \"Crash Landing on You\"",
+        "coords": [
+          7.966,
+          46.7111
+        ],
+        "distFromCityKm": 8.3,
+        "elevation": "564m",
+        "access": "Interlaken Ost 搭乘103路公交约20–30分钟抵达 Iseltwald Dorfplatz，沿公共道路步行至湖畔；夏季也可乘布里恩茨湖游船。",
+        "bestTime": "5–9月工作日07:30–09:00，阴天亦适合拍摄乳蓝湖水。",
+        "hasRefUrl": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Real attraction, plausible coords/elevation/access/bestTime, EN i18n present"
+      },
+      {
+        "cityId": "it-north-lake-como",
+        "continent": "europe",
+        "country": "意大利",
+        "cityNameZh": "科莫湖",
+        "spotIndex": 0,
+        "spotNameZh": "贝拉焦半岛尖端 Punta Spartivento · 三岔湖湾观景台",
+        "spotNameEn": "Punta Spartivento, Bellagio Peninsula Tip · Three-Way Lake Bay Viewpoint",
+        "coords": [
+          9.2655,
+          45.9913
+        ],
+        "distFromCityKm": 1.9,
+        "elevation": "约200m",
+        "access": "由贝拉焦渡轮码头沿Via Giuseppe Garibaldi及Via Eugenio Vitali步行约15分钟，抵达半岛最北端公共观景区域。",
+        "bestTime": "4–5月及9–10月清晨07:00–09:00，优先选择低风速和远山能见度良好的天气。",
+        "hasRefUrl": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Real attraction, plausible coords/elevation/access/bestTime, EN i18n present"
+      },
+      {
+        "cityId": "it-center-venice",
+        "continent": "europe",
+        "country": "意大利",
+        "cityNameZh": "威尼斯",
+        "spotIndex": 0,
+        "spotNameZh": "圣马可钟楼 Campanile di San Marco · 红瓦浮城360°观景台",
+        "spotNameEn": "St. Mark's Campanile Campanile di San Marco · 360° Viewpoint over the Red-Tiled Floating City",
+        "coords": [
+          12.339,
+          45.434
+        ],
+        "distFromCityKm": 0.1,
+        "elevation": "约99m",
+        "access": "从 Venezia Santa Lucia 火车站乘 ACTV 1号水上巴士至 San Marco Vallaresso 站，约40分钟，步行5分钟抵达钟楼入口，乘电梯登顶。",
+        "bestTime": "首个开放时段拍摄清晰屋顶肌理；秋冬冷锋过境后的上午远眺泻湖。",
+        "hasRefUrl": false,
+        "auditVerdict": "PASS_WITH_CAVEAT",
+        "auditNotes": "duplicated EN token (\"Campanile\")"
+      },
+      {
+        "cityId": "gr-islands-santorini",
+        "continent": "europe",
+        "country": "希腊",
+        "cityNameZh": "圣托里尼",
+        "spotIndex": 5,
+        "spotNameZh": "阿克罗蒂里灯塔 · 火山岛西南端海崖",
+        "spotNameEn": "Akrotiri Lighthouse · Sea Cliffs at the Southwestern End of the Volcanic Island",
+        "coords": [
+          25.3569,
+          36.3577
+        ],
+        "distFromCityKm": 9.3,
+        "elevation": "约100m",
+        "access": "从阿克罗蒂里村沿半岛西端地方公路自驾约10–15分钟，停车后步行约5分钟到灯塔外围开放区域。",
+        "bestTime": "日落前45分钟至日落后20分钟。",
+        "hasRefUrl": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Real attraction, plausible coords/elevation/access/bestTime, EN i18n present"
+      },
+      {
+        "cityId": "es-north-barcelona",
+        "continent": "europe",
+        "country": "西班牙",
+        "cityNameZh": "巴塞罗那",
+        "spotIndex": 4,
+        "spotNameZh": "焦糖山碉堡 Turó de la Rovira · 扩展区棋盘格山顶",
+        "spotNameEn": "Turó de la Rovira Bunker · Eixample Grid Mountain Peak",
+        "coords": [
+          2.1617,
+          41.4194
+        ],
+        "distFromCityKm": 3.9,
+        "elevation": "262m",
+        "access": "乘 V19 公交至附近站点后沿 Carrer de Marià Labèrnia 上坡步行约 10–20 分钟，或从奎尔公园徒步约 30–40 分钟。",
+        "bestTime": "晴朗且能见度高的上午或闭园前 60–90 分钟；冬季部分日期可在开放时间内接近日落。",
+        "hasRefUrl": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Real attraction, plausible coords/elevation/access/bestTime, EN i18n present"
+      },
+      {
+        "cityId": "pt-porto-douro",
+        "continent": "europe",
+        "country": "葡萄牙",
+        "cityNameZh": "波尔图与杜罗河谷",
+        "spotIndex": 5,
+        "spotNameZh": "卡萨尔德洛伊沃斯 Miradouro de Casal de Loivos · 杜罗河葡萄梯田曲流",
+        "spotNameEn": "Miradouro de Casal de Loivos · Douro River Vineyard-Terrace Meander",
+        "coords": [
+          -7.5319,
+          41.1986
+        ],
+        "distFromCityKm": 90.4,
+        "elevation": "430m",
+        "access": "从Pinhão站沿N585-1及村镇道路自驾约15分钟，或沿PR20 ALJ步道上坡约1.5小时。",
+        "bestTime": "9月中下旬葡萄采收期，或10月中旬至11月上旬葡萄叶变色期。",
+        "hasRefUrl": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Real attraction, plausible coords/elevation/access/bestTime, EN i18n present"
+      },
+      {
+        "cityId": "fr-alps-annecy-lake",
+        "continent": "europe",
+        "country": "法国",
+        "cityNameZh": "安纳西",
+        "spotIndex": 6,
+        "spotNameZh": "杜安湖岸 Plage municipale de Duingt · 双湖交界雪山水镜",
+        "spotNameEn": "Plage municipale de Duingt (Duingt Municipal Beach) · Snow-Capped Mountain Reflections at the Confluence of Two Lakes",
+        "coords": [
+          6.1953,
+          45.8284
+        ],
+        "distFromCityKm": 9.4,
+        "elevation": "447m",
+        "access": "从安纳西沿西岸D1508行驶约25–35分钟至Duingt，转入Allée de la Plage附近公共湖岸；骑行可走西岸旧铁路绿道。",
+        "bestTime": "3月上中旬晴朗清晨拍远山残雪；6–9月无风晨间拍摄透明湖水。",
+        "hasRefUrl": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Real attraction, plausible coords/elevation/access/bestTime, EN i18n present"
+      },
+      {
+        "cityId": "de-classic-rothenburg-heidelberg-black-forest",
+        "continent": "europe",
+        "country": "德国",
+        "cityNameZh": "罗滕堡与黑森林",
+        "spotIndex": 5,
+        "spotNameZh": "拉文纳峡谷 Ravennaschlucht · 森林铁路高架桥",
+        "spotNameEn": "Ravennaschlucht · Forest Railway Viaduct",
+        "coords": [
+          8.0735,
+          47.9166
+        ],
+        "distFromCityKm": 173,
+        "elevation": "约718m",
+        "access": "从Freiburg沿B31公路穿越Höllental前往Hofgut Sternen；公共交通可至Hinterzarten车站，经Löffeltal步道步行约45–60分钟抵达峡谷入口。",
+        "bestTime": "10月中下旬林间散射光；11月下旬至12月中下旬圣诞市场开放日的蓝调时刻。",
+        "hasRefUrl": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Real attraction, plausible coords/elevation/access/bestTime, EN i18n present"
+      },
+      {
+        "cityId": "ie-cliffs-of-moher-aran",
+        "continent": "europe",
+        "country": "爱尔兰",
+        "cityNameZh": "莫赫悬崖",
+        "spotIndex": 5,
+        "spotNameZh": "穆拉莫尔 Mullaghmore · 巴伦螺旋层状石灰岩山丘",
+        "spotNameEn": "Mullaghmore · The Burren's Spiraling Layered Limestone Hills",
+        "coords": [
+          -9.001,
+          53.0067
+        ],
+        "distFromCityKm": 28.9,
+        "elevation": "约180m",
+        "access": "从Corofin国家公园信息点乘5–9月季节性免费接驳车至Gortlecka步道起点，沿Mullaghmore标记路线徒步，预留3–4小时。",
+        "bestTime": "5月中旬至6月下旬野花季，上午低角度光线。",
+        "hasRefUrl": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Real attraction, plausible coords/elevation/access/bestTime, EN i18n present"
+      },
+      {
+        "cityId": "ca-banff-lake-louise-moraine",
+        "continent": "north_america",
+        "country": "加拿大",
+        "cityNameZh": "路易斯湖与梦莲湖",
+        "spotIndex": 0,
+        "spotNameZh": "梦莲湖石堆观景台 Moraine Lake Rockpile · 十峰谷蓝湖日出",
+        "spotNameEn": "Moraine Lake Rockpile Viewpoint · Ten Peaks Valley Blue Lake Sunrise",
+        "coords": [
+          -116.1807,
+          51.3279
+        ],
+        "distFromCityKm": 10.9,
+        "elevation": "约1,910m",
+        "access": "从 Lake Louise Ski Resort 的 Park and Ride 乘预约接驳车沿 Moraine Lake Road 进入梦莲湖，抵达后沿 Rockpile Loop 步行约10–15分钟登上石堆观景台，全环线约0.7公里。",
+        "bestTime": "6月中旬至9月下旬日出前后，夏至附近约05:20–06:30，东北方晨光逐渐照亮十峰谷山体。",
+        "hasRefUrl": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Real attraction, plausible coords/elevation/access/bestTime, EN i18n present"
+      },
+      {
+        "cityId": "ca-west-whistler-joffre-lakes",
+        "continent": "north_america",
+        "country": "加拿大",
+        "cityNameZh": "惠斯勒冰川蓝湖",
+        "spotIndex": 6,
+        "spotNameZh": "霍洛韦瀑布 Holloway Falls · 冰川融水峡谷",
+        "spotNameEn": "Holloway Falls · Glacier Meltwater Gorge",
+        "coords": [
+          -122.4786,
+          50.349
+        ],
+        "distFromCityKm": 42.8,
+        "elevation": "1,535m左右",
+        "access": "从中湖沿通往上湖的主步道继续步行约10–20分钟，使用正式观瀑区域。",
+        "bestTime": "6月下旬至8月中旬融雪旺季，阴天柔光条件下。",
+        "hasRefUrl": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Real attraction, plausible coords/elevation/access/bestTime, EN i18n present"
+      },
+      {
+        "cityId": "ca-quebec-city",
+        "continent": "north_america",
+        "country": "加拿大",
+        "cityNameZh": "魁北克古城",
+        "spotIndex": 4,
+        "spotNameZh": "莱维斯河岸 Quai Paquet · 城堡跨河天际线",
+        "spotNameEn": "Quai Paquet Riverbank · Chateau Cross-River Skyline",
+        "coords": [
+          -71.187,
+          46.8119
+        ],
+        "distFromCityKm": 1.6,
+        "elevation": "约5m",
+        "access": "从魁北克下城区乘 Québec–Lévis 渡轮约12分钟，下船步行约5分钟。",
+        "bestTime": "清晨城堡顺光，或日落后整座古城亮灯时。",
+        "hasRefUrl": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Real attraction, plausible coords/elevation/access/bestTime, EN i18n present"
+      },
+      {
+        "cityId": "us-ak-south-denali",
+        "continent": "north_america",
+        "country": "美国",
+        "cityNameZh": "迪纳利",
+        "spotIndex": 2,
+        "spotNameZh": "多彩山口观景台 Polychrome Overlook · 彩色岩层与秋季苔原",
+        "spotNameEn": "Polychrome Overlook Polychrome Overlook · Coloured Rock Layers and Autumn Tundra",
+        "coords": [
+          -149.8301,
+          63.5357
+        ],
+        "distFromCityKm": 26.6,
+        "elevation": "约1130m",
+        "access": "公园公路第45.8英里，乘园区巴士经Pretty Rocks大桥抵达指定观景停车区。",
+        "bestTime": "8月中旬至9月上旬，上午08:00–11:00或傍晚低角度侧光。",
+        "hasRefUrl": false,
+        "auditVerdict": "PASS_WITH_CAVEAT",
+        "auditNotes": "duplicated EN token (\"Polychrome Overlook\")"
+      },
+      {
+        "cityId": "us-plains-devils-tower",
+        "continent": "north_america",
+        "country": "美国",
+        "cityNameZh": "魔鬼塔",
+        "spotIndex": 7,
+        "spotNameZh": "怀俄明24号公路远景台 WY-24 Devils Tower Scenic View",
+        "spotNameEn": "WY-24 Devils Tower Scenic View · Wyoming Highway 24 Vista",
+        "coords": [
+          -104.6858,
+          44.5596
+        ],
+        "distFromCityKm": 4.2,
+        "elevation": "约1,180m",
+        "access": "从 US-14 转入 WY-24 向魔鬼塔行驶，在公开地图标记的公路观景点寻找合法停车区域，距离园区入口约数公里。",
+        "bestTime": "日出后30–90分钟或日落前低角度侧光。",
+        "hasRefUrl": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Real attraction, plausible coords/elevation/access/bestTime, EN i18n present"
+      },
+      {
+        "cityId": "us-az-north-page-antelope",
+        "continent": "north_america",
+        "country": "美国",
+        "cityNameZh": "羚羊谷与马蹄湾",
+        "spotIndex": 3,
+        "spotNameZh": "马蹄湾 Horseshoe Bend Overlook",
+        "spotNameEn": "Horseshoe Bend Overlook",
+        "coords": [
+          -111.5109,
+          36.8809
+        ],
+        "distFromCityKm": 6.2,
+        "elevation": "约1,280m",
+        "access": "从Page沿US-89向南至544与545英里标之间的停车区，沿改良步道往返约2.4公里。",
+        "bestTime": "上午09:00–11:00获得较均衡光线，或日落前约1小时拍摄暖色与剪影。",
+        "hasRefUrl": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Real attraction, plausible coords/elevation/access/bestTime, EN i18n present"
+      },
+      {
+        "cityId": "us-ca-sierra-lake-tahoe",
+        "continent": "north_america",
+        "country": "美国",
+        "cityNameZh": "太浩湖",
+        "spotIndex": 0,
+        "spotNameZh": "翡翠湾灵感观景台 Inspiration Point",
+        "spotNameEn": "Inspiration Point",
+        "coords": [
+          -120.1004,
+          38.9463
+        ],
+        "distFromCityKm": 17.7,
+        "elevation": "约2,080m",
+        "access": "从South Lake Tahoe沿CA-89向北行驶约20–30分钟，驶入Inspiration Point指定停车区。",
+        "bestTime": "日出至上午09:00，冬春雪峰仍有积雪时尤佳。",
+        "hasRefUrl": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Real attraction, plausible coords/elevation/access/bestTime, EN i18n present"
+      },
+      {
+        "cityId": "us-pnw-wa-olympic",
+        "continent": "north_america",
+        "country": "美国",
+        "cityNameZh": "奥林匹克雨林",
+        "spotIndex": 5,
+        "spotNameZh": "墙中洞 Hole-in-the-Wall · 海蚀拱门框景",
+        "spotNameEn": "Hole-in-the-Wall Hole-in-the-Wall · Framed View through a Sea-Erosion Arch",
+        "coords": [
+          -124.6513,
+          47.9417
+        ],
+        "distFromCityKm": 87.4,
+        "elevation": "0–5m",
+        "access": "从 Rialto Beach 沿海岸向北徒步约2.4公里单程，约45–70分钟抵达海蚀拱门。",
+        "bestTime": "安全低潮窗口内，优先选择低潮前后约1小时并具有充足返程余量的时段。",
+        "hasRefUrl": false,
+        "auditVerdict": "PASS_WITH_CAVEAT",
+        "auditNotes": "duplicated EN token (\"Hole-in-the-Wall\")"
+      },
+      {
+        "cityId": "us-hi-east-maui-haleakala-hana",
+        "continent": "north_america",
+        "country": "美国",
+        "cityNameZh": "茂宜岛",
+        "spotIndex": 3,
+        "spotNameZh": "莱莱维云瀑观景台 Leleiwi Overlook",
+        "spotNameEn": "Leleiwi Overlook",
+        "coords": [
+          -156.2284,
+          20.7443
+        ],
+        "distFromCityKm": 5.6,
+        "elevation": "约2,694m",
+        "access": "沿378号公路抵达Leleiwi停车区，穿过公路后沿岩石步道步行约5–10分钟。",
+        "bestTime": "08:30–11:00或15:00–17:00，云层低于观景台且太阳位于身后时。",
+        "hasRefUrl": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Real attraction, plausible coords/elevation/access/bestTime, EN i18n present"
+      },
+      {
+        "cityId": "us-mid-appal-great-smoky-mountains",
+        "continent": "north_america",
+        "country": "美国",
+        "cityNameZh": "大烟山",
+        "spotIndex": 6,
+        "spotNameZh": "洞穴瀑布 Grotto Falls",
+        "spotNameEn": "Grotto Falls",
+        "coords": [
+          -83.4667,
+          35.6939
+        ],
+        "distFromCityKm": 9.9,
+        "elevation": "约760m",
+        "access": "从Gatlinburg进入Roaring Fork Motor Nature Trail单向景观道路，在Trillium Gap Trailhead停车，往返徒步约4.2公里。",
+        "bestTime": "雨后阴天上午，5月下旬及10月中下旬。",
+        "hasRefUrl": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Real attraction, plausible coords/elevation/access/bestTime, EN i18n present"
+      },
+      {
+        "cityId": "mx-west-huasteca-potosina",
+        "continent": "north_america",
+        "country": "墨西哥",
+        "cityNameZh": "瓦斯特卡瀑布群",
+        "spotIndex": 3,
+        "spotNameZh": "塔马索波阶梯瀑布 Cascadas de Tamasopo",
+        "spotNameEn": "Cascadas de Tamasopo Stepped Waterfalls Cascadas de Tamasopo",
+        "coords": [
+          -99.3972,
+          21.9391
+        ],
+        "distFromCityKm": 27.2,
+        "elevation": "约350m",
+        "access": "从 Tamasopo 镇中心向北驾车约5–10分钟，步行进入瀑布公园。",
+        "bestTime": "开园后至10:30。",
+        "hasRefUrl": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Real attraction, plausible coords/elevation/access/bestTime, EN i18n present"
+      },
+      {
+        "cityId": "ca-central-atitlan-tikal",
+        "continent": "north_america",
+        "country": "危地马拉",
+        "cityNameZh": "阿蒂特兰湖与蒂卡尔",
+        "spotIndex": 0,
+        "spotNameZh": "玛雅之脸上层观景台 Upper Indian Nose Viewpoint",
+        "spotNameEn": "Upper Indian Nose Viewpoint",
+        "coords": [
+          -91.2987,
+          14.7066
+        ],
+        "distFromCityKm": 8.9,
+        "elevation": "约2,200m",
+        "access": "从圣佩德罗或圣胡安乘预约车辆前往Santa Clara La Laguna方向，再由当地向导带领徒步约30至60分钟；从湖岸直接攀登耗时更长。",
+        "bestTime": "05:00至07:00，日出前抵达开放观景台。",
+        "hasRefUrl": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Real attraction, plausible coords/elevation/access/bestTime, EN i18n present"
+      },
+      {
+        "cityId": "ke-masai-mara",
+        "continent": "africa_antarctica",
+        "country": "肯尼亚",
+        "cityNameZh": "马赛马拉",
+        "spotIndex": 0,
+        "spotNameZh": "马拉河主渡口 Mara River Main Crossing · 天国之渡激流泥岸",
+        "spotNameEn": "Mara River Main Crossing · Torrential Mud Banks of the Great Migration",
+        "coords": [
+          35.0175,
+          -1.5482
+        ],
+        "distFromCityKm": 21.1,
+        "elevation": "约1500m",
+        "access": "从马拉三角洲或主保护区营地乘四驱越野车经沿岸土路行驶约40–90分钟抵达渡口观察区，旺季由巡护员统一划定停车等待线。",
+        "bestTime": "7月下旬至10月上旬全天守候，尤以09:00–15:00角马群集中躁动下水时段最易触发大规模渡河。",
+        "hasRefUrl": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Real attraction, plausible coords/elevation/access/bestTime, EN i18n present"
+      },
+      {
+        "cityId": "ug-bwindi-queen-elizabeth",
+        "continent": "africa_antarctica",
+        "country": "乌干达",
+        "cityNameZh": "布温迪与伊丽莎白女王",
+        "spotIndex": 6,
+        "spotNameZh": "基扬布拉地下雨林裂谷 Kyambura Gorge",
+        "spotNameEn": "Kyambura Gorge Underground Rainforest Rift Kyambura Gorge",
+        "coords": [
+          30.0921,
+          -0.168
+        ],
+        "distFromCityKm": 65.7,
+        "elevation": "约 950m",
+        "access": "沿连接姆韦亚与卡伦古的柏油公路东行约30分钟达裂谷护林站，随向导下切百米谷底。",
+        "bestTime": "08:00上午场次，斜射阳光穿过百米崖顶洒入密林河道。",
+        "hasRefUrl": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Real attraction, plausible coords/elevation/access/bestTime, EN i18n present"
+      },
+      {
+        "cityId": "na-damaraland-spitzkoppe",
+        "continent": "africa_antarctica",
+        "country": "纳米比亚",
+        "cityNameZh": "达马拉兰奇岩",
+        "spotIndex": 4,
+        "spotNameZh": "达马拉兰石化古林 Petrified Forest · 两亿八千万年硅化木",
+        "spotNameEn": "Damaraland Petrified Forest · 280-Million-Year-Old Silicified Wood",
+        "coords": [
+          14.6046,
+          -20.4382
+        ],
+        "distFromCityKm": 76.7,
+        "elevation": "约 860m",
+        "access": "沿C39主砂石路从霍里克萨斯向西行驶约42公里路北侧即达，全程道路良好，必须由景区讲解员带领徒步约45分钟参观。",
+        "bestTime": "上午09:00至11:00或下午15:30后光线斜射树干截面的玛瑙年轮结晶闪闪发光。",
+        "hasRefUrl": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Real attraction, plausible coords/elevation/access/bestTime, EN i18n present"
+      },
+      {
+        "cityId": "za-drakensberg",
+        "continent": "africa_antarctica",
+        "country": "南非",
+        "cityNameZh": "德拉肯斯堡",
+        "spotIndex": 2,
+        "spotNameZh": "大教堂峰与迪迪玛峡谷 Cathedral Peak & Didima Gorge",
+        "spotNameEn": "Cathedral Peak & Didima Gorge",
+        "coords": [
+          29.2058,
+          -28.9478
+        ],
+        "distFromCityKm": 5.4,
+        "elevation": "1,480m – 3,004m",
+        "access": "自温特顿（Winterton）经 R600 与小路行驶约45分钟直抵 Cathedral Peak Hotel 或 Ezemvelo KZN Wildlife Didima 营地。",
+        "bestTime": "上午顺光照亮“大教堂峰、号角峰、钟楼峰”一字排开的尖塔群，日落前余晖把玄武岩峰顶染为绯红。",
+        "hasRefUrl": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Real attraction, plausible coords/elevation/access/bestTime, EN i18n present"
+      },
+      {
+        "cityId": "sc-aldabra-outer",
+        "continent": "africa_antarctica",
+        "country": "塞舌尔",
+        "cityNameZh": "阿尔达布拉外岛",
+        "spotIndex": 0,
+        "spotNameZh": "阿尔达布拉大环礁 Aldabra Atoll · 十万巨陆龟隆起珊瑚伊甸园",
+        "spotNameEn": "Aldabra Atoll · 100,000 Giant Tortoises Raised Coral Eden",
+        "coords": [
+          46.35,
+          -9.417
+        ],
+        "distFromCityKm": 627.2,
+        "elevation": "0m – 8m",
+        "access": "塞舌尔最偏远南端严密保护区（距马埃逾 1,100 公里），普通旅游仅能通过极少数获准科研/探险邮轮包船或专航阿桑普申岛接驳快艇在保护站监管下限时登陆。",
+        "bestTime": "11 月至次年 4 月东北/西北风季相对较适探险航次靠泊，清晨 06:30–09:30 拍巨陆龟群穿过海岸灌丛并与涨落潮水道蝠鲼共泳。",
+        "hasRefUrl": false,
+        "auditVerdict": "ISSUE_FLAGGED",
+        "auditNotes": "parent city centroid 627.2km away"
+      },
+      {
+        "cityId": "ma-toubkal-ouzoud",
+        "continent": "africa_antarctica",
+        "country": "摩洛哥",
+        "cityNameZh": "图卜卡勒",
+        "spotIndex": 6,
+        "spotNameZh": "伊米恩伊夫里天然石桥 · 德姆纳特暗河喀斯特巨拱",
+        "spotNameEn": "Natural Stone Bridge of Imi n'Ifri · A Giant Karst Arch Over the Demnate Underground River",
+        "coords": [
+          -6.9708,
+          31.7245
+        ],
+        "distFromCityKm": 57,
+        "elevation": "1,120m",
+        "access": "位于马拉喀什东行前往乌祖德瀑布必经支线旁的德姆纳特镇东南约6公里，路旁停车后沿石阶下入深洞穿行。",
+        "bestTime": "上午10:00–13:00阳光斜穿天然石灰岩桥洞投射出丁达尔光柱，同时成群鸽子与岩燕穿洞飞舞。",
+        "hasRefUrl": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Real attraction, plausible coords/elevation/access/bestTime, EN i18n present"
+      },
+      {
+        "cityId": "eg-white-black-desert",
+        "continent": "africa_antarctica",
+        "country": "埃及",
+        "cityNameZh": "黑白沙漠",
+        "spotIndex": 4,
+        "spotNameZh": "老白沙漠岩石迷宫与白色孤拱 Old White Desert · 无痕沙毯秘境",
+        "spotNameEn": "Old White Desert Rock Labyrinth and White Solitary Arches · Leave-No-Trace Sand Carpet Secret Realm",
+        "coords": [
+          28.165,
+          27.2485
+        ],
+        "distFromCityKm": 4.7,
+        "elevation": "88m",
+        "access": "从新白沙漠核心露营点向西南深入约25分钟越野沙路，须经国家公园门票与向导许可。",
+        "bestTime": "07:00–08:30黎明微光，风沙刚吹平昨晚足迹的纯净晨刻。",
+        "hasRefUrl": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Real attraction, plausible coords/elevation/access/bestTime, EN i18n present"
+      },
+      {
+        "cityId": "aq-lemaire-paradise-bay",
+        "continent": "africa_antarctica",
+        "country": "南极洲",
+        "cityNameZh": "勒梅尔与天堂湾",
+        "spotIndex": 2,
+        "spotNameZh": "普莱诺岛冰山坟场 Pléneau Island Iceberg Graveyard",
+        "spotNameEn": "Pléneau Island Iceberg Graveyard",
+        "coords": [
+          -64.0556,
+          -65.1039
+        ],
+        "distFromCityKm": 4.1,
+        "elevation": "0m – 65m",
+        "access": "勒梅尔海峡南口东侧浅滩水域，探险船锚泊后搭乘冲锋舟在浮冰与搁浅冰山迷宫间慢速巡游，部分航次可登普莱诺岛北岸。",
+        "bestTime": "1月至3月阴天柔光最显深邃冰蓝色，晴天正午则宜拍摄水面冰拱门倒影。",
+        "hasRefUrl": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Real attraction, plausible coords/elevation/access/bestTime, EN i18n present"
+      },
+      {
+        "cityId": "pe-cusco-machu-picchu",
+        "continent": "south_america",
+        "country": "秘鲁",
+        "cityNameZh": "马丘比丘",
+        "spotIndex": 0,
+        "spotNameZh": "守卫屋上层梯田 Casa del Guardián · 经典云端古城全景",
+        "spotNameEn": "Casa del Guardián Guardian's House Upper Terrace · Classic Cloud-City Panorama",
+        "coords": [
+          -72.5447,
+          -13.1653
+        ],
+        "distFromCityKm": 0.3,
+        "elevation": "约2,480m",
+        "access": "从热水镇 Aguas Calientes 乘 Hiram Bingham 公路接驳巴士约25–30分钟抵达遗址入口，再沿 Circuit 1-B 指定石阶步行15–25分钟至上层梯田。",
+        "bestTime": "06:00–08:30 守候云雾消散与晨光，或15:00后观察山脊斜光；5–9月晴空机会较多。",
+        "hasRefUrl": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Real attraction, plausible coords/elevation/access/bestTime, EN i18n present"
+      },
+      {
+        "cityId": "pe-north-amazon-iquitos-tambopata",
+        "continent": "south_america",
+        "country": "秘鲁",
+        "cityNameZh": "秘鲁亚马孙",
+        "spotIndex": 1,
+        "spotNameZh": "帕卡亚萨米里亚黑水河道 Yanayacu-Pucate",
+        "spotNameEn": "Yanayacu-Pucate blackwater channel, Pacaya Samiria",
+        "coords": [
+          -73.7895,
+          -4.6492
+        ],
+        "distFromCityKm": 117,
+        "elevation": "约100m",
+        "access": "从纳乌塔搭乘SERNANP授权运营方船只进入保护区Yanayacu-Pucate流域，具体支流航程随水位变化，通常安排多日雨林船宿或探险游轮。",
+        "bestTime": "清晨06:00–08:30和傍晚16:00–18:00，12月至5月高水期适合进入漫水森林。",
+        "hasRefUrl": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Real attraction, plausible coords/elevation/access/bestTime, EN i18n present"
+      },
+      {
+        "cityId": "bo-cities-copacabana-isla-del-sol",
+        "continent": "south_america",
+        "country": "玻利维亚",
+        "cityNameZh": "的的喀喀太阳岛",
+        "spotIndex": 2,
+        "spotNameZh": "帕查塔卡古天文遗址 Horca del Inca",
+        "spotNameEn": "Horca del Inca Pachataqa ancient astronomical site",
+        "coords": [
+          -69.0846,
+          -16.1721
+        ],
+        "distFromCityKm": 0.6,
+        "elevation": "约3,950m",
+        "access": "从圣母大教堂向南步行至Cerro Kesanani山坡，再沿遗址步道爬升，全程约30–45分钟。",
+        "bestTime": "旱季08:00–10:00；如研究冬至光影现象，应安排6月21日前后并事先咨询管理方。",
+        "hasRefUrl": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Real attraction, plausible coords/elevation/access/bestTime, EN i18n present"
+      },
+      {
+        "cityId": "cl-south-general-carrera-marble-caves",
+        "continent": "south_america",
+        "country": "智利",
+        "cityNameZh": "卡雷拉湖大理石洞",
+        "spotIndex": 5,
+        "spotNameZh": "奎拉特冰碛湖码头 Mirador y Muelle Laguna Témpanos",
+        "spotNameEn": "Queulat Moraine Lake Pier — Mirador y Muelle Laguna Témpanos",
+        "coords": [
+          -72.5387,
+          -44.4654
+        ],
+        "distFromCityKm": 240.4,
+        "elevation": "约60m",
+        "access": "由奎拉特悬冰川景区停车区进入 Laguna Témpanos 短程步道，步行约15–30分钟抵达码头观景区。",
+        "bestTime": "开园后至上午，山谷云层未遮住冰川时。",
+        "hasRefUrl": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Real attraction, plausible coords/elevation/access/bestTime, EN i18n present"
+      },
+      {
+        "cityId": "ar-north-mendoza-aconcagua",
+        "continent": "south_america",
+        "country": "阿根廷",
+        "cityNameZh": "门多萨雪山酒谷",
+        "spotIndex": 6,
+        "spotNameZh": "苏卡尔迪无限之石酒庄 Zuccardi Finca Piedra Infinita",
+        "spotNameEn": "Zuccardi Finca Piedra Infinita",
+        "coords": [
+          -69.1567,
+          -33.7721
+        ],
+        "distFromCityKm": 102.3,
+        "elevation": "约1100m",
+        "access": "从门多萨沿RN40驶向San Carlos及Paraje Altamira，再经Costa Canal Uco地方道路抵达酒庄，车程约2小时。",
+        "bestTime": "3月下旬至4月中下旬，以当年葡萄藤转色进度为准；建筑外景优先上午。",
+        "hasRefUrl": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Real attraction, plausible coords/elevation/access/bestTime, EN i18n present"
+      },
+      {
+        "cityId": "br-guiana-angel-falls",
+        "continent": "south_america",
+        "country": "委内瑞拉",
+        "cityNameZh": "天使瀑布",
+        "spotIndex": 1,
+        "spotNameZh": "奥扬桌山天使瀑布航空摄影区 Salto Ángel Overflight",
+        "spotNameEn": "Salto Ángel Overflight — Auyan Tepui Angel Falls Aerial Photography Area",
+        "coords": [
+          -62.5356,
+          5.9675
+        ],
+        "distFromCityKm": 0.2,
+        "elevation": "瀑布上缘约1,400m以上，飞行高度由机长决定",
+        "access": "从卡奈玛机场向正规运营商预约小型飞机观光，在批准航线上观察奥扬桌山和瀑布，飞行时间视线路与天气而定。",
+        "bestTime": "上午低云抬升后，桌山顶缘与峡谷同时可见的晴朗时段。",
+        "hasRefUrl": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Real attraction, plausible coords/elevation/access/bestTime, EN i18n present"
+      },
+      {
+        "cityId": "nz-qt-queenstown",
+        "continent": "oceania",
+        "country": "新西兰",
+        "cityNameZh": "皇后镇",
+        "spotIndex": 0,
+        "spotNameZh": "天空缆车 Skyline Queenstown · 鲍勃峰上站湖湾全景平台",
+        "spotNameEn": "Skyline Queenstown Gondola · Bob's Peak Summit Station Lake-and-Bay Panorama Platform",
+        "coords": [
+          168.6494,
+          -45.0264
+        ],
+        "distFromCityKm": 1.1,
+        "elevation": "约790m",
+        "access": "从市中心沿Brecon Street步行约10分钟抵达Skyline缆车下站，乘缆车约5分钟上山；亦可从Tiki Trail徒步约1–1.5小时上山。",
+        "bestTime": "晴日下午至日落后30分钟，4月中下旬及6–9月雪山季尤其适合。",
+        "hasRefUrl": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Real attraction, plausible coords/elevation/access/bestTime, EN i18n present"
+      },
+      {
+        "cityId": "nz-mackenzie-tekapo-mount-john",
+        "continent": "oceania",
+        "country": "新西兰",
+        "cityNameZh": "特卡波湖",
+        "spotIndex": 6,
+        "spotNameZh": "麦格雷戈湖 Lake McGregor · 双湖之间的静水暗夜秘境",
+        "spotNameEn": "Lake McGregor · Calm Water Dark Sky Secret Sanctuary Between Twin Lakes",
+        "coords": [
+          170.4669,
+          -43.9385
+        ],
+        "distFromCityKm": 6.7,
+        "elevation": "约730m",
+        "access": "从Tekapo沿Godley Peaks Road继续北行，依Lake McGregor及当地营地标识进入合法开放区域，车程约25分钟。",
+        "bestTime": "黎明前蓝调至日出后，或新月附近晴朗夜晚。",
+        "hasRefUrl": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Real attraction, plausible coords/elevation/access/bestTime, EN i18n present"
+      },
+      {
+        "cityId": "au-nsw-qld-kgari-moreton",
+        "continent": "oceania",
+        "country": "澳大利亚",
+        "cityNameZh": "K'gari与摩顿岛",
+        "spotIndex": 6,
+        "spotNameZh": "Tangalooma Dolphin Feeding Viewing · 野生海豚蓝调海岸",
+        "spotNameEn": "Tangalooma Dolphin Feeding Viewing · Wild Dolphins Blue Hour Coast",
+        "coords": [
+          153.3717,
+          -27.1809
+        ],
+        "distFromCityKm": 195.6,
+        "elevation": "约1m",
+        "access": "乘Tangalooma客运渡轮抵达度假村码头，持含Wild Dolphin Feeding项目的预订资格，在工作人员指定区域集合。",
+        "bestTime": "日落后按运营方公布的当日海豚活动时间参加。",
+        "hasRefUrl": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Real attraction, plausible coords/elevation/access/bestTime, EN i18n present"
+      },
+      {
+        "cityId": "au-outback-wa-uluru",
+        "continent": "oceania",
+        "country": "澳大利亚",
+        "cityNameZh": "乌鲁鲁",
+        "spotIndex": 7,
+        "spotNameZh": "帝王谷伊甸园 Garden of Eden · 荒漠深谷水潭",
+        "spotNameEn": "Garden of Eden, Kings Canyon · Desert Gorge Waterhole",
+        "coords": [
+          131.5832,
+          -24.2517
+        ],
+        "distFromCityKm": 133.4,
+        "elevation": "约 650m",
+        "access": "沿 Kings Canyon Rim Walk 行至中段，循标识通过阶梯进入谷底支路，额外预留20–40分钟。",
+        "bestTime": "上午08:00–10:30，连续降雨后植被色彩更加浓郁。",
+        "hasRefUrl": false,
+        "auditVerdict": "PASS",
+        "auditNotes": "Real attraction, plausible coords/elevation/access/bestTime, EN i18n present"
+      }
+    ]
+  }
+}

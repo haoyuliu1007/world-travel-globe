@@ -23,7 +23,7 @@
     if (!el) {
       el = document.createElement('div');
       el.id = 'account-modal';
-      el.className = 'diag-modal is-hidden';
+      el.className = 'modal-backdrop is-hidden';
       el.setAttribute('role', 'dialog');
       el.setAttribute('aria-modal', 'true');
       el.setAttribute('aria-label', L('KAIROS 个人账号中心', 'KAIROS Account Center'));
@@ -55,10 +55,10 @@
 
     if (!state.available) {
       modal.innerHTML = `
-        <div class="epic-dialog" style="max-width:480px;">
+        <div class="modal-card" style="max-width:480px;padding:18px;">
           <div class="epic-head">
             <strong>KAIROS · ${esc(L('账号与云端档案', 'Account & Cloud Profile'))}</strong>
-            <button id="acc-close-btn" class="icon-btn" type="button">✕</button>
+            <button id="acc-close-btn" class="modal-close-btn" type="button" aria-label="${esc(L('关闭', 'Close'))}">×</button>
           </div>
           <div class="panel-box" style="margin:0;">
             <p style="font-size:12.5px;color:var(--text-secondary);line-height:1.6;">
@@ -83,10 +83,10 @@
 
     if (!state.authenticated) {
       modal.innerHTML = `
-        <div class="epic-dialog" style="max-width:480px;">
+        <div class="modal-card" style="max-width:480px;padding:18px;">
           <div class="epic-head">
             <strong>KAIROS · ${esc(L('账号登录与注册', 'Sign In / Create Account'))}</strong>
-            <button id="acc-close-btn" class="icon-btn" type="button">✕</button>
+            <button id="acc-close-btn" class="modal-close-btn" type="button" aria-label="${esc(L('关闭', 'Close'))}">×</button>
           </div>
           <div style="display:flex;gap:6px;flex-wrap:wrap;font-size:11px;">
             <span class="source-tag live">D1 Auth Ready</span>
@@ -150,13 +150,13 @@
     const u = state.user;
     const prefs = u.preferences || {};
     modal.innerHTML = `
-      <div class="epic-dialog" style="max-width:560px;">
+      <div class="modal-card" style="max-width:560px;padding:18px;">
         <div class="epic-head">
           <div>
             <strong>${esc(u.displayName || u.email)}</strong>
             <div style="font-size:11px;color:var(--text-secondary);">${esc(u.email)} · ${esc(u.emailVerified ? L('已验证', 'Verified') : L('未验证邮箱', 'Unverified Email'))}</div>
           </div>
-          <button id="acc-close-btn" class="icon-btn" type="button">✕</button>
+          <button id="acc-close-btn" class="modal-close-btn" type="button" aria-label="${esc(L('关闭', 'Close'))}">×</button>
         </div>
 
         ${hasLocalArchive ? `
@@ -243,7 +243,7 @@
       URL.revokeObjectURL(uUrl);
     });
     modal.querySelector('#acc-logout-btn').addEventListener('click', async () => {
-      await global.AuthService.logout({ wipeAccountLocal: false });
+      await global.AuthService.logout({ wipeAccountLocal: true });
       if (typeof global.syncAccountBadgeUI === 'function') global.syncAccountBadgeUI();
       close();
     });

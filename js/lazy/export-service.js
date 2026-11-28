@@ -17,8 +17,12 @@
   }
 
   function csvCell(v) {
-    const s = String(v == null ? '' : v);
-    if (/[",\r\n]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+    let s = String(v == null ? '' : v);
+    // Prevent CSV formula injection (CWE-1236) in Excel / LibreOffice / Google Sheets
+    if (/^[\s\t\r]*[=+\-@]/.test(s) || /^[\t\r]/.test(s)) {
+      s = "'" + s;
+    }
+    if (/[",\r\n']/.test(s)) return `"${s.replace(/"/g, '""')}"`;
     return s;
   }
 
@@ -196,10 +200,35 @@
     return JSON.stringify({ type: 'FeatureCollection', features }, null, 2);
   }
 
+  function toMarkdown(trip) {
+    const t = trip || {};
+    const stops = collectTripStops(t);
+    const lines = [
+      `# KAIROS. — ${t.name || 'World Travel Atlas Itinerary'}`,
+      '',
+      `- **Origin**: ${t.origin || '—'}`,
+      `- **Destination**: ${t.destName || t.destId || '—'}`,
+      `- **Days**: ${t.daysCount || (Array.isArray(t.days) ? t.days.length : 1)}`,
+      `- **Transport**: ${(t.intercityMode || 'flight').toUpperCase()} + ${t.mode || 'driving'}`,
+      ''
+    ];
+    let curDay = null;
+    for (const s of stops) {
+      if (s.day !== curDay) {
+        curDay = s.day;
+        lines.push(`## Day ${s.day} (${s.dateStr})`, '');
+      }
+      const coordTxt = s.coords ? ` (\`${Number(s.coords[1]).toFixed(4)}, ${Number(s.coords[0]).toFixed(4)}\`)` : '';
+      lines.push(`- **${s.startTime}** · ${s.name}${coordTxt} — *${s.durationMin} min*${s.locked ? ' [Locked]' : ''}`);
+      if (s.note) lines.push(`  - ${s.note}`);
+    }
+    return lines.join('\n') + '\n';
+  }
+
   function toPrintableHtml(trip) {
     const t = trip || {};
     const stops = collectTripStops(t);
-    const rows = stops.map((s) => `<tr><td>Day ${s.day} (${s.dateStr})</td><td>${s.startTime}</td><td>${escXml(s.name)}</td><td>${escXml(s.note)}</td></tr>`).join('');
+    const rows = stops.map((s) => `<tr><td>Day ${s.day} (${escXml(s.dateStr)})</td><td>${escXml(s.startTime)}</td><td>${escXml(s.name)}</td><td>${escXml(s.note)}</td></tr>`).join('');
     return `<!doctype html><html><head><meta charset="utf-8"><title>${escXml(t.name || 'KAIROS Trip')}</title>` +
       `<style>body{font-family:system-ui,-apple-system,sans-serif;padding:24px;color:#16283F;}table{width:100%;border-collapse:collapse;margin-top:14px;}th,td{border:1px solid #d1d5db;padding:8px;text-align:left;font-size:13px;}th{background:#f3f4f6;}@media print{body{padding:0;}}</style></head>` +
       `<body><h1>KAIROS. — ${escXml(t.name || 'World Travel Atlas Itinerary')}</h1>` +
@@ -225,6 +254,7 @@
     const slug = String((trip && trip.name) || 'kairos-trip').replace(/[^a-zA-Z0-9\u4e00-\u9fa5_-]+/g, '-').slice(0, 40) || 'kairos-trip';
     const f = String(format || 'json').toLowerCase();
     if (f === 'json') return triggerDownload(toJSON(trip), 'application/json', `${slug}.json`);
+    if (f === 'md' || f === 'markdown') return triggerDownload(toMarkdown(trip), 'text/markdown;charset=utf-8', `${slug}.md`);
     if (f === 'csv') return triggerDownload(toCSV(trip), 'text/csv;charset=utf-8', `${slug}.csv`);
     if (f === 'ics') return triggerDownload(toICS(trip), 'text/calendar;charset=utf-8', `${slug}.ics`);
     if (f === 'gpx') return triggerDownload(toGPX(trip), 'application/gpx+xml', `${slug}.gpx`);
@@ -271,6 +301,7 @@
       { id: 'kml', label: 'Google Earth (.kml)', desc: L('Google Earth / 奥维互动 KML 2.2 图层', 'Google Earth KML 2.2 overlay') },
       { id: 'geojson', label: 'GIS (.geojson)', desc: L('开放标准 GeoJSON FeatureCollection', 'Standard GeoJSON vector features') },
       { id: 'pdf', label: 'Print / PDF', desc: L('干净打印排版，浏览器一键另存 PDF 路书', 'Print-ready HTML/PDF roadbook') },
+      { id: 'md', label: 'Markdown (.md)', desc: L('Notion / Obsidian 可编辑路书大纲', 'Clean Markdown outline for Notion/Obsidian') },
       { id: 'csv', label: 'Spreadsheet (.csv)', desc: L('Excel 兼容 UTF-8 BOM 明细表', 'Excel UTF-8 BOM CSV table') },
       { id: 'json', label: 'Archive (.json)', desc: L('完整无损行程 JSON 数据包', 'Full lossless KAIROS JSON') }
     ];
@@ -300,8 +331,13 @@
       </div>
     `;
     modal.classList.remove('is-hidden');
-    modal.querySelector('#exp-modal-close').addEventListener('click', () => modal.classList.add('is-hidden'));
-    modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.add('is-hidden'); }, { once: true });
+    modal.setAttribute('aria-label', L('多格式开放导出与离线包', 'Open Formats Export & Offline Pack'));
+    const closeExp = () => {
+      modal.classList.add('is-hidden');
+      modal.innerHTML = '';
+    };
+    modal.querySelector('#exp-modal-close').addEventListener('click', closeExp);
+    modal.addEventListener('click', (e) => { if (e.target === modal) closeExp(); });
     modal.querySelectorAll('.exp-fmt-btn').forEach((btn) => {
       btn.addEventListener('click', () => { exportTrip(trip, btn.dataset.fmt); });
     });
@@ -320,6 +356,7 @@
 
   return {
     toJSON,
+    toMarkdown,
     toCSV,
     toICS,
     toGPX,

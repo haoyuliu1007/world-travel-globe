@@ -1,0 +1,43 @@
+{
+  "auditedAt": "2026-11-28T05:37:58.184Z",
+  "inp": {
+    "eventCount": 89,
+    "p98Ms": 160,
+    "p98Event": "keydown",
+    "maxMs": 160,
+    "maxEvent": "keyup",
+    "top5": [
+      {
+        "name": "keyup",
+        "dur": 160,
+        "start": 8800
+      },
+      {
+        "name": "keydown",
+        "dur": 160,
+        "start": 8800
+      },
+      {
+        "name": "mouseover",
+        "dur": 152,
+        "start": 8709
+      },
+      {
+        "name": "mouseout",
+        "dur": 152,
+        "start": 8709
+      },
+      {
+        "name": "pointerenter",
+        "dur": 152,
+        "start": 8709
+      }
+    ]
+  },
+  "weatherTimeoutFallback": {
+    "hasReadableFallback": true,
+    "textLength": 2718,
+    "snippet": "亚洲 · 日本 · 东京都 四季全天候 35.690°N, 139.692°E 东京 · 普利兹克建筑走廊与双塔霓虹天际线 芝公园东京塔 · 六本木森美术馆 · 表参道大师建筑群 · 黑川纪章玻璃曲面 · 浅草晴空塔 · 台场彩虹桥 海拔 0m – 60m（核心城区地面，不含建筑高度） · 建议 5–6 天 · 普利兹克建筑大师密集走廊 · UNESCO勒·柯布西耶建筑遗产 ✓ 已去过 📅 计划中 ★ 想去 + 加入行程 123456789101112 东京将极端现代主义建筑、江户时代寺院、精密轨道交通与四季自然物候压缩进高密度都市肌理。表参道汇聚安藤忠雄、SANAA与赫尔佐格和德梅隆的建筑实验，六本木高空展馆俯瞰东京塔，浅草寺屋",
+    "pageErrors": []
+  }
+}

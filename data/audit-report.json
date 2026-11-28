@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-27T17:13:56.729Z",
+  "generatedAt": "2026-11-28T06:37:37.010Z",
   "schemaVersion": "1.0.0",
   "nonDestructive": true,
   "summary": {
@@ -33,8 +33,8 @@
     "missingItineraryCount": 0,
     "missingWeatherCount": 0,
     "duplicateSpotsInCityCount": 0,
-    "distanceOutliersGT250kmCount": 243,
-    "distanceOutliersGT600kmCount": 65,
+    "distanceOutliersGT250kmCount": 241,
+    "distanceOutliersGT600kmCount": 68,
     "missingSpotFieldsCount": 0
   },
   "reviewQueue": {
@@ -296,6 +296,42 @@
         "spotCoords": [
           40.5833,
           -12.345
+        ],
+        "severity": "high",
+        "reason": "Spot >250km from parent city center (may be multi-site region or coordinate review item)"
+      },
+      {
+        "cityId": "sc-aldabra-outer",
+        "cityName": "阿尔达布拉外岛",
+        "country": "塞舌尔",
+        "spotIndex": 6,
+        "spotName": "鸟岛乌燕鸥繁殖季 Bird Island · 百万海鸟蔽日物候奇观",
+        "distanceKm": 1165,
+        "cityCoords": [
+          46.35,
+          -9.417
+        ],
+        "spotCoords": [
+          55.204,
+          -3.72
+        ],
+        "severity": "high",
+        "reason": "Spot >250km from parent city center (may be multi-site region or coordinate review item)"
+      },
+      {
+        "cityId": "sc-aldabra-outer",
+        "cityName": "阿尔达布拉外岛",
+        "country": "塞舌尔",
+        "spotIndex": 7,
+        "spotName": "锡卢埃特岛蒙蓬莱 Silhouette Island · 花岗岩雨林孤峰与猪笼草",
+        "distanceKm": 1123,
+        "cityCoords": [
+          46.35,
+          -9.417
+        ],
+        "spotCoords": [
+          55.23,
+          -4.488
         ],
         "severity": "high",
         "reason": "Spot >250km from parent city center (may be multi-site region or coordinate review item)"
@@ -661,6 +697,24 @@
         "reason": "Spot >250km from parent city center (may be multi-site region or coordinate review item)"
       },
       {
+        "cityId": "sc-aldabra-outer",
+        "cityName": "阿尔达布拉外岛",
+        "country": "塞舌尔",
+        "spotIndex": 5,
+        "spotName": "德罗什珊瑚岛 Desroches Island · 14公里零遮挡椰林白沙滩",
+        "distanceKm": 906,
+        "cityCoords": [
+          46.35,
+          -9.417
+        ],
+        "spotCoords": [
+          53.65,
+          -5.667
+        ],
+        "severity": "high",
+        "reason": "Spot >250km from parent city center (may be multi-site region or coordinate review item)"
+      },
+      {
         "cityId": "cm-mount-cameroon-rhumsiki",
         "cityName": "喀麦隆双极秘境",
         "country": "喀麦隆",
@@ -890,6 +944,24 @@
         "spotCoords": [
           129.8711,
           32.7417
+        ],
+        "severity": "high",
+        "reason": "Spot >250km from parent city center (may be multi-site region or coordinate review item)"
+      },
+      {
+        "cityId": "sc-aldabra-outer",
+        "cityName": "阿尔达布拉外岛",
+        "country": "塞舌尔",
+        "spotIndex": 4,
+        "spotName": "阿尔方斯环礁 Alphonse · 阿米兰特群岛纯美珊瑚环与蝠鲼湾",
+        "distanceKm": 751,
+        "cityCoords": [
+          46.35,
+          -9.417
+        ],
+        "spotCoords": [
+          52.733,
+          -7.017
         ],
         "severity": "high",
         "reason": "Spot >250km from parent city center (may be multi-site region or coordinate review item)"
@@ -1129,24 +1201,6 @@
         "reason": "Spot >250km from parent city center (may be multi-site region or coordinate review item)"
       },
       {
-        "cityId": "sc-aldabra-outer",
-        "cityName": "阿尔达布拉外岛",
-        "country": "塞舌尔",
-        "spotIndex": 0,
-        "spotName": "阿尔达布拉大环礁 Aldabra Atoll · 十万巨陆龟隆起珊瑚伊甸园",
-        "distanceKm": 627,
-        "cityCoords": [
-          51.5,
-          -7
-        ],
-        "spotCoords": [
-          46.35,
-          -9.417
-        ],
-        "severity": "high",
-        "reason": "Spot >250km from parent city center (may be multi-site region or coordinate review item)"
-      },
-      {
         "cityId": "cn-everest-ali",
         "cityName": "珠峰/阿里",
         "country": "中国",
@@ -1381,24 +1435,6 @@
         "reason": "Spot >250km from parent city center (may be multi-site region or coordinate review item)"
       },
       {
-        "cityId": "sc-aldabra-outer",
-        "cityName": "阿尔达布拉外岛",
-        "country": "塞舌尔",
-        "spotIndex": 6,
-        "spotName": "鸟岛乌燕鸥繁殖季 Bird Island · 百万海鸟蔽日物候奇观",
-        "distanceKm": 549,
-        "cityCoords": [
-          51.5,
-          -7
-        ],
-        "spotCoords": [
-          55.204,
-          -3.72
-        ],
-        "severity": "info",
-        "reason": "Spot >250km from parent city center (may be multi-site region or coordinate review item)"
-      },
-      {
         "cityId": "mz-bazaruto-quirimbas",
         "cityName": "巴扎鲁托",
         "country": "莫桑比克",
@@ -1435,24 +1471,6 @@
         "reason": "Spot >250km from parent city center (may be multi-site region or coordinate review item)"
       },
       {
-        "cityId": "sc-aldabra-outer",
-        "cityName": "阿尔达布拉外岛",
-        "country": "塞舌尔",
-        "spotIndex": 2,
-        "spotName": "阿斯托夫环礁 Astove · 深海垂直千米珊瑚断崖之墙",
-        "distanceKm": 537,
-        "cityCoords": [
-          51.5,
-          -7
-        ],
-        "spotCoords": [
-          47.75,
-          -10.1
-        ],
-        "severity": "info",
-        "reason": "Spot >250km from parent city center (may be multi-site region or coordinate review item)"
-      },
-      {
         "cityId": "ru-sib-chara-sands-baikal-north",
         "cityName": "恰拉沙海与北贝加尔",
         "country": "俄罗斯",
@@ -1471,6 +1489,24 @@
         "reason": "Spot >250km from parent city center (may be multi-site region or coordinate review item)"
       },
       {
+        "cityId": "sc-aldabra-outer",
+        "cityName": "阿尔达布拉外岛",
+        "country": "塞舌尔",
+        "spotIndex": 3,
+        "spotName": "法夸尔环礁 Farquhar Atoll · 飓风带边缘月牙沙洲群",
+        "distanceKm": 531,
+        "cityCoords": [
+          46.35,
+          -9.417
+        ],
+        "spotCoords": [
+          51.133,
+          -10.167
+        ],
+        "severity": "info",
+        "reason": "Spot >250km from parent city center (may be multi-site region or coordinate review item)"
+      },
+      {
         "cityId": "ru-sib-chara-sands-baikal-north",
         "cityName": "恰拉沙海与北贝加尔",
         "country": "俄罗斯",
@@ -1484,42 +1520,6 @@
         "spotCoords": [
           110.0239,
           55.4372
-        ],
-        "severity": "info",
-        "reason": "Spot >250km from parent city center (may be multi-site region or coordinate review item)"
-      },
-      {
-        "cityId": "sc-aldabra-outer",
-        "cityName": "阿尔达布拉外岛",
-        "country": "塞舌尔",
-        "spotIndex": 1,
-        "spotName": "科斯莫莱多环礁 Cosmoledo · 红脚鲣鸟荒原与骨鱼浅坪",
-        "distanceKm": 526,
-        "cityCoords": [
-          51.5,
-          -7
-        ],
-        "spotCoords": [
-          47.583,
-          -9.717
-        ],
-        "severity": "info",
-        "reason": "Spot >250km from parent city center (may be multi-site region or coordinate review item)"
-      },
-      {
-        "cityId": "sc-aldabra-outer",
-        "cityName": "阿尔达布拉外岛",
-        "country": "塞舌尔",
-        "spotIndex": 7,
-        "spotName": "锡卢埃特岛蒙蓬莱 Silhouette Island · 花岗岩雨林孤峰与猪笼草",
-        "distanceKm": 498,
-        "cityCoords": [
-          51.5,
-          -7
-        ],
-        "spotCoords": [
-          55.23,
-          -4.488
         ],
         "severity": "info",
         "reason": "Spot >250km from parent city center (may be multi-site region or coordinate review item)"
@@ -2420,24 +2420,6 @@
         "spotCoords": [
           51.4451,
           33.9784
-        ],
-        "severity": "info",
-        "reason": "Spot >250km from parent city center (may be multi-site region or coordinate review item)"
-      },
-      {
-        "cityId": "sc-aldabra-outer",
-        "cityName": "阿尔达布拉外岛",
-        "country": "塞舌尔",
-        "spotIndex": 3,
-        "spotName": "法夸尔环礁 Farquhar Atoll · 飓风带边缘月牙沙洲群",
-        "distanceKm": 354,
-        "cityCoords": [
-          51.5,
-          -7
-        ],
-        "spotCoords": [
-          51.133,
-          -10.167
         ],
         "severity": "info",
         "reason": "Spot >250km from parent city center (may be multi-site region or coordinate review item)"
@@ -3662,24 +3644,6 @@
         "spotCoords": [
           -179.9997,
           -16.7966
-        ],
-        "severity": "info",
-        "reason": "Spot >250km from parent city center (may be multi-site region or coordinate review item)"
-      },
-      {
-        "cityId": "sc-aldabra-outer",
-        "cityName": "阿尔达布拉外岛",
-        "country": "塞舌尔",
-        "spotIndex": 5,
-        "spotName": "德罗什珊瑚岛 Desroches Island · 14公里零遮挡椰林白沙滩",
-        "distanceKm": 280,
-        "cityCoords": [
-          51.5,
-          -7
-        ],
-        "spotCoords": [
-          53.65,
-          -5.667
         ],
         "severity": "info",
         "reason": "Spot >250km from parent city center (may be multi-site region or coordinate review item)"

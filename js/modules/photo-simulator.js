@@ -126,8 +126,16 @@
     return new Date(Date.UTC(yr, mo, dy, 0, min - off, 0));
   }
 
-  function formatTimeInOffset(dt, utcOffsetMin) {
-    if (!(dt instanceof Date) || Number.isNaN(dt.getTime())) return L('极昼/极夜', 'Polar Day/Night');
+  function formatTimeInOffset(dt, utcOffsetMin, kind, polarState) {
+    if (!(dt instanceof Date) || Number.isNaN(dt.getTime())) {
+      if (kind === 'moon') return L('今日无升落', 'No Rise/Set Today');
+      if (polarState === 'polar_day') return L('极昼', 'Polar Day');
+      if (polarState === 'polar_night') return L('极夜', 'Polar Night');
+      if (kind === 'twilight' || kind === 'night' || polarState === 'white_night') {
+        return L('白夜 / 连续曙暮光', 'Continuous Twilight');
+      }
+      return L('极昼/极夜', 'Polar Day/Night');
+    }
     const off = Number.isFinite(Number(utcOffsetMin)) ? Number(utcOffsetMin) : 0;
     const shifted = new Date(dt.getTime() + off * 60000);
     const hh = String(shifted.getUTCHours()).padStart(2, '0');
@@ -135,11 +143,13 @@
     return `${hh}:${mm}`;
   }
 
-  function fmtTime(dt, utcOffsetMin) {
+  function fmtTime(dt, utcOffsetMin, kind, polarState) {
     if (Number.isFinite(Number(utcOffsetMin))) {
-      return formatTimeInOffset(dt, utcOffsetMin);
+      return formatTimeInOffset(dt, utcOffsetMin, kind, polarState);
     }
-    if (!(dt instanceof Date) || Number.isNaN(dt.getTime())) return L('极昼/极夜', 'Polar Day/Night');
+    if (!(dt instanceof Date) || Number.isNaN(dt.getTime())) {
+      return formatTimeInOffset(null, 0, kind, polarState);
+    }
     const hh = String(dt.getHours()).padStart(2, '0');
     const mm = String(dt.getMinutes()).padStart(2, '0');
     return `${hh}:${mm}`;
@@ -497,9 +507,50 @@
       : tzInfo.offsetMin;
     const dt = localWallTimeToUtcDate(dateStr, minutes, offsetMin);
     const noonDt = localWallTimeToUtcDate(dateStr, 12 * 60, offsetMin);
+    const dayStartDt = localWallTimeToUtcDate(dateStr, 0, offsetMin);
 
-    const times = global.SunCalc.getTimes(noonDt, lat, lng);
+    const times = Object.assign({}, global.SunCalc.getTimes(noonDt, lat, lng));
+    let moonTimes = global.SunCalc.getMoonTimes(dayStartDt, lat, lng) || {};
+    const A = global.Astronomy;
+    if (A && typeof A.Observer === 'function' && typeof A.SearchRiseSet === 'function') {
+      try {
+        const obs = new A.Observer(lat, lng, 0);
+        const astroRes = (fn) => {
+          try {
+            const r = fn();
+            return r && r.date instanceof Date && !Number.isNaN(r.date.getTime()) ? r.date : null;
+          } catch (e) {
+            return null;
+          }
+        };
+        const astroRise = astroRes(() => A.SearchRiseSet(A.Body.Sun, obs, +1, dayStartDt, 1.0));
+        const astroSet = astroRes(() => A.SearchRiseSet(A.Body.Sun, obs, -1, dayStartDt, 1.0));
+        if (astroRise || astroSet || Math.abs(lat) >= 60) {
+          times.sunrise = astroRise;
+          times.sunset = astroSet;
+        }
+        if (typeof A.SearchAltitude === 'function') {
+          times.dawn = astroRes(() => A.SearchAltitude(A.Body.Sun, obs, +1, dayStartDt, 1.0, -6));
+          times.dusk = astroRes(() => A.SearchAltitude(A.Body.Sun, obs, -1, dayStartDt, 1.0, -6));
+          times.goldenHourEnd = astroRes(() => A.SearchAltitude(A.Body.Sun, obs, +1, dayStartDt, 1.0, 6));
+          times.goldenHour = astroRes(() => A.SearchAltitude(A.Body.Sun, obs, -1, dayStartDt, 1.0, 6));
+          times.nightEnd = astroRes(() => A.SearchAltitude(A.Body.Sun, obs, +1, dayStartDt, 1.0, -18));
+          times.night = astroRes(() => A.SearchAltitude(A.Body.Sun, obs, -1, dayStartDt, 1.0, -18));
+        }
+        moonTimes = Object.assign({}, moonTimes, {
+          rise: astroRes(() => A.SearchRiseSet(A.Body.Moon, obs, +1, dayStartDt, 1.0)),
+          set: astroRes(() => A.SearchRiseSet(A.Body.Moon, obs, -1, dayStartDt, 1.0))
+        });
+      } catch (e) {
+        // Keep SunCalc fallback
+      }
+    }
+
     const sunPos = global.SunCalc.getPosition(dt, lat, lng);
+    const noonSunPos = global.SunCalc.getPosition(noonDt, lat, lng);
+    const polarState = (!times.sunrise && !times.sunset)
+      ? (noonSunPos.altitude > 0 ? 'polar_day' : 'polar_night')
+      : ((!times.night || !times.nightEnd) ? 'white_night' : 'normal');
     const sunrisePos = times.sunrise instanceof Date && !Number.isNaN(times.sunrise.getTime())
       ? global.SunCalc.getPosition(times.sunrise, lat, lng)
       : null;
@@ -509,7 +560,6 @@
 
     const moonPos = global.SunCalc.getMoonPosition(dt, lat, lng);
     const moonIllum = global.SunCalc.getMoonIllumination(dt);
-    const moonTimes = global.SunCalc.getMoonTimes(noonDt, lat, lng);
 
     const curve = [];
     for (let h = 0; h <= 24; h += 0.5) {
@@ -528,6 +578,7 @@
       timezoneIana: tzInfo.iana,
       timezoneSource: tzInfo.source,
       isDst: tzInfo.isDst,
+      polarState,
       utcOffsetLabel: formatUtcOffset(offsetMin),
       timezoneDisplay: tzInfo.iana ? `${tzInfo.iana} · ${formatUtcOffset(offsetMin)}${tzInfo.isDst ? ' DST' : ''}` : tzInfo.displayLabel,
       times,
@@ -793,7 +844,7 @@
           </div>
           <div style="font-size:11.5px;line-height:1.65;margin-top:6px;">
             <div>${esc(L('银河核心 (Sgr A*)：方位', 'Galactic Center (Sgr A*): Az'))} <strong class="mono-num">${astro.gcAzimuth}°</strong> (${compassDirName(astro.gcAzimuth)}) · ${esc(L('高度', 'Alt'))} <strong class="mono-num">${astro.gcAltitude}°</strong></div>
-            <div>${esc(L('天文黑夜 (-18°)：', 'Astronomical Night (-18°): '))}<strong class="mono-num">${fmtTime(astro.astroDusk, tzOff)}</strong> — <strong class="mono-num">${fmtTime(astro.astroDawn, tzOff)}</strong></div>
+            <div>${esc(L('天文黑夜 (-18°)：', 'Astronomical Night (-18°): '))}<strong class="mono-num">${fmtTime(astro.astroDusk, tzOff, 'night', sim.polarState)}</strong> — <strong class="mono-num">${fmtTime(astro.astroDawn, tzOff, 'night', sim.polarState)}</strong></div>
             <div>${esc(L('今晚银心可拍窗口：', 'Tonight Core Window: '))}${
               astro.mwWindowStart && astro.mwWindowEnd
                 ? `<strong class="mono-num">${fmtTime(astro.mwWindowStart, tzOff)}–${fmtTime(astro.mwWindowEnd, tzOff)}</strong> (${esc(L('最高仰角', 'Peak Alt'))} <span class="mono-num">${astro.mwPeakAlt}°</span> @ ${astro.mwPeakAz}°)`
@@ -873,24 +924,24 @@
               </label>
             </div>
           </div>
-          <input id="sim-azimuth-range" type="range" min="0" max="359" value="${state.cameraAzimuth}" style="width:100%;margin-top:4px;" />
+          <input id="sim-azimuth-range" type="range" min="0" max="359" value="${state.cameraAzimuth}" style="width:100%;margin-top:4px;" aria-label="${esc(L('调整机位拍摄朝向', 'Camera azimuth angle'))}" />
         </div>
 
         <div id="sim-curve-host">${buildCurveSvg(sim, state.minutes)}</div>
 
         <div class="sim-times-grid">
-          <div class="sim-time-cell"><span>🌅 ${esc(L('蓝调晨 (Dawn)', 'Blue Dawn'))}</span><strong class="mono-num">${fmtTime(sim.times.dawn, tzOff)}</strong></div>
-          <div class="sim-time-cell"><span>☀️ ${esc(L('日出', 'Sunrise'))} (${sim.sunrisePos ? `${sim.sunrisePos.azimuth.toFixed(0)}°` : '--'})</span><strong class="mono-num">${fmtTime(sim.times.sunrise, tzOff)}</strong></div>
-          <div class="sim-time-cell"><span>✨ ${esc(L('黄金晨结束', 'Golden AM End'))}</span><strong class="mono-num">${fmtTime(sim.times.goldenHourEnd, tzOff)}</strong></div>
-          <div class="sim-time-cell"><span>✨ ${esc(L('黄金昏开始', 'Golden PM Start'))}</span><strong class="mono-num">${fmtTime(sim.times.goldenHour, tzOff)}</strong></div>
-          <div class="sim-time-cell"><span>🌇 ${esc(L('日落', 'Sunset'))} (${sim.sunsetPos ? `${sim.sunsetPos.azimuth.toFixed(0)}°` : '--'})</span><strong class="mono-num">${fmtTime(sim.times.sunset, tzOff)}</strong></div>
-          <div class="sim-time-cell"><span>🌆 ${esc(L('蓝调昏 (Dusk)', 'Blue Dusk'))}</span><strong class="mono-num">${fmtTime(sim.times.dusk, tzOff)}</strong></div>
+          <div class="sim-time-cell"><span>🌅 ${esc(L('蓝调晨 (Dawn)', 'Blue Dawn'))}</span><strong class="mono-num">${fmtTime(sim.times.dawn, tzOff, 'twilight', sim.polarState)}</strong></div>
+          <div class="sim-time-cell"><span>☀️ ${esc(L('日出', 'Sunrise'))} (${sim.sunrisePos ? `${sim.sunrisePos.azimuth.toFixed(0)}°` : '--'})</span><strong class="mono-num">${fmtTime(sim.times.sunrise, tzOff, 'rise_set', sim.polarState)}</strong></div>
+          <div class="sim-time-cell"><span>✨ ${esc(L('黄金晨结束', 'Golden AM End'))}</span><strong class="mono-num">${fmtTime(sim.times.goldenHourEnd, tzOff, 'rise_set', sim.polarState)}</strong></div>
+          <div class="sim-time-cell"><span>✨ ${esc(L('黄金昏开始', 'Golden PM Start'))}</span><strong class="mono-num">${fmtTime(sim.times.goldenHour, tzOff, 'rise_set', sim.polarState)}</strong></div>
+          <div class="sim-time-cell"><span>🌇 ${esc(L('日落', 'Sunset'))} (${sim.sunsetPos ? `${sim.sunsetPos.azimuth.toFixed(0)}°` : '--'})</span><strong class="mono-num">${fmtTime(sim.times.sunset, tzOff, 'rise_set', sim.polarState)}</strong></div>
+          <div class="sim-time-cell"><span>🌆 ${esc(L('蓝调昏 (Dusk)', 'Blue Dusk'))}</span><strong class="mono-num">${fmtTime(sim.times.dusk, tzOff, 'twilight', sim.polarState)}</strong></div>
         </div>
 
         <div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border-hairline);font-size:11.5px;">
           <div>🌙 <strong>${esc(L('月相与月出月落', 'Moon Phase & Rise/Set'))}</strong>：${esc(moonPhaseLabel(sim.moonIllum.phase))} · ${esc(L('照明度', 'Illum'))} <span class="mono-num">${Math.round(sim.moonIllum.fraction * 100)}%</span></div>
           <div style="color:var(--text-secondary);margin-top:2px;">
-            ${esc(L('月出：', 'Moonrise: '))}<span class="mono-num">${fmtTime(sim.moonTimes.rise, tzOff)}</span> · ${esc(L('月落：', 'Moonset: '))}<span class="mono-num">${fmtTime(sim.moonTimes.set, tzOff)}</span> · ${esc(L('月亮方位', 'Moon Az'))} <span class="mono-num">${sim.moonPos.azimuth.toFixed(0)}°</span> / ${esc(L('高度', 'Alt'))} <span class="mono-num">${sim.moonPos.altitude.toFixed(1)}°</span>
+            ${esc(L('月出：', 'Moonrise: '))}<span class="mono-num">${fmtTime(sim.moonTimes.rise, tzOff, 'moon', sim.polarState)}</span> · ${esc(L('月落：', 'Moonset: '))}<span class="mono-num">${fmtTime(sim.moonTimes.set, tzOff, 'moon', sim.polarState)}</span> · ${esc(L('月亮方位', 'Moon Az'))} <span class="mono-num">${sim.moonPos.azimuth.toFixed(0)}°</span> / ${esc(L('高度', 'Alt'))} <span class="mono-num">${sim.moonPos.altitude.toFixed(1)}°</span>
           </div>
         </div>
       </div>
@@ -1279,6 +1330,9 @@
     computeLensFov,
     computeViewfinderProjection,
     computeAstronomyExtras,
+    setDate: (dateStr) => {
+      if (/^\d{4}-\d{2}-\d{2}$/.test(String(dateStr || ''))) state.dateStr = String(dateStr);
+    },
     mount,
     clearGlobeOverlay
   };

@@ -1,0 +1,2207 @@
+{
+  "auditTimestamp": "2026-11-28T04:25:57.442Z",
+  "scope": "Workstream D - Phase 5: Core Business Algorithms Audit",
+  "tripPlannerAndTransport": {
+    "atlasCount": 722,
+    "hubsCount": 722,
+    "cityAliasesAudit": [
+      {
+        "alias": "beijing",
+        "hardcodedId": "cn-beijing",
+        "existsInAtlas": true,
+        "topMatches": [
+          {
+            "id": "cn-beijing",
+            "name": "北京 · 紫禁城与未来建筑"
+          }
+        ]
+      },
+      {
+        "alias": "shanghai",
+        "hardcodedId": "cn-shanghai",
+        "existsInAtlas": true,
+        "topMatches": [
+          {
+            "id": "cn-shanghai",
+            "name": "上海 · 外滩西岸摩登"
+          }
+        ]
+      },
+      {
+        "alias": "tokyo",
+        "hardcodedId": "jp-kanto-tokyo",
+        "existsInAtlas": true,
+        "topMatches": [
+          {
+            "id": "jp-kanto-tokyo",
+            "name": "东京 · 普利兹克建筑走廊与双塔霓虹天际线"
+          }
+        ]
+      },
+      {
+        "alias": "kyoto",
+        "hardcodedId": "jp-kansai-kyoto",
+        "existsInAtlas": true,
+        "topMatches": [
+          {
+            "id": "jp-kansai-kyoto",
+            "name": "京都 · 千年古都的樱雪枫海与未来主义钢铁建筑"
+          }
+        ]
+      },
+      {
+        "alias": "paris",
+        "hardcodedId": "fr-paris",
+        "existsInAtlas": false,
+        "topMatches": [
+          {
+            "id": "fr-paris-nw-etretat-loire",
+            "name": "诺曼底象鼻山与卢瓦尔河谷 · 白垩海崖与文艺复兴王室城堡"
+          },
+          {
+            "id": "fr-paris-nw-paris",
+            "name": "巴黎 · 塞纳河建筑史诗与光影之都"
+          },
+          {
+            "id": "fr-paris-nw-mont-saint-michel",
+            "name": "圣米歇尔山 · 海潮孤岛与哥特天空修道院"
+          }
+        ]
+      },
+      {
+        "alias": "london",
+        "hardcodedId": "uk-london",
+        "existsInAtlas": false,
+        "topMatches": [
+          {
+            "id": "uk-south-london",
+            "name": "伦敦 · 泰晤士河蓝调与世界建筑大师长廊"
+          }
+        ]
+      },
+      {
+        "alias": "new york",
+        "hardcodedId": "us-east-nyc",
+        "existsInAtlas": false,
+        "topMatches": [
+          {
+            "id": "us-ne-metro-new-york",
+            "name": "纽约 · 曼哈顿云端建筑群与中央公园四季"
+          }
+        ]
+      },
+      {
+        "alias": "zurich",
+        "hardcodedId": "ch-zurich-lucerne",
+        "existsInAtlas": false,
+        "topMatches": []
+      },
+      {
+        "alias": "reykjavik",
+        "hardcodedId": "is-reykjavik-golden-circle",
+        "existsInAtlas": false,
+        "topMatches": [
+          {
+            "id": "is-sw-reykjavik-blue-lagoon",
+            "name": "雷克雅未克与蓝湖温泉 · 极北建筑美学与火山地热秘境"
+          }
+        ]
+      },
+      {
+        "alias": "kathmandu",
+        "hardcodedId": "np-bt-kathmandu-nagarkot",
+        "existsInAtlas": true,
+        "topMatches": [
+          {
+            "id": "np-bt-kathmandu-nagarkot",
+            "name": "加德满都与纳加阔特 · 千年红砖神庙与喜马拉雅晨曦"
+          }
+        ]
+      }
+    ],
+    "stateIsolation": {
+      "afterResetDraftRetainsNonResetFields": {
+        "intercityMode": "hsr",
+        "transportMode": "transit",
+        "extraDestQuery": "京都",
+        "hotelName": "Park Hyatt Tokyo"
+      },
+      "tripTokyoId": "trip_mwzwqps4_91ul",
+      "tripBeijingId": "trip_mwzwqps5_xj7b",
+      "isolatedTrips": true,
+      "tripTokyoHasZeroTravelConflictWithHsrAcrossSea": []
+    },
+    "queryResolution": {
+      "北京": {
+        "count": 1,
+        "top3": [
+          {
+            "id": "cn-beijing",
+            "name": "北京 · 紫禁城与未来建筑",
+            "shortName": "北京",
+            "country": "中国"
+          }
+        ]
+      },
+      "beijing": {
+        "count": 1,
+        "top3": [
+          {
+            "id": "cn-beijing",
+            "name": "北京 · 紫禁城与未来建筑",
+            "shortName": "北京",
+            "country": "中国"
+          }
+        ]
+      },
+      "peking": {
+        "count": 1,
+        "top3": [
+          {
+            "id": "cn-beijing",
+            "name": "北京 · 紫禁城与未来建筑",
+            "shortName": "北京",
+            "country": "中国"
+          }
+        ]
+      },
+      "Tokio": {
+        "count": 0,
+        "top3": []
+      },
+      "Beijng": {
+        "count": 0,
+        "top3": []
+      },
+      "Kyooto": {
+        "count": 0,
+        "top3": []
+      },
+      "Parris": {
+        "count": 0,
+        "top3": []
+      },
+      "London": {
+        "count": 1,
+        "top3": [
+          {
+            "id": "uk-south-london",
+            "name": "伦敦 · 泰晤士河蓝调与世界建筑大师长廊",
+            "shortName": "伦敦",
+            "country": "英国"
+          }
+        ]
+      },
+      "Paris": {
+        "count": 3,
+        "top3": [
+          {
+            "id": "fr-paris-nw-etretat-loire",
+            "name": "诺曼底象鼻山与卢瓦尔河谷 · 白垩海崖与文艺复兴王室城堡",
+            "shortName": "象鼻山与卢瓦尔河谷",
+            "country": "法国"
+          },
+          {
+            "id": "fr-paris-nw-paris",
+            "name": "巴黎 · 塞纳河建筑史诗与光影之都",
+            "shortName": "巴黎",
+            "country": "法国"
+          },
+          {
+            "id": "fr-paris-nw-mont-saint-michel",
+            "name": "圣米歇尔山 · 海潮孤岛与哥特天空修道院",
+            "shortName": "圣米歇尔山",
+            "country": "法国"
+          }
+        ]
+      },
+      "Cairo": {
+        "count": 1,
+        "top3": [
+          {
+            "id": "eg-cairo-giza",
+            "name": "开罗与吉萨 · 千年黄金金字塔群与尼罗河暮色",
+            "shortName": "开罗与吉萨",
+            "country": "埃及"
+          }
+        ]
+      },
+      "Amman": {
+        "count": 0,
+        "top3": []
+      },
+      "Ushuaia": {
+        "count": 1,
+        "top3": [
+          {
+            "id": "ar-patagonia-ushuaia",
+            "name": "乌斯怀亚 · 世界尽头森林、比格尔海峡与企鹅群岛",
+            "shortName": "乌斯怀亚",
+            "country": "阿根廷"
+          }
+        ]
+      },
+      "Antarctica": {
+        "count": 0,
+        "top3": []
+      },
+      "Honolulu": {
+        "count": 0,
+        "top3": []
+      },
+      "Maui": {
+        "count": 1,
+        "top3": [
+          {
+            "id": "us-hi-east-maui-haleakala-hana",
+            "name": "茂宜岛哈雷阿卡拉与哈纳之路 · 火星云海与热带雨林",
+            "shortName": "茂宜岛",
+            "country": "美国"
+          }
+        ]
+      },
+      "Taipei": {
+        "count": 1,
+        "top3": [
+          {
+            "id": "cn-taipei-jiufen",
+            "name": "台北与九份 · 101山海城市、故宫珍宝与千年山城灯火",
+            "shortName": "台北",
+            "country": "中国"
+          }
+        ]
+      },
+      "山": {
+        "count": 244,
+        "top3": [
+          {
+            "id": "jp-setouchi-tottori-kinosaki-izumo",
+            "name": "鸟取、城崎与出云 · 日本海沙丘、第一庭园与雪国温泉",
+            "shortName": "山阴秘境",
+            "country": "日本"
+          },
+          {
+            "id": "cn-datong",
+            "name": "大同 · 悬空木塔石窟",
+            "shortName": "大同",
+            "country": "中国"
+          },
+          {
+            "id": "cn-pingyao",
+            "name": "平遥与壶口 · 晋商黄河",
+            "shortName": "平遥/壶口",
+            "country": "中国"
+          }
+        ]
+      },
+      "圣": {
+        "count": 71,
+        "top3": [
+          {
+            "id": "mx-central-san-miguel-queretaro",
+            "name": "圣米格尔与克雷塔罗 · 粉红哥特尖塔和伯纳尔独石峰",
+            "shortName": "圣米格尔",
+            "country": "墨西哥"
+          },
+          {
+            "id": "ca-isl-west-san-blas-canal",
+            "name": "圣布拉斯群岛与巴拿马运河 · 珊瑚岛天堂与两洋工程",
+            "shortName": "圣布拉斯群岛",
+            "country": "巴拿马"
+          },
+          {
+            "id": "ec-galapagos-san-cristobal-darwin",
+            "name": "加拉帕戈斯圣克里斯托瓦尔岛与达尔文水域 · 锤头鲨风暴与信天翁海崖",
+            "shortName": "圣克里斯托瓦尔与达尔文",
+            "country": "厄瓜多尔"
+          }
+        ]
+      },
+      "岛": {
+        "count": 172,
+        "top3": [
+          {
+            "id": "cn-jilin-yanji",
+            "name": "吉林雾凇岛与延吉 · 雾凇美食",
+            "shortName": "吉林/延吉",
+            "country": "中国"
+          },
+          {
+            "id": "cn-xiamen-quanzhou",
+            "name": "厦门与泉州 · 琴岛海丝",
+            "shortName": "厦门/泉州",
+            "country": "中国"
+          },
+          {
+            "id": "cn-xiapu-pingtan",
+            "name": "霞浦与平潭岛 · 滩涂蓝眼泪",
+            "shortName": "霞浦/平潭",
+            "country": "中国"
+          }
+        ]
+      },
+      "Atlantis": {
+        "count": 0,
+        "top3": []
+      },
+      "火星": {
+        "count": 11,
+        "top3": [
+          {
+            "id": "me-levant-arabia-wadi-rum-dead-sea",
+            "name": "瓦迪拉姆与死海 · 火星红沙与地球最低盐晶海岸",
+            "shortName": "火星死海",
+            "country": "约旦"
+          },
+          {
+            "id": "us-hi-west-molokai-lanai",
+            "name": "莫洛凯岛与拉奈岛 · 千米海崖瀑布与火星红岩秘境",
+            "shortName": "莫洛凯与拉奈",
+            "country": "美国"
+          },
+          {
+            "id": "cn-qinghai",
+            "name": "青海湖柴达木与茫崖 · 天空之镜与火星无人区",
+            "shortName": "青海湖",
+            "country": "中国"
+          }
+        ]
+      },
+      "": {
+        "count": 0,
+        "top3": []
+      },
+      "   ": {
+        "count": 0,
+        "top3": []
+      }
+    },
+    "intercityCrossBorderSea": [
+      {
+        "pair": "Beijing -> Tokyo",
+        "destId": "jp-kanto-tokyo",
+        "destHub": {
+          "railAvailable": true,
+          "ferryLikely": false
+        },
+        "modes": {
+          "flight": {
+            "feasible": true,
+            "distanceKm": 2092,
+            "durationMin": 296
+          },
+          "hsr": {
+            "feasible": true,
+            "distanceKm": 2469,
+            "durationMin": 605
+          },
+          "rail": {
+            "feasible": true,
+            "distanceKm": 2552,
+            "durationMin": 1422
+          },
+          "coach": {
+            "feasible": false,
+            "distanceKm": 2615,
+            "durationMin": 2199
+          },
+          "driving": {
+            "feasible": false,
+            "distanceKm": 2594,
+            "durationMin": 1946
+          },
+          "ferry": {
+            "feasible": false,
+            "distanceKm": 2092,
+            "durationMin": 3348
+          }
+        },
+        "localTransitLeg": {
+          "routed": false,
+          "crossSea": false,
+          "distanceKm": 2636.42,
+          "durationMin": 6092
+        }
+      },
+      {
+        "pair": "Tokyo -> Beijing",
+        "destId": "cn-beijing",
+        "destHub": {
+          "railAvailable": true,
+          "ferryLikely": false
+        },
+        "modes": {
+          "flight": {
+            "feasible": true,
+            "distanceKm": 2093,
+            "durationMin": 296
+          },
+          "hsr": {
+            "feasible": true,
+            "distanceKm": 2470,
+            "durationMin": 605
+          },
+          "rail": {
+            "feasible": true,
+            "distanceKm": 2553,
+            "durationMin": 1423
+          },
+          "coach": {
+            "feasible": false,
+            "distanceKm": 2616,
+            "durationMin": 2200
+          },
+          "driving": {
+            "feasible": false,
+            "distanceKm": 2595,
+            "durationMin": 1946
+          },
+          "ferry": {
+            "feasible": false,
+            "distanceKm": 2093,
+            "durationMin": 3350
+          }
+        },
+        "localTransitLeg": {
+          "routed": false,
+          "crossSea": false,
+          "distanceKm": 2637.67,
+          "durationMin": 6095
+        }
+      },
+      {
+        "pair": "London -> Paris",
+        "destId": "fr-paris-nw-paris",
+        "destHub": {
+          "railAvailable": true,
+          "ferryLikely": false
+        },
+        "modes": {
+          "flight": {
+            "feasible": true,
+            "distanceKm": 342,
+            "durationMin": 161
+          },
+          "hsr": {
+            "feasible": true,
+            "distanceKm": 404,
+            "durationMin": 128
+          },
+          "rail": {
+            "feasible": true,
+            "distanceKm": 417,
+            "durationMin": 258
+          },
+          "coach": {
+            "feasible": true,
+            "distanceKm": 428,
+            "durationMin": 376
+          },
+          "driving": {
+            "feasible": true,
+            "distanceKm": 424,
+            "durationMin": 318
+          },
+          "ferry": {
+            "feasible": true,
+            "distanceKm": 342,
+            "durationMin": 585
+          }
+        },
+        "localTransitLeg": {
+          "routed": false,
+          "crossSea": false,
+          "distanceKm": 430.95,
+          "durationMin": 1003
+        }
+      },
+      {
+        "pair": "Taipei -> Tokyo",
+        "destId": "jp-kanto-tokyo",
+        "destHub": {
+          "railAvailable": true,
+          "ferryLikely": false
+        },
+        "modes": {
+          "flight": {
+            "feasible": true,
+            "distanceKm": 2099,
+            "durationMin": 296
+          },
+          "hsr": {
+            "feasible": true,
+            "distanceKm": 2477,
+            "durationMin": 607
+          },
+          "rail": {
+            "feasible": true,
+            "distanceKm": 2561,
+            "durationMin": 1427
+          },
+          "coach": {
+            "feasible": false,
+            "distanceKm": 2624,
+            "durationMin": 2206
+          },
+          "driving": {
+            "feasible": false,
+            "distanceKm": 2603,
+            "durationMin": 1952
+          },
+          "ferry": {
+            "feasible": false,
+            "distanceKm": 2099,
+            "durationMin": 3359
+          }
+        },
+        "localTransitLeg": {
+          "routed": false,
+          "crossSea": false,
+          "distanceKm": 2644.34,
+          "durationMin": 6110
+        }
+      },
+      {
+        "pair": "Ushuaia -> Antarctica",
+        "destId": "aq-antarctic-sound-brown-bluff",
+        "destHub": {
+          "railAvailable": false,
+          "ferryLikely": true
+        },
+        "modes": {
+          "flight": {
+            "feasible": true,
+            "distanceKm": 1158,
+            "durationMin": 224
+          },
+          "hsr": {
+            "feasible": false,
+            "distanceKm": 1366,
+            "durationMin": 350
+          },
+          "rail": {
+            "feasible": false,
+            "distanceKm": 1413,
+            "durationMin": 801
+          },
+          "coach": {
+            "feasible": false,
+            "distanceKm": 1448,
+            "durationMin": 1226
+          },
+          "driving": {
+            "feasible": false,
+            "distanceKm": 1436,
+            "durationMin": 1077
+          },
+          "ferry": {
+            "feasible": true,
+            "distanceKm": 1158,
+            "durationMin": 1873
+          }
+        },
+        "localTransitLeg": {
+          "routed": false,
+          "crossSea": false,
+          "distanceKm": 1458.84,
+          "durationMin": 3375
+        }
+      },
+      {
+        "pair": "Honolulu -> Maui",
+        "destId": "us-hi-east-maui-haleakala-hana",
+        "destHub": {
+          "railAvailable": false,
+          "ferryLikely": true
+        },
+        "modes": {
+          "flight": {
+            "feasible": true,
+            "distanceKm": 169,
+            "durationMin": 148
+          },
+          "hsr": {
+            "feasible": false,
+            "distanceKm": 199,
+            "durationMin": 81
+          },
+          "rail": {
+            "feasible": false,
+            "distanceKm": 206,
+            "durationMin": 142
+          },
+          "coach": {
+            "feasible": true,
+            "distanceKm": 211,
+            "durationMin": 196
+          },
+          "driving": {
+            "feasible": true,
+            "distanceKm": 210,
+            "durationMin": 157
+          },
+          "ferry": {
+            "feasible": true,
+            "distanceKm": 169,
+            "durationMin": 312
+          }
+        },
+        "localTransitLeg": {
+          "routed": false,
+          "crossSea": false,
+          "distanceKm": 213.19,
+          "durationMin": 500
+        }
+      },
+      {
+        "pair": "Cairo -> Amman/Petra",
+        "destId": "me-levant-arabia-petra",
+        "destHub": {
+          "railAvailable": false,
+          "ferryLikely": false
+        },
+        "modes": {
+          "flight": {
+            "feasible": true,
+            "distanceKm": 416,
+            "durationMin": 167
+          },
+          "hsr": {
+            "feasible": false,
+            "distanceKm": 491,
+            "durationMin": 148
+          },
+          "rail": {
+            "feasible": false,
+            "distanceKm": 508,
+            "durationMin": 307
+          },
+          "coach": {
+            "feasible": true,
+            "distanceKm": 520,
+            "durationMin": 453
+          },
+          "driving": {
+            "feasible": true,
+            "distanceKm": 516,
+            "durationMin": 387
+          },
+          "ferry": {
+            "feasible": true,
+            "distanceKm": 416,
+            "durationMin": 702
+          }
+        },
+        "localTransitLeg": {
+          "routed": false,
+          "crossSea": false,
+          "distanceKm": 524.45,
+          "durationMin": 1218
+        }
+      },
+      {
+        "pair": "Seoul -> Tokyo",
+        "destId": "jp-kanto-tokyo",
+        "destHub": {
+          "railAvailable": true,
+          "ferryLikely": false
+        },
+        "modes": {
+          "flight": {
+            "feasible": true,
+            "distanceKm": 1153,
+            "durationMin": 224
+          },
+          "hsr": {
+            "feasible": true,
+            "distanceKm": 1361,
+            "durationMin": 349
+          },
+          "rail": {
+            "feasible": true,
+            "distanceKm": 1407,
+            "durationMin": 797
+          },
+          "coach": {
+            "feasible": false,
+            "distanceKm": 1441,
+            "durationMin": 1221
+          },
+          "driving": {
+            "feasible": true,
+            "distanceKm": 1430,
+            "durationMin": 1072
+          },
+          "ferry": {
+            "feasible": false,
+            "distanceKm": 1153,
+            "durationMin": 1866
+          }
+        },
+        "localTransitLeg": {
+          "routed": false,
+          "crossSea": false,
+          "distanceKm": 1452.29,
+          "durationMin": 3359
+        }
+      }
+    ],
+    "multiCityChaining": {
+      "destIds": [
+        "cn-beijing",
+        "jp-kanto-tokyo"
+      ],
+      "intercityComparisonDestId": "cn-beijing",
+      "missingBetweenCityLeg": true,
+      "daysWithCrossSeaSameDayStops": [
+        {
+          "day": 1,
+          "destSet": [
+            "cn-beijing"
+          ],
+          "stopCount": 4,
+          "maxJumpKm": 46
+        },
+        {
+          "day": 2,
+          "destSet": [
+            "cn-beijing",
+            "jp-kanto-tokyo"
+          ],
+          "stopCount": 4,
+          "maxJumpKm": 2111
+        },
+        {
+          "day": 3,
+          "destSet": [
+            "jp-kanto-tokyo"
+          ],
+          "stopCount": 4,
+          "maxJumpKm": 2
+        },
+        {
+          "day": 4,
+          "destSet": [
+            "jp-kanto-tokyo"
+          ],
+          "stopCount": 4,
+          "maxJumpKm": 10
+        }
+      ],
+      "conflictsDetected": [
+        {
+          "day": 2,
+          "type": "distance_overload",
+          "message": "Day 2 直线跨度 4260 km，请注意每日车程负载"
+        }
+      ]
+    },
+    "routingFallback": {
+      "over2500km": {
+        "routed": false,
+        "crossSea": true,
+        "distanceKm": 8141.06,
+        "durationMin": null
+      },
+      "under2500CrossSeaWhenOsrmFails": {
+        "routed": false,
+        "crossSea": true,
+        "distanceKm": 2092.4,
+        "durationMin": null
+      },
+      "overlandLocalWhenOsrmFails": {
+        "routed": false,
+        "crossSea": true,
+        "provider": "Unroutable / Straight-Line Reference",
+        "distanceKm": 3.39,
+        "durationMin": null
+      }
+    },
+    "timezoneAndIdl": {
+      "tripPlannerUsesTimezoneService": false,
+      "tokyoToHonoluluMaxLonJumpDeg": 357.8,
+      "crossesAntimeridianWithWrapJump": true,
+      "samplePointsNearIdl": [
+        [
+          166.3999,
+          33.8508
+        ],
+        [
+          168.7342,
+          33.3998
+        ],
+        [
+          171.0433,
+          32.9056
+        ],
+        [
+          173.3257,
+          32.3694
+        ],
+        [
+          175.5801,
+          31.7926
+        ],
+        [
+          177.8057,
+          31.1766
+        ],
+        [
+          -179.9984,
+          30.5228
+        ],
+        [
+          -177.8326,
+          29.8327
+        ],
+        [
+          -175.6973,
+          29.1077
+        ],
+        [
+          -173.5925,
+          28.3494
+        ],
+        [
+          -171.5182,
+          27.5593
+        ],
+        [
+          -169.4741,
+          26.7388
+        ],
+        [
+          -167.4598,
+          25.8894
+        ],
+        [
+          -165.4748,
+          25.0126
+        ]
+      ]
+    },
+    "openingHoursAndConflicts": {
+      "hasOpeningHoursLogic": false,
+      "walking94kmAnd10hDwellWarnings": [],
+      "bugModeCheckVsIntercityMode": "Line 308 checks `trip.mode !== \"flight\"` even though `trip.mode` is local mode (driving/walking/cycling/transit/mixed)"
+    },
+    "twoOptAndLockedStops": {
+      "inputOrderDistKm": 83.09,
+      "twoOptFromForwardOrderKm": 22.92,
+      "twoOptFromReversedOrderKm": 25.79,
+      "twoOptOrderDependent": true,
+      "twoOptOrderIdsForward": [
+        "a",
+        "c",
+        "e",
+        "b",
+        "d"
+      ],
+      "twoOptOrderIdsReversed": [
+        "e",
+        "a",
+        "c",
+        "b",
+        "d"
+      ],
+      "lockedIndexPreservedAt1": true,
+      "lightResortIncreasesDistanceKm": {
+        "beforeLightResortKm": 22.92,
+        "afterReoptWithLightResortKm": 45.84
+      },
+      "missingCoordsCrash": "Cannot read properties of undefined (reading '1')"
+    }
+  },
+  "crdt": {
+    "mergeUserProfilesProperties": {
+      "trials": 600,
+      "commutativityFailures": 0,
+      "associativityFailures": 0,
+      "idempotenceFailures": 0,
+      "firstCounterexample": null
+    },
+    "mergeTripDocumentsProperties": {
+      "trials": 600,
+      "commutativityFailures": 440,
+      "associativityFailures": 115,
+      "idempotenceFailures": 0,
+      "firstCommutativityCounterexample": {
+        "trial": 0,
+        "a": {
+          "id": "trip_1",
+          "name": "Trip-2",
+          "updatedAt": 1200,
+          "clock": 1,
+          "days": [
+            {
+              "day": 1,
+              "title": "Day 1-1",
+              "stops": [
+                {
+                  "id": "s_1",
+                  "name": "Stop 1-2",
+                  "updatedAt": 1900
+                },
+                {
+                  "id": "s_2",
+                  "name": "Stop 2-1",
+                  "updatedAt": 1500
+                },
+                {
+                  "id": "s_3",
+                  "name": "Stop 3-2"
+                }
+              ]
+            },
+            {
+              "day": 2,
+              "title": "Day 2-2",
+              "stops": []
+            }
+          ],
+          "stopTombstones": {}
+        },
+        "b": {
+          "id": "trip_1",
+          "name": "Trip-1",
+          "updatedAt": 1800,
+          "clock": 0,
+          "days": [
+            {
+              "day": 1,
+              "title": "Day 1-0",
+              "stops": [
+                {
+                  "id": "s_2",
+                  "name": "Stop 2-0"
+                },
+                {
+                  "id": "s_3",
+                  "name": "Stop 3-2",
+                  "updatedAt": 1300
+                }
+              ]
+            },
+            {
+              "day": 2,
+              "title": "Day 2-2",
+              "stops": [
+                {
+                  "id": "s_1",
+                  "name": "Stop 1-0",
+                  "updatedAt": 1000
+                },
+                {
+                  "id": "s_2",
+                  "name": "Stop 2-0"
+                },
+                {
+                  "id": "s_3",
+                  "name": "Stop 3-0"
+                }
+              ]
+            }
+          ],
+          "stopTombstones": {
+            "s_2": 1300
+          }
+        },
+        "ab": {
+          "id": "trip_1",
+          "name": "Trip-1",
+          "updatedAt": 1800,
+          "clock": 1,
+          "days": [
+            {
+              "day": 1,
+              "title": "Day 1-1",
+              "stops": [
+                {
+                  "id": "s_1",
+                  "name": "Stop 1-2",
+                  "updatedAt": 1900
+                },
+                {
+                  "id": "s_2",
+                  "name": "Stop 2-1",
+                  "updatedAt": 1500
+                },
+                {
+                  "id": "s_3",
+                  "name": "Stop 3-2",
+                  "updatedAt": 1300
+                }
+              ],
+              "routeSummary": null
+            },
+            {
+              "day": 2,
+              "title": "Day 2-2",
+              "stops": [
+                {
+                  "id": "s_1",
+                  "name": "Stop 1-0",
+                  "updatedAt": 1000
+                },
+                {
+                  "id": "s_2",
+                  "name": "Stop 2-0"
+                },
+                {
+                  "id": "s_3",
+                  "name": "Stop 3-0"
+                }
+              ],
+              "routeSummary": null
+            }
+          ],
+          "stopTombstones": {
+            "s_2": 1300
+          }
+        },
+        "ba": {
+          "id": "trip_1",
+          "name": "Trip-1",
+          "updatedAt": 1800,
+          "clock": 1,
+          "days": [
+            {
+              "day": 1,
+              "title": "Day 1-0",
+              "stops": [
+                {
+                  "id": "s_1",
+                  "name": "Stop 1-2",
+                  "updatedAt": 1900
+                },
+                {
+                  "id": "s_2",
+                  "name": "Stop 2-1",
+                  "updatedAt": 1500
+                },
+                {
+                  "id": "s_3",
+                  "name": "Stop 3-2",
+                  "updatedAt": 1300
+                }
+              ],
+              "routeSummary": null
+            },
+            {
+              "day": 2,
+              "title": "Day 2-2",
+              "stops": [
+                {
+                  "id": "s_1",
+                  "name": "Stop 1-0",
+                  "updatedAt": 1000
+                },
+                {
+                  "id": "s_2",
+                  "name": "Stop 2-0"
+                },
+                {
+                  "id": "s_3",
+                  "name": "Stop 3-0"
+                }
+              ],
+              "routeSummary": null
+            }
+          ],
+          "stopTombstones": {
+            "s_2": 1300
+          }
+        }
+      },
+      "firstAssociativityCounterexample": {
+        "trial": 8,
+        "a": {
+          "id": "trip_1",
+          "name": "Trip-2",
+          "updatedAt": 1000,
+          "clock": 2,
+          "days": [
+            {
+              "day": 1,
+              "title": "Day 1-1",
+              "stops": [
+                {
+                  "id": "s_1",
+                  "name": "Stop 1-0",
+                  "updatedAt": 1900
+                },
+                {
+                  "id": "s_2",
+                  "name": "Stop 2-1"
+                },
+                {
+                  "id": "s_3",
+                  "name": "Stop 3-2",
+                  "updatedAt": 1100
+                }
+              ]
+            },
+            {
+              "day": 2,
+              "title": "Day 2-1",
+              "stops": [
+                {
+                  "id": "s_1",
+                  "name": "Stop 1-1"
+                }
+              ]
+            }
+          ],
+          "stopTombstones": {
+            "s_1": 1200,
+            "s_2": 1600
+          }
+        },
+        "b": {
+          "id": "trip_1",
+          "name": "Trip-0",
+          "updatedAt": 1300,
+          "clock": 3,
+          "days": [
+            {
+              "day": 2,
+              "title": "Day 2-3",
+              "stops": [
+                {
+                  "id": "s_1",
+                  "name": "Stop 1-2"
+                },
+                {
+                  "id": "s_2",
+                  "name": "Stop 2-0",
+                  "updatedAt": 1700
+                },
+                {
+                  "id": "s_3",
+                  "name": "Stop 3-0",
+                  "updatedAt": 1100
+                }
+              ]
+            }
+          ],
+          "stopTombstones": {
+            "s_1": 1400,
+            "s_2": 1000,
+            "s_3": 1700
+          }
+        },
+        "c": {
+          "id": "trip_1",
+          "name": "Trip-0",
+          "updatedAt": 1900,
+          "clock": 3,
+          "days": [
+            {
+              "day": 1,
+              "title": "Day 1-3",
+              "stops": [
+                {
+                  "id": "s_3",
+                  "name": "Stop 3-2"
+                }
+              ]
+            },
+            {
+              "day": 2,
+              "title": "Day 2-3",
+              "stops": [
+                {
+                  "id": "s_2",
+                  "name": "Stop 2-1"
+                },
+                {
+                  "id": "s_3",
+                  "name": "Stop 3-0",
+                  "updatedAt": 1500
+                }
+              ]
+            }
+          ],
+          "stopTombstones": {}
+        },
+        "ab_c": {
+          "id": "trip_1",
+          "name": "Trip-0",
+          "updatedAt": 1900,
+          "clock": 3,
+          "days": [
+            {
+              "day": 1,
+              "title": "Day 1-1",
+              "stops": [
+                {
+                  "id": "s_1",
+                  "name": "Stop 1-0",
+                  "updatedAt": 1900
+                },
+                {
+                  "id": "s_3",
+                  "name": "Stop 3-2"
+                }
+              ],
+              "routeSummary": null
+            },
+            {
+              "day": 2,
+              "title": "Day 2-1",
+              "stops": [
+                {
+                  "id": "s_2",
+                  "name": "Stop 2-0",
+                  "updatedAt": 1700
+                }
+              ],
+              "routeSummary": null
+            }
+          ],
+          "stopTombstones": {
+            "s_1": 1400,
+            "s_2": 1600,
+            "s_3": 1700
+          }
+        },
+        "a_bc": {
+          "id": "trip_1",
+          "name": "Trip-0",
+          "updatedAt": 1900,
+          "clock": 3,
+          "days": [
+            {
+              "day": 1,
+              "title": "Day 1-1",
+              "stops": [
+                {
+                  "id": "s_1",
+                  "name": "Stop 1-0",
+                  "updatedAt": 1900
+                },
+                {
+                  "id": "s_2",
+                  "name": "Stop 2-1"
+                },
+                {
+                  "id": "s_3",
+                  "name": "Stop 3-2"
+                }
+              ],
+              "routeSummary": null
+            },
+            {
+              "day": 2,
+              "title": "Day 2-1",
+              "stops": [
+                {
+                  "id": "s_1",
+                  "name": "Stop 1-2"
+                },
+                {
+                  "id": "s_2",
+                  "name": "Stop 2-0",
+                  "updatedAt": 1700
+                }
+              ],
+              "routeSummary": null
+            }
+          ],
+          "stopTombstones": {
+            "s_1": 1400,
+            "s_2": 1600,
+            "s_3": 1700
+          }
+        }
+      }
+    },
+    "edgeCases": {
+      "stopOrderDestroyedByLexSort": {
+        "inputOrder": [
+          "s_z",
+          "s_a"
+        ],
+        "mergedOrder": [
+          "s_a",
+          "s_z"
+        ]
+      },
+      "concurrentMoveAcrossDaysDuplicatesStop": {
+        "day1Stops": [
+          "s_1"
+        ],
+        "day2Stops": [
+          "s_1"
+        ]
+      },
+      "deleteVsUnrelatedEditResurrection": {
+        "deletedStopId": "s_1",
+        "tombstoneTs": 200,
+        "tripUpdatedAt": 300,
+        "survivingStops": [
+          "s_1",
+          "s_2"
+        ]
+      },
+      "versionRestoreOverwrittenByConcurrentEdit": {
+        "restoredTripName": "Version 1 (Restored)",
+        "mergedTripNameAfterSync": "Version 2 (Unwanted Later Edit)",
+        "restoreLostToOlderClock": true
+      }
+    }
+  },
+  "expenseSplitter": {
+    "centRemainder100Div3": {
+      "balances": [
+        {
+          "userId": "u1",
+          "name": "Alice",
+          "netBalance": 66.67
+        },
+        {
+          "userId": "u2",
+          "name": "Bob",
+          "netBalance": -33.33
+        },
+        {
+          "userId": "u3",
+          "name": "Carol",
+          "netBalance": -33.33
+        }
+      ],
+      "netBalanceSum": 0.01,
+      "transfers": [
+        {
+          "fromId": "u2",
+          "fromName": "Bob",
+          "toId": "u1",
+          "toName": "Alice",
+          "amount": 33.33
+        },
+        {
+          "fromId": "u3",
+          "fromName": "Carol",
+          "toId": "u1",
+          "toName": "Alice",
+          "amount": 33.33
+        }
+      ],
+      "transferSum": 66.66,
+      "conservationGap": 0.01
+    },
+    "oneCentThresholdDropped003Div3": {
+      "balances": [
+        {
+          "userId": "u1",
+          "name": "Alice",
+          "netBalance": 0.02
+        },
+        {
+          "userId": "u2",
+          "name": "Bob",
+          "netBalance": -0.01
+        },
+        {
+          "userId": "u3",
+          "name": "Carol",
+          "netBalance": -0.01
+        }
+      ],
+      "transfers": [],
+      "droppedTransfersBug": true
+    },
+    "floatingPointDrift": {
+      "totalAmount": 1.31,
+      "balances": [
+        {
+          "userId": "u1",
+          "name": "A",
+          "netBalance": -0.85
+        },
+        {
+          "userId": "u2",
+          "name": "B",
+          "netBalance": 0.85
+        }
+      ],
+      "transfers": [
+        {
+          "fromId": "u1",
+          "fromName": "A",
+          "toId": "u2",
+          "toName": "B",
+          "amount": 0.85
+        }
+      ]
+    },
+    "customSplitMismatch": {
+      "totalAmount": 100,
+      "balances": [
+        {
+          "userId": "u1",
+          "name": "Alice",
+          "netBalance": 80
+        },
+        {
+          "userId": "u2",
+          "name": "Bob",
+          "netBalance": -30
+        },
+        {
+          "userId": "u3",
+          "name": "Carol",
+          "netBalance": 0
+        }
+      ],
+      "netBalanceSum": 50,
+      "transfers": [
+        {
+          "fromId": "u2",
+          "fromName": "Bob",
+          "toId": "u1",
+          "toName": "Alice",
+          "amount": 30
+        }
+      ]
+    },
+    "duplicateParticipantsBug": {
+      "totalAmount": 90,
+      "balances": [
+        {
+          "userId": "u1",
+          "name": "Alice",
+          "netBalance": 30
+        },
+        {
+          "userId": "u2",
+          "name": "Bob",
+          "netBalance": -30
+        },
+        {
+          "userId": "u3",
+          "name": "Carol",
+          "netBalance": 0
+        }
+      ],
+      "transfers": [
+        {
+          "fromId": "u2",
+          "fromName": "Bob",
+          "toId": "u1",
+          "toName": "Alice",
+          "amount": 30
+        }
+      ]
+    },
+    "multiCurrencyIgnoredBug": {
+      "totalAmount": 10100,
+      "balances": [
+        {
+          "userId": "u1",
+          "name": "Alice",
+          "netBalance": 6633.33
+        },
+        {
+          "userId": "u2",
+          "name": "Bob",
+          "netBalance": -3266.67
+        },
+        {
+          "userId": "u3",
+          "name": "Carol",
+          "netBalance": -3366.67
+        }
+      ]
+    },
+    "refundAndSettledIgnoredBug": {
+      "totalAmount": 300,
+      "balances": [
+        {
+          "userId": "u1",
+          "name": "Alice",
+          "netBalance": 200
+        },
+        {
+          "userId": "u2",
+          "name": "Bob",
+          "netBalance": -100
+        },
+        {
+          "userId": "u3",
+          "name": "Carol",
+          "netBalance": -100
+        }
+      ]
+    },
+    "greedySuboptimalityCounterexample": {
+      "balances": [
+        {
+          "userId": "A",
+          "name": "A",
+          "netBalance": 60
+        },
+        {
+          "userId": "B",
+          "name": "B",
+          "netBalance": -60
+        },
+        {
+          "userId": "C",
+          "name": "C",
+          "netBalance": 50
+        },
+        {
+          "userId": "D",
+          "name": "D",
+          "netBalance": 20
+        },
+        {
+          "userId": "E",
+          "name": "E",
+          "netBalance": -70
+        }
+      ],
+      "greedyTransferCount": 4,
+      "greedyTransfers": [
+        {
+          "fromId": "E",
+          "fromName": "E",
+          "toId": "A",
+          "toName": "A",
+          "amount": 60
+        },
+        {
+          "fromId": "E",
+          "fromName": "E",
+          "toId": "C",
+          "toName": "C",
+          "amount": 10
+        },
+        {
+          "fromId": "B",
+          "fromName": "B",
+          "toId": "C",
+          "toName": "C",
+          "amount": 40
+        },
+        {
+          "fromId": "B",
+          "fromName": "B",
+          "toId": "D",
+          "toName": "D",
+          "amount": 20
+        }
+      ],
+      "optimalTransferCount": 3,
+      "optimalTransfers": [
+        {
+          "from": "B",
+          "to": "A",
+          "amount": 60
+        },
+        {
+          "from": "E",
+          "to": "C",
+          "amount": 50
+        },
+        {
+          "from": "E",
+          "to": "D",
+          "amount": 20
+        }
+      ]
+    },
+    "falseOptimalityClaims": {
+      "expenseSplitterJsLine11": true,
+      "collabSpaceJsLine161And176": true,
+      "manualEnLine304": true,
+      "manualCnLine307": true
+    }
+  },
+  "qrCode": {
+    "shortAsciiUrl": {
+      "inputLengthChars": 40,
+      "inputLengthBytes": 40,
+      "version": 3,
+      "matrixSize": 29,
+      "quietZone": 2,
+      "quietZoneIsoCompliant": false,
+      "finderOk": true,
+      "timingOk": true,
+      "darkModuleOk": true,
+      "missingAlignments": [],
+      "versionInfoPresent": "N/A",
+      "formatInfoCopy1Hex": "0x77c4",
+      "formatInfoCopy2IsoHex": "0x-3c",
+      "formatInfoCopy2IsoValid": false,
+      "totalCodewordsRead": 70,
+      "rsSyndromeFailures": 0,
+      "decodedMode": 4,
+      "decodedByteCount": 40,
+      "truncated": false,
+      "decodedMatchesExactInput": true,
+      "decodedPreview": "https://kairos.app/?focus=jp-kanto-tokyo"
+    },
+    "cjkUtf8Url": {
+      "inputLengthChars": 40,
+      "inputLengthBytes": 58,
+      "version": 4,
+      "matrixSize": 33,
+      "quietZone": 2,
+      "quietZoneIsoCompliant": false,
+      "finderOk": true,
+      "timingOk": true,
+      "darkModuleOk": true,
+      "missingAlignments": [],
+      "versionInfoPresent": "N/A",
+      "formatInfoCopy1Hex": "0x77c4",
+      "formatInfoCopy2IsoHex": "0x-3c",
+      "formatInfoCopy2IsoValid": false,
+      "totalCodewordsRead": 100,
+      "rsSyndromeFailures": 0,
+      "decodedMode": 4,
+      "decodedByteCount": 58,
+      "truncated": false,
+      "decodedMatchesExactInput": true,
+      "decodedPreview": "https://kairos.app/?name=京都清水寺&note=樱花夜景"
+    },
+    "v6BoundaryUrl": {
+      "inputLengthChars": 122,
+      "inputLengthBytes": 122,
+      "version": 6,
+      "matrixSize": 41,
+      "quietZone": 2,
+      "quietZoneIsoCompliant": false,
+      "finderOk": true,
+      "timingOk": true,
+      "darkModuleOk": true,
+      "missingAlignments": [],
+      "versionInfoPresent": "N/A",
+      "formatInfoCopy1Hex": "0x77c4",
+      "formatInfoCopy2IsoHex": "0x-3c",
+      "formatInfoCopy2IsoValid": false,
+      "totalCodewordsRead": 172,
+      "rsSyndromeFailures": 0,
+      "decodedMode": 4,
+      "decodedByteCount": 122,
+      "truncated": false,
+      "decodedMatchesExactInput": true,
+      "decodedPreview": "https://kairos.app/?p=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "v8LongUrl160": {
+      "inputLengthChars": 163,
+      "inputLengthBytes": 163,
+      "version": 8,
+      "matrixSize": 49,
+      "quietZone": 2,
+      "quietZoneIsoCompliant": false,
+      "finderOk": true,
+      "timingOk": true,
+      "darkModuleOk": true,
+      "missingAlignments": [
+        [
+          6,
+          24
+        ],
+        [
+          24,
+          6
+        ],
+        [
+          24,
+          24
+        ],
+        [
+          24,
+          42
+        ],
+        [
+          42,
+          24
+        ]
+      ],
+      "versionInfoPresent": false,
+      "formatInfoCopy1Hex": "0x77c4",
+      "formatInfoCopy2IsoHex": "0x-3c",
+      "formatInfoCopy2IsoValid": false,
+      "totalCodewordsRead": 242,
+      "rsSyndromeFailures": 47,
+      "decodedMode": 4,
+      "decodedByteCount": 163,
+      "truncated": false,
+      "decodedMatchesExactInput": false,
+      "decodedPreview": "https://woq���Ƈ�����s�����ッ���ӣ��󣣳����ã�����Nl<\\�\u001b��a܀�������������������\u0011r��PQ"
+    },
+    "v10LongShareUrl320": {
+      "inputLengthChars": 335,
+      "inputLengthBytes": 335,
+      "version": 10,
+      "matrixSize": 57,
+      "quietZone": 2,
+      "quietZoneIsoCompliant": false,
+      "finderOk": true,
+      "timingOk": true,
+      "darkModuleOk": true,
+      "missingAlignments": [
+        [
+          6,
+          28
+        ],
+        [
+          28,
+          6
+        ],
+        [
+          28,
+          28
+        ],
+        [
+          28,
+          50
+        ],
+        [
+          50,
+          28
+        ]
+      ],
+      "versionInfoPresent": false,
+      "formatInfoCopy1Hex": "0x77c4",
+      "formatInfoCopy2IsoHex": "0x-3c",
+      "formatInfoCopy2IsoValid": false,
+      "totalCodewordsRead": 346,
+      "rsSyndromeFailures": 72,
+      "decodedMode": 4,
+      "decodedByteCount": 271,
+      "truncated": true,
+      "decodedMatchesExactInput": false,
+      "decodedPreview": "https5\u0005\u0004\u0014\u0014\u0002�\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\b@�� �\u0014\u0012���������������[�qAAAAAAA\u0005\u00054t���"
+    },
+    "realTripShareUrl": {
+      "inputLengthChars": 2465,
+      "inputLengthBytes": 2465,
+      "version": 10,
+      "matrixSize": 57,
+      "quietZone": 2,
+      "quietZoneIsoCompliant": false,
+      "finderOk": true,
+      "timingOk": true,
+      "darkModuleOk": true,
+      "missingAlignments": [
+        [
+          6,
+          28
+        ],
+        [
+          28,
+          6
+        ],
+        [
+          28,
+          28
+        ],
+        [
+          28,
+          50
+        ],
+        [
+          50,
+          28
+        ]
+      ],
+      "versionInfoPresent": false,
+      "formatInfoCopy1Hex": "0x77c4",
+      "formatInfoCopy2IsoHex": "0x-3c",
+      "formatInfoCopy2IsoValid": false,
+      "totalCodewordsRead": 346,
+      "rsSyndromeFailures": 72,
+      "decodedMode": 4,
+      "decodedByteCount": 271,
+      "truncated": true,
+      "decodedMatchesExactInput": false,
+      "decodedPreview": "?trip=!C6D���b���y�C�Kk�Z�I�zKjS\u000b�c�;�۱�)�{e>����|��x܎�|����\u0019ZCI6Imq��S�\\��;\u0012+\u0003\u0013"
+    }
+  },
+  "geoIntelligence": {
+    "parsedQueries": {
+      "<EMPTY>": {
+        "intent": {
+          "hasIntent": false,
+          "month": null,
+          "season": null,
+          "maxBudgetRmb": null,
+          "continent": null,
+          "landscapeTags": [],
+          "excludeTags": [],
+          "preferWarm": false,
+          "preferCool": false,
+          "preferTransit": false,
+          "photoScene": null,
+          "pace": null
+        },
+        "resultCount": 28,
+        "top3Ids": [
+          {
+            "id": "cn-beijing",
+            "score": 4
+          },
+          {
+            "id": "cn-hulunbeier",
+            "score": 4
+          },
+          {
+            "id": "cn-alxa",
+            "score": 4
+          }
+        ]
+      },
+      "<WHITESPACE>": {
+        "intent": {
+          "hasIntent": false,
+          "month": null,
+          "season": null,
+          "maxBudgetRmb": null,
+          "continent": null,
+          "landscapeTags": [],
+          "excludeTags": [],
+          "preferWarm": false,
+          "preferCool": false,
+          "preferTransit": false,
+          "photoScene": null,
+          "pace": null
+        },
+        "resultCount": 28,
+        "top3Ids": [
+          {
+            "id": "cn-beijing",
+            "score": 4
+          },
+          {
+            "id": "cn-hulunbeier",
+            "score": 4
+          },
+          {
+            "id": "cn-alxa",
+            "score": 4
+          }
+        ]
+      },
+      "10月欧洲红叶不要海滩预算2万": {
+        "intent": {
+          "hasIntent": true,
+          "month": 10,
+          "season": null,
+          "maxBudgetRmb": null,
+          "continent": "europe",
+          "landscapeTags": [
+            "autumn"
+          ],
+          "excludeTags": [
+            "coast"
+          ],
+          "preferWarm": false,
+          "preferCool": false,
+          "preferTransit": false,
+          "photoScene": null,
+          "pace": null
+        },
+        "resultCount": 28,
+        "top3Ids": [
+          {
+            "id": "fr-alps-annecy-lake",
+            "score": 115
+          },
+          {
+            "id": "ch-lakes-interlaken-brienz-lungern",
+            "score": 114
+          },
+          {
+            "id": "pt-porto-douro",
+            "score": 114
+          }
+        ]
+      },
+      "不要海滩 雪山": {
+        "intent": {
+          "hasIntent": true,
+          "month": null,
+          "season": null,
+          "maxBudgetRmb": null,
+          "continent": null,
+          "landscapeTags": [],
+          "excludeTags": [
+            "snow",
+            "coast",
+            "mountain"
+          ],
+          "preferWarm": false,
+          "preferCool": false,
+          "preferTransit": false,
+          "photoScene": null,
+          "pace": null
+        },
+        "resultCount": 0,
+        "top3Ids": []
+      },
+      "june or jungle adventure": {
+        "intent": {
+          "hasIntent": true,
+          "month": 6,
+          "season": null,
+          "maxBudgetRmb": null,
+          "continent": null,
+          "landscapeTags": [],
+          "excludeTags": [],
+          "preferWarm": false,
+          "preferCool": false,
+          "preferTransit": false,
+          "photoScene": null,
+          "pace": null
+        },
+        "resultCount": 28,
+        "top3Ids": [
+          {
+            "id": "bo-cities-copacabana-isla-del-sol",
+            "score": 62
+          },
+          {
+            "id": "us-ca-sierra-eastern-395",
+            "score": 54
+          },
+          {
+            "id": "ru-fareast-altai-chuya-highway",
+            "score": 50
+          }
+        ]
+      },
+      "march to marine coast": {
+        "intent": {
+          "hasIntent": true,
+          "month": 3,
+          "season": null,
+          "maxBudgetRmb": null,
+          "continent": null,
+          "landscapeTags": [
+            "coast"
+          ],
+          "excludeTags": [],
+          "preferWarm": false,
+          "preferCool": false,
+          "preferTransit": false,
+          "photoScene": null,
+          "pace": null
+        },
+        "resultCount": 28,
+        "top3Ids": [
+          {
+            "id": "ke-lamu-diani",
+            "score": 92
+          },
+          {
+            "id": "au-tas-tasman-peninsula-port-arthur",
+            "score": 91
+          },
+          {
+            "id": "ca-west-vancouver-sea-to-sky",
+            "score": 87
+          }
+        ]
+      },
+      "元阳梯田 2026年": {
+        "intent": {
+          "hasIntent": true,
+          "month": null,
+          "season": null,
+          "maxBudgetRmb": 2026,
+          "continent": null,
+          "landscapeTags": [],
+          "excludeTags": [],
+          "preferWarm": false,
+          "preferCool": false,
+          "preferTransit": false,
+          "photoScene": null,
+          "pace": null
+        },
+        "resultCount": 8,
+        "top3Ids": [
+          {
+            "id": "cn-shenyang",
+            "score": 56
+          },
+          {
+            "id": "cn-tianjin",
+            "score": 42
+          },
+          {
+            "id": "cn-datong",
+            "score": 42
+          }
+        ]
+      },
+      "类似瑞士 平替": {
+        "intent": {
+          "hasIntent": true,
+          "month": null,
+          "season": null,
+          "maxBudgetRmb": null,
+          "continent": "europe",
+          "landscapeTags": [
+            "snow",
+            "mountain",
+            "lake"
+          ],
+          "excludeTags": [],
+          "preferWarm": false,
+          "preferCool": false,
+          "preferTransit": false,
+          "photoScene": null,
+          "pace": null
+        },
+        "resultCount": 28,
+        "top3Ids": [
+          {
+            "id": "ar-west-nw-bariloche",
+            "score": 124
+          },
+          {
+            "id": "is-nw-myvatn-husavik",
+            "score": 123
+          },
+          {
+            "id": "it-north-lake-garda",
+            "score": 123
+          }
+        ]
+      },
+      "欧洲或亚洲看雪山": {
+        "intent": {
+          "hasIntent": true,
+          "month": null,
+          "season": null,
+          "maxBudgetRmb": null,
+          "continent": "europe",
+          "landscapeTags": [
+            "snow",
+            "mountain"
+          ],
+          "excludeTags": [],
+          "preferWarm": false,
+          "preferCool": false,
+          "preferTransit": false,
+          "photoScene": "mountain",
+          "pace": null
+        },
+        "resultCount": 28,
+        "top3Ids": [
+          {
+            "id": "no-arctic-tromso-nordkapp",
+            "score": 112
+          },
+          {
+            "id": "es-south-granada",
+            "score": 112
+          },
+          {
+            "id": "fr-alps-annecy-lake",
+            "score": 112
+          }
+        ]
+      },
+      "高铁方便 慢游 日照金山 温暖 避暑": {
+        "intent": {
+          "hasIntent": true,
+          "month": null,
+          "season": null,
+          "maxBudgetRmb": null,
+          "continent": null,
+          "landscapeTags": [
+            "cloudsea",
+            "mountain"
+          ],
+          "excludeTags": [],
+          "preferWarm": true,
+          "preferCool": true,
+          "preferTransit": true,
+          "photoScene": "mountain",
+          "pace": "relaxed"
+        },
+        "resultCount": 28,
+        "top3Ids": [
+          {
+            "id": "cn-beijing",
+            "score": 90
+          },
+          {
+            "id": "cn-mohe",
+            "score": 90
+          },
+          {
+            "id": "cn-changbaishan",
+            "score": 90
+          }
+        ]
+      },
+      "春天 和 冬天 1月 和 7月": {
+        "intent": {
+          "hasIntent": true,
+          "month": 1,
+          "season": "spring",
+          "maxBudgetRmb": null,
+          "continent": null,
+          "landscapeTags": [],
+          "excludeTags": [],
+          "preferWarm": false,
+          "preferCool": false,
+          "preferTransit": false,
+          "photoScene": null,
+          "pace": null
+        },
+        "resultCount": 28,
+        "top3Ids": [
+          {
+            "id": "cn-beijing",
+            "score": 66
+          },
+          {
+            "id": "cn-harbin",
+            "score": 66
+          },
+          {
+            "id": "cn-mohe",
+            "score": 66
+          }
+        ]
+      }
+    },
+    "deadIntentFieldsIgnoredBySearchAndExplain": [
+      "preferWarm",
+      "preferCool",
+      "preferTransit",
+      "photoScene",
+      "pace"
+    ],
+    "vectorBias": {
+      "singaporeTransitScore": 0.72,
+      "icelandTransitScore": 0.85,
+      "cairoVector": [
+        0.029,
+        1,
+        1,
+        1,
+        0,
+        1,
+        1,
+        0,
+        0.196,
+        0.72
+      ],
+      "zeroLandscapeTagCount": 0,
+      "sampleZeroTagPairCosine": null,
+      "europeFlatDestGetsHighRailScore": null
+    },
+    "contradictoryFilters": {
+      "minTransitScore09Count": 0,
+      "maxDistance1KmCount": 0
+    }
+  }
+}

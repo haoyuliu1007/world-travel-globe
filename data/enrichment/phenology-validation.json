@@ -1,7 +1,7 @@
 {
   "schemaVersion": "5.0.0",
-  "generatedAt": "2026-11-27T16:56:11.331Z",
-  "methodology": "Odd-year climatological normal fit vs even-year holdout validation (2015-2024 representative series)",
+  "generatedAt": "2026-11-28T06:22:08.168Z",
+  "methodology": "Multi-year climatological normal benchmark (2015-2024 JMA/NPS/CMA/KMA archive) with odd/even-year holdout & leave-one-city-out cross-validation against per-city climatological mean baseline (not interannual weather-driven dynamic forecasts).",
   "coverage": {
     "totalDestinationsInAtlas": 722,
     "calibratedSubsetCount": 23,
@@ -16,7 +16,9 @@
         "slope": 1.215
       },
       "holdoutMaeDays": 2.89,
-      "holdoutRmseDays": 3.64
+      "holdoutRmseDays": 3.64,
+      "baselineCityMeanMaeDays": 2.11,
+      "leaveOneCityOutMaeDays": 3.2
     },
     "autumn": {
       "name": "Autumn Cooling-Elevation-Photoperiod Index",
@@ -25,7 +27,9 @@
         "slope": 0.911
       },
       "holdoutMaeDays": 4.84,
-      "holdoutRmseDays": 6.03
+      "holdoutRmseDays": 6.03,
+      "baselineCityMeanMaeDays": 2.23,
+      "leaveOneCityOutMaeDays": 5.85
     }
   },
   "calibratedById": {

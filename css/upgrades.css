@@ -831,7 +831,7 @@ body.drawer-open .layers-popover {
     top: calc(104px + env(safe-area-inset-top));
   }
   .subspot-toast {
-    top: calc(104px + env(safe-area-inset-top));
+    top: calc(114px + env(safe-area-inset-top));
     left: 10px;
     right: auto;
   }
@@ -2393,13 +2393,16 @@ html[data-theme="light"] .secondary-btn:hover {
     color: var(--accent-primary);
     font-weight: 600;
   }
-  .phenology-bar {
+  .phenology-bar,
+  body.drawer-open .phenology-bar {
     bottom: calc(68px + env(safe-area-inset-bottom));
   }
-  .globe-controls {
+  body .globe-controls,
+  body.drawer-open .globe-controls {
     bottom: calc(116px + env(safe-area-inset-bottom));
   }
-  .orbit-rail {
+  body .orbit-rail,
+  body.drawer-open .orbit-rail {
     bottom: calc(168px + env(safe-area-inset-bottom));
   }
   .workspace-view,
@@ -2409,17 +2412,56 @@ html[data-theme="light"] .secondary-btn:hover {
   .workspace-split {
     grid-template-columns: 1fr;
   }
-  .capsule-icon-btn,
-  .capsule-pill-btn,
   .ctrl-icon-btn,
   .mode-btn,
   .cmd-trigger,
-  .capsule-lang-btn,
   .gallery-back-btn,
   .primary-btn,
-  .secondary-btn {
+  .secondary-btn,
+  .modal-close-btn,
+  .icon-btn {
     min-height: 44px;
+    min-width: 44px;
   }
+  .top-dock .dock-island {
+    max-width: 100%;
+  }
+  .top-dock .capsule-icon-btn,
+  .top-dock .capsule-pill-btn,
+  .top-dock .capsule-lang-btn {
+    min-height: 36px;
+    min-width: 34px;
+  }
+  .drawer-scroll-container {
+    padding-bottom: calc(92px + env(safe-area-inset-bottom));
+  }
+  .phenology-bar {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    scrollbar-width: none;
+    max-width: calc(100vw - 20px);
+  }
+  .phenology-bar::-webkit-scrollbar {
+    display: none;
+  }
+  .basemap-bar {
+    bottom: calc(118px + env(safe-area-inset-bottom)) !important;
+  }
+}
+
+.forecast-day,
+.collab-pill,
+.mini-action-pill {
+  white-space: nowrap;
+}
+
+body.is-workspace-mode .top-dock {
+  display: none !important;
+}
+body.is-workspace-mode .gallery-view,
+body.is-workspace-mode .workspace-view {
+  z-index: 42;
+  padding-top: calc(24px + env(safe-area-inset-top));
 }
 
 @media (max-width: 420px) {

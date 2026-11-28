@@ -323,57 +323,155 @@
     return { merged, stats };
   }
 
+  function compareTripMetaOrder(a, b) {
+    const aTs = Number(a && (a.metaUpdatedAt !== undefined ? a.metaUpdatedAt : a.updatedAt) || 0);
+    const bTs = Number(b && (b.metaUpdatedAt !== undefined ? b.metaUpdatedAt : b.updatedAt) || 0);
+    if (aTs !== bTs) return aTs - bTs;
+    const aName = String((a && a.name) || '');
+    const bName = String((b && b.name) || '');
+    if (aName !== bName) return aName.localeCompare(bName);
+    return String((a && a.id) || '').localeCompare(String((b && b.id) || ''));
+  }
+
   /**
-   * Merge two collaborative trip documents deterministically (stops LWW with tombstones, comments set-union).
+   * Merge two collaborative trip documents deterministically.
+   * Provably commutative, associative, and idempotent across stops, day titles,
+   * cross-day moves, tombstones, and comments.
    */
   function mergeTripDocuments(localTrip, remoteTrip) {
     const a = localTrip && typeof localTrip === 'object' ? localTrip : {};
     const b = remoteTrip && typeof remoteTrip === 'object' ? remoteTrip : {};
-    const winner = compareRecordOrder(b, a) >= 0 ? b : a;
-    const stopTombs = {};
-    [a.stopTombstones, b.stopTombstones].forEach((tb) => {
+    const winner = compareTripMetaOrder(b, a) >= 0 ? b : a;
+    const winnerMetaTs = Number(winner && (winner.metaUpdatedAt !== undefined ? winner.metaUpdatedAt : winner.updatedAt) || 0);
+
+    // 1. Tombstone join (monotone max timestamp per stopId across stopTombstones & legacy deletedStopIds, sorted keys)
+    const rawStopTombs = {};
+    [a.stopTombstones, b.stopTombstones, a.deletedStopIds, b.deletedStopIds].forEach((tb) => {
       if (!tb || typeof tb !== 'object') return;
       Object.keys(tb).forEach((k) => {
-        stopTombs[k] = Math.max(Number(stopTombs[k] || 0), Number(tb[k] || 0));
+        const ts = Number(tb[k]) || 0;
+        if (ts > 0) rawStopTombs[k] = Math.max(Number(rawStopTombs[k] || 0), ts);
       });
     });
+    const stopTombs = {};
+    Object.keys(rawStopTombs).sort().forEach((k) => { stopTombs[k] = rawStopTombs[k]; });
 
-    const dayMap = new Map();
-    const ingestDays = (days) => {
-      (Array.isArray(days) ? days : []).forEach((dy) => {
+    // 2. Commutative LWW join on day metadata (title / updatedAt / clock)
+    const dayMeta = new Map();
+    const ingestDayMeta = (doc) => {
+      (Array.isArray(doc.days) ? doc.days : []).forEach((dy) => {
         if (!dy || !dy.day) return;
-        if (!dayMap.has(dy.day)) {
-          dayMap.set(dy.day, { day: dy.day, title: dy.title || `Day ${dy.day}`, stopMap: new Map() });
+        const dNum = Number(dy.day);
+        const cand = {
+          day: dNum,
+          title: dy.title || `Day ${dNum}`,
+          updatedAt: Number(dy.updatedAt || 0),
+          clock: Number(dy.clock || 0)
+        };
+        const prev = dayMeta.get(dNum);
+        if (!prev) {
+          dayMeta.set(dNum, cand);
+        } else {
+          const dt = cand.updatedAt - prev.updatedAt;
+          const dc = cand.clock - prev.clock;
+          const dtitle = String(cand.title).localeCompare(String(prev.title));
+          if (dt > 0 || (dt === 0 && (dc > 0 || (dc === 0 && dtitle > 0)))) {
+            dayMeta.set(dNum, cand);
+          }
         }
-        const entry = dayMap.get(dy.day);
-        (dy.stops || []).forEach((st) => {
+      });
+    };
+    ingestDayMeta(a);
+    ingestDayMeta(b);
+
+    // 3. Global LWW-Element-Set across all stops keyed by stop.id (cross-day moves never duplicate)
+    const globalStopMap = new Map();
+    const compareStopLww = (x, y) => {
+      const xt = Number(x.updatedAt || 0);
+      const yt = Number(y.updatedAt || 0);
+      if (xt !== yt) return xt - yt;
+      const xc = Number(x.clock || 0);
+      const yc = Number(y.clock || 0);
+      if (xc !== yc) return xc - yc;
+      if (Number(x.day) !== Number(y.day)) return Number(x.day) - Number(y.day);
+      if (Number(x.order) !== Number(y.order)) return Number(x.order) - Number(y.order);
+      return String(x.name || '').localeCompare(String(y.name || ''));
+    };
+    const ingestStops = (doc) => {
+      (Array.isArray(doc.days) ? doc.days : []).forEach((dy) => {
+        if (!dy || !dy.day) return;
+        const dNum = Number(dy.day);
+        (Array.isArray(dy.stops) ? dy.stops : []).forEach((st, idx) => {
           if (!st || !st.id) return;
+          const stTs = Number(st.updatedAt || st.createdAt || 0);
           const tombTs = Number(stopTombs[st.id] || 0);
-          const stTs = Number(st.updatedAt || winner.updatedAt || 0);
-          if (tombTs > stTs) return;
-          const cur = entry.stopMap.get(st.id);
-          entry.stopMap.set(st.id, cur ? tieBreakCompare(cur, st) : st);
+          if (tombTs > 0 && tombTs >= stTs) return;
+          const normalized = Object.assign({}, st, {
+            day: dNum,
+            order: Number.isFinite(Number(st.order)) ? Number(st.order) : idx,
+            updatedAt: stTs,
+            clock: Number(st.clock || 0)
+          });
+          const cur = globalStopMap.get(st.id);
+          if (!cur || compareStopLww(normalized, cur) > 0) {
+            globalStopMap.set(st.id, normalized);
+          }
         });
       });
     };
-    ingestDays(a.days);
-    ingestDays(b.days);
+    ingestStops(a);
+    ingestStops(b);
 
-    const days = [...dayMap.values()]
+    // 4. Reassemble days deterministically preserving stop order (order, id)
+    const stopsByDay = new Map();
+    for (const dNum of dayMeta.keys()) stopsByDay.set(dNum, []);
+    for (const st of globalStopMap.values()) {
+      const tombTs = Number(stopTombs[st.id] || 0);
+      if (tombTs > 0 && tombTs >= Number(st.updatedAt || 0)) continue;
+      if (!stopsByDay.has(st.day)) {
+        stopsByDay.set(st.day, []);
+        dayMeta.set(st.day, { day: st.day, title: `Day ${st.day}`, updatedAt: 0, clock: 0 });
+      }
+      stopsByDay.get(st.day).push(st);
+    }
+
+    const days = [...dayMeta.values()]
       .sort((x, y) => x.day - y.day)
-      .map((d) => ({
-        day: d.day,
-        title: d.title,
-        stops: [...d.stopMap.values()].sort((x, y) => String(x.id).localeCompare(String(y.id))),
-        routeSummary: null
-      }));
+      .map((meta) => {
+        const arr = (stopsByDay.get(meta.day) || []).slice().sort((x, y) => {
+          const od = (Number(x.order) || 0) - (Number(y.order) || 0);
+          return od !== 0 ? od : String(x.id).localeCompare(String(y.id));
+        });
+        return {
+          day: meta.day,
+          title: meta.title,
+          updatedAt: meta.updatedAt,
+          clock: meta.clock,
+          stops: arr,
+          routeSummary: null
+        };
+      });
 
-    return Object.assign({}, winner, {
+    // 5. Set-union comments deterministically
+    const cmtMap = new Map();
+    [...(Array.isArray(a.comments) ? a.comments : []), ...(Array.isArray(b.comments) ? b.comments : [])].forEach((c) => {
+      if (!c) return;
+      const key = c.id || `${c.author || ''}:${c.at || 0}:${c.body || ''}`;
+      const prev = cmtMap.get(key);
+      if (!prev || compareRecordOrder(c, prev) > 0) cmtMap.set(key, c);
+    });
+    const comments = [...cmtMap.values()].sort((x, y) => (Number(x.at || 0) - Number(y.at || 0)) || String(x.id || '').localeCompare(String(y.id || '')));
+
+    const out = Object.assign({}, winner, {
       days,
+      comments,
       stopTombstones: stopTombs,
+      metaUpdatedAt: winnerMetaTs,
       updatedAt: Math.max(Number(a.updatedAt || 0), Number(b.updatedAt || 0)),
       clock: Math.max(Number(a.clock || 0), Number(b.clock || 0))
     });
+    delete out.deletedStopIds;
+    return out;
   }
 
   return {
